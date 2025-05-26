@@ -12,7 +12,7 @@
             <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action text-light">
                 <i class="fas fa-tachometer-alt me-2"></i> Dashboard
             </a>
-            <a href="#" class="list-group-item list-group-item-action text-light">
+            <a href="{{ route('admin.products.index') }}" class="list-group-item list-group-item-action text-light">
                 <i class="fas fa-boxes me-2"></i> Sản phẩm
             </a>
             <a href="#" class="list-group-item list-group-item-action text-light">
