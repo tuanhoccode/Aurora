@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') - Admin Panel</title>
+    <title>@yield('title') Admin Panel</title>
 
     <!-- Vendor CSS from public/assets -->
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.css') }}">
@@ -882,6 +882,11 @@
         }
 
     </style>
+
+    <!-- Bootstrap 5 CDN (ưu tiên mới nhất) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="font-sans antialiased">
     <div id="wrapper" class="d-flex">

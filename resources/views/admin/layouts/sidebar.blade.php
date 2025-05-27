@@ -36,6 +36,11 @@
             </a>
         </li>
         <li>
+            <a class="nav-link {{ request()->routeIs('admin.attributes*') ? 'active' : '' }}" href="{{ route('admin.brands.index') }}">
+                <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span> Brands
+            </a>
+        </li>
+        <li>
             <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span> Orders
             </a>
