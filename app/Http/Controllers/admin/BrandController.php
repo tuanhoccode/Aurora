@@ -32,10 +32,8 @@ class BrandController extends Controller
         $data = $request->only(['name', 'is_active']);
 
         if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $filename = Str::slug($request->name) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/brands', $filename);
-            $data['logo'] = $filename;
+            $logoPath = $request->file('logo')->store('brands', 'public');
+            $data['logo'] = $logoPath;
         }
 
         Brand::create($data);
