@@ -1,5 +1,6 @@
 @extends('admin.layouts.app')
 
+
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/font-awesome-pro.css') }}">
@@ -59,6 +60,8 @@
     }
 </style>
 @endpush
+
+
 
 @section('content')
     <div class="dashboard-header animate__animated animate__fadeIn">
@@ -170,6 +173,7 @@
             </div>
         </div>
     </div>
+<<<<<<< Updated upstream
 
     <!-- Charts Row -->
     <div class="row g-4">
@@ -384,3 +388,6 @@
     </script>
     @endpush
 @endsection
+
+@endsection
+
