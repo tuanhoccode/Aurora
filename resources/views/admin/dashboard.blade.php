@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+
+@extends('admin.layouts.app')
 
 @section('content')
     <h1>Bảng điều khiển</h1>
