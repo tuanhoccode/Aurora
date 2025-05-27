@@ -11,6 +11,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::get('products/show', [ProductController::class, 'show'])->name('products.show');
     Route::get('products/edit', [ProductController::class, 'edit'])->name('products.edit');
 
     Route::resource('brands', BrandController::class);
