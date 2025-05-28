@@ -62,13 +62,30 @@ class BrandController extends Controller
     }
 
 
-        // Sắp xếp mặc định theo ID tăng dần
-        $query->orderBy('id', 'asc');
+        // Sorting
+        $sortableColumns = ['id', 'name', 'is_active', 'created_at'];
+        $sortBy = $request->get('sort_by', 'id'); // Mặc định sắp xếp theo ID
+        $sortDir = $request->get('sort_dir', 'asc'); // Mặc định sắp xếp tăng dần
 
-        // Phân trang với 10 items mỗi trang
-        $brands = $query->paginate(10)->withQueryString();
+        if (!in_array($sortBy, $sortableColumns)) {
+            $sortBy = 'id'; // Đảm bảo cột sắp xếp hợp lệ
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'asc'; // Đảm bảo hướng sắp xếp hợp lệ
+        }
 
-        return view('admin.brands.index', compact('brands'));
+        $query->orderBy($sortBy, $sortDir);
+
+        // Per-page selection
+        $perPage = $request->get('per_page', 10); // Mặc định 10 items/trang
+        $validPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $validPerPage)) {
+            $perPage = 10; // Đảm bảo per_page hợp lệ
+        }
+
+        $brands = $query->paginate($perPage)->withQueryString();
+
+        return view('admin.brands.index', compact('brands', 'sortBy', 'sortDir', 'perPage'));
     }
 
     
@@ -204,8 +221,48 @@ class BrandController extends Controller
             $query->where('is_active', $request->status);
         }
 
-        $brands = $query->orderByDesc('deleted_at')->paginate(10)->withQueryString();
+        // Sorting
+        $sortableColumns = ['id', 'name', 'is_active', 'deleted_at'];
+        $sortBy = $request->get('sort_by', 'deleted_at'); // Mặc định sắp xếp theo ngày xóa
+        $sortDir = $request->get('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
 
-        return view('admin.brands.trash', compact('brands'));
+         if (!in_array($sortBy, $sortableColumns)) {
+            $sortBy = 'deleted_at'; // Đảm bảo cột sắp xếp hợp lệ
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'desc'; // Đảm bảo hướng sắp xếp hợp lệ
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        // Per-page selection
+        $perPage = $request->get('per_page', 10); // Mặc định 10 items/trang
+        $validPerPage = [10, 25, 50, 100];
+         if (!in_array($perPage, $validPerPage)) {
+            $perPage = 10; // Đảm bảo per_page hợp lệ
+        }
+
+        $brands = $query->paginate($perPage)->withQueryString();
+
+        return view('admin.brands.trash', compact('brands', 'sortBy', 'sortDir', 'perPage'));
     }
+
+    // Batch Actions // Removed batch action methods
+
+    /*
+    public function batchAction(Request $request)
+    {
+        // ... logic ...
+    }
+
+    public function batchRestore(Request $request)
+    {
+        // ... logic ...
+    }
+
+    public function batchForceDelete(Request $request)
+    {
+        // ... logic ...
+    }
+    */
 }

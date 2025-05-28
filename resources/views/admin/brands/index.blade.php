@@ -2,28 +2,42 @@
 
 @section('content')
     <div class="container-fluid py-4">
+        {{-- Header Section --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 fw-bold">Danh sách thương hiệu</h1>
             <div>
-                <a href="{{ route('admin.brands.create') }}" class="btn btn-primary shadow-sm rounded">
-                    <i class="bi bi-plus-circle"></i> Thêm thương hiệu mới
+                <h1 class="h3 mb-0 fw-bold text-gray-800">Danh sách thương hiệu</h1>
+                <p class="text-muted mt-1">Quản lý thông tin các thương hiệu trong hệ thống</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.brands.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
+                    <i class="bi bi-plus-circle me-1"></i> Thêm mới
                 </a>
-                <a href="{{ route('admin.brands.trash') }}" class="btn btn-danger shadow-sm rounded ms-2">
-                    <i class="bi bi-trash3-fill"></i> Thùng rác
+                <a href="{{ route('admin.brands.trash') }}" class="btn btn-outline-danger shadow-sm rounded-pill px-4">
+                    <i class="bi bi-trash3 me-1"></i> Thùng rác
                 </a>
             </div>
         </div>
 
+        {{-- Alert Messages --}}
         @if (session('success'))
-            <div class="alert alert-success shadow-sm rounded">{{ session('success') }}</div>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         @endif
 
         @if (session('error'))
-            <div class="alert alert-danger shadow-sm rounded">{{ session('error') }}</div>
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         @endif
 
-        <div class="card shadow-sm rounded">
-            <div class="card-body">
+        {{-- Main Card --}}
+        <div class="card shadow-sm rounded-3 border-0">
+            <div class="card-body p-4">
+                {{-- Search and Filter Form --}}
+                <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <form action="{{ route('admin.brands.index') }}" method="GET" class="d-flex gap-2">
@@ -46,15 +60,47 @@
 
                 @if ($brands->count())
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
                                 <tr>
-                                    <th style="width: 60px">ID</th>
-                                    <th>Tên thương hiệu</th>
-                                    <th style="width: 120px">Logo</th>
-                                    <th style="width: 120px">Trạng thái</th>
-                                    <th style="width: 120px">Ngày tạo</th>
-                                    <th style="width: 200px">Thao tác</th>
+                                    <th class="border-0" style="width: 60px">
+                                        <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            ID
+                                            @if ($sortBy == 'id')
+                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="border-0">
+                                        <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'name', 'sort_dir' => ($sortBy == 'name' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            Tên thương hiệu
+                                            @if ($sortBy == 'name')
+                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="border-0" style="width: 120px">Logo</th>
+                                    <th class="border-0" style="width: 120px">
+                                        <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'is_active', 'sort_dir' => ($sortBy == 'is_active' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            Trạng thái
+                                            @if ($sortBy == 'is_active')
+                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="border-0" style="width: 120px">
+                                        <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'created_at', 'sort_dir' => ($sortBy == 'created_at' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            Ngày tạo
+                                            @if ($sortBy == 'created_at')
+                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="border-0 text-end" style="width: 200px">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,8 +161,21 @@
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-end mt-3">
-                        {{ $brands->links() }}
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex align-items-center">
+                            <label for="perPage" class="text-muted me-2">Hiển thị:</label>
+                            <select name="per_page" id="perPage" class="form-select form-select-sm" style="width: auto" onchange="this.form.submit()">
+                                @foreach([10, 25, 50, 100] as $value)
+                                    <option value="{{ $value }}" {{ request('per_page', 10) == $value ? 'selected' : '' }}>
+                                        {{ $value }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <span class="text-muted ms-2">mục</span>
+                        </div>
+                        <div>
+                            {{ $brands->links() }}
+                        </div>
                     </div>
                 @else
                     <div class="alert alert-info mb-0">
