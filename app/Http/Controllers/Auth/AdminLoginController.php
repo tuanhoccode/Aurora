@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminLoginRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Illuminate\Support\Facades\Auth;
@@ -12,11 +13,8 @@ class AdminLoginController extends Controller
         return view('admin.auth.login');
     }
 
-    public function login(Request $request){
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required']
-        ]);
+    public function login(AdminLoginRequest $request){
+        $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
             // dd(Auth::user()->role);
             if (Auth::user()->role !== 'admin') {
