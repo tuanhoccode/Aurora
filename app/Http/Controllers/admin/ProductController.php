@@ -31,4 +31,3 @@ class ProductController extends Controller
         return view('admin.products.edit');
     }
 }
-

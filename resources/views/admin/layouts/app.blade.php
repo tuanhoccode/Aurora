@@ -888,7 +888,10 @@
     <!-- Bootstrap Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e8e389e42114628c2ec091e6ab6b4822ed692086
 <body class="font-sans antialiased">
     <div id="wrapper" class="d-flex">
         <!-- Sidebar -->
@@ -993,7 +996,10 @@
     <script src="{{ asset('assets/js/vendor/jquery.js') }}"></script>
     <script src="{{ asset('assets/js/vendor/popper.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap-bundle.js') }}"></script>
+<<<<<<< HEAD
     
     @yield('scripts')
+=======
+>>>>>>> e8e389e42114628c2ec091e6ab6b4822ed692086
 </body>
 </html> 

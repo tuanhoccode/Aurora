@@ -7,40 +7,112 @@ use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BrandController extends Controller
 {
-    public function index()
+    protected function validateBrand(Request $request, Brand $brand = null)
     {
-        $brands = Brand::all();
-        return view('admin.brands.index', compact('brands'));
+        $rules = [
+            'name' => 'required|max:100',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'is_active' => 'boolean',
+        ];
+
+        if ($brand) {
+            $rules['name'] .= ',name,' . $brand->id;
+        } else {
+            $rules['name'] .= '|unique:brands,name';
+        }
+
+        return $request->validate($rules);
     }
+
+    protected function handleLogoUpload(Request $request, Brand $brand = null)
+    {
+        if (!$request->hasFile('logo')) {
+            return null;
+        }
+
+        // Xóa logo cũ nếu có
+        if ($brand && $brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            Storage::disk('public')->delete($brand->logo);
+        }
+
+        $file = $request->file('logo');
+        $filename = Str::slug($request->name) . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('brands', $filename, 'public');
+        return 'brands/' . $filename;
+    }
+
+    public function index(Request $request)
+    {
+        $query = Brand::query();
+
+       // Tìm kiếm theo tên (nếu có)
+       if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    // Lọc theo trạng thái (nếu hợp lệ)
+    if ($request->has('status') && in_array($request->status, ['0', '1'], true)) {
+        $query->where('is_active', $request->status);
+    }
+
+
+        // Sorting
+        $sortableColumns = ['id', 'name', 'is_active', 'created_at'];
+        $sortBy = $request->get('sort_by', 'id'); // Mặc định sắp xếp theo ID
+        $sortDir = $request->get('sort_dir', 'asc'); // Mặc định sắp xếp tăng dần
+
+        if (!in_array($sortBy, $sortableColumns)) {
+            $sortBy = 'id'; // Đảm bảo cột sắp xếp hợp lệ
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'asc'; // Đảm bảo hướng sắp xếp hợp lệ
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        // Per-page selection
+        $perPage = $request->get('per_page', 10); // Mặc định 10 items/trang
+        $validPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $validPerPage)) {
+            $perPage = 10; // Đảm bảo per_page hợp lệ
+        }
+
+        $brands = $query->paginate($perPage)->withQueryString();
+
+        return view('admin.brands.index', compact('brands', 'sortBy', 'sortDir', 'perPage'));
+    }
+
+    
 
     public function create()
     {
-        return view('admin.brands.create');  // use the same form for create/edit
+        return view('admin.brands.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|unique:brands,name|max:100',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'is_active' => 'required|boolean',
-        ]);
+        try {
+            $validated = $this->validateBrand($request);
+            $data = $request->only(['name', 'is_active']);
 
-        $data = $request->only(['name', 'is_active']);
+            if ($logoPath = $this->handleLogoUpload($request)) {
+                $data['logo'] = $logoPath;
+            }
 
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $filename = Str::slug($request->name) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/brands', $filename);
-            $data['logo'] = $filename;
+            Brand::create($data);
+            return redirect()->route('admin.brands.index')
+                ->with('success', 'Thêm thương hiệu thành công!');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi tạo thương hiệu: ' . $e->getMessage());
         }
-
-        Brand::create($data);
-
-        return redirect()->route('admin.brands.index')->with('success', 'Brand created successfully!');
     }
 
     public function edit(Brand $brand)
@@ -53,63 +125,144 @@ class BrandController extends Controller
         return view('admin.brands.show', compact('brand'));
     }
 
-
     public function update(Request $request, Brand $brand)
     {
-        $request->validate([
-            'name' => 'required|unique:brands,name,' . $brand->id . '|max:100',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'is_active' => 'required|boolean',
-        ]);
+        try {
+            $validated = $this->validateBrand($request, $brand);
+            $data = $request->only(['name', 'is_active']);
 
-        $data = $request->only(['name', 'is_active']);
-
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($brand->logo && Storage::exists('public/brands/' . $brand->logo)) {
-                Storage::delete('public/brands/' . $brand->logo);
+            if ($logoPath = $this->handleLogoUpload($request, $brand)) {
+                $data['logo'] = $logoPath;
             }
 
-            $file = $request->file('logo');
-            $filename = Str::slug($request->name) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/brands', $filename);
-            $data['logo'] = $filename;
+            $brand->update($data);
+            return redirect()->route('admin.brands.index')
+                ->with('success', 'Cập nhật thương hiệu thành công!');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi cập nhật thương hiệu: ' . $e->getMessage());
         }
-
-        $brand->update($data);
-
-        return redirect()->route('admin.brands.index')->with('success', 'Brand updated successfully!');
     }
 
     public function destroy(Brand $brand)
     {
         try {
-            // Delete logo if exists
-            if ($brand->logo && Storage::exists('public/brands/' . $brand->logo)) {
-                Storage::delete('public/brands/' . $brand->logo);
-            }
-            $brand->delete();
-            return redirect()->route('admin.brands.index')->with('success', 'Brand deleted successfully!');
+            // Không xóa file logo khi soft delete
+            // if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            //     Storage::disk('public')->delete($brand->logo);
+            // }
+            $brand->delete(); // <-- Dòng soft delete
+            return redirect()->route('admin.brands.index')
+                ->with('success', 'Xóa thương hiệu thành công!');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('admin.brands.index')
+                ->with('error', 'Không tìm thấy thương hiệu!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.brands.index')->with('error', 'Error deleting brand: ' . $e->getMessage());
+            return redirect()->route('admin.brands.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa thương hiệu: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Force delete (xóa vĩnh viễn) một brand đã bị xóa mềm
-     */
     public function forceDelete($id)
     {
-        $brand = Brand::withTrashed()->findOrFail($id);
         try {
-            // Xóa file logo nếu có
-            if ($brand->logo && Storage::exists('public/brands/' . $brand->logo)) {
-                Storage::delete('public/brands/' . $brand->logo);
+            if (!is_numeric($id)) {
+                throw new ValidationException('ID không hợp lệ');
+            }
+
+            $brand = Brand::withTrashed()->findOrFail($id);
+            if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+                Storage::disk('public')->delete($brand->logo);
             }
             $brand->forceDelete();
-            return redirect()->route('admin.brands.index')->with('success', 'Brand permanently deleted!');
+            return redirect()->route('admin.brands.trash')
+                ->with('success', 'Xóa vĩnh viễn thương hiệu thành công!');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('admin.brands.trash')
+                ->with('error', 'Không tìm thấy thương hiệu!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.brands.index')->with('error', 'Error force deleting brand: ' . $e->getMessage());
+            return redirect()->route('admin.brands.trash')
+                ->with('error', 'Có lỗi xảy ra khi xóa vĩnh viễn thương hiệu: ' . $e->getMessage());
         }
     }
+
+    public function restore($id)
+    {
+        try {
+            if (!is_numeric($id)) {
+                throw new ValidationException('ID không hợp lệ');
+            }
+
+            $brand = Brand::withTrashed()->findOrFail($id);
+            $brand->restore();
+            return redirect()->route('admin.brands.index')
+                ->with('success', 'Khôi phục thương hiệu thành công!');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('admin.brands.trash')
+                ->with('error', 'Không tìm thấy thương hiệu!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.brands.trash')
+                ->with('error', 'Có lỗi xảy ra khi khôi phục thương hiệu: ' . $e->getMessage());
+        }
+    }
+
+    public function trash(Request $request)
+    {
+        $query = Brand::onlyTrashed();
+
+        // Tìm kiếm theo tên (nếu có)
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Lọc theo trạng thái (nếu hợp lệ)
+        if ($request->has('status') && in_array($request->status, ['0', '1'], true)) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Sorting
+        $sortableColumns = ['id', 'name', 'is_active', 'deleted_at'];
+        $sortBy = $request->get('sort_by', 'deleted_at'); // Mặc định sắp xếp theo ngày xóa
+        $sortDir = $request->get('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
+
+         if (!in_array($sortBy, $sortableColumns)) {
+            $sortBy = 'deleted_at'; // Đảm bảo cột sắp xếp hợp lệ
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'desc'; // Đảm bảo hướng sắp xếp hợp lệ
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        // Per-page selection
+        $perPage = $request->get('per_page', 10); // Mặc định 10 items/trang
+        $validPerPage = [10, 25, 50, 100];
+         if (!in_array($perPage, $validPerPage)) {
+            $perPage = 10; // Đảm bảo per_page hợp lệ
+        }
+
+        $brands = $query->paginate($perPage)->withQueryString();
+
+        return view('admin.brands.trash', compact('brands', 'sortBy', 'sortDir', 'perPage'));
+    }
+
+    // Batch Actions // Removed batch action methods
+
+    /*
+    public function batchAction(Request $request)
+    {
+        // ... logic ...
+    }
+
+    public function batchRestore(Request $request)
+    {
+        // ... logic ...
+    }
+
+    public function batchForceDelete(Request $request)
+    {
+        // ... logic ...
+    }
+    */
 }

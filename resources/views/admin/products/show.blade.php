@@ -199,4 +199,8 @@
 </style>
 @endpush
 
+<<<<<<< HEAD
 @endsection
+=======
+@endsection
+>>>>>>> e8e389e42114628c2ec091e6ab6b4822ed692086
