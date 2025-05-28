@@ -22,22 +22,18 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <form action="{{ route('admin.brands.trash') }}" method="GET" class="d-flex gap-2">
-                            <input type="text" 
-                                name="search" 
-                                class="form-control" 
-                                placeholder="Tìm kiếm thương hiệu đã xóa..." 
-                                value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Tìm kiếm thương hiệu đã xóa..." 
+                                   value="{{ request('search') }}">
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Đang hoạt động</option>
+                                <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Không hoạt động</option>
+                            </select>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i>
                             </button>
                         </form>
-                    </div>
-                    <div class="col-md-6">
-                        <select name="status" class="form-select" onchange="this.form.submit()">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Đang hoạt động</option>
-                            <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Không hoạt động</option>
-                        </select>
                     </div>
                 </div>
 

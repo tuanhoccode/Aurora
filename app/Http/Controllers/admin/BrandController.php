@@ -51,16 +51,16 @@ class BrandController extends Controller
     {
         $query = Brand::query();
 
-        // Tìm kiếm theo tên
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%");
-        }
+       // Tìm kiếm theo tên (nếu có)
+       if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
 
-        // Lọc theo trạng thái
-        if ($request->has('status') && $request->get('status') !== '') {
-            $query->where('is_active', $request->get('status'));
-        }
+    // Lọc theo trạng thái (nếu hợp lệ)
+    if ($request->has('status') && in_array($request->status, ['0', '1'], true)) {
+        $query->where('is_active', $request->status);
+    }
+
 
         // Sắp xếp mặc định theo ID tăng dần
         $query->orderBy('id', 'asc');
@@ -70,6 +70,8 @@ class BrandController extends Controller
 
         return view('admin.brands.index', compact('brands'));
     }
+
+    
 
     public function create()
     {
@@ -81,7 +83,7 @@ class BrandController extends Controller
         try {
             $validated = $this->validateBrand($request);
             $data = $request->only(['name', 'is_active']);
-            
+
             if ($logoPath = $this->handleLogoUpload($request)) {
                 $data['logo'] = $logoPath;
             }
@@ -111,7 +113,7 @@ class BrandController extends Controller
         try {
             $validated = $this->validateBrand($request, $brand);
             $data = $request->only(['name', 'is_active']);
-            
+
             if ($logoPath = $this->handleLogoUpload($request, $brand)) {
                 $data['logo'] = $logoPath;
             }
@@ -192,22 +194,17 @@ class BrandController extends Controller
     {
         $query = Brand::onlyTrashed();
 
-        // Tìm kiếm theo tên
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%");
+        // Tìm kiếm theo tên (nếu có)
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Lọc theo trạng thái
-        if ($request->has('status') && $request->get('status') !== '') {
-            $query->where('is_active', $request->get('status'));
+        // Lọc theo trạng thái (nếu hợp lệ)
+        if ($request->has('status') && in_array($request->status, ['0', '1'], true)) {
+            $query->where('is_active', $request->status);
         }
 
-        // Sắp xếp mặc định theo ngày xóa giảm dần
-        $query->orderBy('deleted_at', 'desc');
-
-        // Phân trang với 10 items mỗi trang
-        $brands = $query->paginate(10)->withQueryString();
+        $brands = $query->orderByDesc('deleted_at')->paginate(10)->withQueryString();
 
         return view('admin.brands.trash', compact('brands'));
     }
