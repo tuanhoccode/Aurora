@@ -1,17 +1,12 @@
-@extends('admin.layouts.app')
+    @extends('admin.layouts.app')
 
-@section('content')
+    @section('content')
     <div class="container-fluid py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 fw-bold">Danh sách thương hiệu</h1>
-            <div>
-                <a href="{{ route('admin.brands.create') }}" class="btn btn-primary shadow-sm rounded">
-                    <i class="bi bi-plus-circle"></i> Thêm thương hiệu mới
-                </a>
-                <a href="{{ route('admin.brands.trash') }}" class="btn btn-danger shadow-sm rounded ms-2">
-                    <i class="bi bi-trash3-fill"></i> Thùng rác
-                </a>
-            </div>
+            <h1 class="h3 fw-bold">Thùng rác thương hiệu</h1>
+            <a href="{{ route('admin.brands.index') }}" class="btn btn-secondary shadow-sm rounded">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
         </div>
 
         @if (session('success'))
@@ -26,9 +21,11 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <form action="{{ route('admin.brands.index') }}" method="GET" class="d-flex gap-2">
-                            <input type="text" name="search" class="form-control" 
-                                placeholder="Tìm kiếm thương hiệu..." 
+                        <form action="{{ route('admin.brands.trash') }}" method="GET" class="d-flex gap-2">
+                            <input type="text" 
+                                name="search" 
+                                class="form-control" 
+                                placeholder="Tìm kiếm thương hiệu đã xóa..." 
                                 value="{{ request('search') }}">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i>
@@ -53,7 +50,7 @@
                                     <th>Tên thương hiệu</th>
                                     <th style="width: 120px">Logo</th>
                                     <th style="width: 120px">Trạng thái</th>
-                                    <th style="width: 120px">Ngày tạo</th>
+                                    <th style="width: 150px">Ngày xóa</th>
                                     <th style="width: 200px">Thao tác</th>
                                 </tr>
                             </thead>
@@ -70,9 +67,9 @@
                                                 @endphp
                                                 @if ($logoExists)
                                                     <img src="{{ asset($logoPath) }}" 
-                                                         alt="{{ $brand->name }}" 
-                                                         class="img-thumbnail" 
-                                                         style="max-width:80px; max-height:80px; object-fit:contain;">
+                                                        alt="{{ $brand->name }}" 
+                                                        class="img-thumbnail" 
+                                                        style="max-width:80px; max-height:80px; object-fit:contain;">
                                                 @else
                                                     <div class="text-muted small">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>
@@ -91,21 +88,22 @@
                                                 {{ $brand->is_active ? 'Đang hoạt động' : 'Không hoạt động' }}
                                             </span>
                                         </td>
-                                        <td class="text-center">{{ $brand->created_at->format('d/m/Y') }}</td>
+                                        <td class="text-center">
+                                            {{ $brand->deleted_at->format('d/m/Y H:i') }}
+                                        </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ route('admin.brands.show', $brand->id) }}"
-                                                    class="btn btn-info btn-sm" title="Xem chi tiết">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('admin.brands.edit', $brand->id) }}"
-                                                    class="btn btn-warning btn-sm" title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" 
-                                                    onclick="confirmDelete('{{ $brand->id }}', '{{ $brand->name }}')"
-                                                    title="Xóa">
-                                                    <i class="bi bi-trash"></i>
+                                                <button type="button" 
+                                                        class="btn btn-success btn-sm" 
+                                                        onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                        title="Khôi phục">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm" 
+                                                        onclick="confirmForceDelete('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                        title="Xóa vĩnh viễn">
+                                                    <i class="bi bi-x-octagon"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -120,30 +118,57 @@
                     </div>
                 @else
                     <div class="alert alert-info mb-0">
-                        Không tìm thấy thương hiệu nào.
+                        Không có thương hiệu nào trong thùng rác.
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <!-- Modal Xác nhận xóa -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
+    <!-- Modal Xác nhận khôi phục -->
+    <div class="modal fade" id="restoreModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title">Xác nhận khôi phục</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    Bạn có chắc chắn muốn xóa thương hiệu "<span id="brandName"></span>"?
+                    Bạn có chắc chắn muốn khôi phục thương hiệu "<span id="restoreBrandName"></span>"?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <form id="deleteForm" method="POST" style="display: inline;">
+                    <form id="restoreForm" method="POST" style="display: inline;">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" class="btn btn-success">Khôi phục</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận xóa vĩnh viễn -->
+    <div class="modal fade" id="forceDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa vĩnh viễn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Cảnh báo: Hành động này cần cân nhắc khi thao tác!
+                    </div>
+                    Bạn có chắc chắn muốn xóa vĩnh viễn thương hiệu "<span id="forceDeleteBrandName"></span>"?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form id="forceDeleteForm" method="POST" style="display: inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Xóa</button>
+                        <button type="submit" class="btn btn-danger">Xóa vĩnh viễn</button>
                     </form>
                 </div>
             </div>
@@ -152,11 +177,17 @@
 
     @push('scripts')
     <script>
-        function confirmDelete(id, name) {
-            document.getElementById('brandName').textContent = name;
-            document.getElementById('deleteForm').action = `/admin/brands/${id}`;
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        function confirmRestore(id, name) {
+            document.getElementById('restoreBrandName').textContent = name;
+            document.getElementById('restoreForm').action = `/admin/brands/${id}/restore`;
+            new bootstrap.Modal(document.getElementById('restoreModal')).show();
+        }
+
+        function confirmForceDelete(id, name) {
+            document.getElementById('forceDeleteBrandName').textContent = name;
+            document.getElementById('forceDeleteForm').action = `/admin/brands/force-delete/${id}`;
+            new bootstrap.Modal(document.getElementById('forceDeleteModal')).show();
         }
     </script>
     @endpush
-@endsection
+    @endsection

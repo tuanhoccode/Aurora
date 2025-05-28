@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Brand extends Model
 {
@@ -21,6 +22,16 @@ class Brand extends Model
     // Trả về URL đầy đủ cho logo
     public function getLogoUrlAttribute()
     {
-        return $this->logo ? asset('storage/brands/' . $this->logo) : null;
+        if (!$this->logo) {
+            return null;
+        }
+
+        // Kiểm tra xem logo có tồn tại trong storage không
+        if (Storage::disk('public')->exists($this->logo)) {
+            return asset('storage/' . $this->logo);
+        }
+
+        // Nếu không tìm thấy trong storage, trả về null
+        return null;
     }
 }

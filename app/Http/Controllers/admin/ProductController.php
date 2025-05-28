@@ -19,6 +19,11 @@ class ProductController extends Controller
         return view('admin.products.create');
     }
 
+     public function show()
+    {
+        return view('admin.products.show');
+    }
+
     // Hiển thị form chỉnh sửa sản phẩm
     public function edit()
     {
@@ -26,4 +31,3 @@ class ProductController extends Controller
         return view('admin.products.edit');
     }
 }
-
