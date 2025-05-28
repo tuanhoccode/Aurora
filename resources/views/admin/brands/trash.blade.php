@@ -34,7 +34,7 @@
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body p-4">
             {{-- Search and Filter Form --}}
-            <form action="{{ route('admin.brands.index') }}" method="GET" class="d-flex gap-2">
+            <form action="{{ route('admin.brands.trash') }}" method="GET" class="d-flex gap-2">
                 <input type="text" 
                        name="search" 
                        class="form-control" 
