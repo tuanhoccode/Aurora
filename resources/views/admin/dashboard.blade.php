@@ -173,7 +173,6 @@
             </div>
         </div>
     </div>
-<<<<<<< Updated upstream
 
     <!-- Charts Row -->
     <div class="row g-4">
@@ -389,5 +388,4 @@
     @endpush
 @endsection
 
-@endsection
 

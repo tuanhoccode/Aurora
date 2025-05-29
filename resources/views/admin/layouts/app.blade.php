@@ -17,12 +17,15 @@
     <link rel="stylesheet" href="{{ asset('assets/css/slick.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/swiper-bundle.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Custom admin CSS -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -414,7 +417,7 @@
           body.sidebar-toggled #content-wrapper {
               margin-left: 100px; /* Adjust content margin */
           }
-           body.sidebar-toggled .sidebar-animated .nav-link .nav-text, 
+           body.sidebar-toggled .sidebar-animated .nav-link .nav-text,
            body.sidebar-toggled .sidebar-animated .sidebar-heading {
               display: none; /* Hide text when collapsed */
           }
@@ -888,7 +891,6 @@
     <!-- Bootstrap Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-
 <body class="font-sans antialiased">
     <div id="wrapper" class="d-flex">
         <!-- Sidebar -->
@@ -978,7 +980,7 @@
             const sidebarToggle = document.getElementById('sidebarToggleTop');
             const contentWrapper = document.getElementById('content-wrapper');
             const sidebar = document.querySelector('.sidebar-animated');
-            
+
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
                     sidebar.classList.toggle('d-none');
@@ -993,7 +995,5 @@
     <script src="{{ asset('assets/js/vendor/jquery.js') }}"></script>
     <script src="{{ asset('assets/js/vendor/popper.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap-bundle.js') }}"></script>
-    
-    @yield('scripts')
 </body>
 </html> 
