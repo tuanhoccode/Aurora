@@ -5,8 +5,15 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Auth\AdminLoginController;
 
-Route::prefix('admin')->name('admin.')->group(function (): void {
+//Auth admin
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+
+//Admin
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
@@ -18,13 +25,13 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::delete('brands/{id}/force', [BrandController::class, 'forceDelete'])->name('brands.forceDelete');
 });
 
-Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-});
+// Route::prefix('admin')->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+// });
 
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::get('products/edit', [ProductController::class, 'edit'])->name('products.edit');
-});
+// Route::prefix('admin')->name('admin.')->group(function () {
+//     Route::get('products', [ProductController::class, 'index'])->name('products.index');
+//     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+//     Route::get('products/edit', [ProductController::class, 'edit'])->name('products.edit');
+// });
