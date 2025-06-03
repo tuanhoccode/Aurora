@@ -46,7 +46,7 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                 <span class="nav-icon"><i class="fas fa-users"></i></span> Users
             </a>
         </li>
