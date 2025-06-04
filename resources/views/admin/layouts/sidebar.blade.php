@@ -26,7 +26,7 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}">
                 <span class="nav-icon"><i class="fas fa-tags"></i></span> Categories
             </a>
         </li>
