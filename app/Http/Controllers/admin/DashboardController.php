@@ -1,22 +1,17 @@
 <?php
-namespace App\Http\Controllers\admin;
+
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Order;
-use App\Models\Report;
-use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __construct()
+    /**
+     * Display the dashboard page.
+     */
+    public function index(): View
     {
-        // $this->middleware(['auth', 'admin']);
+        return view('admin.dashboard.index');
     }
-
-    public function index()
-    {
-
-        return view('admin.dashboard');
-    }
-}
+} 
