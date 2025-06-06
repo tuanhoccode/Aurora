@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+
 use App\Http\Controllers\Admin\AttributeController;
+
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -96,4 +98,5 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::get('attributes/{attribute}/values', [AttributeController::class, 'values'])->name('attributes.values');
     Route::post('attributes/{attribute}/values', [AttributeController::class, 'storeValue'])->name('attributes.values.store');
     Route::delete('attributes/{attribute}/values/{value}', [AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
+
 });
