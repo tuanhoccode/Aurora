@@ -28,18 +28,18 @@ class CategoryController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.categories.index', compact('categories', 'sortBy', 'sortDir'));
+        return view('admin.category.index', compact('categories', 'sortBy', 'sortDir'));
     }
 
     public function create()
     {
         $categories = Category::active()->get();
-        return view('admin.categories.create', compact('categories'));
+        return view('admin.category.create', compact('categories'));
     }
 
     public function show(Category $category)
     {
-        return view('admin.categories.show', compact('category'));
+        return view('admin.category.show', compact('category'));
     }
 
     public function store(CategoryRequest $request)
@@ -70,7 +70,7 @@ class CategoryController extends Controller
         $categories = Category::active()
             ->where('id', '!=', $category->id)
             ->get();
-        return view('admin.categories.edit', compact('category', 'categories'));
+        return view('admin.category.edit', compact('category', 'categories'));
     }
 
     public function update(CategoryRequest $request, Category $category)
@@ -130,7 +130,7 @@ class CategoryController extends Controller
             ->orderBy($sortBy, $sortDir)
             ->paginate(10);
 
-        return view('admin.categories.trash', compact('trashedCategories', 'sortBy', 'sortDir'));
+        return view('admin.category.trash', compact('trashedCategories', 'sortBy', 'sortDir'));
     }
 
     public function restore($id)
@@ -153,12 +153,12 @@ class CategoryController extends Controller
     {
         try {
             $category = Category::onlyTrashed()->findOrFail($id);
-
+            
             // Xóa ảnh nếu có
             if ($category->icon) {
                 Storage::disk('public')->delete($category->icon);
             }
-
+            
             $category->forceDelete();
 
             return redirect()
@@ -204,7 +204,7 @@ class CategoryController extends Controller
             }
 
             $categories = Category::onlyTrashed()->whereIn('id', $ids)->get();
-
+            
             foreach ($categories as $category) {
                 if ($category->icon) {
                     Storage::disk('public')->delete($category->icon);
@@ -294,4 +294,4 @@ class CategoryController extends Controller
             ], 500);
         }
     }
-}
+} 
