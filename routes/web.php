@@ -1,12 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 
 use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AttributeValueController;
 
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -39,7 +41,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         // Toggle status
         Route::put('/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('toggle-status');
     });
-
+    Route::resource('users', UserController::class);
+    Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
     // Brands Routes
     Route::prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
@@ -95,9 +98,18 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
     // Attributes
     Route::resource('attributes', AttributeController::class);
-    Route::get('attributes/{attribute}/values', [AttributeController::class, 'values'])->name('attributes.values');
-    Route::post('attributes/{attribute}/values', [AttributeController::class, 'storeValue'])->name('attributes.values.store');
-    Route::delete('attributes/{attribute}/values/{value}', [AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
-
+    Route::get('attributes/trashed', [AttributeController::class, 'trashed'])->name('attributes.trashed');
+    Route::post('attributes/{id}/restore', [AttributeController::class, 'restore'])->name('attributes.restore');
+    Route::delete('attributes/{id}/force', [AttributeController::class, 'forceDelete'])->name('attributes.forceDelete');
+    Route::get('attributes/variants', [AttributeController::class, 'variants'])->name('attributes.variants');
+    // Attribute Values
+    Route::prefix('attributes/{attributeId}/values')->name('attribute_values.')->group(function (): void {
+        Route::get('/', [AttributeValueController::class, 'index'])->name('index');
+        Route::get('/create', [AttributeValueController::class, 'create'])->name('create');
+        Route::post('/', [AttributeValueController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AttributeValueController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AttributeValueController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AttributeValueController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+    });
 });
-

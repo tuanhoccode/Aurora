@@ -1,145 +1,72 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Quản lý thuộc tính')
-
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Page Header -->
-    <div class="card bg-light-subtle border-0 shadow-sm mb-4">
-        <div class="card-body py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-2">Quản lý thuộc tính</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Thuộc tính</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div>
-                    <a href="{{ route('admin.attributes.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Thêm thuộc tính
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="container py-4">
+        <h1 class="mb-4 fw-bold">Attributes</h1>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+        @if (session('success'))
+            <div class="alert alert-success shadow-sm rounded">{{ session('success') }}</div>
+        @endif
 
-    <!-- Attributes List -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
+        @if (session('error'))
+            <div class="alert alert-danger shadow-sm rounded">{{ session('error') }}</div>
+        @endif
+
+        <div class="mb-3">
+            <a href="{{ route('admin.attributes.create') }}" class="btn btn-primary shadow-sm rounded">
+                <i class="bi bi-plus-circle"></i> Create New Attribute
+            </a>
+            <a href="{{ route('admin.attributes.trashed') }}" class="btn btn-outline-secondary shadow-sm rounded">
+                <i class="bi bi-trash"></i> Trashed Attributes
+            </a>
+            
+        </div>
+
+        @if ($attributes->count())
+            <table class="table table-bordered table-striped table-hover shadow-sm rounded">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Is Variant</th>
+                        <th>Active</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($attributes as $attribute)
                         <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Tên thuộc tính</th>
-                            <th scope="col">Loại</th>
-                            <th scope="col">Số giá trị</th>
-                            <th scope="col">Trạng thái</th>
-                            <th scope="col">Thao tác</th>
+                            <td>{{ $attribute->id }}</td>
+                            <td>{{ $attribute->name }}</td>
+                            <td>{{ $attribute->is_variant ? 'Yes' : 'No' }}</td>
+                            <td>{{ $attribute->is_active ? 'Active' : 'Inactive' }}</td>
+                            <td>{{ $attribute->created_at ? $attribute->created_at->format('Y-m-d') : '-' }}</td>
+                            <td>
+                                <a href="{{ route('admin.attribute_values.index', $attribute->id) }}"
+                                    class="btn btn-outline-primary btn-sm shadow-sm rounded" title="Manage Values">
+                                    <i class="bi bi-list-check"></i>
+                                </a>
+                                <a href="{{ route('admin.attributes.edit', $attribute->id) }}"
+                                    class="btn btn-warning btn-sm shadow-sm rounded" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ route('admin.attributes.destroy', $attribute->id) }}" method="POST"
+                                    style="display:inline-block"
+                                    onsubmit="return confirm('Are you sure you want to delete this attribute?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm shadow-sm rounded" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($attributes as $attribute)
-                            <tr>
-                                <td>{{ $attribute->id }}</td>
-                                <td>{{ $attribute->name }}</td>
-                                <td>
-                                    <span class="badge bg-info">
-                                        {{ $attribute->type === 'select' ? 'Lựa chọn' : 'Văn bản' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="{{ route('admin.attributes.values', $attribute) }}" 
-                                       class="text-decoration-none">
-                                        {{ $attribute->values_count }} giá trị
-                                    </a>
-                                </td>
-                                <td>
-                                    @if($attribute->is_active)
-                                        <span class="badge bg-success">Đang hoạt động</span>
-                                    @else
-                                        <span class="badge bg-danger">Đã vô hiệu</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{{ route('admin.attributes.values', $attribute) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-list"></i>
-                                        </a>
-                                        <a href="{{ route('admin.attributes.edit', $attribute) }}" 
-                                           class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-danger"
-                                                onclick="confirmDelete({{ $attribute->id }})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <div class="text-muted">Chưa có thuộc tính nào</div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-end mt-3">
-                {{ $attributes->links() }}
-            </div>
-        </div>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>No attributes found.</p>
+        @endif
     </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Xác nhận xóa</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa thuộc tính này?</p>
-                <p class="text-muted mb-0">Hành động này không thể hoàn tác.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <form id="deleteForm" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Xóa</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script>
-    function confirmDelete(id) {
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const form = document.getElementById('deleteForm');
-        form.action = `/admin/attributes/${id}`;
-        modal.show();
-    }
-</script>
-@endpush
-
-@endsection 
+@endsection
