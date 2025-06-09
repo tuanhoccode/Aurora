@@ -68,15 +68,15 @@ class ProductController extends Controller
         $categories = Category::where('is_active', 1)->get();
         $brands = Brand::where('is_active', 1)->get();
         $attributes = Attribute::with('values')->where('is_active', 1)->get();
-        
+
         // Debug logging
         \Log::info('Debug attributes in create method:', [
             'attributes_count' => $attributes->count(),
             'attributes' => $attributes->toArray()
         ]);
-        
+
         $trashedCount = Product::onlyTrashed()->count();
-        
+
         return view('admin.products.create', compact('categories', 'brands', 'attributes', 'trashedCount'));
     }
 
@@ -137,7 +137,7 @@ class ProductController extends Controller
                         if ($attribute) {
                             // Lấy giá trị thuộc tính được chọn
                             $values = $request->input("attribute_values.{$attributeId}", []);
-                            
+
                             if ($attribute->type === 'select') {
                                 // Nếu là select, values là mảng id của attribute_values
                                 $product->attributes()->attach($attributeId, [
@@ -214,7 +214,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product->load([
-            'category', 
+            'category',
             'brand',
             'attributes.values',
             'variants.attributeValues'
@@ -228,9 +228,9 @@ class ProductController extends Controller
             'has_sizes' => !empty($product->sizes),
             'sizes_count' => is_array($product->sizes) ? count($product->sizes) : 0
         ]);
-        
+
         $trashedCount = Product::onlyTrashed()->count();
-        
+
         return view('admin.products.show', compact('product', 'trashedCount'));
     }
 
@@ -239,7 +239,7 @@ class ProductController extends Controller
         try {
             // Load the product manually instead of using route model binding
             $product = Product::with(['category', 'brand', 'attributes'])->findOrFail($id);
-            
+
             // Debug the loaded product
             \Log::info('Product loaded:', [
                 'id' => $product->id,
@@ -254,14 +254,14 @@ class ProductController extends Controller
             $brands = Brand::where('is_active', 1)->get();
             $attributes = Attribute::with('values')->where('is_active', 1)->get();
             $trashedCount = Product::onlyTrashed()->count();
-            
+
             return view('admin.products.edit', compact('product', 'categories', 'brands', 'attributes', 'trashedCount'));
         } catch (\Exception $e) {
             \Log::error('Error loading product:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return redirect()
                 ->route('admin.products.index')
                 ->with('error', 'Không thể tải thông tin sản phẩm. ' . $e->getMessage());
@@ -293,7 +293,7 @@ class ProductController extends Controller
                 if ($product->thumbnail) {
                     Storage::disk('public')->delete($product->thumbnail);
                 }
-                
+
                 $file = $request->file('thumbnail');
                 $filename = 'PRD-' . Str::slug($validated['name']) . '-' . time() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('products', $filename, 'public');
@@ -303,7 +303,7 @@ class ProductController extends Controller
             // Cập nhật slug nếu tên thay đổi
             if ($product->name !== $validated['name']) {
                 $validated['slug'] = Str::slug($validated['name']);
-                
+
                 // Kiểm tra và tạo slug duy nhất
                 $counter = 1;
                 $originalSlug = $validated['slug'];
@@ -322,7 +322,7 @@ class ProductController extends Controller
             if ($request->type === 'variant') {
                 // Xóa tất cả thuộc tính cũ
                 $product->attributes()->detach();
-                
+
                 $sizes = [];
                 $colors = [];
 
@@ -334,7 +334,7 @@ class ProductController extends Controller
                         if ($attribute) {
                             // Lấy giá trị thuộc tính được chọn
                             $values = $request->input("attribute_values.{$attributeId}", []);
-                            
+
                             if ($attribute->type === 'select') {
                                 // Nếu là select, values là mảng id của attribute_values
                                 $product->attributes()->attach($attributeId, [
@@ -450,7 +450,7 @@ class ProductController extends Controller
             ->with(['category', 'brand'])
             ->orderBy('deleted_at', 'desc')
             ->paginate(10);
-            
+
         $trashedCount = Product::onlyTrashed()->count();
 
         return view('admin.products.trash', compact('trashedProducts', 'trashedCount'));
@@ -497,7 +497,7 @@ class ProductController extends Controller
         try {
             $ids = $request->input('ids', []);
             $status = $request->input('status');
-            
+
             if (empty($ids)) {
                 return response()->json([
                     'error' => 'Vui lòng chọn ít nhất một sản phẩm'
@@ -562,12 +562,12 @@ class ProductController extends Controller
     {
         try {
             $product = Product::onlyTrashed()->findOrFail($id);
-            
+
             // Xóa ảnh sản phẩm nếu có
             if ($product->thumbnail) {
                 Storage::disk('public')->delete($product->thumbnail);
             }
-            
+
             $product->forceDelete();
 
             return redirect()

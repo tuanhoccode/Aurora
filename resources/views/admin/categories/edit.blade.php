@@ -150,4 +150,4 @@
         });
     });
 </script>
-@endpush 
+@endpush
