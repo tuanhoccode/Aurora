@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
+use App\Http\Requests\Admin\CategoryRequest;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
-class BrandController extends Controller
+class CategoryController extends Controller
 {
     public function index(Request $request)
     {
@@ -17,7 +16,7 @@ class BrandController extends Controller
         $sortBy = $request->input('sort_by', 'created_at'); // Mặc định sắp xếp theo ngày tạo
         $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
 
-        $brands = Brand::query()
+        $categories = Category::query()
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
             })
@@ -25,34 +24,39 @@ class BrandController extends Controller
                 $query->where('is_active', $request->status);
             })
             ->orderBy($sortBy, $sortDir)
+            ->with('parent') // Eager load quan hệ parent
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        return view('admin.brands.index', compact('brands', 'sortBy', 'sortDir'));
+        return view('admin.category.index', compact('categories', 'sortBy', 'sortDir'));
     }
 
     public function create()
     {
-        return view('admin.brands.create');
+        $categories = Category::active()->get();
+        return view('admin.category.create', compact('categories'));
     }
 
-    public function store(Request $request)
+    public function show(Category $category)
+    {
+        return view('admin.category.show', compact('category'));
+    }
+
+    public function store(CategoryRequest $request)
     {
         try {
-            $data = $this->validateBrand($request);
+            $data = $request->validated();
 
-            // Xử lý upload logo
-            if ($request->hasFile('logo')) {
-                $data['logo'] = $request->file('logo')->store('brands', 'public');
+            // Xử lý upload ảnh
+            if ($request->hasFile('icon')) {
+                $data['icon'] = $request->file('icon')->store('categories', 'public');
             }
 
-            $validated['is_active'] = $request->has('is_active');
-
-            Brand::create($data);
+            Category::create($data);
 
             return redirect()
-                ->route('admin.brands.index')
-                ->with('success', 'Thêm thương hiệu thành công');
+                ->route('admin.categories.index')
+                ->with('success', 'Thêm danh mục thành công');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -61,37 +65,33 @@ class BrandController extends Controller
         }
     }
 
-    public function show(Brand $brand)
+    public function edit(Category $category)
     {
-        return view('admin.brands.show', compact('brand'));
+        $categories = Category::active()
+            ->where('id', '!=', $category->id)
+            ->get();
+        return view('admin.category.edit', compact('category', 'categories'));
     }
 
-    public function edit(Brand $brand)
-    {
-        return view('admin.brands.edit', compact('brand'));
-    }
-
-    public function update(Request $request, Brand $brand)
+    public function update(CategoryRequest $request, Category $category)
     {
         try {
-            $data = $this->validateBrand($request, $brand);
+            $data = $request->validated();
 
-            // Xử lý upload logo mới
-            if ($request->hasFile('logo')) {
-                // Xóa logo cũ nếu có
-                if ($brand->logo) {
-                    Storage::disk('public')->delete($brand->logo);
+            // Xử lý upload ảnh mới
+            if ($request->hasFile('icon')) {
+                // Xóa ảnh cũ nếu có
+                if ($category->icon) {
+                    Storage::disk('public')->delete($category->icon);
                 }
-                $data['logo'] = $request->file('logo')->store('brands', 'public');
+                $data['icon'] = $request->file('icon')->store('categories', 'public');
             }
 
-            $validated['is_active'] = $request->has('is_active');
-
-            $brand->update($data);
+            $category->update($data);
 
             return redirect()
-                ->route('admin.brands.index')
-                ->with('success', 'Cập nhật thương hiệu thành công');
+                ->route('admin.categories.index')
+                ->with('success', 'Cập nhật danh mục thành công');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -100,13 +100,13 @@ class BrandController extends Controller
         }
     }
 
-    public function destroy(Brand $brand)
+    public function destroy(Category $category)
     {
         try {
-            $brand->delete();
+            $category->delete();
             return redirect()
-                ->route('admin.brands.index')
-                ->with('success', 'Đã chuyển thương hiệu vào thùng rác');
+                ->route('admin.categories.index')
+                ->with('success', 'Đã chuyển danh mục vào thùng rác');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -120,7 +120,7 @@ class BrandController extends Controller
         $sortBy = $request->input('sort_by', 'deleted_at'); // Mặc định sắp xếp theo ngày xóa
         $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
 
-        $brands = Brand::onlyTrashed()
+        $trashedCategories = Category::onlyTrashed()
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
             })
@@ -128,20 +128,20 @@ class BrandController extends Controller
                 $query->where('is_active', $request->status);
             })
             ->orderBy($sortBy, $sortDir)
-            ->get();
+            ->paginate(10);
 
-        return view('admin.brands.trash', compact('brands', 'sortBy', 'sortDir'));
+        return view('admin.category.trash', compact('trashedCategories', 'sortBy', 'sortDir'));
     }
 
     public function restore($id)
     {
         try {
-            $brand = Brand::onlyTrashed()->findOrFail($id);
-            $brand->restore();
+            $category = Category::onlyTrashed()->findOrFail($id);
+            $category->restore();
 
             return redirect()
-                ->route('admin.brands.trash')
-                ->with('success', 'Khôi phục thương hiệu thành công');
+                ->route('admin.categories.trash')
+                ->with('success', 'Khôi phục danh mục thành công');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -152,18 +152,18 @@ class BrandController extends Controller
     public function forceDelete($id)
     {
         try {
-            $brand = Brand::onlyTrashed()->findOrFail($id);
+            $category = Category::onlyTrashed()->findOrFail($id);
             
-            // Xóa logo nếu có
-            if ($brand->logo) {
-                Storage::disk('public')->delete($brand->logo);
+            // Xóa ảnh nếu có
+            if ($category->icon) {
+                Storage::disk('public')->delete($category->icon);
             }
             
-            $brand->forceDelete();
+            $category->forceDelete();
 
             return redirect()
-                ->route('admin.brands.trash')
-                ->with('success', 'Xóa thương hiệu vĩnh viễn thành công');
+                ->route('admin.categories.trash')
+                ->with('success', 'Xóa danh mục vĩnh viễn thành công');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -181,7 +181,7 @@ class BrandController extends Controller
                 ], 400);
             }
 
-            Brand::whereIn('id', $ids)->delete();
+            Category::whereIn('id', $ids)->delete();
 
             return response()->json([
                 'success' => 'Đã chuyển các thương hiệu đã chọn vào thùng rác'
@@ -203,13 +203,13 @@ class BrandController extends Controller
                 ], 400);
             }
 
-            $brands = Brand::onlyTrashed()->whereIn('id', $ids)->get();
+            $categories = Category::onlyTrashed()->whereIn('id', $ids)->get();
             
-            foreach ($brands as $brand) {
-                if ($brand->logo) {
-                    Storage::disk('public')->delete($brand->logo);
+            foreach ($categories as $category) {
+                if ($category->icon) {
+                    Storage::disk('public')->delete($category->icon);
                 }
-                $brand->forceDelete();
+                $category->forceDelete();
             }
 
             return response()->json([
@@ -228,16 +228,16 @@ class BrandController extends Controller
             $ids = $request->input('ids', []);
             if (empty($ids)) {
                 return response()->json([
-                    'error' => 'Vui lòng chọn ít nhất một thương hiệu'
+                    'error' => 'Vui lòng chọn ít nhất một danh mục'
                 ], 400);
             }
 
-            Brand::onlyTrashed()
+            Category::onlyTrashed()
                 ->whereIn('id', $ids)
                 ->restore();
 
             return response()->json([
-                'success' => 'Khôi phục các thương hiệu đã chọn thành công'
+                'success' => 'Khôi phục các danh mục đã chọn thành công'
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -246,13 +246,33 @@ class BrandController extends Controller
         }
     }
 
+    // Thêm phương thức toggle status cho một danh mục
+    public function toggleStatus(Category $category)
+    {
+        try {
+            $category->update([
+                'is_active' => !$category->is_active
+            ]);
+
+            return response()->json([
+                'success' => 'Cập nhật trạng thái thành công',
+                'new_status' => $category->is_active
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Đã có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Thêm phương thức bulk toggle status
     public function bulkToggle(Request $request)
     {
         try {
             $ids = $request->input('ids', []);
             if (empty($ids)) {
                 return response()->json([
-                    'error' => 'Vui lòng chọn ít nhất một thương hiệu'
+                    'error' => 'Vui lòng chọn ít nhất một danh mục'
                 ], 400);
             }
 
@@ -263,10 +283,10 @@ class BrandController extends Controller
                 ], 400);
             }
 
-            Brand::whereIn('id', $ids)->update(['is_active' => $status]);
+            Category::whereIn('id', $ids)->update(['is_active' => $status]);
 
             return response()->json([
-                'success' => 'Cập nhật trạng thái các thương hiệu đã chọn thành công'
+                'success' => 'Cập nhật trạng thái các danh mục đã chọn thành công'
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -274,43 +294,4 @@ class BrandController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Bulk toggle status for multiple brands
-     */
-    public function bulkToggleStatus(Request $request)
-    {
-        try {
-            $ids = $request->ids;
-            $status = $request->status;
-            
-            Brand::whereIn('id', $ids)->update(['is_active' => $status]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Cập nhật trạng thái thành công'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Có lỗi xảy ra khi cập nhật trạng thái'
-            ], 500);
-        }
-    }
-
-    protected function validateBrand(Request $request, Brand $brand = null)
-    {
-        return $request->validate([
-            'name' => 'required|string|max:255|unique:brands,name,' . ($brand ? $brand->id : ''),
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'nullable'
-        ]);
-    }
-
-    protected function deleteLogoFileIfExists($path)
-    {
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
-    }
-}
+} 

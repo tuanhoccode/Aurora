@@ -42,7 +42,6 @@
                                            id="name" 
                                            class="form-control @error('name') is-invalid @enderror" 
                                            value="{{ old('name') }}" 
-                                           required 
                                            maxlength="100" 
                                            placeholder="Nhập tên thương hiệu">
                                     @error('name')
@@ -54,8 +53,7 @@
                                     <label for="is_active" class="form-label fw-bold">Trạng thái <span class="text-danger">*</span></label>
                                     <select name="is_active" 
                                             id="is_active" 
-                                            class="form-select @error('is_active') is-invalid @enderror" 
-                                            required>
+                                            class="form-select @error('is_active') is-invalid @enderror">
                                         <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Đang hoạt động</option>
                                         <option value="0" {{ old('is_active', 1) == 0 ? 'selected' : '' }}>Không hoạt động</option>
                                     </select>
@@ -71,8 +69,7 @@
                                        name="logo" 
                                        id="logo" 
                                        class="form-control @error('logo') is-invalid @enderror"
-                                       accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
-                                       onchange="previewImage(this)">
+                                       accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
                                 <div class="form-text">
                                     Định dạng: JPG, JPEG, PNG, GIF, WEBP. Kích thước tối đa: 2MB
                                 </div>
@@ -88,10 +85,6 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-1"></i> Thêm mới
                                 </button>
-                                {{-- Nút quay lại đã chuyển lên card header --}}
-                                {{-- <a href="{{ route('admin.brands.index') }}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i> Quay lại
-                                </a> --}}
                             </div>
                         </form>
                     </div>
@@ -99,50 +92,4 @@
             </div>
         </div>
     </div>
-
-    @push('scripts')
-    <script>
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            const previewImg = preview.querySelector('img');
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.classList.remove('d-none');
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.classList.add('d-none');
-                previewImg.src = '';
-            }
-        }
-
-        // Validate form trước khi submit
-        document.getElementById('createBrandForm').addEventListener('submit', function(e) {
-            const logoInput = document.getElementById('logo');
-            const file = logoInput.files[0];
-            
-            if (file) {
-                // Kiểm tra kích thước file (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    e.preventDefault();
-                    alert('Kích thước file không được vượt quá 2MB');
-                    return;
-                }
-                
-                // Kiểm tra định dạng file
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-                if (!allowedTypes.includes(file.type)) {
-                    e.preventDefault();
-                    alert('Định dạng file không hợp lệ. Chỉ chấp nhận: JPG, JPEG, PNG, GIF, WEBP');
-                    return;
-                }
-            }
-        });
-    </script>
-    @endpush
 @endsection
