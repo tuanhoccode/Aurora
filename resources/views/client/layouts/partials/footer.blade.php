@@ -107,7 +107,7 @@
                         <div class="col-md-6">
                            <div class="tp-footer-payment text-md-end">
                               <p>
-                                 <img src="{{asset('assets/img/footer/footer-pay-2.png')}}" alt="">
+                                 <img src="{{asset('assets2/img/footer/footer-pay-2.png')}}" alt="">
                               </p>
                            </div>
                         </div>

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AdminLoginRequest extends FormRequest
+class ClientRegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,15 +22,18 @@ class AdminLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
+            'fullname' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6'
-        ];  
+        ];
     }
-     public function messages(): array
+    public function messages(): array
     {
         return
             [
-                
+                'fullname.required' => 'Vui lòng nhập lại tên',
+                'fullname.string' => 'Họ tên không hợp lệ',
+                'fullname.max' => 'Họ tên tối đa 100 ký tự',
 
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
@@ -39,8 +42,8 @@ class AdminLoginRequest extends FormRequest
                 'password.required' => 'Vui lòng nhập mật khẩu',
                 'password.string' => 'Mật khẩu không hợp lệ',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
-                
-                
+
+
             ];
     }
 }

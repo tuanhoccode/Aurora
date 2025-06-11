@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
+use App\Http\Controllers\Client\Auth\LoginController;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
@@ -123,4 +124,6 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
 
 //Client
-Route::get('/register', [RegisterController::class, 'index'])-> name('index');
+Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
+Route::post('/register', [RegisterController::class, 'register'])-> name('register.post');
+Route::get('/login', [LoginController::class, 'showLogin'])-> name('showLogin');
