@@ -9,8 +9,14 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Client\Auth\RegisterController;
 
-
+//Auth Admin
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+//Admin
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -113,3 +119,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
     });
 });
+
+
+
+//Client
+Route::get('/register', [RegisterController::class, 'index'])-> name('index');

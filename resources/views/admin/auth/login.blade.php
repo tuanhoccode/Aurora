@@ -7,7 +7,7 @@
 <head>
     <!-- Title Meta -->
     <meta charset="utf-8" />
-    <title>Sign In | Larkon - Responsive Admin Dashboard Template</title>
+    <title>Đăng nhập | Larkon - Responsive Admin Dashboard Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -55,9 +55,9 @@
                                     </a>
                                 </div>
 
-                                <h2 class="fw-bold fs-24">Sign In</h2>
+                                <h2 class="fw-bold fs-24">Đăng Nhập</h2>
 
-                                <p class="text-muted mt-1 mb-4">Enter your email address and password to access admin panel.</p>
+                                <p class="text-muted mt-1 mb-4">Nhập địa chỉ email và mật khẩu của bạn để truy cập vào bảng quản trị.</p>
 
                                 <div class="mb-5">
                                     <form action="{{route('admin.login')}}" class="authentication-form" method="POST">
@@ -71,8 +71,8 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Reset password</a>
-                                            <label class="form-label" for="password">Password</label>
+                                            <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Quên mật khẩu</a>
+                                            <label class="form-label" for="password">Mật khẩu</label>
                                             <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" value="{{old('password')}}">
                                             @error('password')
                                             <div class="error">{{$message}}</div>
@@ -87,7 +87,7 @@
                                         </div>
 
                                         <div class="mb-1 text-center d-grid">
-                                            <button class="btn btn-soft-primary" type="submit">Sign In</button>
+                                            <button class="btn btn-soft-primary" type="submit">Đăng nhập</button>
                                         </div>
                                     </form>
 
