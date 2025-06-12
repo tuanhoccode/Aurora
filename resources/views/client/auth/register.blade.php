@@ -41,7 +41,7 @@
             <div class="tp-login-wrapper">
                <div class="tp-login-top text-center mb-30">
                   <h3 class="tp-login-title">Đăng ký Aurora.</h3>
-                  <p>Bạn đã có tài khoản? <span><a href="login.html">Đăng nhập</a></span></p>
+                  <p>Bạn đã có tài khoản? <span><a href="{{route('showLogin')}}">Đăng nhập</a></span></p>
                </div>
 
                <form action="{{route('register.post')}}" method="post">
@@ -50,18 +50,18 @@
                      <div class="tp-login-social mb-10 d-flex flex-wrap align-items-center justify-content-center">
                         <div class="tp-login-option-item has-google">
                            <a href="#">
-                              <img src="assets2/img/icon/login/google.svg" alt="">
+                              <img src="{{asset('assets2/img/icon/login/google.svg')}}" alt="">
                               Sign up with google
                            </a>
                         </div>
                         <div class="tp-login-option-item">
                            <a href="#">
-                              <img src="assets2/img/icon/login/facebook.svg" alt="">
+                              <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
                            </a>
                         </div>
                         <div class="tp-login-option-item">
                            <a href="#">
-                              <img class="apple" src="assets2/img/icon/login/apple.svg" alt="">
+                              <img class="apple" src="{{asset('assets2/img/icon/login/apple.svg')}}" alt="">
                            </a>
                         </div>
                      </div>

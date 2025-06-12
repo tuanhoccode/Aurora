@@ -64,7 +64,7 @@
                                         @csrf
                                         <div class="mb-3">
                                             <label class="form-label" for="example-email">Email</label>
-                                            <input type="email" id="email" name="email" class="form-control bg-" placeholder="Enter your email" value="{{old('email')}}">
+                                            <input type="email" id="email" name="email" class="form-control bg-" placeholder="Nhập email của bạn" value="{{old('email')}}">
                                             @error('email')
                                             <div class="error">{{$message}}</div>
                                             @enderror
@@ -73,7 +73,7 @@
                                         <div class="mb-3">
                                             <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Quên mật khẩu</a>
                                             <label class="form-label" for="password">Mật khẩu</label>
-                                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" value="{{old('password')}}">
+                                            <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu của bạn" value="{{old('password')}}">
                                             @error('password')
                                             <div class="error">{{$message}}</div>
                                             @enderror
@@ -94,8 +94,8 @@
                                     <p class="mt-3 fw-semibold no-span">OR sign with</p>
 
                                     <div class="d-grid gap-2">
-                                        <a href="javascript:void(0);" class="btn btn-soft-dark"><i class="bx bxl-google fs-20 me-1"></i> Sign in with Google</a>
-                                        <a href="javascript:void(0);" class="btn btn-soft-primary"><i class="bx bxl-facebook fs-20 me-1"></i> Sign in with Facebook</a>
+                                        <a href="javascript:void(0);" class="btn btn-soft-dark"><i class="bx bxl-google fs-20 me-1"></i> Đăng nhập bằng Google</a>
+                                        <a href="javascript:void(0);" class="btn btn-soft-primary"><i class="bx bxl-facebook fs-20 me-1"></i> Đăng nhập bằng Facebook</a>
                                     </div>
                                 </div>
 
@@ -105,10 +105,13 @@
                     </div>
                 </div>
 
-                <div class="col-xxl-5 d-none d-xxl-flex">
-                    <div class="card h-100 mb-0 overflow-hidden">
+                <div class="col-xxl-5 d-none d-xxl-flex justify-content-center align-items-center">
+                    <div class="card mb-0 overflow-hidden" style="width: 100%; height: 100vh;">
                         <div class="d-flex flex-column h-100">
-                            <img src="{{asset('assets1/images/small/img-1.jpg')}}" alt="" class="w-100 h-100">
+                            <img src="{{ asset('assets1/images/small/img-1.jpg') }}"
+                                alt="Hình ảnh"
+                                class="img-fluid"
+                                style="object-fit: cover; width: 100%; height: 100%;">
                         </div>
                     </div>
                 </div>

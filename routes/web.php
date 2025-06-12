@@ -124,6 +124,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
 
 //Client
+Route::get('/', function () {
+    return view('client.home');
+})->name('home');
 Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
 Route::post('/register', [RegisterController::class, 'register'])-> name('register.post');
 Route::get('/login', [LoginController::class, 'showLogin'])-> name('showLogin');
+Route::post('/login', [LoginController::class, 'login'])-> name('login.post');
+Route::post('/logout', [LoginController::class, 'logout'])-> name('logout');
