@@ -15,7 +15,9 @@ class AdminLoginController extends Controller
 
     public function login(AdminLoginRequest $request){
         $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials)) {
+        //Kiểm tra xem remember có được chọn k
+        $remember = $request->filled('remember');
+        if (Auth::attempt($credentials, $remember)) {
             // dd(Auth::user()->role);
             if (Auth::user()->role !== 'admin') {
                 Auth::logout();

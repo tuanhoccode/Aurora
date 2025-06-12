@@ -106,7 +106,7 @@
                   </div>
                   <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-between mb-20">
                      <div class="tp-login-remeber">
-                        <input id="remeber" type="checkbox">
+                        <input id="remeber" type="checkbox" name="remember">
                         <label for="remeber">Remember me</label>
                      </div>
                      <div class="tp-login-forgot">

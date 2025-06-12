@@ -15,7 +15,10 @@ class LoginController extends Controller
 
     public function login(ClientLoginRequest $req){
         $credentials = $req->only('email', 'password');
-        if (Auth::attempt($credentials)) {
+
+        //Kiểm tra xem remember có được chọn k
+        $remember = $req->filled('remember');
+        if (Auth::attempt($credentials, $remember )) {
            return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
         }
         return back() -> withErrors(['email' => 'Email hoặc mật khẩu chưa chính xác! '])->withInput();
