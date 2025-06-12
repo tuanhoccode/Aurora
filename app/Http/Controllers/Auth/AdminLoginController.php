@@ -25,7 +25,7 @@ class AdminLoginController extends Controller
                 
             }
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('admin.dashboard'))->with('success', 'Đăng nhập thành công!');
 
         }
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
@@ -35,6 +35,6 @@ class AdminLoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.login')->with('success', 'Đăng xuất thành công!');
     }
 }

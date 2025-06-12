@@ -21,7 +21,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember )) {
            return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
         }
-        return back() -> withErrors(['email' => 'Email hoặc mật khẩu chưa chính xác! '])->withInput();
+        return back() -> with(['error' => 'Email hoặc mật khẩu chưa chính xác! '])->withInput();
     }
 
     public function logout(Request $req){

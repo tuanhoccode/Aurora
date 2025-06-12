@@ -23,9 +23,17 @@
    <link rel="stylesheet" href="{{asset('assets2/css/flaticon_shofy.css')}}">
    <link rel="stylesheet" href="{{asset('assets2/css/spacing.css')}}">
    <link rel="stylesheet" href="{{asset('assets2/css/main.css')}}">
+
+   <!-- Toastr CSS -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+   <!-- jQuery + Toastr JS (trước </body>) -->
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 </head>
 
-<body>  
+<body>
    <!--[if lte IE 9]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
       <![endif]-->
@@ -3804,7 +3812,25 @@
    <!-- footer area start -->
    @include('client.layouts.partials.footer')
    <!-- footer area end -->
+   @if (session('success'))
+   <script>
+      toastr.options = {
+         "positionClass": "toast-top-right",
+         "timeOut": 3000
+      };
+      toastr.success(@json(session('success')));
+   </script>
+   @endif
 
+   @if (session('error'))
+   <script>
+      toastr.options = {
+         "positionClass": "toast-top-right",
+         "timeOut": 3000
+      };
+      toastr.error(@json(session('error')));
+   </script>
+   @endif
 
 
    <!-- JS here -->

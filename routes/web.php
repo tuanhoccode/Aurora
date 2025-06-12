@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use App\Http\Controllers\Client\Auth\LoginController;
+use App\Http\Controllers\Client\ErrorController;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
@@ -132,3 +133,4 @@ Route::post('/register', [RegisterController::class, 'register'])-> name('regist
 Route::get('/login', [LoginController::class, 'showLogin'])-> name('showLogin');
 Route::post('/login', [LoginController::class, 'login'])-> name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])-> name('logout');
+Route::fallback([ErrorController::class, 'notFound']);
