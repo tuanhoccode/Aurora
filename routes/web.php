@@ -13,6 +13,9 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\ErrorController;
+use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\ResetPasswordController;
+
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
@@ -128,9 +131,20 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 Route::get('/', function () {
     return view('client.home');
 })->name('home');
+//login & registerregister
 Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
 Route::post('/register', [RegisterController::class, 'register'])-> name('register.post');
 Route::get('/login', [LoginController::class, 'showLogin'])-> name('showLogin');
 Route::post('/login', [LoginController::class, 'login'])-> name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])-> name('logout');
+//404
 Route::fallback([ErrorController::class, 'notFound']);
+//reset password nhập email
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
+
+//form nhập mk mới
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+

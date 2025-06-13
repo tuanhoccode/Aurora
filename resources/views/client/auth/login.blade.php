@@ -110,7 +110,7 @@
                         <label for="remeber">Remember me</label>
                      </div>
                      <div class="tp-login-forgot">
-                        <a href="forgot.html">Quên mật khẩu?</a>
+                        <a href="{{route('password.request')}}">Quên mật khẩu?</a>
                      </div>
                   </div>
                   <div class="tp-login-bottom">
