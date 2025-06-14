@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">Thùng rác sản phẩm</h1>
-            <p class="mb-0 text-muted">Quản lý các sản phẩm đã xóa tạm thời</p>
+            <p class="mb-0 text-muted">Quản lý các sản phẩm đã xóa tạm thởi</p>
         </div>
         <div>
             <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
@@ -16,6 +16,21 @@
             </a>
         </div>
     </div>
+
+    {{-- Alert Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
+            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     {{-- Bulk Actions --}}
     <div class="mb-3 bulk-actions" style="display: none;">
@@ -47,9 +62,9 @@
                             <th>Loại</th>
                             <th>Mã SP</th>
                             <th>Danh mục</th>
+                            <th>Thương hiệu</th>
                             <th>Giá bán</th>
                             <th>Tồn kho</th>
-                            <th>Biến thể</th>
                             <th>Ngày xóa</th>
                             <th width="120">Thao tác</th>
                         </tr>
@@ -77,18 +92,27 @@
                                 <small class="text-muted d-block">{{ Str::limit($product->short_description, 100) }}</small>
                             </td>
                             <td>
-                                <span class="badge {{ $product->type === 'variant' ? 'bg-info' : 'bg-secondary' }}">
-                                    {{ $product->type === 'variant' ? 'Có biến thể' : 'Đơn giản' }}
+                                <span class="badge {{ $product->type === 'digital' ? 'bg-info' : 'bg-secondary' }}">
+                                    {{ $product->type === 'digital' ? 'Sản phẩm số' : 'Sản phẩm đơn giản' }}
                                 </span>
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">{{ $product->sku }}</span>
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark">{{ $product->category->name }}</span>
+                                @foreach($product->categories as $category)
+                                    <span class="badge bg-info text-white mb-1">{{ $category->name }}</span>
+                                @endforeach
                             </td>
                             <td>
-                                @if($product->sale_price)
+                                @if($product->brand)
+                                    <span class="badge bg-primary text-white">{{ $product->brand->name }}</span>
+                                @else
+                                    <span class="badge bg-light text-muted">Không có</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($product->is_sale)
                                     <div class="text-decoration-line-through text-muted small">{{ number_format($product->price) }}đ</div>
                                     <div class="text-danger fw-bold">{{ number_format($product->sale_price) }}đ</div>
                                     <small class="text-success">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100) }}%</small>
@@ -104,66 +128,21 @@
                                 </div>
                             </td>
                             <td>
-                                @if($product->type === 'variant')
-                                    @if($product->variants->count() > 0)
-                                        <span class="badge bg-success">{{ $product->variants->count() }} biến thể</span>
-                                        <button type="button" 
-                                                class="btn btn-sm btn-light border ms-1" 
-                                                data-bs-toggle="popover" 
-                                                data-bs-html="true"
-                                                data-bs-content="
-                                                    <div class='small'>
-                                                        @foreach($product->variants->take(5) as $variant)
-                                                            <div class='mb-1'>
-                                                                @foreach($variant->attributeValues as $value)
-                                                                    <span class='badge bg-light text-dark border'>
-                                                                        {{ $value->attribute->name }}: {{ $value->value }}
-                                                                    </span>
-                                                                @endforeach
-                                                            </div>
-                                                        @endforeach
-                                                        @if($product->variants->count() > 5)
-                                                            <div class='text-muted'>và {{ $product->variants->count() - 5 }} biến thể khác...</div>
-                                                        @endif
-                                                    </div>
-                                                ">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    @else
-                                        <span class="badge bg-warning">Chưa có biến thể</span>
-                                    @endif
-                                @else
-                                    <span class="badge bg-secondary">Không có</span>
-                                @endif
-                            </td>
-                            <td>
                                 {{ $product->deleted_at->format('d/m/Y H:i') }}
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <form action="{{ route('admin.products.restore', $product->id) }}" 
-                                          method="POST" 
-                                          class="d-inline"
-                                          onsubmit="return confirm('Bạn có chắc muốn khôi phục sản phẩm này?')">
-                                        @csrf
+                                    <form id="restoreForm{{ $product->id }}" action="{{ route('admin.products.restore', $product->id) }}" method="POST" class="d-inline">
                                         @method('PUT')
-                                        <button type="submit" 
-                                                class="btn btn-sm btn-success" 
-                                                data-bs-toggle="tooltip" 
-                                                title="Khôi phục">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Khôi phục">
                                             <i class="bi bi-arrow-counterclockwise"></i>
                                         </button>
                                     </form>
-                                    <form action="{{ route('admin.products.force-delete', $product->id) }}" 
-                                          method="POST" 
-                                          class="d-inline" 
-                                          onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn sản phẩm này?')">
+                                    <form action="{{ route('admin.products.force-delete', $product->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn sản phẩm này?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" 
-                                                class="btn btn-sm btn-danger" 
-                                                data-bs-toggle="tooltip" 
-                                                title="Xóa vĩnh viễn">
+                                        <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Xóa vĩnh viễn">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -216,115 +195,133 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
 
-    // Initialize popovers
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl, {
-            trigger: 'click',
-            placement: 'left'
-        })
-    });
-
-    // Close other popovers when opening a new one
-    document.addEventListener('click', function(e) {
-        if (e.target.getAttribute('data-bs-toggle') === 'popover') {
-            var currentPopover = e.target;
-            popoverTriggerList.forEach(function(el) {
-                if (el !== currentPopover) {
-                    var popover = bootstrap.Popover.getInstance(el);
-                    if (popover) {
-                        popover.hide();
-                    }
-                }
-            });
-        }
-    });
-
     // Select all checkbox
-    $('#selectAll').change(function() {
-        $('.product-checkbox').prop('checked', $(this).prop('checked'));
-        updateBulkActions();
-    });
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const productCheckboxes = document.querySelectorAll('.product-checkbox');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
 
-    // Individual checkbox
-    $('.product-checkbox').change(function() {
-        updateBulkActions();
+    // Individual checkboxes
+    productCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
     });
 });
 
 function updateBulkActions() {
-    var checkedCount = $('.product-checkbox:checked').length;
-    if (checkedCount > 0) {
-        $('.bulk-actions').show();
-        $('.selected-count').text(checkedCount);
-    } else {
-        $('.bulk-actions').hide();
+    const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+    const bulkActions = document.querySelector('.bulk-actions');
+    const selectedCountElements = document.querySelectorAll('.selected-count');
+    
+    if (bulkActions) {
+        if (checkedCount > 0) {
+            bulkActions.style.display = 'block';
+            selectedCountElements.forEach(element => {
+                element.textContent = checkedCount;
+            });
+        } else {
+            bulkActions.style.display = 'none';
+        }
+    }
+
+    // Update "Select All" checkbox state
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const totalCheckboxes = document.querySelectorAll('.product-checkbox').length;
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = checkedCount > 0 && checkedCount === totalCheckboxes;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCheckboxes;
     }
 }
 
 function getSelectedIds() {
-    return $('.product-checkbox:checked').map(function() {
-        return $(this).val();
-    }).get();
+    return Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.value);
 }
 
 function bulkRestore() {
-    var ids = getSelectedIds();
+    const ids = getSelectedIds();
     if (ids.length === 0) return;
 
-    $.ajax({
-        url: '{{ route("admin.products.bulk-restore") }}',
-        type: 'POST',
-        data: {
-            ids: ids,
-            _token: '{{ csrf_token() }}'
-        },
-        success: function(response) {
-            if (response.success) {
-                location.reload();
+    if (confirm(`Bạn có chắc muốn khôi phục ${ids.length} sản phẩm đã chọn?`)) {
+        fetch('{{ route("admin.products.bulk-restore") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ ids })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
             } else {
-                alert(response.error || 'Có lỗi xảy ra');
+                alert(data.error || 'Có lỗi xảy ra');
             }
-        },
-        error: function(xhr) {
-            alert('Có lỗi xảy ra: ' + xhr.responseJSON.error);
-        }
-    });
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    }
 }
 
 function confirmBulkDelete() {
-    var count = $('.product-checkbox:checked').length;
+    const count = document.querySelectorAll('.product-checkbox:checked').length;
     if (count === 0) return;
 
-    $('.selected-count').text(count);
-    new bootstrap.Modal(document.getElementById('bulkDeleteModal')).show();
+    const selectedCountElements = document.querySelectorAll('.selected-count');
+    selectedCountElements.forEach(element => {
+        element.textContent = count;
+    });
+    
+    const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+    modal.show();
 }
 
 function bulkForceDelete() {
-    var ids = getSelectedIds();
+    const ids = getSelectedIds();
     if (ids.length === 0) return;
 
-    $.ajax({
-        url: '{{ route("admin.products.bulk-force-delete") }}',
-        type: 'POST',
-        data: {
-            ids: ids,
-            _token: '{{ csrf_token() }}'
+    fetch('{{ route("admin.products.bulk-force-delete") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        success: function(response) {
-            location.reload();
-        },
-        error: function(xhr) {
-            alert('Có lỗi xảy ra: ' + xhr.responseJSON.error);
+        body: JSON.stringify({ ids })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Có lỗi xảy ra');
         }
+    })
+    .catch(error => {
+        alert('Có lỗi xảy ra: ' + error);
     });
+}
+
+function handleRestore(productId) {
+    if (confirm('Bạn có chắc muốn khôi phục sản phẩm này?')) {
+        const form = document.getElementById('restoreForm' + productId);
+        if (form) {
+            form.submit();
+        }
+    }
 }
 </script>
 @endpush

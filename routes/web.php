@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\Admin\ProductVariantController;
 
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -40,6 +41,13 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         // Toggle status
         Route::put('/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('toggle-status');
+
+        // Product Variants
+        Route::get('/{product}/variants/create', [ProductVariantController::class, 'create'])->name('variants.create');
+        Route::post('/{product}/variants', [ProductVariantController::class, 'store'])->name('variants.store');
+        Route::get('/{product}/variants/{variant}/edit', [ProductVariantController::class, 'edit'])->name('variants.edit');
+        Route::put('/{product}/variants/{variant}', [ProductVariantController::class, 'update'])->name('variants.update');
+        Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
@@ -97,11 +105,31 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     });
 
     // Attributes
-    Route::resource('attributes', AttributeController::class);
-    Route::get('attributes/trashed', [AttributeController::class, 'trashed'])->name('attributes.trashed');
-    Route::post('attributes/{id}/restore', [AttributeController::class, 'restore'])->name('attributes.restore');
-    Route::delete('attributes/{id}/force', [AttributeController::class, 'forceDelete'])->name('attributes.forceDelete');
-    Route::get('attributes/variants', [AttributeController::class, 'variants'])->name('attributes.variants');
+    Route::prefix('attributes')->name('attributes.')->group(function () {
+        // List và Form routes
+        Route::get('/', [AttributeController::class, 'index'])->name('index');
+        Route::get('/create', [AttributeController::class, 'create'])->name('create');
+        Route::post('/', [AttributeController::class, 'store'])->name('store');
+
+        // Quản lý thùng rác
+        Route::get('/trashed', [AttributeController::class, 'trashed'])->name('trashed');
+        Route::post('/{id}/restore', [AttributeController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force', [AttributeController::class, 'forceDelete'])->name('forceDelete');
+
+        // Bulk Actions
+        Route::post('/bulk-delete', [AttributeController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::post('/bulk-toggle', [AttributeController::class, 'bulkToggle'])->name('bulk-toggle');
+
+        // Resource routes
+        Route::get('/{attribute}', [AttributeController::class, 'show'])->name('show');
+        Route::get('/{attribute}/edit', [AttributeController::class, 'edit'])->name('edit');
+        Route::put('/{attribute}', [AttributeController::class, 'update'])->name('update');
+        Route::delete('/{attribute}', [AttributeController::class, 'destroy'])->name('destroy');
+
+        // Variants
+        Route::get('/variants', [AttributeController::class, 'variants'])->name('variants');
+    });
+
     // Attribute Values
     Route::prefix('attributes/{attributeId}/values')->name('attribute_values.')->group(function (): void {
         Route::get('/', [AttributeValueController::class, 'index'])->name('index');
@@ -111,5 +139,9 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::put('/{id}', [AttributeValueController::class, 'update'])->name('update');
         Route::delete('/{id}', [AttributeValueController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+
+        // Bulk Actions
+        Route::post('/bulk-delete', [AttributeValueController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
 });

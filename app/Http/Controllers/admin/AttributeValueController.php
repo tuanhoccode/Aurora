@@ -6,14 +6,35 @@ use App\Models\Attribute;
 use Illuminate\Http\Request;
 use App\Models\AttributeValue;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 
 class AttributeValueController extends Controller
 {
-        public function index($attributeId)
+    public function index(Request $request, $attributeId)
     {
         $attribute = Attribute::findOrFail($attributeId);
-        $values = AttributeValue::where('attribute_id', $attributeId)->withTrashed()->paginate(10);
-        return view('admin.attribute_values.index', compact('attribute', 'values'));
+        
+        $query = AttributeValue::where('attribute_id', $attributeId);
+
+        // Tìm kiếm
+        if ($request->has('search')) {
+            $query->where('value', 'like', '%' . $request->search . '%');
+        }
+
+        // Lọc theo trạng thái
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_active', $request->status);
+        }
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
+
+        $values = $query->withTrashed()->paginate(10);
+        $values->appends($request->all());
+
+        return view('admin.attribute_values.index', compact('attribute', 'values', 'sortBy', 'sortDir'));
     }
 
     public function create($attributeId)
@@ -81,5 +102,64 @@ class AttributeValueController extends Controller
 
         return redirect()->route('admin.attribute_values.index', $attributeId)
                          ->with('success', 'Giá trị thuộc tính đã được khôi phục.');
+    }
+
+    /**
+     * Xóa hàng loạt các giá trị thuộc tính
+     */
+    public function bulkDelete(Request $request, $attributeId): JsonResponse
+    {
+        $ids = $request->ids;
+        
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không có giá trị nào được chọn'
+            ]);
+        }
+
+        try {
+            AttributeValue::whereIn('id', $ids)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Các giá trị đã được xóa thành công'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Có lỗi xảy ra khi xóa các giá trị'
+            ]);
+        }
+    }
+
+    /**
+     * Thay đổi trạng thái hàng loạt các giá trị thuộc tính
+     */
+    public function bulkToggle(Request $request, $attributeId): JsonResponse
+    {
+        $ids = $request->ids;
+        $status = $request->status;
+        
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không có giá trị nào được chọn'
+            ]);
+        }
+
+        try {
+            AttributeValue::whereIn('id', $ids)->update(['is_active' => $status]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Trạng thái các giá trị đã được cập nhật thành công'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Có lỗi xảy ra khi cập nhật trạng thái'
+            ]);
+        }
     }
 }

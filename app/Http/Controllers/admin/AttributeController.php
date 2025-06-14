@@ -9,15 +9,39 @@ use Illuminate\Http\Request;
 class AttributeController extends Controller
 {
     /**
-     * Hiển thị danh sách thuộc tính đang hoạt động
+     * Hiển thị danh sách thuộc tính
      */
-    public function index()
+    public function index(Request $request)
     {
-        $attributes = Attribute::where('is_active', true)
-            ->whereNull('deleted_at')
-            ->get();
+        $query = Attribute::query();
 
-        return view('admin.attributes.index', compact('attributes'));
+        // Tìm kiếm theo tên
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'created_at'];
+        
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        $attributes = $query->paginate(10)->withQueryString();
+
+        return view('admin.attributes.index', [
+            'attributes' => $attributes,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir
+        ]);
     }
 
     /**
@@ -154,5 +178,57 @@ class AttributeController extends Controller
             ->get();
 
         return view('admin.attributes.variants', compact('variants'));
+    }
+
+    /**
+     * Xóa hàng loạt thuộc tính
+     */
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id'
+            ]);
+
+            $count = Attribute::whereIn('id', $validated['ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa thành công {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể xóa thuộc tính: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Thay đổi trạng thái hàng loạt
+     */
+    public function bulkToggle(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id',
+                'status' => 'required|boolean'
+            ]);
+
+            $count = Attribute::whereIn('id', $validated['ids'])
+                ->update(['is_active' => $validated['status']]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã cập nhật trạng thái {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể cập nhật trạng thái: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

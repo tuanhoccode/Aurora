@@ -28,21 +28,21 @@
                             </div>
                         @endif
 
-                        <form method="POST"
-                              action="{{ route('admin.categories.store') }}"
+                        <form method="POST" 
+                              action="{{ route('admin.categories.store') }}" 
                               enctype="multipart/form-data"
                               id="createCategoryForm">
                             @csrf
-
+                            
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label fw-bold">Tên danh mục <span class="text-danger">*</span></label>
-                                    <input type="text"
-                                           name="name"
-                                           id="name"
-                                           class="form-control @error('name') is-invalid @enderror"
-                                           value="{{ old('name') }}"
-                                           maxlength="100"
+                                    <input type="text" 
+                                           name="name" 
+                                           id="name" 
+                                           class="form-control @error('name') is-invalid @enderror" 
+                                           value="{{ old('name') }}" 
+                                           maxlength="100" 
                                            placeholder="Nhập tên danh mục">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -51,8 +51,8 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label for="parent_id" class="form-label fw-bold">Danh mục cha</label>
-                                    <select name="parent_id"
-                                            id="parent_id"
+                                    <select name="parent_id" 
+                                            id="parent_id" 
                                             class="form-select @error('parent_id') is-invalid @enderror">
                                         <option value="">Chọn danh mục cha</option>
                                         @foreach($categories as $category)
@@ -70,9 +70,9 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="icon" class="form-label fw-bold">Ảnh danh mục</label>
-                                    <input type="file"
-                                           name="icon"
-                                           id="icon"
+                                    <input type="file" 
+                                           name="icon" 
+                                           id="icon" 
                                            class="form-control @error('icon') is-invalid @enderror"
                                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
                                     <div class="form-text">
@@ -88,8 +88,8 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label for="is_active" class="form-label fw-bold">Trạng thái <span class="text-danger">*</span></label>
-                                    <select name="is_active"
-                                            id="is_active"
+                                    <select name="is_active" 
+                                            id="is_active" 
                                             class="form-select @error('is_active') is-invalid @enderror">
                                         <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Đang hoạt động</option>
                                         <option value="0" {{ old('is_active', 1) == 0 ? 'selected' : '' }}>Không hoạt động</option>
@@ -138,4 +138,4 @@
         });
     });
 </script>
-@endpush
+@endpush 

@@ -47,8 +47,8 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-gift"></i></span> Coupons
+            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-user-lock"></i></span> Roles & Permissions
             </a>
         </li>
         <hr>
