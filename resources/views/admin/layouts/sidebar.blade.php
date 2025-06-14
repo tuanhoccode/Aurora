@@ -33,10 +33,12 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.attributes*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
-                <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Attributes
+            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}"
+                href="{{ route('admin.attributes.index') }}">
+                <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Product Attributes
             </a>
         </li>
+
         <hr>
         <li class="sidebar-heading">Sales</li>
         <li>
@@ -45,25 +47,15 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-gift"></i></span> Coupons
+            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-user-lock"></i></span> Roles & Permissions
             </a>
         </li>
         <hr>
         <li class="sidebar-heading">Users</li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-users"></i></span> Customers
-            </a>
-        </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.admin_users*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-user-shield"></i></span> Admin Users
-            </a>
-        </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-user-lock"></i></span> Roles & Permissions
+         <li>
+            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                <span class="nav-icon"><i class="fas fa-users"></i></span> Users
             </a>
         </li>
         <hr>

@@ -2,55 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class Attribute extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
+
+    protected $table = 'attributes';
 
     protected $fillable = [
         'name',
-        'slug',
-        'type',
-        'is_active'
+        'is_variant',
+        'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_variant' => 'boolean',
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($attribute) {
-            $attribute->slug = $attribute->slug ?? Str::slug($attribute->name);
-        });
-
-        static::updating(function ($attribute) {
-            if ($attribute->isDirty('name') && !$attribute->isDirty('slug')) {
-                $attribute->slug = Str::slug($attribute->name);
-            }
-        });
-    }
 
     public function values()
     {
         return $this->hasMany(AttributeValue::class);
     }
-
-    public function products()
-    {
-        return $this->hasManyThrough(
-            Product::class,
-            AttributeValue::class,
-            'attribute_id',
-            'id',
-            'id',
-            'id'
-        );
-    }
-} 
+}

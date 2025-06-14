@@ -5,110 +5,230 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class AttributeController extends Controller
 {
-    public function index()
+    /**
+     * Hiển thị danh sách thuộc tính
+     */
+    public function index(Request $request)
     {
-        $attributes = Attribute::withCount('values')->latest()->paginate(10);
-        return view('admin.attributes.index', compact('attributes'));
+        $query = Attribute::query();
+
+        // Tìm kiếm theo tên
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'created_at'];
+        
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        $attributes = $query->paginate(10)->withQueryString();
+
+        return view('admin.attributes.index', [
+            'attributes' => $attributes,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir
+        ]);
     }
 
+    /**
+     * Hiển thị form tạo thuộc tính mới
+     */
     public function create()
     {
         return view('admin.attributes.create');
     }
 
+    /**
+     * Lưu thuộc tính mới
+     */
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:attributes',
-                'type' => 'required|in:select,text',
-                'is_active' => 'boolean'
+                'name' => 'required|string|max:255',
+                'is_variant' => 'nullable|integer|in:0,1',
+                'is_active' => 'nullable|integer|in:0,1',
             ]);
 
-            $validated['slug'] = Str::slug($validated['name']);
-            $validated['is_active'] = (bool) $request->input('is_active', false);
+            Attribute::create([
+                'name' => $validated['name'],
+                'is_variant' => (int) ($validated['is_variant'] ?? 0),
+                'is_active' => (int) ($validated['is_active'] ?? 0),
+            ]);
 
-            \Log::info('Validated data:', $validated);
-
-            $attribute = Attribute::create($validated);
-            
-            \Log::info('Created attribute:', $attribute->toArray());
-
-            return redirect()
-                ->route('admin.attributes.index')
-                ->with('success', 'Thuộc tính đã được tạo thành công!');
+            return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được tạo.');
         } catch (\Exception $e) {
-            \Log::error('Error creating attribute: ' . $e->getMessage());
-            return back()
-                ->withInput()
-                ->with('error', 'Có lỗi xảy ra khi tạo thuộc tính: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Không thể tạo thuộc tính: ' . $e->getMessage());
         }
     }
 
-    public function edit(Attribute $attribute)
+    /**
+     * Hiển thị chi tiết thuộc tính
+     */
+    public function show($id)
     {
+        $attribute = Attribute::findOrFail($id);
+        return view('admin.attributes.show', compact('attribute'));
+    }
+
+    /**
+     * Hiển thị form chỉnh sửa thuộc tính
+     */
+    public function edit($id)
+    {
+        $attribute = Attribute::findOrFail($id);
         return view('admin.attributes.edit', compact('attribute'));
     }
 
-    public function update(Request $request, Attribute $attribute)
+    /**
+     * Cập nhật thuộc tính
+     */
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:attributes,name,' . $attribute->id,
-            'type' => 'required|in:select,text',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            $attribute = Attribute::findOrFail($id);
 
-        $validated['slug'] = Str::slug($validated['name']);
-        $validated['is_active'] = (bool) $request->input('is_active', false);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'is_variant' => 'nullable|integer|in:0,1',
+                'is_active' => 'nullable|integer|in:0,1',
+            ]);
 
-        $attribute->update($validated);
+            $attribute->update([
+                'name' => $validated['name'],
+                'is_variant' => (int) ($validated['is_variant'] ?? 0),
+                'is_active' => (int) ($validated['is_active'] ?? 0),
+            ]);
 
-        return redirect()
-            ->route('admin.attributes.index')
-            ->with('success', 'Thuộc tính đã được cập nhật thành công!');
+            return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được cập nhật.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể cập nhật thuộc tính: ' . $e->getMessage());
+        }
     }
 
-    public function destroy(Attribute $attribute)
+    /**
+     * Xóa mềm thuộc tính
+     */
+    public function destroy($id)
     {
-        $attribute->delete();
+        try {
+            $attribute = Attribute::findOrFail($id);
+            $attribute->delete();
+            return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được xóa mềm.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể xóa thuộc tính: ' . $e->getMessage());
+        }
+    }
+    public function trashed()
+    {
+        $attributes = Attribute::onlyTrashed()->get();
 
-        return redirect()
-            ->route('admin.attributes.index')
-            ->with('success', 'Thuộc tính đã được xóa thành công!');
+        return view('admin.attributes.trashed', compact('attributes'));
+    }
+    public function restore($id)
+    {
+        try {
+            $attribute = Attribute::withTrashed()->findOrFail($id);
+            if ($attribute->trashed()) {
+                $attribute->restore();
+                return redirect()->route('admin.attributes.trashed')->with('success', 'Thuộc tính đã được khôi phục.');
+            }
+            return redirect()->route('admin.attributes.trashed')->with('error', 'Thuộc tính không bị xóa mềm.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể khôi phục thuộc tính: ' . $e->getMessage());
+        }
     }
 
-    public function values(Attribute $attribute)
+    /**
+     * Xóa vĩnh viễn thuộc tính
+     */
+    public function forceDelete($id)
     {
-        $values = $attribute->values()->paginate(10);
-        return view('admin.attributes.values', compact('attribute', 'values'));
+        try {
+            $attribute = Attribute::withTrashed()->findOrFail($id);
+            $attribute->forceDelete();
+            return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được xóa vĩnh viễn.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể xóa vĩnh viễn thuộc tính: ' . $e->getMessage());
+        }
     }
 
-    public function storeValue(Request $request, Attribute $attribute)
+    /**
+     * Hiển thị danh sách thuộc tính biến thể
+     */
+    public function variants()
     {
-        $validated = $request->validate([
-            'value' => 'required|string|max:255',
-            'color_code' => 'nullable|string|max:7'
-        ]);
+        $variants = Attribute::where('is_variant', true)
+            ->where('is_active', true)
+            ->whereNull('deleted_at')
+            ->get();
 
-        $validated['slug'] = Str::slug($validated['value']);
-
-        $attribute->values()->create($validated);
-
-        return redirect()
-            ->route('admin.attributes.values', $attribute)
-            ->with('success', 'Giá trị thuộc tính đã được thêm thành công!');
+        return view('admin.attributes.variants', compact('variants'));
     }
 
-    public function destroyValue(Attribute $attribute, $valueId)
+    /**
+     * Xóa hàng loạt thuộc tính
+     */
+    public function bulkDelete(Request $request)
     {
-        $attribute->values()->findOrFail($valueId)->delete();
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id'
+            ]);
 
-        return redirect()
-            ->route('admin.attributes.values', $attribute)
-            ->with('success', 'Giá trị thuộc tính đã được xóa thành công!');
+            $count = Attribute::whereIn('id', $validated['ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa thành công {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể xóa thuộc tính: ' . $e->getMessage()
+            ], 500);
+        }
     }
-} 
+
+    /**
+     * Thay đổi trạng thái hàng loạt
+     */
+    public function bulkToggle(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id',
+                'status' => 'required|boolean'
+            ]);
+
+            $count = Attribute::whereIn('id', $validated['ids'])
+                ->update(['is_active' => $validated['status']]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã cập nhật trạng thái {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể cập nhật trạng thái: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

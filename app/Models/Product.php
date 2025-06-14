@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
@@ -15,57 +16,89 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
+        'brand_id',
         'description',
         'short_description',
         'sku',
         'price',
         'sale_price',
-        'stock',
-        'thumbnail',
-        'brand_id',
-        'category_id',
-        'is_active',
-        'views',
         'type',
-        'sizes',
-        'colors'
+        'thumbnail',
+        'is_active',
+        'is_sale',
+        'views',
+        'stock',
+        'gallery',
+        'digital_file',
     ];
 
     protected $casts = [
-        'price' => 'float',
-        'sale_price' => 'float',
-        'stock' => 'integer',
+        'price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
+        'is_sale' => 'boolean',
         'is_active' => 'boolean',
         'views' => 'integer',
-        'sizes' => 'array',
-        'colors' => 'array'
+        'stock' => 'integer',
+        'gallery' => 'array',
     ];
 
     protected static function boot()
     {
         parent::boot();
 
+        // Tạo slug khi tạo mới sản phẩm
         static::creating(function ($product) {
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name);
+                // Kiểm tra xem slug đã tồn tại chưa
+                $count = 1;
+                while (Product::where('slug', $product->slug)->exists()) {
+                    $product->slug = Str::slug($product->name) . '-' . $count;
+                    $count++;
+                }
             }
         });
 
+        // Cập nhật slug khi tên sản phẩm thay đổi
         static::updating(function ($product) {
             if ($product->isDirty('name')) {
-                $product->slug = Str::slug($product->name);
+                $originalSlug = $product->getOriginal('slug');
+                $newSlug = Str::slug($product->name);
+                
+                // Kiểm tra xem slug đã tồn tại chưa
+                $count = 1;
+                while (Product::where('slug', $newSlug)->where('id', '!=', $product->id)->exists()) {
+                    $newSlug = Str::slug($product->name) . '-' . $count;
+                    $count++;
+                }
+                
+                $product->slug = $newSlug;
+            }
+        });
+
+        // Đảm bảo không xóa mềm sản phẩm khi cập nhật
+        static::updating(function ($product) {
+            if ($product->trashed()) {
+                $product->restore();
+            }
+        });
+
+        // Ngăn chặn xóa mềm khi cập nhật
+        static::updated(function ($product) {
+            if ($product->trashed()) {
+                $product->restore();
             }
         });
     }
 
-    public function brand()
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
 
-    public function category()
+    public function categories()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     public function variants()
@@ -136,8 +169,7 @@ class Product extends Model
 
     public function scopeOnSale($query)
     {
-        return $query->whereNotNull('sale_price')
-                    ->whereRaw('sale_price < price');
+        return $query->where('is_sale', true);
     }
 
     public function getImageUrlAttribute()

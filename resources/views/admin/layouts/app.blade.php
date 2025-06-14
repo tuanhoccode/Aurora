@@ -26,6 +26,12 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
     
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     @stack('styles')
     
     <style>
@@ -53,7 +59,7 @@
             top: 0;
             bottom: 0;
             z-index: 100;
-            background: linear-gradient(to bottom, #435ebe, #364574);
+            background: linear-gradient(180deg, #2B1B5C 0%, #B9275E 50%, #FF8C42 100%);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease-in-out;
             overflow-y: auto;
@@ -83,7 +89,7 @@
         }
 
         .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             padding: 0.7rem 1.2rem;
             margin: 0.2rem 0.8rem;
             border-radius: 0.5rem;
@@ -97,6 +103,7 @@
         .sidebar .nav-link.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
         }
 
         .sidebar .nav-icon {
@@ -106,7 +113,7 @@
         }
 
         .sidebar-heading {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.6);
             font-size: 0.8rem;
             font-weight: 600;
             padding: 1rem 1.5rem 0.5rem;

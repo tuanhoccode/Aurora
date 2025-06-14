@@ -2,35 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AttributeValue extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
+
+    protected $table = 'attribute_values';
 
     protected $fillable = [
         'attribute_id',
         'value',
-        'slug',
-        'color_code'
+        'is_active',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($value) {
-            $value->slug = $value->slug ?? Str::slug($value->value);
-        });
-
-        static::updating(function ($value) {
-            if ($value->isDirty('value') && !$value->isDirty('slug')) {
-                $value->slug = Str::slug($value->value);
-            }
-        });
-    }
+    protected $casts = [
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
 
     public function attribute()
     {
@@ -39,11 +31,7 @@ class AttributeValue extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'attribute_value_product');
+        return $this->belongsToMany(Product::class, 'product_attribute_values')
+                    ->withPivot('price', 'stock');
     }
-
-    public function productVariants()
-    {
-        return $this->belongsToMany(ProductVariant::class, 'attribute_value_product_variant');
-    }
-} 
+}
