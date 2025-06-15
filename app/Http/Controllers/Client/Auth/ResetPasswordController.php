@@ -23,7 +23,7 @@ class ResetPasswordController extends Controller
             }
         );
         return $status ===Password::PASSWORD_RESET
-        ? redirect()->route('showLogin')->with('success','Đặt lại mật khẩu thành công' )
+        ? redirect()->route('login')->with('success','Đặt lại mật khẩu thành công' )
         : back()->withErrors(['email' => __($status)]);
     }
 }

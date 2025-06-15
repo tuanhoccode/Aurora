@@ -270,7 +270,7 @@
                                  <path d="M9.84082 1.18318C12.5534 1.48434 14.6952 3.62393 15 6.3358" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                  <path d="M9.84082 3.77927C11.1378 4.03207 12.1511 5.04544 12.4039 6.34239" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                               </svg>
-                           </span> +(402) 763 282 46
+                           </span> +(24) 666 888 99
                         </a>
                      </div>
                   </div>
@@ -293,24 +293,19 @@
                            </ul>
                         </div>
                         <div class="tp-header-top-menu-item tp-header-currency">
-                           <span class="tp-header-currency-toggle" id="tp-header-currency-toggle">USD</span>
+                           <span class="tp-header-currency-toggle" id="tp-header-currency-toggle">Tài khoản</span>
                            <ul>
                               <li>
-                                 <a href="#">EUR</a>
+                                 <a href="{{route('showRegister')}}">Đăng ký</a>
                               </li>
                               <li>
-                                 <a href="#">CHF</a>
+                                 <a href="{{route('login')}}">Đăng nhập</a>
                               </li>
-                              <li>
-                                 <a href="#">GBP</a>
-                              </li>
-                              <li>
-                                 <a href="#">KWD</a>
-                              </li>
+
                            </ul>
                         </div>
                         <div class="tp-header-top-menu-item tp-header-setting">
-                           <span class="tp-header-setting-toggle" id="tp-header-setting-toggle">Setting</span>
+                           <span class="tp-header-setting-toggle" id="tp-header-setting-toggle">Cài đặt</span>
                            <ul>
                               <span>{{optional(Auth::user())->fullname}}</span>
                               <li>

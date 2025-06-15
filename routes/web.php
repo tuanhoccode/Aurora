@@ -15,10 +15,13 @@ use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
-
+use App\Http\Controllers\Client\Auth\VerifyEmailController;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Support\Facades\Auth;
 
 //Auth Admin
-Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('login');
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
@@ -131,10 +134,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 Route::get('/', function () {
     return view('client.home');
 })->name('home');
+// ->middleware(['auth', 'verified'])
 //login & registerregister
 Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
 Route::post('/register', [RegisterController::class, 'register'])-> name('register.post');
-Route::get('/login', [LoginController::class, 'showLogin'])-> name('showLogin');
+Route::get('/login', [LoginController::class, 'showLogin'])-> name('login');
 Route::post('/login', [LoginController::class, 'login'])-> name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])-> name('logout');
 //404
@@ -147,4 +151,16 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLi
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-
+//Xác thực email khi đăng ký thành công
+//trang thông báo
+Route::get('/email/verify', function(){
+    return view('client.auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+//Xử lý xác thực từ link
+Route::get('/email/verify/{id}/{hash}',[VerifyEmailController::class, '__invoke']) ->middleware(['signed'])
+    ->name('verification.verify');;
+//Gửi lại link xác thực
+Route::post('/email/verification-notification', function (Request $req){
+    $req->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');

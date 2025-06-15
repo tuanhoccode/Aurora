@@ -41,7 +41,7 @@
             <div class="tp-login-wrapper">
                <div class="tp-login-top text-center mb-30">
                   <h3 class="tp-login-title">Đăng ký Aurora.</h3>
-                  <p>Bạn đã có tài khoản? <span><a href="{{route('showLogin')}}">Đăng nhập</a></span></p>
+                  <p>Bạn đã có tài khoản? <span><a href="{{route('login')}}">Đăng nhập</a></span></p>
                </div>
 
                <form action="{{route('register.post')}}" method="post">

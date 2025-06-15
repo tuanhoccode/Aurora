@@ -89,7 +89,7 @@
                             </div>
                             <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-center">
                                 <div class="tp-login-forgot">
-                                    <span>Ghi nhớ mật khẩu? <a href="{{route('showLogin')}}"> Đăng nhập</a></span>
+                                    <span>Ghi nhớ mật khẩu? <a href="{{route('login')}}"> Đăng nhập</a></span>
 
                                 </div>
                             </div>
