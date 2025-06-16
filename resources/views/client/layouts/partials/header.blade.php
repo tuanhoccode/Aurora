@@ -301,6 +301,9 @@
                               <li>
                                  <a href="{{route('login')}}">Đăng nhập</a>
                               </li>
+                              <li>
+                                 <a href="{{route('loginHistory')}}">Phiên đăng nhập</a>
+                              </li>
 
                            </ul>
                         </div>

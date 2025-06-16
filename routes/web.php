@@ -14,6 +14,7 @@ use App\Http\Controllers\Client\Auth\RegisterController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use Illuminate\Http\Request;
@@ -134,6 +135,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 Route::get('/', function () {
     return view('client.home');
 })->name('home');
+Route::middleware('web')->group(function () {
 // ->middleware(['auth', 'verified'])
 //login & registerregister
 Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
@@ -164,3 +166,8 @@ Route::post('/email/verification-notification', function (Request $req){
     $req->user()->sendEmailVerificationNotification();
     return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+//Trang lịch sử đăng nhập
+Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
+//đăng xuất tất cả hỏi các tb
+Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
+});

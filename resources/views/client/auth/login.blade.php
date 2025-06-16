@@ -52,12 +52,12 @@
                      </div>
                      <form action="{{route('login.post')}}" method="post">
                         @csrf
-                     <div class="tp-login-option-item">
-                        <a href="#">
-                           <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
-                        </a>
-                     </div>
-                     
+                        <div class="tp-login-option-item">
+                           <a href="#">
+                              <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
+                           </a>
+                        </div>
+
                   </div>
                   <div class="tp-login-mail text-center mb-40">
                      <p>or Sign in with <a href="#">Email</a></p>
@@ -71,7 +71,7 @@
                            <label for="email">Email của bạn</label>
                         </div>
                         @error('email')
-                        <div class="error">{{$message}}</div>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                      </div>
                      <div class="tp-login-input-box">
@@ -100,7 +100,7 @@
                            <label for="tp_password">Mật khẩu</label>
                         </div>
                         @error('password')
-                        <div class="error">{{$message}}</div>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                      </div>
                   </div>
