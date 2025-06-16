@@ -14,12 +14,19 @@ use App\Http\Controllers\Client\Auth\RegisterController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\GoogleController;
 use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Two\GoogleProvider;
+
+use function Laravel\Prompts\password;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
@@ -136,38 +143,45 @@ Route::get('/', function () {
     return view('client.home');
 })->name('home');
 Route::middleware('web')->group(function () {
-// ->middleware(['auth', 'verified'])
-//login & registerregister
-Route::get('/register', [RegisterController::class, 'showRegister'])-> name('showRegister');
-Route::post('/register', [RegisterController::class, 'register'])-> name('register.post');
-Route::get('/login', [LoginController::class, 'showLogin'])-> name('login');
-Route::post('/login', [LoginController::class, 'login'])-> name('login.post');
-Route::post('/logout', [LoginController::class, 'logout'])-> name('logout');
-//404
-Route::fallback([ErrorController::class, 'notFound']);
-//reset password nhập email
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
+    // ->middleware(['auth', 'verified'])
+    //login & registerregister
+    Route::get('/register', [RegisterController::class, 'showRegister'])->name('showRegister');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+    Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    //404
+    Route::fallback([ErrorController::class, 'notFound']);
+    //reset password nhập email
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
 
-//form nhập mk mới
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+    //form nhập mk mới
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-//Xác thực email khi đăng ký thành công
-//trang thông báo
-Route::get('/email/verify', function(){
-    return view('client.auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-//Xử lý xác thực từ link
-Route::get('/email/verify/{id}/{hash}',[VerifyEmailController::class, '__invoke']) ->middleware(['signed'])
-    ->name('verification.verify');;
-//Gửi lại link xác thực
-Route::post('/email/verification-notification', function (Request $req){
-    $req->user()->sendEmailVerificationNotification();
-    return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-//Trang lịch sử đăng nhập
-Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
-//đăng xuất tất cả hỏi các tb
-Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
+    //Xác thực email khi đăng ký thành công
+    //trang thông báo
+    Route::get('/email/verify', function () {
+        return view('client.auth.verify-email');
+    })->middleware('auth')->name('verification.notice');
+    //Xử lý xác thực từ link
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])->middleware(['signed'])
+        ->name('verification.verify');;
+    //Gửi lại link xác thực
+    Route::post('/email/verification-notification', function (Request $req) {
+        $req->user()->sendEmailVerificationNotification();
+        return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
+    })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+    //Trang lịch sử đăng nhập
+    Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
+    //đăng xuất tất cả hỏi các tb
+    Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
 });
+//điều hướng đến gg
+Route::get('/auth/google', function () {
+    return Socialite::driver('google')->redirect();
+})->name('google.login');
+
+//Callback từ gg
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
