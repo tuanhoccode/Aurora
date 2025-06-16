@@ -8,6 +8,8 @@ use App\Models\LoginLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Mail\LoginAlertMail;
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
 {
@@ -29,6 +31,11 @@ class LoginController extends Controller
                 Auth::logout();
                 return back()->with('error' ,'Bạn cần xác thực email trước khi đăng nhập.')->withInput();
             }
+            $ip = $req->ip();
+            $agent = $req->header('User-Agent');
+            //Kiểm tra xem IP + user_agent này đã từng được ghi nhận chx
+            $existingLog = LoginLog::where('user_id', $user->id)->where('ip_address', $req->ip())
+            ->where('user_agent', $req->header('User-Agent'))->exists();
             //Ghi log đăng nhập
             LoginLog::create([
                 'user_id' =>$user->id,
@@ -39,6 +46,15 @@ class LoginController extends Controller
                 'is_current' =>true,
 
             ]);
+            
+            if (!$existingLog) {
+                //Gửi mail cảnh báo đăng nhập lạ
+                Mail::to($user->email)->send(new LoginAlertMail(
+                    $user,
+                    $ip,
+                    $agent
+                ));
+            }
            return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
         }
         return back() -> with(['error' => 'Email hoặc mật khẩu chưa chính xác! '])->withInput();
