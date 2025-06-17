@@ -10,6 +10,7 @@
       margin-top: 5px;
    }
 </style>
+
 <section class="breadcrumb__area include-bg text-center pt-95 pb-50">
    <div class="container">
       <div class="row">
@@ -51,22 +52,22 @@
                         <div class="tp-login-option-item has-google">
                            <a href="{{route('google.login')}}">
                               <img src="{{asset('assets2/img/icon/login/google.svg')}}" alt="">
-                              Sign up with google
+                              Đăng nhập bằng Google
                            </a>
                         </div>
-                        <div class="tp-login-option-item">
+                        <!-- <div class="tp-login-option-item">
                            <a href="#">
                               <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
                            </a>
-                        </div>
-                        <div class="tp-login-option-item">
+                        </div> -->
+                        <!-- <div class="tp-login-option-item">
                            <a href="#">
                               <img class="apple" src="{{asset('assets2/img/icon/login/apple.svg')}}" alt="">
                            </a>
-                        </div>
+                        </div> -->
                      </div>
                      <div class="tp-login-mail text-center mb-40">
-                        <p>or Sign up with <a href="#">Email</a></p>
+                        <p>hoặc Đăng ký với <a href="#">Email</a></p>
                      </div>
                      <div class="tp-login-input-wrapper">
                         <div class="tp-login-input-box">
@@ -125,7 +126,7 @@
                      <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-between mb-20">
                         <div class="tp-login-remeber">
                            <input id="remeber" type="checkbox">
-                           <label for="remeber">Tôi chấp nhận các điều khoản của Dịch vụ và<a href="#">Chính sách bảo mật</a>.</label>
+                           <label for="remeber">Tôi chấp nhận các điều khoản của Dịch vụ và<a href="#"> Chính sách bảo mật</a>.</label>
                         </div>
                      </div>
                      <div class="tp-login-bottom">
@@ -138,5 +139,7 @@
       </div>
    </div>
 </section>
+
+
 <!-- login area end -->
 @endsection

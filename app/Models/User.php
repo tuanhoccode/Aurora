@@ -36,6 +36,8 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         'bank_account',
         'reason_lock',
         'is_change_password',
+        'email_verified_at',
+        'google_id',
     ];
 
     /**

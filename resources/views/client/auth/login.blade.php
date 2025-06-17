@@ -47,20 +47,20 @@
                      <div class="tp-login-option-item has-google">
                         <a href="{{route('google.login')}}">
                            <img src="{{asset('assets2/img/icon/login/google.svg')}}" alt="">
-                           Sign in with google
+                           Đăng nhập bằng Google
                         </a>
                      </div>
                      <form action="{{route('login.post')}}" method="post">
                         @csrf
-                        <div class="tp-login-option-item">
+                        <!-- <div class="tp-login-option-item">
                            <a href="#">
                               <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
                            </a>
-                        </div>
+                        </div> -->
 
                   </div>
                   <div class="tp-login-mail text-center mb-40">
-                     <p>or Sign in with <a href="#">Email</a></p>
+                     <p>hoặc Đăng ký với <a href="#">Email</a></p>
                   </div>
                   <div class="tp-login-input-wrapper">
                      <div class="tp-login-input-box">
@@ -107,7 +107,7 @@
                   <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-between mb-20">
                      <div class="tp-login-remeber">
                         <input id="remeber" type="checkbox" name="remember">
-                        <label for="remeber">Remember me</label>
+                        <label for="remeber">Ghi nhớ tôi</label>
                      </div>
                      <div class="tp-login-forgot">
                         <a href="{{route('password.request')}}">Quên mật khẩu?</a>
