@@ -106,11 +106,20 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="mt-4">
+            <!-- Mô tả -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3">
+                    <h5 class="card-title mb-0">Mô tả sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
                         <h6 class="fw-bold mb-3">Mô tả ngắn:</h6>
                         <p class="text-muted">{{ $product->short_description ?: 'Không có mô tả ngắn' }}</p>
-
+                    </div>
+                    <div>
                         <h6 class="fw-bold mb-3">Mô tả chi tiết:</h6>
                         <div class="border rounded p-3 bg-light">
                             {!! $product->description ?: 'Không có mô tả chi tiết' !!}
@@ -184,29 +193,23 @@
                                     <td><code>{{ $variant->sku }}</code></td>
                                     <td>
                                         @if($variant->img)
-                                            <img src="{{ asset('storage/' . $variant->img) }}" alt="Hình ảnh biến thể" class="img-thumbnail" style="max-width: 100px;">
+                                            <img src="{{ asset('storage/' . $variant->img) }}" 
+                                                 class="img-thumbnail" 
+                                                 alt="Hình ảnh biến thể" style="max-width: 100px;">
                                         @else
                                             <span class="text-muted">Không có ảnh</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                            $attributes = $variant->attributeValues->map(function($value) {
-                                                return [
-                                                    'name' => $value->attribute->name,
-                                                    'value' => $value->value
-                                                ];
-                                            });
-                                        @endphp
-                                        
-                                        @foreach($attributes as $attribute)
-                                            @if(strtolower($attribute['name']) === 'size' || 
-                                                strtolower($attribute['name']) === 'kích thước')
-                                                <span class="badge bg-primary">Size: {{ $attribute['value'] }}</span>
-                                            @elseif(strtolower($attribute['name']) === 'color' || 
-                                                    strtolower($attribute['name']) === 'màu sắc')
-                                                <span class="badge bg-info">Màu: {{ $attribute['value'] }}</span>
-                                            @endif
+                                        @foreach($variant->attributeValues as $attributeValue)
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    {{ $attributeValue->attribute->name }}:
+                                                </span>
+                                                <span class="text-muted">
+                                                    {{ $attributeValue->value }}
+                                                </span>
+                                            </div>
                                         @endforeach
                                     </td>
                                     <td>

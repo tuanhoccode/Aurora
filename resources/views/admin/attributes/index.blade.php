@@ -1,5 +1,6 @@
 @extends('admin.layouts.app')
 
+
 @section('content')
     <div class="container-fluid py-4">
         {{-- Header Section --}}
@@ -18,6 +19,7 @@
             </div>
         </div>
 
+
         {{-- Alert Messages --}}
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
@@ -26,12 +28,14 @@
             </div>
         @endif
 
+
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+
 
         {{-- Main Card --}}
         <div class="card shadow-sm rounded-3 border-0">
@@ -41,10 +45,10 @@
                     <div class="col-md-6">
                         <form action="{{ route('admin.attributes.index') }}" method="GET" class="d-flex gap-2">
                             <div class="input-group">
-                                <input type="text" 
-                                       name="search" 
+                                <input type="text"
+                                       name="search"
                                        class="form-control"
-                                       placeholder="Tìm kiếm thuộc tính..." 
+                                       placeholder="Tìm kiếm thuộc tính..."
                                        value="{{ request('search') }}">
                             </div>
                             <select name="status" class="form-select" style="width: auto" onchange="this.form.submit()">
@@ -55,30 +59,30 @@
                         </form>
                     </div>
                     <div class="col-md-6 text-end">
-                        <button type="button" 
-                                class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2" 
+                        <button type="button"
+                                class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2"
                                 style="display: none;"
                                 onclick="bulkToggleStatus(1)"
-                                data-bs-toggle="tooltip" 
+                                data-bs-toggle="tooltip"
                                 title="Kích hoạt đã chọn">
                             <i class="bi bi-check-circle me-1"></i>
                             <i class="bi bi-toggle-on"></i>
                             <span class="badge bg-white text-success ms-2 selected-count">0</span>
                         </button>
-                        <button type="button" 
-                                class="btn btn-secondary rounded-pill px-4 bulk-toggle-btn me-2" 
+                        <button type="button"
+                                class="btn btn-secondary rounded-pill px-4 bulk-toggle-btn me-2"
                                 style="display: none;"
                                 onclick="bulkToggleStatus(0)"
-                                data-bs-toggle="tooltip" 
+                                data-bs-toggle="tooltip"
                                 title="Vô hiệu đã chọn">
                             <i class="bi bi-x-circle me-1"></i>
                             <i class="bi bi-toggle-off"></i>
                             <span class="badge bg-white text-secondary ms-2 selected-count">0</span>
                         </button>
-                        <button type="button" 
-                                class="btn btn-danger rounded-pill px-4 bulk-delete-btn" 
+                        <button type="button"
+                                class="btn btn-danger rounded-pill px-4 bulk-delete-btn"
                                 style="display: none;"
-                                data-bs-toggle="tooltip" 
+                                data-bs-toggle="tooltip"
                                 title="Xóa đã chọn">
                             <i class="bi bi-trash me-1"></i>
                             <i class="bi bi-check2-square"></i>
@@ -86,6 +90,7 @@
                         </button>
                     </div>
                 </div>
+
 
                 @if ($attributes->count())
                     <div class="table-responsive">
@@ -150,8 +155,8 @@
                                     <tr class="position-relative">
                                         <td>
                                             <div class="form-check">
-                                                <input type="checkbox" 
-                                                       class="form-check-input attribute-checkbox" 
+                                                <input type="checkbox"
+                                                       class="form-check-input attribute-checkbox"
                                                        value="{{ $attribute->id }}"
                                                        data-name="{{ $attribute->name }}">
                                             </div>
@@ -182,21 +187,21 @@
                                         <td>
                                             <div class="d-flex justify-content-end gap-2">
                                                 <a href="{{ route('admin.attribute_values.index', $attribute->id) }}"
-                                                    class="btn btn-info btn-sm rounded-pill px-3" 
-                                                    data-bs-toggle="tooltip" 
+                                                    class="btn btn-info btn-sm rounded-pill px-3"
+                                                    data-bs-toggle="tooltip"
                                                     title="Quản lý giá trị">
                                                     <i class="bi bi-list-check"></i>
                                                 </a>
                                                 <a href="{{ route('admin.attributes.edit', $attribute->id) }}"
-                                                    class="btn btn-warning btn-sm rounded-pill px-3" 
-                                                    data-bs-toggle="tooltip" 
+                                                    class="btn btn-warning btn-sm rounded-pill px-3"
+                                                    data-bs-toggle="tooltip"
                                                     title="Chỉnh sửa">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>
-                                                <button type="button" 
-                                                        class="btn btn-danger btn-sm rounded-pill px-3" 
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm rounded-pill px-3"
                                                         onclick="confirmDelete('{{ $attribute->id }}', '{{ $attribute->name }}')"
-                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-toggle="tooltip"
                                                         title="Xóa">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -207,6 +212,7 @@
                             </tbody>
                         </table>
                     </div>
+
 
                     {{-- Pagination --}}
                     @if ($attributes->hasPages())
@@ -223,6 +229,7 @@
             </div>
         </div>
     </div>
+
 
     {{-- Delete Confirmation Modal --}}
     <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -252,6 +259,7 @@
         </div>
     </div>
 
+
     {{-- Bulk Delete Confirmation Modal --}}
     <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -277,6 +285,7 @@
     </div>
 @endsection
 
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -286,12 +295,14 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
+
         const selectAllCheckbox = document.getElementById('selectAll');
         const attributeCheckboxes = document.querySelectorAll('.attribute-checkbox');
         const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
         const bulkToggleBtns = document.querySelectorAll('.bulk-toggle-btn');
         const selectedCounts = document.querySelectorAll('.selected-count');
         let selectedItems = [];
+
 
         // Cập nhật UI khi có checkbox được chọn
         function updateUI() {
@@ -304,6 +315,7 @@
                 count.textContent = selectedItems.length;
             });
         }
+
 
         // Xử lý khi checkbox được chọn
         function handleCheckboxChange(checkbox) {
@@ -319,6 +331,7 @@
             updateUI();
         }
 
+
         // Xử lý chọn tất cả
         selectAllCheckbox?.addEventListener('change', function() {
             attributeCheckboxes.forEach(checkbox => {
@@ -327,6 +340,7 @@
             });
         });
 
+
         // Xử lý chọn từng checkbox
         attributeCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
@@ -334,12 +348,14 @@
             });
         });
 
+
         // Xử lý xóa hàng loạt
         bulkDeleteBtn?.addEventListener('click', function() {
             if (selectedItems.length === 0) {
                 alert('Vui lòng chọn ít nhất một thuộc tính');
                 return;
             }
+
 
             if (confirm('Bạn có chắc chắn muốn xóa các thuộc tính đã chọn?')) {
                 fetch('{{ route('admin.attributes.bulk-delete') }}', {
@@ -366,14 +382,16 @@
         });
     });
 
+
     // Xử lý thay đổi trạng thái hàng loạt
     function bulkToggleStatus(status) {
         const selectedItems = Array.from(document.querySelectorAll('.attribute-checkbox:checked')).map(cb => cb.value);
-        
+       
         if (selectedItems.length === 0) {
             alert('Vui lòng chọn ít nhất một thuộc tính');
             return;
         }
+
 
         const statusText = status ? 'kích hoạt' : 'vô hiệu hóa';
         if (confirm(`Bạn có chắc chắn muốn ${statusText} các thuộc tính đã chọn?`)) {
@@ -383,7 +401,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     ids: selectedItems,
                     status: status
                 })
@@ -403,6 +421,7 @@
         }
     }
 
+
     // Xác nhận xóa một thuộc tính
     function confirmDelete(id, name) {
         if (confirm(`Bạn có chắc chắn muốn xóa thuộc tính "${name}"?`)) {
@@ -419,3 +438,4 @@
     }
 </script>
 @endpush
+

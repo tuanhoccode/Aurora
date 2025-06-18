@@ -3,157 +3,80 @@
 @section('title', 'Chỉnh sửa biến thể sản phẩm')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Chỉnh sửa biến thể cho sản phẩm: {{ $product->name }}</h3>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.products.variants.update', [$product, $variant]) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        
-                        <!-- Attributes Section -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Thuộc tính sản phẩm</h6>
-                            </div>
-                            <div class="card-body">
-                                @foreach($attributes as $attribute)
-                                    @if(strtolower($attribute->name) === 'size' || strtolower($attribute->name) === 'color' || strtolower($attribute->name) === 'màu sắc' || strtolower($attribute->name) === 'kích thước')
-                                        <div class="mb-4">
-                                            <label class="form-label fw-medium">{{ $attribute->name }}</label>
-                                            <div class="row g-2">
-                                                @foreach($attribute->values as $value)
-                                                    <div class="col-auto">
-                                                        <div class="form-check">
-                                                            <input type="checkbox" 
-                                                                   class="form-check-input attribute-value" 
-                                                                   name="attribute_values[]" 
-                                                                   value="{{ $value->id }}" 
-                                                                   data-value="{{ $value->value }}"
-                                                                   data-type="{{ strtolower($attribute->name) }}"
-                                                                   id="value-{{ $value->id }}"
-                                                                   {{ in_array($value->id, old('attribute_values', $selectedValues)) ? 'checked' : '' }}>
-                                                            <label class="form-check-label" for="value-{{ $value->id }}">
-                                                                {{ $value->value }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                            @error('attribute_values')
-                                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    @endif
+<div class="container">
+    <h3 class="mb-4">Chỉnh sửa biến thể cho sản phẩm: <span class="text-primary">{{ $product->name }}</span></h3>
+    <form action="{{ route('admin.products.variants.update', [$product->id, $variant->id]) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
+        <div class="card mb-3 variant-card">
+            <div class="card-header">
+                <strong>Biến thể hiện tại:</strong>
+                @foreach($variant->attributeValues as $attributeValue)
+                    <span class="badge bg-light text-dark me-2">
+                        {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
+                    </span>
+                @endforeach
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Chọn thuộc tính cho biến thể:</strong>
+                    <div class="row">
+                        @foreach($attributes as $attribute)
+                            <div class="col-md-4 mb-2">
+                                <div class="fw-bold mb-1">{{ $attribute->name }}</div>
+                                @foreach($attribute->values as $value)
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input attribute-radio" 
+                                            name="attribute_values[{{ $attribute->id }}]" 
+                                            value="{{ $value->id }}" 
+                                            data-attribute-name="{{ strtolower($attribute->name) }}"
+                                            data-value="{{ $value->value }}"
+                                            id="attr-{{ $attribute->id }}-{{ $value->id }}"
+                                            {{ in_array($value->id, $selectedValues) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="attr-{{ $attribute->id }}-{{ $value->id }}">
+                                            {{ $value->value }}
+                                        </label>
+                                    </div>
                                 @endforeach
                             </div>
-                        </div>
-
-                        {{-- SKU SECTION - giống form tạo --}}
-                        <div class="mb-4">
-                            <label class="form-label fw-medium">Mã SKU <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">SKU</span>
-                                <input type="text" class="form-control @error('sku') is-invalid @enderror" name="sku" id="sku" value="{{ old('sku', $variant->sku) }}" readonly>
-                                <button type="button" class="btn btn-outline-secondary" id="generate-sku">
-                                    <i class="fas fa-sync"></i> Tạo mới
-                                </button>
-                            </div>
-                            @error('sku')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <!-- Image Section -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Hình ảnh</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-4">
-                                    <label class="form-label fw-medium">Hình ảnh biến thể</label>
-                                    <div class="mb-3">
-                                        @if($variant->img)
-                                            <img src="{{ asset($variant->img) }}" alt="Hình ảnh biến thể" class="img-thumbnail mb-2" style="max-width: 200px;">
-                                        @endif
-                                    </div>
-                                    <input type="file" 
-                                           class="form-control @error('img') is-invalid @enderror" 
-                                           name="img" 
-                                           accept="image/*">
-                                    @error('img')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Price Section -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Giá</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label class="form-label fw-medium">Giá gốc <span class="text-danger">*</span></label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">VNĐ</span>
-                                            <input type="number" 
-                                                   class="form-control @error('regular_price') is-invalid @enderror" 
-                                                   name="regular_price" 
-                                                   value="{{ old('regular_price', $variant->regular_price) }}"
-                                                   min="0" 
-                                                   step="0.01" 
-                                                   required>
-                                            @error('regular_price')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-4">
-                                        <label class="form-label fw-medium">Giá khuyến mãi</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">VNĐ</span>
-                                            <input type="number" 
-                                                   class="form-control @error('sale_price') is-invalid @enderror" 
-                                                   name="sale_price" 
-                                                   value="{{ old('sale_price', $variant->sale_price) }}"
-                                                   min="0" 
-                                                   step="0.01">
-                                            @error('sale_price')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label for="stock" class="form-label fw-medium">Số lượng trong kho</label>
-                            <input type="number" name="stock" id="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', $variant->stock) }}" min="0">
-                            @error('stock')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="card-footer bg-white">
-                            <button type="submit" class="btn btn-primary">Cập nhật biến thể</button>
-                            <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary">Quay lại</a>
-                        </div>
-                    </form>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label">SKU</label>
+                        <input type="text" name="sku" id="skuInput" class="form-control" value="{{ old('sku', $variant->sku) }}" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Tồn kho</label>
+                        <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Giá gốc</label>
+                        <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Giá KM</label>
+                        <input type="number" name="sale_price" class="form-control" min="0" value="{{ old('sale_price', $variant->sale_price) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Ảnh</label>
+                        <input type="file" name="img" class="form-control">
+                        @if($variant->img)
+                            <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail mt-2" style="max-width: 100px;">
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        <button type="submit" class="btn btn-success mt-3">Cập nhật biến thể</button>
+    </form>
 </div>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
+    // Bảng mã màu sắc
     const colorCodes = {
         'đỏ': 'DO',
         'xanh': 'XA',
@@ -166,82 +89,39 @@ document.addEventListener('DOMContentLoaded', () => {
         'tím': 'TI',
         'nâu': 'NA',
         'hồng': 'HO',
-        'xám': 'XA'
+        'xám': 'XM'
     };
-
-    const vietnameseToEnglish = {
-        'áo': 'shirt',
-        'quần': 'pants',
-        'giày': 'shoes',
-        'mũ': 'hat',
-        'túi': 'bag',
-        'áo khoác': 'jacket',
-        'áo thun': 'tshirt',
-        'áo sơ mi': 'shirt',
-        'áo len': 'sweater',
-        'áo vest': 'jacket',
-        'quần jean': 'jeans',
-        'quần dài': 'pants',
-        'quần short': 'shorts',
-        'quần kaki': 'chinos',
-        'quần jogger': 'joggers',
-        'quần thể thao': 'sportpants',
-        'quần đùi': 'shorts',
-        'giày thể thao': 'sneakers',
-        'giày da': 'leather',
-        'giày cao gót': 'heels',
-        'mũ lưỡi trai': 'cap',
-        'mũ nón': 'hat',
-        'mũ bảo hiểm': 'helmet',
-        'túi xách': 'bag',
-        'túi đeo': 'pouch',
-        'túi du lịch': 'travelbag',
-        'túi đeo chéo': 'crossbag'
-    };
-
-    function getEnglishProductCode(productName) {
-        let english = productName.toLowerCase();
-        Object.entries(vietnameseToEnglish).forEach(([vi, en]) => {
-            english = english.replace(new RegExp(vi, 'gi'), en);
-        });
-        return english.split(' ')[0].substring(0, 2).toUpperCase();
+    // Quy tắc lấy 2 ký tự tiếng Anh đầu của tên sản phẩm
+    function getProductCode(name) {
+        // Chuyển tiếng Việt sang tiếng Anh đơn giản
+        let en = name.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^a-zA-Z ]/g, '').toLowerCase();
+        let words = en.split(' ').filter(Boolean);
+        return words.length > 0 ? words[0].substring(0,2).toUpperCase() : 'PR';
     }
-
-    const productCode = getEnglishProductCode('{{ $product->name }}');
-    const skuInput    = document.getElementById('sku');
+    const productCode = getProductCode(@json($product->name));
 
     function updateSKU() {
-        let size = null;
-        let color = null;
-        document.querySelectorAll('.attribute-value:checked').forEach(cb => {
-            const value = cb.dataset.value;
-            const type  = cb.dataset.type;
-            if (type === 'size' || type === 'kích thước') {
-                size = value.toUpperCase();
-            } else if (type === 'color' || type === 'màu sắc') {
-                color = colorCodes[value.toLowerCase()] || value.toUpperCase().substring(0, 2);
+        let size = '';
+        let color = '';
+        document.querySelectorAll('.attribute-radio:checked').forEach(cb => {
+            const attr = cb.dataset.attributeName;
+            const val = cb.dataset.value;
+            if(attr === 'kích thước' || attr === 'size') size = val.toUpperCase();
+            if(attr === 'màu sắc' || attr === 'color') {
+                color = colorCodes[val.trim().toLowerCase()] || val.toUpperCase().substring(0,2);
             }
         });
-        skuInput.value = (size && color) ? `${productCode}-${size}-${color}` : '';
+        let sku = productCode;
+        if(size) sku += '-' + size;
+        if(color) sku += '-' + color;
+        document.getElementById('skuInput').value = sku;
     }
-
-    document.querySelectorAll('.attribute-value').forEach(cb => cb.addEventListener('change', updateSKU));
-
-    document.getElementById('generate-sku').addEventListener('click', () => {
-        if (!skuInput.value) return;
-        const parts = skuInput.value.split('-');
-        const last  = parts[parts.length - 1];
-        const num   = parseInt(last);
-        if (isNaN(num)) {
-            skuInput.value = skuInput.value + '-1';
-        } else {
-            parts[parts.length - 1] = num + 1;
-            skuInput.value = parts.join('-');
-        }
+    document.querySelectorAll('.attribute-radio').forEach(cb => {
+        cb.addEventListener('change', updateSKU);
     });
-
+    // Gọi lần đầu để đồng bộ khi load trang
     updateSKU();
 });
 </script>
 @endpush
-@endsection 
+@endsection

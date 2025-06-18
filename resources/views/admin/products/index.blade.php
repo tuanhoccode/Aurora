@@ -17,55 +17,6 @@
         </div>
     </div>
 
-    {{-- Stats Cards --}}
-    <div class="row g-4 mb-4">
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-primary bg-gradient text-white h-100 hover-shadow rounded-3 border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1">Tổng sản phẩm</h6>
-                            <h2 class="mb-0 display-6">{{ number_format($totalProducts) }}</h2>
-                        </div>
-                        <div class="icon-box bg-white bg-opacity-25 rounded-3 p-3">
-                            <i class="bi bi-box fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-success bg-gradient text-white h-100 hover-shadow rounded-3 border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1">Đang kinh doanh</h6>
-                            <h2 class="mb-0 display-6">{{ number_format($activeProducts) }}</h2>
-                        </div>
-                        <div class="icon-box bg-white bg-opacity-25 rounded-3 p-3">
-                            <i class="bi bi-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-warning bg-gradient text-white h-100 hover-shadow rounded-3 border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1">Đang giảm giá</h6>
-                            <h2 class="mb-0 display-6">{{ number_format($saleProducts) }}</h2>
-                        </div>
-                        <div class="icon-box bg-white bg-opacity-25 rounded-3 p-3">
-                            <i class="bi bi-tag fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Bulk Actions --}}
     <div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
         <div class="d-flex gap-2">
@@ -88,18 +39,33 @@
         </div>
     </div>
 
+    {{-- Search --}}
+    <div class="card shadow-sm rounded-3 border-0 mb-3">
+        <div class="card-body">
+            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
+                <div class="col-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" value="{{ request('search') }}" 
+                               placeholder="Tìm kiếm sản phẩm...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Filters --}}
     <div class="card shadow-sm rounded-3 border-0 mb-3">
         <div class="card-body">
             <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
                 <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" name="search" value="{{ request('search') }}" 
-                               placeholder="Tìm theo tên, mã sản phẩm...">
-                    </div>
-                </div>
-                <div class="col-md-3">
                     <select class="form-select" name="category">
                         <option value="">Tất cả danh mục</option>
                         @foreach($categories as $category)
@@ -109,20 +75,27 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="status">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Đang kinh doanh</option>
-                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ngừng kinh doanh</option>
+                <div class="col-md-4">
+                    <select class="form-select" name="brand">
+                        <option value="">Tất cả thương hiệu</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" {{ request('brand') == $brand->id ? 'selected' : '' }}>
+                                {{ $brand->name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-fill">
-                            <i class="bi bi-search"></i>
-                            Lọc
+                        <select class="form-select" name="status">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Đang kinh doanh</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ngừng kinh doanh</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-filter"></i>
                         </button>
-                        @if(request()->hasAny(['search', 'category', 'status']))
+                        @if(request()->hasAny(['category', 'brand', 'status']))
                             <a href="{{ route('admin.products.index') }}" class="btn btn-light">
                                 <i class="bi bi-x-lg"></i>
                             </a>
@@ -154,6 +127,7 @@
                             <th>Thương hiệu</th>
                             <th>Giá bán</th>
                             <th>Tồn kho</th>
+                            <th>Loại SP</th>
                             <th>Trạng thái</th>
                             <th width="100">Thao tác</th>
                         </tr>
@@ -171,12 +145,12 @@
                             <td>
                                 @if($product->thumbnail)
                                     <img src="{{ asset('storage/' . $product->thumbnail) }}" 
-                                         class="rounded shadow-sm" 
-                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                        class="rounded shadow-sm" 
+                                        style="width: 50px; height: 50px; object-fit: cover;">
                                 @else
                                     <img src="https://via.placeholder.com/50" 
-                                         class="rounded shadow-sm" 
-                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                        class="rounded shadow-sm" 
+                                        style="width: 50px; height: 50px; object-fit: cover;">
                                 @endif
                             </td>
                             <td>
@@ -217,30 +191,58 @@
                             </td>
                             <td>
                                 @if($product->type === 'variant')
-                                    <span class="badge bg-info">Có biến thể</span>
+                                    @php
+                                        $totalStock = $product->variants->sum('stock');
+                                    @endphp
+                                    @if($totalStock > 0)
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i>
+                                            {{ number_format($totalStock) }} sản phẩm
+                                        </span>
+                                    @else
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle"></i> Hết hàng
+                                        </span>
+                                    @endif
                                 @else
                                     @if($product->stock > 0)
-                                        <span class="badge bg-success">{{ number_format($product->stock) }}</span>
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i>
+                                            {{ number_format($product->stock) }} sản phẩm
+                                        </span>
                                     @else
-                                        <span class="badge bg-danger">Hết hàng</span>
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle"></i> Hết hàng
+                                        </span>
                                     @endif
+                                @endif
+                            </td>
+                            <td>
+                                @if($product->type === 'variant')
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-boxes"></i> Biến thể
+                                    </span>
+                                @else
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-box"></i> Đơn giản
+                                    </span>
                                 @endif
                             </td>
                             <td>
                                 <div class="form-check form-switch">
                                     <input type="checkbox" class="form-check-input toggle-status" 
-                                           data-id="{{ $product->id }}"
-                                           {{ $product->is_active ? 'checked' : '' }}>
+                                        data-id="{{ $product->id }}"
+                                        {{ $product->is_active ? 'checked' : '' }}>
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('admin.products.show', $product->id) }}" 
-                                       class="btn btn-sm btn-info">
+                                    class="btn btn-sm btn-info">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <a href="{{ route('admin.products.edit', $product->id) }}" 
-                                       class="btn btn-sm btn-primary">
+                                    class="btn btn-sm btn-primary">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-danger delete-product" 
@@ -253,7 +255,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center py-4">
+                            <td colspan="12" class="text-center py-4">
                                 <div class="text-muted mb-1">
                                     <i class="bi bi-inbox fa-2x"></i>
                                 </div>
