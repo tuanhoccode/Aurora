@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_attribute', function (Blueprint $table) {
+        Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('attribute_id')->constrained()->onDelete('cascade');
-            $table->json('values')->nullable();
+            $table->string('name');
+            $table->boolean('is_variant')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
 
-            $table->unique(['product_id', 'attribute_id']);
+            // Index để tối ưu hiệu suất
+            $table->index(['is_active', 'is_variant']);
         });
     }
 
@@ -27,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_attribute');
+        Schema::dropIfExists('attributes');
     }
-};
+}; 
