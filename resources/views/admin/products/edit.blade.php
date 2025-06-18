@@ -1,6 +1,8 @@
 @extends('admin.layouts.app')
 
+
 @section('title', 'Cập nhật sản phẩm')
+
 
 @section('content')
 <div class="container-fluid px-4">
@@ -27,6 +29,7 @@
         </div>
     </div>
 
+
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -34,12 +37,14 @@
         </div>
     @endif
 
+
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
 
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -51,6 +56,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
 
     <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -80,6 +86,7 @@
                             @enderror
                         </div>
 
+
                         <!-- Variant Section -->
                         <div id="variantSection" class="mb-4" style="display: none;">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -89,7 +96,7 @@
                                     Thêm biến thể
                                 </a>
                             </div>
-                            
+                           
                             @if($product->variants->count() > 0)
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover">
@@ -108,34 +115,18 @@
                                                     <td>{{ $variant->sku }}</td>
                                                     <td>{{ number_format($variant->regular_price) }}đ</td>
                                                     <td>{{ $variant->sale_price ? number_format($variant->sale_price) . 'đ' : '-' }}</td>
-                                                    <td>
-                                                        @if($variant->manage_stock)
-                                                            <span class="badge bg-{{ $variant->stock_status === 'in_stock' ? 'success' : ($variant->stock_status === 'out_of_stock' ? 'danger' : 'warning') }}">
-                                                                {{ $variant->stock_status === 'in_stock' ? 'Còn hàng' : ($variant->stock_status === 'out_of_stock' ? 'Hết hàng' : 'Đặt trước') }}
-                                                            </span>
-                                                        @else
-                                                            <span class="badge bg-secondary">Không quản lý</span>
-                                                        @endif
-                                                    </td>
+                                                    <td>{{ $variant->stock }}</td>
                                                     <td>
                                                         <div class="btn-group btn-group-sm">
-                                                            <a href="{{ route('admin.products.variants.edit', ['product' => $product->id, 'variant' => $variant->id]) }}" 
+                                                            <a href="{{ route('admin.products.variants.edit', ['product' => $product->id, 'variant' => $variant->id]) }}"
                                                                class="btn btn-outline-primary">
                                                                 <i class="fas fa-edit"></i>
                                                             </a>
-                                                            <button type="button" class="btn btn-outline-danger" 
-                                                                    onclick="if(confirm('Bạn có chắc muốn xóa biến thể này?')) { 
-                                                                        document.getElementById('delete-variant-{{ $variant->id }}').submit(); 
-                                                                    }">
+                                                            <button type="button" class="btn btn-outline-danger"
+                                                                    onclick="deleteVariant({{ $variant->id }}, '{{ $variant->sku }}')">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </div>
-                                                        <form id="delete-variant-{{ $variant->id }}" 
-                                                              action="{{ route('admin.products.variants.destroy', ['product' => $product->id, 'variant' => $variant->id]) }}" 
-                                                              method="POST" style="display: none;">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                        </form>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -149,52 +140,55 @@
                             @endif
                         </div>
 
+
                         <div class="mb-4">
                             <label class="form-label fw-medium">Tên sản phẩm <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror" 
+                            <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror"
                                 name="name" value="{{ old('name', $product->name) }}" required placeholder="Nhập tên sản phẩm">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
+
                         <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
-                                        <select class="form-select select2 @error('categories') is-invalid @enderror" 
-                                            name="categories[]" multiple required>
-                                            @foreach($categories as $category)
-                                                <option value="{{ $category->id }}" 
-                                                    {{ in_array($category->id, old('categories', $product->categories->pluck('id')->toArray())) ? 'selected' : '' }}>
-                                                    {{ $category->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('categories')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-medium">Thương hiệu</label>
-                                        <select class="form-select @error('brand_id') is-invalid @enderror" name="brand_id">
-                                            <option value="">Chọn thương hiệu</option>
-                                            @foreach($brands as $brand)
-                                                <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id) == $brand->id ? 'selected' : '' }}>
-                                                    {{ $brand->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('brand_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
+                                <select class="form-select select2 @error('categories') is-invalid @enderror"
+                                    name="categories[]" multiple required>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}"
+                                            {{ in_array($category->id, old('categories', $product->categories->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('categories')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium">Thương hiệu</label>
+                                <select class="form-select @error('brand_id') is-invalid @enderror" name="brand_id">
+                                    <option value="">Chọn thương hiệu</option>
+                                    @foreach($brands as $brand)
+                                        <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id) == $brand->id ? 'selected' : '' }}>
+                                            {{ $brand->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('brand_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
 
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Trạng thái</label>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_active" 
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="1"
                                         {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
                                     <label class="form-check-label">Đang hoạt động</label>
                                 </div>
@@ -202,41 +196,13 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Trạng thái khuyến mãi</label>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_sale" 
+                                    <input class="form-check-input" type="checkbox" name="is_sale"
                                         {{ old('is_sale', $product->is_sale) ? 'checked' : '' }}>
                                     <label class="form-check-label">Đang khuyến mãi</label>
                                 </div>
                             </div>
                         </div>
 
-                        @if($product->type === 'simple')
-                            <div class="mb-4">
-                                <label class="form-label fw-medium">Số lượng tồn kho</label>
-                                <input type="number" class="form-control @error('stock') is-invalid @enderror" 
-                                    name="stock" value="{{ old('stock', $product->stock) }}" min="0">
-                                @error('stock')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        @endif
-
-                        <div class="mb-4">
-                            <label class="form-label fw-medium">Giá bán</label>
-                            <input type="number" class="form-control @error('price') is-invalid @enderror" 
-                                name="price" value="{{ old('price', $product->price) }}" step="0.01" min="0" required>
-                            @error('price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-medium">Giá khuyến mãi</label>
-                            <input type="number" class="form-control @error('sale_price') is-invalid @enderror" 
-                                name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" step="0.01" min="0">
-                            @error('sale_price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-medium">Mô tả ngắn</label>
@@ -244,10 +210,12 @@
                                 placeholder="Nhập mô tả ngắn gọn về sản phẩm">{{ old('short_description', $product->short_description) }}</textarea>
                         </div>
 
+
                         <div class="mb-4">
                             <label class="form-label fw-medium">Mô tả chi tiết</label>
                             <textarea name="description" id="description" class="form-control" rows="10">{{ old('description', $product->description) }}</textarea>
                         </div>
+
 
                         <div class="mb-0">
                             <label class="form-label fw-medium">Hình ảnh sản phẩm</label>
@@ -255,7 +223,7 @@
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 text-center position-relative bg-light">
                                         @if($product->thumbnail)
-                                            <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="Current thumbnail" 
+                                            <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="Current thumbnail"
                                                 class="img-fluid mb-2" style="max-height: 150px;">
                                         @endif
                                         <input type="file" class="form-control mb-2" name="thumbnail" accept="image/*">
@@ -274,6 +242,7 @@
                 </div>
             </div>
 
+
             <!-- Sidebar -->
             <div class="col-lg-4">
                 <!-- Status -->
@@ -285,12 +254,13 @@
                     </div>
                     <div class="card-body">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="is_active" 
-                                {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                            <label class="form-check-label fw-medium">Đang kinh doanh</label>
+                            <input class="form-check-input" type="checkbox" name="is_sale" value="1"
+                                {{ old('is_sale', $product->is_sale) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-medium">Đang khuyến mãi</label>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Pricing -->
                 <div class="card border-0 shadow-sm mb-4">
@@ -304,16 +274,18 @@
                             <label class="form-label fw-medium">Mã sản phẩm (SKU)</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">SKU</span>
-                                <input type="text" class="form-control border-start-0" name="sku" 
-                                    value="{{ old('sku', $product->sku) }}" placeholder="Ví dụ: SP001">
+                                <input type="text" class="form-control border-start-0" name="sku"
+                                    value="{{ old('sku', $product->sku) }}" readonly>
                             </div>
+                            <small class="text-muted">SKU không thể thay đổi</small>
                         </div>
+
 
                         <div class="mb-3">
                             <label class="form-label fw-medium">Giá bán <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">VNĐ</span>
-                                <input type="number" class="form-control border-start-0 @error('price') is-invalid @enderror" 
+                                <input type="number" class="form-control border-start-0 @error('price') is-invalid @enderror"
                                     name="price" value="{{ old('price', $product->price) }}" required min="0" step="1000">
                             </div>
                             @error('price')
@@ -321,15 +293,27 @@
                             @enderror
                         </div>
 
+
                         <div class="mb-3">
                             <label class="form-label">Giá khuyến mãi</label>
                             <div class="input-group">
-                                <input type="number" class="form-control @error('sale_price') is-invalid @enderror" 
-                                       name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" 
+                                <input type="number" class="form-control @error('sale_price') is-invalid @enderror"
+                                       name="sale_price" value="{{ old('sale_price', $product->sale_price) }}"
                                        min="0" step="1000">
                                 <span class="input-group-text">đ</span>
                             </div>
                             @error('sale_price')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+
+                        <!-- Stock field - only show for non-variant products -->
+                        <div class="mb-3" id="stockField">
+                            <label class="form-label fw-medium">Số lượng trong kho</label>
+                            <input type="number" class="form-control @error('stock') is-invalid @enderror"
+                                   name="stock" value="{{ old('stock', $product->stock) }}" min="0">
+                            @error('stock')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -344,6 +328,7 @@
         </div>
     </form>
 </div>
+
 
 @push('styles')
 <style>
@@ -385,6 +370,7 @@
 </style>
 @endpush
 
+
 @push('scripts')
 <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -395,6 +381,7 @@
             console.error(error);
         });
 
+
     // Initialize Select2 for multiple category selection
     $('.select2').select2({
         theme: 'bootstrap-5',
@@ -402,22 +389,56 @@
         placeholder: 'Chọn danh mục'
     });
 
+
     // Handle variant section visibility
     $('#productType').change(function() {
         const isVariant = $(this).val() === 'variant';
         $('#variantSection').toggle(isVariant);
-        
+       
         // Hide stock input if product type is variant
         if (isVariant) {
-            $('input[name="stock"]').closest('.col-md-6').hide();
+            $('#stockField').hide();
         } else {
-            $('input[name="stock"]').closest('.col-md-6').show();
+            $('#stockField').show();
         }
     });
 
+
     // Trigger change event on page load to set initial state
     $('#productType').trigger('change');
+
+
+    // Function to delete variant safely
+    function deleteVariant(variantId, variantSku) {
+        if (confirm(`Bạn có chắc muốn xóa biến thể "${variantSku}"?`)) {
+            // Create a temporary form for deletion
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/products/{{ $product->id }}/variants/${variantId}`;
+            form.style.display = 'none';
+           
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            form.appendChild(csrfToken);
+           
+            // Add method override
+            const methodField = document.createElement('input');
+            methodField.type = 'hidden';
+            methodField.name = '_method';
+            methodField.value = 'DELETE';
+            form.appendChild(methodField);
+           
+            // Submit the form
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 </script>
 @endpush
 
+
 @endsection
+

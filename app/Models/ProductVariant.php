@@ -44,12 +44,15 @@ class ProductVariant extends Model
                     ->withTimestamps();
     }
 
-    // Quan hệ giá trị thuộc tính thông qua bảng attribute_value_product (liên kết theo product_id)
-    public function attributeValues(): BelongsToMany
+    // Quan hệ giá trị thuộc tính thông qua bảng attribute_value_product_variant (liên kết theo product_variant_id)
+    public function attributeValues()
     {
-        return $this->belongsToMany(AttributeValue::class, 'attribute_value_product', 'product_id', 'attribute_value_id')
-                    ->with('attribute')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            \App\Models\AttributeValue::class,
+            'attribute_value_product_variant',
+            'product_variant_id',
+            'attribute_value_id'
+        )->with('attribute');
     }
 
     public function getIsOnSaleAttribute()

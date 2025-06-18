@@ -1,10 +1,13 @@
 <?php
 
+
 namespace App\Http\Controllers\Admin;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
+
 
 class AttributeController extends Controller
 {
@@ -15,27 +18,32 @@ class AttributeController extends Controller
     {
         $query = Attribute::query();
 
+
         // Tìm kiếm theo tên
         if ($request->filled('search')) {
             $searchTerm = trim($request->search);
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('is_active', $request->status);
         }
 
+
         // Sắp xếp
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDir = $request->get('sort_dir', 'desc');
         $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'created_at'];
-        
+       
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortDir);
         }
 
+
         $attributes = $query->paginate(10)->withQueryString();
+
 
         return view('admin.attributes.index', [
             'attributes' => $attributes,
@@ -44,6 +52,7 @@ class AttributeController extends Controller
         ]);
     }
 
+
     /**
      * Hiển thị form tạo thuộc tính mới
      */
@@ -51,6 +60,7 @@ class AttributeController extends Controller
     {
         return view('admin.attributes.create');
     }
+
 
     /**
      * Lưu thuộc tính mới
@@ -64,17 +74,20 @@ class AttributeController extends Controller
                 'is_active' => 'nullable|integer|in:0,1',
             ]);
 
+
             Attribute::create([
                 'name' => $validated['name'],
                 'is_variant' => (int) ($validated['is_variant'] ?? 0),
                 'is_active' => (int) ($validated['is_active'] ?? 0),
             ]);
 
+
             return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được tạo.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể tạo thuộc tính: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Hiển thị chi tiết thuộc tính
@@ -85,6 +98,7 @@ class AttributeController extends Controller
         return view('admin.attributes.show', compact('attribute'));
     }
 
+
     /**
      * Hiển thị form chỉnh sửa thuộc tính
      */
@@ -94,6 +108,7 @@ class AttributeController extends Controller
         return view('admin.attributes.edit', compact('attribute'));
     }
 
+
     /**
      * Cập nhật thuộc tính
      */
@@ -102,11 +117,13 @@ class AttributeController extends Controller
         try {
             $attribute = Attribute::findOrFail($id);
 
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'is_variant' => 'nullable|integer|in:0,1',
                 'is_active' => 'nullable|integer|in:0,1',
             ]);
+
 
             $attribute->update([
                 'name' => $validated['name'],
@@ -114,11 +131,13 @@ class AttributeController extends Controller
                 'is_active' => (int) ($validated['is_active'] ?? 0),
             ]);
 
+
             return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được cập nhật.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể cập nhật thuộc tính: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Xóa mềm thuộc tính
@@ -133,11 +152,42 @@ class AttributeController extends Controller
             return redirect()->back()->with('error', 'Không thể xóa thuộc tính: ' . $e->getMessage());
         }
     }
-    public function trashed()
+    public function trashed(Request $request)
     {
-        $attributes = Attribute::onlyTrashed()->get();
+        $query = Attribute::onlyTrashed();
 
-        return view('admin.attributes.trashed', compact('attributes'));
+
+        // Tìm kiếm theo tên
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'deleted_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'deleted_at'];
+       
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+
+        $attributes = $query->paginate(10)->withQueryString();
+
+
+        return view('admin.attributes.trashed', [
+            'attributes' => $attributes,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir
+        ]);
     }
     public function restore($id)
     {
@@ -153,6 +203,7 @@ class AttributeController extends Controller
         }
     }
 
+
     /**
      * Xóa vĩnh viễn thuộc tính
      */
@@ -167,6 +218,7 @@ class AttributeController extends Controller
         }
     }
 
+
     /**
      * Hiển thị danh sách thuộc tính biến thể
      */
@@ -177,8 +229,10 @@ class AttributeController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
+
         return view('admin.attributes.variants', compact('variants'));
     }
+
 
     /**
      * Xóa hàng loạt thuộc tính
@@ -191,7 +245,9 @@ class AttributeController extends Controller
                 'ids.*' => 'required|integer|exists:attributes,id'
             ]);
 
+
             $count = Attribute::whereIn('id', $validated['ids'])->delete();
+
 
             return response()->json([
                 'success' => true,
@@ -205,6 +261,7 @@ class AttributeController extends Controller
         }
     }
 
+
     /**
      * Thay đổi trạng thái hàng loạt
      */
@@ -217,8 +274,10 @@ class AttributeController extends Controller
                 'status' => 'required|boolean'
             ]);
 
+
             $count = Attribute::whereIn('id', $validated['ids'])
                 ->update(['is_active' => $validated['status']]);
+
 
             return response()->json([
                 'success' => true,
@@ -231,4 +290,68 @@ class AttributeController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+     * Khôi phục hàng loạt thuộc tính
+     */
+    public function bulkRestore(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id'
+            ]);
+
+
+            $count = Attribute::withTrashed()
+                ->whereIn('id', $validated['ids'])
+                ->whereNotNull('deleted_at')
+                ->restore();
+
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã khôi phục thành công {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể khôi phục thuộc tính: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Xóa vĩnh viễn hàng loạt thuộc tính
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:attributes,id'
+            ]);
+
+
+            $count = Attribute::withTrashed()
+                ->whereIn('id', $validated['ids'])
+                ->forceDelete();
+
+
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa vĩnh viễn thành công {$count} thuộc tính."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không thể xóa vĩnh viễn thuộc tính: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
+
+
