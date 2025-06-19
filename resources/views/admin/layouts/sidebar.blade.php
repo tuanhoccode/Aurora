@@ -13,6 +13,15 @@
         <li>
             <a class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-bell"></i></span> Thông báo
+            <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-bell"></i></span> Notifications
             </a>
         </li>
         <hr>
@@ -30,6 +39,21 @@
         <li>
             <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}" href="{{ route('admin.brands.index') }}">
                 <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
+            <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}"
+                href="{{ route('admin.products.index') }}">
+                <span class="nav-icon"><i class="fas fa-box"></i></span> Products
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}"
+                href="{{ route('admin.categories.index') }}">
+                <span class="nav-icon"><i class="fas fa-tags"></i></span> Categories
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
+                href="{{ route('admin.brands.index') }}">
+                <span class="nav-icon"><i class="fas fa-trademark"></i></span> Brands
             </a>
         </li>
         <li>
@@ -56,6 +80,23 @@
          <li>
             <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                 <span class="nav-icon"><i class="fas fa-users"></i></span> Người dùng
+            <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span> Orders
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-gift"></i></span> Coupons
+            </a>
+        </li>
+        <hr>
+        <li class="sidebar-heading">Users</li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}"
+                href="{{ route('admin.users.index') }}">
+                <span class="nav-icon"><i class="fas fa-users"></i></span> Users
             </a>
         </li>
         <hr>
@@ -73,6 +114,21 @@
         <li>
             <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Trang CMS
+            <a class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-comments"></i></span> Product Reviews
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.stocks.index') ? 'active' : '' }}"
+                href="{{ route('admin.stocks.index') }}">
+                <span class="nav-icon"><i class="fas fa-boxes"></i></span> Stocks
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-file-alt"></i></span> CMS Pages
             </a>
         </li>
         <hr>
@@ -89,3 +145,17 @@
         </li>
     </ul>
 </aside>
+            <a class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-credit-card"></i></span> Payment Gateways
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-cogs"></i></span> System Settings
+            </a>
+        </li>
+    </ul>
+</aside>
+

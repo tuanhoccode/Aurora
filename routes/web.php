@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Admin\StockController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
@@ -193,6 +194,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-delete', [AttributeValueController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
+
+    // Quản lý tồn kho sản phẩm - product_stocks
+    Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
+    Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
+    Route::resource('stocks', StockController::class)->except(['show']);
+    Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
 });
 
 
@@ -240,11 +247,11 @@ Route::middleware('web')->group(function () {
     Route::get('/auth/google', function () {
         return Socialite::driver('google')->redirect();
     })->name('google.login');
-    
+
     //Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-    //Profile 
+    //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     // Route::get('/profile-imformation', [ProfileController::class, 'showImformation'])->name('showImformation')->middleware('auth');
