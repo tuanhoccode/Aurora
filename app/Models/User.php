@@ -66,4 +66,7 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public function address(){
+            return $this -> hasOne(UserAddress::class);
+    }
 }
