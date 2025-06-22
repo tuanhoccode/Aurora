@@ -15,7 +15,9 @@ class AdminLoginController extends Controller
 
     public function login(AdminLoginRequest $request){
         $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials)) {
+        //Kiểm tra xem remember có được chọn k
+        $remember = $request->filled('remember');
+        if (Auth::attempt($credentials, $remember)) {
             // dd(Auth::user()->role);
             if (Auth::user()->role !== 'admin') {
                 Auth::logout();
@@ -23,7 +25,7 @@ class AdminLoginController extends Controller
                 
             }
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('admin.dashboard'))->with('success', 'Đăng nhập thành công!');
 
         }
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
@@ -33,6 +35,6 @@ class AdminLoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.login')->with('success', 'Đăng xuất thành công!');
     }
 }

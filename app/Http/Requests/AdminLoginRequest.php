@@ -26,16 +26,20 @@ class AdminLoginRequest extends FormRequest
             'password' => 'required|string|min:6'
         ];  
     }
-     public function messages(): array
+    public function messages(): array
     {
         return
             [
-                'email.required' => 'Không được để trống email',
+                
+
+                'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
-                'password.required' => 'Password không được để trống',
-                'password.string' => 'Pasword chưa được đăng kí',
-                'password.min' => 'Password có độ dài ngắn hơn 6 kí tự',
+
+                'password.required' => 'Vui lòng nhập mật khẩu',
+                'password.string' => 'Mật khẩu không hợp lệ',
+                'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+                
                 
             ];
     }

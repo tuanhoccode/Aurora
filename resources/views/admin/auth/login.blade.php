@@ -7,7 +7,7 @@
 <head>
     <!-- Title Meta -->
     <meta charset="utf-8" />
-    <title>Sign In | Larkon - Responsive Admin Dashboard Template</title>
+    <title>Đăng nhập | Larkon - Responsive Admin Dashboard Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -55,25 +55,25 @@
                                     </a>
                                 </div>
 
-                                <h2 class="fw-bold fs-24">Sign In</h2>
+                                <h2 class="fw-bold fs-24">Đăng Nhập</h2>
 
-                                <p class="text-muted mt-1 mb-4">Enter your email address and password to access admin panel.</p>
+                                <p class="text-muted mt-1 mb-4">Nhập địa chỉ email và mật khẩu của bạn để truy cập vào bảng quản trị.</p>
 
                                 <div class="mb-5">
                                     <form action="{{route('admin.login')}}" class="authentication-form" method="POST">
                                         @csrf
                                         <div class="mb-3">
                                             <label class="form-label" for="example-email">Email</label>
-                                            <input type="email" id="email" name="email" class="form-control bg-" placeholder="Enter your email" value="{{old('email')}}">
+                                            <input type="email" id="email" name="email" class="form-control bg-" placeholder="Nhập email của bạn" value="{{old('email')}}">
                                             @error('email')
                                             <div class="error">{{$message}}</div>
                                             @enderror
                                         </div>
 
                                         <div class="mb-3">
-                                            <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Reset password</a>
-                                            <label class="form-label" for="password">Password</label>
-                                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" value="{{old('password')}}">
+                                            <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Quên mật khẩu</a>
+                                            <label class="form-label" for="password">Mật khẩu</label>
+                                            <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu của bạn" value="{{old('password')}}">
                                             @error('password')
                                             <div class="error">{{$message}}</div>
                                             @enderror
@@ -81,21 +81,21 @@
 
                                         <div class="mb-3">
                                             <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" id="checkbox-signin">
+                                                <input type="checkbox" class="form-check-input" id="checkbox-signin" name="remember">
                                                 <label class="form-check-label" for="checkbox-signin">Remember me</label>
                                             </div>
                                         </div>
 
                                         <div class="mb-1 text-center d-grid">
-                                            <button class="btn btn-soft-primary" type="submit">Sign In</button>
+                                            <button class="btn btn-soft-primary" type="submit">Đăng nhập</button>
                                         </div>
                                     </form>
 
                                     <p class="mt-3 fw-semibold no-span">OR sign with</p>
 
                                     <div class="d-grid gap-2">
-                                        <a href="javascript:void(0);" class="btn btn-soft-dark"><i class="bx bxl-google fs-20 me-1"></i> Sign in with Google</a>
-                                        <a href="javascript:void(0);" class="btn btn-soft-primary"><i class="bx bxl-facebook fs-20 me-1"></i> Sign in with Facebook</a>
+                                        <a href="javascript:void(0);" class="btn btn-soft-dark"><i class="bx bxl-google fs-20 me-1"></i> Đăng nhập bằng Google</a>
+                                        <a href="javascript:void(0);" class="btn btn-soft-primary"><i class="bx bxl-facebook fs-20 me-1"></i> Đăng nhập bằng Facebook</a>
                                     </div>
                                 </div>
 
@@ -105,10 +105,13 @@
                     </div>
                 </div>
 
-                <div class="col-xxl-5 d-none d-xxl-flex">
-                    <div class="card h-100 mb-0 overflow-hidden">
+                <div class="col-xxl-5 d-none d-xxl-flex justify-content-center align-items-center">
+                    <div class="card mb-0 overflow-hidden" style="width: 100%; height: 100vh;">
                         <div class="d-flex flex-column h-100">
-                            <img src="{{asset('assets1/images/small/img-1.jpg')}}" alt="" class="w-100 h-100">
+                            <img src="{{ asset('assets1/images/small/img-1.jpg') }}"
+                                alt="Hình ảnh"
+                                class="img-fluid"
+                                style="object-fit: cover; width: 100%; height: 100%;">
                         </div>
                     </div>
                 </div>
