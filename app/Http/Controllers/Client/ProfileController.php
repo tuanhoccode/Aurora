@@ -15,11 +15,6 @@ class ProfileController extends Controller
         $user = Auth::user()->load('address');
         return view('client.profile.pro', compact('user'));
     }
-    // public function showImformation()
-    // {
-    //     $user = Auth::user()->load('address');
-    //     return view('client.profile.imformation', compact('user'));
-    // }
     public function updateProfile(ProfileRequest $req)
     {
        
@@ -27,6 +22,7 @@ class ProfileController extends Controller
         //Dữ liệu đã được validate trong ProfileRequest
         $validated = $req->validated();
         // dd($validated);
+        $emailChanged = $validated['email'] !== $user->email;
         //Cập nhật bảng users
         $user->update([
             'fullname' => $validated['fullname'],
@@ -45,15 +41,18 @@ class ProfileController extends Controller
                 'phone_number' => $validated['address_phone_number'] ,
                 
             ]);
-        } else if($user) {
+        } else{
             $user->address()->create([
                 'fullname' => $validated['fullname'],
                 'address' => $validated['address'],
                 'phone_number' => $validated['address_phone_number'] ,
                 'is_default' => true,
             ]);
-        }else{
-            return back()->with('error', 'Bạn còn thiếu các thông tin chưa điền hoặc không chính xác');
+        }
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+            Auth::logout();
+            return redirect()->route('login')->with('success', 'Bạn đã thay đổi email. Vui lòng xác minh địa chỉ email mới để tiếp tục.');
         }
         
         return redirect()->route('showProfile')->with('success', 'Cập nhật hồ sơ thành công');
