@@ -102,7 +102,7 @@
                      <div class="row align-items-center">
                         <div class="col-md-6">
                            <div class="tp-footer-copyright">
-                              <p>© 2025 All Rights Reserved |  <a href="index.html">Aurora</a>.</p>
+                              <p>© 2025 All Rights Reserved |  <a href="{{route('home')}}">Aurora</a>.</p>
                            </div>
                         </div>
                         <div class="col-md-6">

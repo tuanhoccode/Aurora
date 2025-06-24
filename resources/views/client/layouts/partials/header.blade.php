@@ -278,7 +278,7 @@
                <div class="col-md-6">
                   <div class="tp-header-top-right tp-header-top-black d-flex align-items-center justify-content-end">
                      <div class="tp-header-top-menu d-flex align-items-center justify-content-end">
-                        <div class="tp-header-top-menu-item tp-header-lang">
+                        <!-- <div class="tp-header-top-menu-item tp-header-lang">
                            <span class="tp-header-lang-toggle" id="tp-header-lang-toggle">English</span>
                            <ul>
                               <li>
@@ -291,7 +291,7 @@
                                  <a href="#">Portuguese</a>
                               </li>
                            </ul>
-                        </div>
+                        </div> -->
                         <div class="tp-header-top-menu-item tp-header-currency">
                            <span class="tp-header-currency-toggle" id="tp-header-currency-toggle">Tài khoản</span>
                            <ul>
@@ -312,13 +312,13 @@
                            <ul>
                               <span>{{optional(Auth::user())->fullname}}</span>
                               <li>
-                                 <a href="profile.html">My Profile</a>
+                                 <a href="{{route('showProfile')}}">Hồ sơ</a>
                               </li>
                               <li>
-                                 <a href="wishlist.html">Wishlist</a>
+                                 <a href="wishlist.html">Yêu thích</a>
                               </li>
                               <li>
-                                 <a href="cart.html">Cart</a>
+                                 <a href="cart.html">Giỏ hàng</a>
                               </li>
                               <li>
                                  <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

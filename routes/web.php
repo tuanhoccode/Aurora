@@ -21,6 +21,8 @@ use App\Http\Controllers\Client\Auth\GoogleController;
 use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
+use App\Http\Controllers\Client\ChangePasswordController;
+use App\Http\Controllers\Client\ProfileController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -234,11 +236,20 @@ Route::middleware('web')->group(function () {
     Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
     //đăng xuất tất cả hỏi các tb
     Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
-});
-//điều hướng đến gg
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-})->name('google.login');
+    //điều hướng đến gg
+    Route::get('/auth/google', function () {
+        return Socialite::driver('google')->redirect();
+    })->name('google.login');
+    
+    //Callback từ gg
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-//Callback từ gg
-Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+    //Profile 
+    Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
+    Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
+    // Route::get('/profile-imformation', [ProfileController::class, 'showImformation'])->name('showImformation')->middleware('auth');
+    Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
+    //changepassword
+    Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
+
+});
