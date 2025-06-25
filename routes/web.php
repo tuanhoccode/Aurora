@@ -1,13 +1,14 @@
 <?php
 
 
+
 use App\Http\Controllers\Admin\StockController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-
 
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -31,6 +32,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Two\GoogleProvider;
+use App\Http\Controllers\Client\HomeController;
 
 use function Laravel\Prompts\password;
 
@@ -41,7 +43,6 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
 
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
@@ -205,43 +206,43 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
 //Client
-Route::get('/', function () {
-    return view('client.home');
-})->name('home');
+Route::get('/', [HomeController::class, 'shop'])->name('home');
+
+
 Route::middleware('web')->group(function () {
-    // ->middleware(['auth', 'verified'])
-    //login & registerregister
+    //login & register
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('showRegister');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
     //404
     Route::fallback([ErrorController::class, 'notFound']);
+
     //reset password nhập email
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
 
-    //form nhập mk mới
+    //form nhập mật khẩu mới
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
     //Xác thực email khi đăng ký thành công
-    //trang thông báo
     Route::get('/email/verify', function () {
         return view('client.auth.verify-email');
     })->middleware('auth')->name('verification.notice');
-    //Xử lý xác thực từ link
-    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])->middleware(['signed'])
-        ->name('verification.verify');;
-    //Gửi lại link xác thực
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed'])->name('verification.verify');
+
     Route::post('/email/verification-notification', function (Request $req) {
         $req->user()->sendEmailVerificationNotification();
         return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
     })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
     //Trang lịch sử đăng nhập
     Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
-    //đăng xuất tất cả hỏi các tb
     Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
     //điều hướng đến gg
     Route::get('/auth/google', function () {
