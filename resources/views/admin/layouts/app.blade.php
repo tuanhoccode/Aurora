@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,43 +10,40 @@
     <!-- Core CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <!-- Vendor CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/font-awesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/flaticon_shofy.css') }}">
-
+    
     <!-- Plugin CSS -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
-
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-    <!-- Toastr CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- jQuery + Toastr JS (trước </body>) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     @stack('styles')
-
+    
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background: #f8f9fc;
             overflow-x: hidden;
         }
-
         #content-wrapper {
             margin-left: 270px;
             transition: margin 0.3s ease;
         }
-
         @media (max-width: 991px) {
             #content-wrapper {
                 margin-left: 0;
@@ -134,7 +130,6 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-
             .sidebar.show {
                 transform: translateX(0);
             }
@@ -145,25 +140,21 @@
             font-weight: 500;
             color: #566a7f;
         }
-
         .form-control:focus,
         .form-select:focus {
             border-color: #435ebe;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
-
         .ck-editor__editable {
             min-height: 200px;
             max-height: 400px;
         }
-
         .ck.ck-editor__main>.ck-editor__editable {
             background: #fff !important;
             border-radius: 0 0 0.375rem 0.375rem !important;
             border-color: #dee2e6 !important;
             padding: 0 1rem !important;
         }
-
         .ck.ck-toolbar {
             border-radius: 0.375rem 0.375rem 0 0 !important;
             border-color: #dee2e6 !important;
@@ -175,13 +166,11 @@
             border-radius: 0.5rem;
             box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
         }
-
         .card-header {
             background: transparent;
             border-bottom: 1px solid #e9ecef;
             padding: 1.25rem;
         }
-
         .card-title {
             color: #566a7f;
             font-weight: 600;
@@ -194,18 +183,15 @@
             transform: translateY(0);
             transition: all 0.3s ease-in-out;
         }
-
         #variantSection[style*="display: none"] {
             opacity: 0;
             transform: translateY(-10px);
         }
-
         .variant-values {
             opacity: 1;
             transform: translateY(0);
             transition: all 0.3s ease-in-out;
         }
-
         .variant-values[style*="display: none"] {
             opacity: 0;
             transform: translateY(-10px);
@@ -216,11 +202,9 @@
             min-height: 38px;
             border-color: #dee2e6;
         }
-
         .select2-container--bootstrap-5 .select2-selection--multiple {
             padding: 0.375rem 0.75rem;
         }
-
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
             background-color: #435ebe;
             color: #fff;
@@ -228,43 +212,20 @@
             padding: 2px 8px;
             margin: 2px;
         }
-
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
             color: #fff;
             margin-right: 5px;
         }
-
         .select2-container--bootstrap-5 .select2-dropdown {
             border-color: #dee2e6;
         }
-
         .select2-container--bootstrap-5 .select2-search__field:focus {
             border-color: #435ebe;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
     </style>
 </head>
-
 <body>
-    @if (session('success'))
-    <script>
-        toastr.options = {
-            "positionClass": "toast-top-right",
-            "timeOut": 2000
-        };
-        toastr.success(@json(session('success')));
-    </script>
-    @endif
-
-    @if (session('error'))
-    <script>
-        toastr.options = {
-            "positionClass": "toast-top-right",
-            "timeOut": 3000
-        };
-        toastr.error(@json(session('error')));
-    </script>
-    @endif
     <div id="wrapper" class="d-flex">
         <!-- Sidebar -->
         @include('admin.layouts.sidebar')
@@ -281,9 +242,9 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="me-2 d-none d-lg-inline text-gray-600 small">Admin: {{ optional(Auth::user())->fullname }}</span>
-                                <img class="img-profile rounded-circle" style="width: 40px; height: 40px;"
-                                    src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=ffffff&size=128">
+                                <span class="me-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                                <img class="img-profile rounded-circle" style="width: 40px; height: 40px;" 
+                                     src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=ffffff&size=128">
                             </a>
                             <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
@@ -291,13 +252,10 @@
                                     Profile
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>Logout
+                                <a class="dropdown-item" href="#">
+                                    <i class="fa fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Logout
                                 </a>
-
-                                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
-                                    @csrf
-                                </form>
                             </div>
                         </li>
                     </ul>
@@ -336,7 +294,7 @@
             const sidebarToggle = document.getElementById('sidebarToggleTop');
             const contentWrapper = document.getElementById('content-wrapper');
             const sidebar = document.querySelector('.sidebar');
-
+            
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
                     sidebar.classList.toggle('show');
@@ -358,5 +316,4 @@
 
     @stack('scripts')
 </body>
-
-</html>
+</html> 

@@ -802,6 +802,11 @@
                                  </svg>
                               </button>
                            </div>
+                           <div class="tp-header-action-item">
+                              <a href="{{ route('orders.index') }}" class="tp-header-action-btn">
+                                 <i class="fa-regular fa-cart-shopping"></i>
+                              </a>
+                           </div>
                         </div>
                      </div>
                   </div>

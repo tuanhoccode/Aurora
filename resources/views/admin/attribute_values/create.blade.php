@@ -48,8 +48,7 @@
                                                id="value" 
                                                class="form-control rounded-3 @error('value') is-invalid @enderror" 
                                                value="{{ old('value') }}" 
-                                               placeholder="Nhập giá trị thuộc tính"
-                                               required>
+                                               placeholder="Nhập giá trị thuộc tính">
                                         @error('value')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -61,8 +60,7 @@
                                         <label for="is_active" class="form-label small fw-bold text-muted mb-1">Trạng thái</label>
                                         <select name="is_active" 
                                                 id="is_active" 
-                                                class="form-select rounded-3 @error('is_active') is-invalid @enderror" 
-                                                required>
+                                                class="form-select rounded-3 @error('is_active') is-invalid @enderror">
                                             <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Đang hoạt động</option>
                                             <option value="0" {{ old('is_active', 1) == 0 ? 'selected' : '' }}>Không hoạt động</option>
                                         </select>
