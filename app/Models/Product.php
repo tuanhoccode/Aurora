@@ -113,7 +113,7 @@ class Product extends Model
 
     public function stocks()
     {
-        return $this->hasMany(ProductStock::class);
+        return $this->hasMany(Stock::class);
     }
 
     public function attributeValues()
@@ -188,4 +188,4 @@ class Product extends Model
 
         return null;
     }
-} 
+}
