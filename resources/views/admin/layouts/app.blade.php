@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -30,8 +29,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <!-- jQuery + Toastr JS (trước </body>) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+     <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 
     @stack('styles')
@@ -42,12 +46,10 @@
             background: #f8f9fc;
             overflow-x: hidden;
         }
-
         #content-wrapper {
             margin-left: 270px;
             transition: margin 0.3s ease;
         }
-
         @media (max-width: 991px) {
             #content-wrapper {
                 margin-left: 0;
@@ -308,7 +310,10 @@
                     @yield('content')
                 </main>
             </div>
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
             <!-- Footer -->
             <footer class="bg-white py-3 mt-auto shadow-sm">
                 <div class="container-fluid text-center">
