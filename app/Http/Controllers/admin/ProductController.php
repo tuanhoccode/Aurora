@@ -70,19 +70,19 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
-        
+
         // Handle slug
         $baseSlug = Str::slug($data['name']);
         $slug = $baseSlug;
         $counter = 1;
-        
+
         // Kiểm tra và tạo slug duy nhất
         while (Product::where('slug', $slug)->exists()) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
         }
         $data['slug'] = $slug;
-        
+
         // Handle SKU - tự động tạo nếu không có hoặc kiểm tra trùng lặp
         if (empty($data['sku'])) {
             // Tạo SKU tự động
@@ -95,7 +95,7 @@ class ProductController extends Controller
                     ->withInput()
                     ->withErrors(['sku' => 'SKU đã tồn tại. Vui lòng chọn SKU khác.']);
             }
-            
+
             // Đảm bảo SKU có prefix PRD-
             if (!Str::startsWith(strtoupper($data['sku']), 'PRD-')) {
                 $data['sku'] = 'PRD-' . strtoupper($data['sku']);
@@ -103,7 +103,7 @@ class ProductController extends Controller
                 $data['sku'] = strtoupper($data['sku']);
             }
         }
-        
+
         // Handle sale price
         $data['is_sale'] = !empty($data['sale_price']);
         if (!$data['is_sale']) {
@@ -159,7 +159,7 @@ class ProductController extends Controller
                 $query->with('attribute');
             }
         ]);
-        
+
         return view('admin.products.show', compact('product'));
     }
 
@@ -387,7 +387,7 @@ class ProductController extends Controller
     {
         try {
             $product = Product::onlyTrashed()->findOrFail($id);
-            
+
             // Xóa ảnh sản phẩm
             if ($product->thumbnail) {
                 Storage::disk('public')->delete($product->thumbnail);
@@ -395,7 +395,7 @@ class ProductController extends Controller
 
             // Xóa các liên kết
             $product->categories()->detach();
-            
+
             // Xóa vĩnh viễn sản phẩm
             $product->forceDelete();
 
@@ -451,7 +451,7 @@ class ProductController extends Controller
 
                 // Xóa các liên kết
                 $product->categories()->detach();
-                
+
                 // Xóa vĩnh viễn sản phẩm
                 $product->forceDelete();
             }

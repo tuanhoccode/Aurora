@@ -58,17 +58,24 @@ class ProfileController extends Controller
         return redirect()->route('showProfile')->with('success', 'Cập nhật hồ sơ thành công');
     }
     public function avatar(UpdateAvatarRequest $req){
-        $user = Auth::user();
-        //Xóa avatar cũ nếu có
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public') ->delete($user->avatar);
+        try {
+            $user = Auth::user();
+            //Xóa avatar cũ nếu có
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public') ->delete($user->avatar);
+            }
+
+            //Lưu avatar mới
+            $path = $req->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'avatar_url' => asset('storage/' . $path)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'An error occurred during upload.'], 500);
         }
-
-        //Lưu avatar mới 
-        $path = $req->file('avatar')->store('avatars', 'public');
-        $user->avatar = $path;
-        $user->save();
-        return back()->with('success', 'Cập nhật ảnh đại diện thành công');
-
     }
 }

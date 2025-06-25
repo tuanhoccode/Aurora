@@ -1,120 +1,218 @@
 <footer>
-         <div class="tp-footer-area tp-footer-style-2" data-bg-color="footer-bg-white">
-            <div class="tp-footer-top pt-95 pb-40">
-               <div class="container">
-                  <div class="row">
-                     <div class="col-xl-4 col-lg-3 col-md-4 col-sm-6">
+    <div class="tp-footer-area tp-footer-style-2" data-bg-color="footer-bg-white">
+        <div class="tp-footer-top pt-95 pb-40">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
                         <div class="tp-footer-widget footer-col-1 mb-50">
-                           <div class="tp-footer-widget-content">
-                              <div class="tp-footer-logo">
-                                 <a href="index.html">
-                                    <img src="{{asset('assets2/img/logo/logo.svg')}}" alt="logo">
-                                 </a>
-                              </div>
-                              <p class="tp-footer-desc">Thiên nhiên tạo ra địa chấn - Thời trang Aurora tạo lên điểm nhấn.</p>
-                              <div class="tp-footer-social">
-                                 <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                                 <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                                 <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                                 <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                              </div>
-                           </div>
+                            <div class="tp-footer-widget-content">
+                                <div class="tp-footer-logo">
+                                    <a href="{{ route('home') }}">
+                                        <img src="{{ asset('assets2/img/logo/logo.svg') }}" alt="logo">
+                                    </a>
+                                </div>
+                                <p class="tp-footer-desc">Thiên nhiên tạo ra địa chấn - Thời trang Aurora tạo nên điểm nhấn.</p>
+                                <div class="tp-footer-social">
+                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                                    <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
+                                </div>
+                            </div>
                         </div>
-                     </div>
-                     <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                         <div class="tp-footer-widget footer-col-2 mb-50">
-                           <h4 class="tp-footer-widget-title">Chính sách</h4>
-                           <div class="tp-footer-widget-content">
-                              <ul>
-                                 <li><a href="#">Chính sách đổi trả 60 ngày</a></li>
-                                 <li><a href="#">Chính sách khuyến mãi</a></li>
-                                 <li><a href="#">Chính sách bảo mật</a></li>
-                                 <li><a href="#">Chính sách giao nhận</a></li>
-                                 <li><a href="#">Chính sách kiểm hàng</a></li>
-                                 <li><a href="#">Chính sách bảo hành</a></li>
-                                 <li><a href="#">Chính sách thanh toán</a></li>
-                                 
-                              </ul>
-                           </div>
+                            <h4 class="tp-footer-widget-title">Chính sách</h4>
+                            <div class="tp-footer-widget-content">
+                                <ul>
+                                    <li><a href="#">Chính sách đổi trả</a></li>
+                                    <li><a href="#">Chính sách khuyến mãi</a></li>
+                                    <li><a href="#">Chính sách bảo mật</a></li>
+                                    <li><a href="#">Chính sách giao nhận</a></li>
+                                    <li><a href="#">Chính sách thanh toán</a></li>
+                                </ul>
+                            </div>
                         </div>
-                     </div>
-                     <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                         <div class="tp-footer-widget footer-col-3 mb-50">
-                           <h4 class="tp-footer-widget-title">Thông Tin</h4>
-                           <div class="tp-footer-widget-content">
-                              <ul>
-                                 <li><a href="#">Câu chuyện của chúng tôi</a></li>
-                                 <li><a href="#">Điều khoản và điều kiện/a></li>
-                                 <li><a href="#">Tin tức mới nhất</a></li>
-                                 <li><a href="#">Nghề nghiệp</a></li>
-                                 <li><a href="#">Liên hệ với chúng tôi</a></li>
-                              </ul>
-                           </div>
+                            <h4 class="tp-footer-widget-title">Thông Tin</h4>
+                            <div class="tp-footer-widget-content">
+                                <ul>
+                                    <li><a href="#">Về Aurora</a></li>
+                                    <li><a href="#">Điều khoản</a></li>
+                                    <li><a href="{{ route('contact') }}">Liên hệ</a></li>
+                                    <li><a href="#">Tin tức</a></li>
+                                </ul>
+                            </div>
                         </div>
-                     </div>
-                     <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                    </div>
+                    <div class="col-xl-5 col-lg-3 col-md-4 col-sm-6">
                         <div class="tp-footer-widget footer-col-4 mb-50">
-                           <h4 class="tp-footer-widget-title">Gọi đến chúng tôi</h4>
-                           <div class="tp-footer-widget-content">
-                              <div class="tp-footer-talk mb-20">
-                                 <span>Liên hệ với chúng tôi</span>
-                                 <h4><a href="tel:670-413-90-762">0336689888</a></h4>
-                              </div>
-                              <div class="tp-footer-contact">
-                                 <div class="tp-footer-contact-item d-flex align-items-start">
-                                    <div class="tp-footer-contact-icon">
-                                       <span>
-                                          <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                             <path d="M1 5C1 2.2 2.6 1 5 1H13C15.4 1 17 2.2 17 5V10.6C17 13.4 15.4 14.6 13 14.6H5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                                             <path d="M13 5.40039L10.496 7.40039C9.672 8.05639 8.32 8.05639 7.496 7.40039L5 5.40039" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                                             <path d="M1 11.4004H5.8" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                                             <path d="M1 8.19922H3.4" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                                          </svg>
-                                       </span>
+                            <h4 class="tp-footer-widget-title">Đăng ký nhận tin</h4>
+                            <div class="tp-footer-subscribe">
+                                <p>Nhận thông tin về sự kiện, khuyến mãi và ưu đãi mới nhất của chúng tôi.</p>
+                                <form action="#">
+                                    <div class="tp-footer-subscribe-input">
+                                        <input type="email" placeholder="Địa chỉ email của bạn...">
+                                        <button type="submit" aria-label="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
                                     </div>
-                                    <div class="tp-footer-contact-content">
-                                       <p><a href="mailto:shofy@support.com">aurora@support.com</a></p>
-                                    </div>
-                                 </div>
-                                 <div class="tp-footer-contact-item d-flex align-items-start">
-                                    <div class="tp-footer-contact-icon">
-                                       <span>
-                                          <svg width="17" height="20" viewBox="0 0 17 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                             <path d="M8.50001 10.9417C9.99877 10.9417 11.2138 9.72668 11.2138 8.22791C11.2138 6.72915 9.99877 5.51416 8.50001 5.51416C7.00124 5.51416 5.78625 6.72915 5.78625 8.22791C5.78625 9.72668 7.00124 10.9417 8.50001 10.9417Z" stroke="currentColor" stroke-width="1.5"/>
-                                             <path d="M1.21115 6.64496C2.92464 -0.887449 14.0841 -0.878751 15.7889 6.65366C16.7891 11.0722 14.0406 14.8123 11.6313 17.126C9.88298 18.8134 7.11704 18.8134 5.36006 17.126C2.95943 14.8123 0.210885 11.0635 1.21115 6.64496Z" stroke="currentColor" stroke-width="1.5"/>
-                                          </svg>
-                                       </span>
-                                    </div>
-                                    <div class="tp-footer-contact-content">
-                                       <p><a href="https://www.google.com/maps/place/Sleepy+Hollow+Rd,+Gouverneur,+NY+13642,+USA/@44.3304966,-75.4552367,17z/data=!3m1!4b1!4m6!3m5!1s0x4cccddac8972c5eb:0x56286024afff537a!8m2!3d44.3304928!4d-75.453048!16s%2Fg%2F1tdsjdj4" target="_blank">68 Đường Trịnh Văn Bô - Phương Canh - Nam Từ Liêm - Hà Nội</a></p>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
+                                </form>
+                            </div>
+                            <div class="tp-footer-contact mt-30">
+                                <div class="tp-footer-contact-item d-flex align-items-center">
+                                    <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-phone"></i></span></div>
+                                    <div class="tp-footer-contact-content"><p><a href="tel:0336689888">0336689888</a></p></div>
+                                </div>
+                                <div class="tp-footer-contact-item d-flex align-items-center">
+                                    <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-envelope"></i></span></div>
+                                    <div class="tp-footer-contact-content"><p><a href="mailto:aurora@support.com">aurora@support.com</a></p></div>
+                                </div>
+                                <div class="tp-footer-contact-item d-flex align-items-center">
+                                    <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-location-dot"></i></span></div>
+                                    <div class="tp-footer-contact-content"><p><a>68 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội</a></p></div>
+                                </div>
+                            </div>
                         </div>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-            <div class="tp-footer-bottom">
-               <div class="container">
-                  <div class="tp-footer-bottom-wrapper">
-                     <div class="row align-items-center">
+        </div>
+        <div class="tp-footer-bottom">
+            <div class="container">
+                <div class="tp-footer-bottom-wrapper">
+                    <div class="row align-items-center">
                         <div class="col-md-6">
-                           <div class="tp-footer-copyright">
-                              <p>© 2025 All Rights Reserved |  <a href="{{route('home')}}">Aurora</a>.</p>
-                           </div>
+                            <div class="tp-footer-copyright">
+                                <p>© {{ date('Y') }} Bản quyền thuộc về <a href="{{route('home')}}">Aurora</a>.</p>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                           <div class="tp-footer-payment text-md-end">
-                              <p>
-                                 <img src="{{asset('assets2/img/footer/footer-pay-2.png')}}" alt="">
-                              </p>
-                           </div>
+                            <div class="tp-footer-payment text-md-end">
+                                <p><img src="{{asset('assets2/img/footer/footer-pay-2.png')}}" alt=""></p>
+                            </div>
                         </div>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </footer>
+        </div>
+    </div>
+</footer>
+<style>
+/* Footer Style Enhancements */
+.tp-footer-area {
+    background-color: #f8f9fa; /* Softer than pure white */
+    border-top: 3px solid #b48c5a; /* Decorative top border */
+    color: #555;
+}
+.tp-footer-widget-title {
+    color: #1c1c1e;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0; /* Subtle underline */
+}
+.tp-footer-desc {
+    color: #666;
+}
+.tp-footer-widget-content ul li a {
+    color: #555;
+    transition: color 0.3s, padding-left 0.3s;
+}
+.tp-footer-widget-content ul li a:hover {
+    color: #b48c5a;
+    padding-left: 5px;
+}
+.tp-footer-social a {
+    background-color: #e9ecef;
+    color: #555;
+    border-radius: 50%;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+.tp-footer-social a:hover {
+    background-color: #b48c5a;
+    color: #ffffff;
+    transform: translateY(-3px);
+}
+.tp-footer-subscribe p {
+    color: #666;
+    margin-bottom: 15px;
+}
+.tp-footer-subscribe-input {
+    position: relative;
+}
+.tp-footer-subscribe-input input {
+    width: 100%;
+    height: 50px;
+    padding: 10px 55px 10px 20px;
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    color: #333;
+    border-radius: 8px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.tp-footer-subscribe-input input:focus {
+    border-color: #b48c5a;
+    box-shadow: 0 0 0 3px rgba(180, 140, 90, 0.15);
+    outline: none;
+}
+.tp-footer-subscribe-input button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 50px;
+    background-color: #b48c5a;
+    color: #fff;
+    border: 0;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tp-footer-subscribe-input button:hover {
+    background-color: #9d784a;
+}
+.tp-footer-subscribe-input button i {
+    font-size: 1.1rem;
+}
+.tp-footer-subscribe-input button:hover i {
+    transform: translateX(3px);
+}
+.tp-footer-contact-item {
+    gap: 15px;
+    margin-bottom: 12px;
+}
+.tp-footer-contact-icon {
+    font-size: 1.1rem;
+    color: #b48c5a;
+    width: 20px;
+    text-align: center;
+}
+.tp-footer-contact-content p {
+    margin: 0;
+}
+.tp-footer-contact-content a {
+    color: #555;
+    transition: color 0.3s;
+}
+.tp-footer-contact-content a:hover {
+    color: #b48c5a;
+}
+.tp-footer-bottom {
+    background-color: #f1f2f3;
+    border-top: 1px solid #e0e0e0;
+    padding: 15px 0;
+}
+.tp-footer-copyright p,
+.tp-footer-copyright p a {
+    color: #777;
+    margin-bottom: 0;
+}
+.tp-footer-copyright p a:hover {
+    color: #1c1c1e;
+}
+</style>

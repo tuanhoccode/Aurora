@@ -37,9 +37,9 @@ class UserFactory extends Factory
             'bank_account' => null,
             'reason_lock' => null,
             'is_change_password' => 1,
-        
+
             'password' => static::$password ??= Hash::make('password'),
-            
+
         ];
     }
 

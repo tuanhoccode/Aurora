@@ -96,7 +96,7 @@
                                     Thêm biến thể
                                 </a>
                             </div>
-                           
+
                             @if($product->variants->count() > 0)
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover">
@@ -242,7 +242,6 @@
                 </div>
             </div>
 
-
             <!-- Sidebar -->
             <div class="col-lg-4">
                 <!-- Status -->
@@ -260,7 +259,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Pricing -->
                 <div class="card border-0 shadow-sm mb-4">
@@ -394,7 +392,7 @@
     $('#productType').change(function() {
         const isVariant = $(this).val() === 'variant';
         $('#variantSection').toggle(isVariant);
-       
+
         // Hide stock input if product type is variant
         if (isVariant) {
             $('#stockField').hide();
@@ -416,21 +414,21 @@
             form.method = 'POST';
             form.action = `/admin/products/{{ $product->id }}/variants/${variantId}`;
             form.style.display = 'none';
-           
+
             // Add CSRF token
             const csrfToken = document.createElement('input');
             csrfToken.type = 'hidden';
             csrfToken.name = '_token';
             csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             form.appendChild(csrfToken);
-           
+
             // Add method override
             const methodField = document.createElement('input');
             methodField.type = 'hidden';
             methodField.name = '_method';
             methodField.value = 'DELETE';
             form.appendChild(methodField);
-           
+
             // Submit the form
             document.body.appendChild(form);
             form.submit();
@@ -441,4 +439,3 @@
 
 
 @endsection
-
