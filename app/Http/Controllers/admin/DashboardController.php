@@ -2,21 +2,39 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\User;
-use App\Models\Order;
-use App\Models\Report;
-use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __construct()
+    /**
+     * Display the dashboard page.
+     */
+    public function index(): View
     {
-        // $this->middleware(['auth', 'admin']);
-    }
+        // Get product statistics
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('is_active', true)
+            ->whereNull('deleted_at')
+            ->count();
 
-    public function index()
-    {
+        // Get recent products
+        $recentProducts = Product::with(['brand'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
 
-        return view('admin.dashboard');
+        // Get user statistics
+        $totalUsers = User::count();
+        $activeUsers = $totalUsers; // No is_active column, use total user count
+
+        return view('admin.dashboard.index', compact(
+            'totalProducts',
+            'activeProducts',
+            'recentProducts',
+            'totalUsers',
+            'activeUsers'
+        ));
     }
 }

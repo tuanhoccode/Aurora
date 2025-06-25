@@ -51,6 +51,23 @@
                         </select>
                     </form>
                 </div>
+<<<<<<< HEAD
+=======
+                <div class="col-md-6 text-end">
+                    <button type="button" 
+                            class="btn btn-success rounded-pill px-4 bulk-restore-btn me-2" 
+                            style="display: none;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Khôi phục đã chọn (<span class="selected-count">0</span>)
+                    </button>
+                    <button type="button" 
+                            class="btn btn-danger rounded-pill px-4 bulk-delete-btn" 
+                            style="display: none;">
+                        <i class="bi bi-trash me-1"></i>
+                        Xóa vĩnh viễn đã chọn (<span class="selected-count">0</span>)
+                    </button>
+                </div>
+>>>>>>> origin/main
             </div>
 
             {{-- Brands Table --}}
@@ -59,6 +76,14 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
+<<<<<<< HEAD
+=======
+                                <th class="border-0" style="width: 40px">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="selectAll">
+                                    </div>
+                                </th>
+>>>>>>> origin/main
                                 <th class="border-0" style="width: 60px">
                                     <a href="{{ route('admin.brands.trash', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                        class="text-decoration-none text-dark d-flex align-items-center">
@@ -102,6 +127,17 @@
                         <tbody>
                             @foreach ($brands as $brand)
                                 <tr class="position-relative">
+<<<<<<< HEAD
+=======
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                   class="form-check-input brand-checkbox" 
+                                                   value="{{ $brand->id }}"
+                                                   data-name="{{ $brand->name }}">
+                                        </div>
+                                    </td>
+>>>>>>> origin/main
                                     <td class="text-muted">{{ $brand->id }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -148,6 +184,7 @@
                                     <td>
                                         <div class="d-flex justify-content-end gap-2">
                                             <button type="button" 
+<<<<<<< HEAD
                                                     class="btn btn-success btn-sm rounded-pill px-3" 
                                                     onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
                                                     data-bs-toggle="tooltip" 
@@ -160,6 +197,22 @@
                                                     data-bs-toggle="tooltip" 
                                                     title="Xóa vĩnh viễn">
                                                 <i class="bi bi-x-octagon"></i>
+=======
+                                                    class="btn btn-success btn-sm rounded-circle" 
+                                                    onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Khôi phục"
+                                                    style="width: 32px; height: 32px;">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm rounded-circle" 
+                                                    onclick="confirmForceDelete('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Xóa vĩnh viễn"
+                                                    style="width: 32px; height: 32px;">
+                                                <i class="bi bi-x-lg"></i>
+>>>>>>> origin/main
                                             </button>
                                         </div>
                                     </td>
@@ -238,6 +291,7 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 @push('scripts')
 <script>
     // Initialize tooltips
@@ -257,6 +311,195 @@
         document.getElementById('forceDeleteForm').action = `/admin/brands/force-delete/${id}`;
         new bootstrap.Modal(document.getElementById('forceDeleteModal')).show();
     }
+=======
+{{-- Bulk Restore Confirmation Modal --}}
+<div class="modal fade" id="bulkRestoreModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Xác nhận khôi phục hàng loạt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-arrow-counterclockwise text-success display-4"></i>
+                </div>
+                <p class="text-center mb-0">
+                    Bạn có chắc chắn muốn khôi phục <span id="bulkRestoreCount" class="fw-bold"></span> thương hiệu đã chọn?
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="submitBulkRestore()">Khôi phục</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Bulk Force Delete Confirmation Modal --}}
+<div class="modal fade" id="bulkForceDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Xác nhận xóa vĩnh viễn hàng loạt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                </div>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Cảnh báo: Hành động này không thể hoàn tác!
+                </div>
+                <p class="text-center mt-3 mb-0">
+                    Bạn có chắc chắn muốn xóa vĩnh viễn <span id="bulkForceDeleteCount" class="fw-bold"></span> thương hiệu đã chọn?
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitBulkForceDelete()">Xóa vĩnh viễn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Bulk selection handling
+        let selectedBrands = new Set();
+        const bulkRestoreBtn = document.querySelector('.bulk-restore-btn');
+        const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const brandCheckboxes = document.querySelectorAll('.brand-checkbox');
+
+        // Update UI based on selection
+        function updateBulkButtons() {
+            const count = selectedBrands.size;
+            document.querySelectorAll('.selected-count').forEach(el => {
+                el.textContent = count;
+            });
+            bulkRestoreBtn.style.display = count > 0 ? 'inline-block' : 'none';
+            bulkDeleteBtn.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+
+        // Handle individual checkbox changes
+        brandCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedBrands.add(this.value);
+                } else {
+                    selectedBrands.delete(this.value);
+                    selectAllCheckbox.checked = false;
+                }
+                updateBulkButtons();
+            });
+        });
+
+        // Handle select all checkbox
+        selectAllCheckbox.addEventListener('change', function() {
+            brandCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+                if (this.checked) {
+                    selectedBrands.add(checkbox.value);
+                } else {
+                    selectedBrands.delete(checkbox.value);
+                }
+            });
+            updateBulkButtons();
+        });
+
+        // Single restore confirmation
+        window.confirmRestore = function(id, name) {
+            document.getElementById('restoreBrandName').textContent = name;
+            document.getElementById('restoreForm').action = `/admin/brands/${id}/restore`;
+            new bootstrap.Modal(document.getElementById('restoreModal')).show();
+        };
+
+        // Single force delete confirmation
+        window.confirmForceDelete = function(id, name) {
+            document.getElementById('forceDeleteBrandName').textContent = name;
+            document.getElementById('forceDeleteForm').action = `/admin/brands/force-delete/${id}`;
+            new bootstrap.Modal(document.getElementById('forceDeleteModal')).show();
+        };
+
+        // Show bulk restore confirmation modal
+        bulkRestoreBtn.addEventListener('click', function() {
+            document.getElementById('bulkRestoreCount').textContent = selectedBrands.size;
+            new bootstrap.Modal(document.getElementById('bulkRestoreModal')).show();
+        });
+
+        // Show bulk force delete confirmation modal
+        bulkDeleteBtn.addEventListener('click', function() {
+            document.getElementById('bulkForceDeleteCount').textContent = selectedBrands.size;
+            new bootstrap.Modal(document.getElementById('bulkForceDeleteModal')).show();
+        });
+
+        // Submit bulk restore
+        window.submitBulkRestore = function() {
+            const ids = Array.from(selectedBrands);
+            
+            fetch('{{ route("admin.brands.bulk-restore") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Có lỗi xảy ra khi khôi phục thương hiệu');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi khôi phục thương hiệu');
+            });
+        };
+
+        // Submit bulk force delete
+        window.submitBulkForceDelete = function() {
+            const ids = Array.from(selectedBrands);
+            
+            fetch('{{ route("admin.brands.bulk-force-delete") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Có lỗi xảy ra khi xóa vĩnh viễn thương hiệu');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa vĩnh viễn thương hiệu');
+            });
+        };
+    });
+>>>>>>> origin/main
 </script>
 @endpush
 @endsection
