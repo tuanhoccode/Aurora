@@ -265,15 +265,13 @@
 
 	////////////////////////////////////////////////////
 	// 07. cartmini Js
-	$(".cartmini-open-btn").on("click", function () {
-		$(".cartmini__area").addClass("cartmini-opened");
-		$(".body-overlay").addClass("opened");
+	$('.cartmini-open-btn').on('click', function () {
+		$('.cartmini__area').addClass('active');
+		$('.cartmini__overlay').addClass('active');
 	});
-
-
-	$(".cartmini-close-btn").on("click", function () {
-		$(".cartmini__area").removeClass("cartmini-opened");
-		$(".body-overlay").removeClass("opened");
+	$('.cartmini-close-btn, .cartmini__overlay').on('click', function () {
+		$('.cartmini__area').removeClass('active');
+		$('.cartmini__overlay').removeClass('active');
 	});
 
 	////////////////////////////////////////////////////
@@ -2016,5 +2014,28 @@
 			classBtn : 'tp-btn tp-btn-border tp-btn-border-primary'
 		});
 	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+		const openBtn = document.querySelector('.cartmini-open-btn');
+		const minicart = document.querySelector('.cartmini__area');
+		const overlay = document.querySelector('.body-overlay');
+		const closeBtn = document.querySelector('.cartmini__close-btn');
+
+		if (openBtn && minicart && overlay && closeBtn) {
+			openBtn.addEventListener('click', function(e) {
+				e.preventDefault();
+				minicart.classList.add('active');
+				overlay.classList.add('active');
+			});
+			closeBtn.addEventListener('click', function() {
+				minicart.classList.remove('active');
+				overlay.classList.remove('active');
+			});
+			overlay.addEventListener('click', function() {
+				minicart.classList.remove('active');
+				overlay.classList.remove('active');
+			});
+		}
+	});
 
 })(jQuery);
