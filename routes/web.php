@@ -23,6 +23,7 @@ use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\OrderController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -252,5 +253,10 @@ Route::middleware('web')->group(function () {
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
     //changepassword
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
+
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    });
 
 });

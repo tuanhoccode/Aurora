@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ProductVariantRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Attribute;
@@ -35,7 +36,7 @@ class ProductVariantController extends Controller
     /**
      * Store new variants for a product.
      */
-    public function store(ProductVariantStoreRequest $request, Product $product)
+    public function store(ProductVariantRequest $request, Product $product)
     {
         try {
             $validatedData = $request->validated();

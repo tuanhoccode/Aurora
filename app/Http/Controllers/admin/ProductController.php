@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\Admin\ProductRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProductGallery;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
