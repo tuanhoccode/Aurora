@@ -27,6 +27,8 @@ use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ShoppingCartController;
+use App\Http\Controllers\Client\ContactController;
 
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -220,11 +222,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/', [HomeController::class, 'shop'])->name('home');
 
 // Chi tiết sản phẩm
-Route::get('/san-pham/{slug}', [ClientProductController::class, 'show'])
+Route::get('/product/{slug}', [ClientProductController::class, 'show'])
     ->name('client.product.show');
 
 // Chi tiết danh mục
-Route::get('/danh-muc/{id}', [CategoryController::class, 'show'])
+Route::get('/category/{id}', [CategoryController::class, 'show'])
     ->name('client.category.show');
 
 Route::middleware('web')->group(function () {
@@ -273,18 +275,22 @@ Route::middleware('web')->group(function () {
     //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
-    // Route::get('/profile-imformation', [ProfileController::class, 'showImformation'])->name('showImformation')->middleware('auth');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
     //changepassword
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
-    Route::get('/shopping-cart', [App\Http\Controllers\Client\ShoppingCartController::class, 'index'])->name('shopping-cart.index');
-    Route::get('/shopping-cart/checkout', [App\Http\Controllers\Client\ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
+    Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
+    Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
+    Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
 
     // Trang liên hệ
     Route::get('/contact', function() {
         return view('client.contact');
     })->name('contact');
-    Route::post('/contact', [App\Http\Controllers\Client\ContactController::class, 'send'])->name('contact.send');
+    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 });

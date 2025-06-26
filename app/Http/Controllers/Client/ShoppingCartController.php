@@ -16,10 +16,10 @@ class ShoppingCartController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        $cart = Cart::where('user_id', $userId)
-            ->where('status', 'pending')
-            ->with(['items.product', 'items.productVariant'])
-            ->first();
+        $cart = Cart::with([
+            'items.product',
+            'items.productVariant.attributeValues.attribute'
+        ])->where('user_id', $userId)->first();
 
         $cartItems = $cart ? $cart->items : collect();
         /** @var \Illuminate\Database\Eloquent\Collection|\App\Models\CartItem[] $cartItems */
@@ -35,6 +35,16 @@ class ShoppingCartController extends Controller
      */
     public function addToCart(Request $request)
     {
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!'
+                ], 401);
+            }
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
+        }
+
         $userId = Auth::id();
         $cart = Cart::firstOrCreate(
             ['user_id' => $userId, 'status' => 'pending'],
@@ -50,12 +60,21 @@ class ShoppingCartController extends Controller
             $item->quantity += $request->quantity;
             $item->save();
         } else {
+            $quantity = (int) $request->input('quantity', 1);
+            if ($quantity < 1) $quantity = 1;
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $request->product_id,
                 'product_variant_id' => $request->product_variant_id,
-                'quantity' => $request->quantity,
+                'quantity' => $quantity,
                 'price_at_time' => $request->price,
+            ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng!'
             ]);
         }
 
@@ -67,29 +86,53 @@ class ShoppingCartController extends Controller
      */
     public function removeFromCart($itemId)
     {
+        if (!Auth::check()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập!'
+                ], 401);
+            }
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập!');
+        }
+
         $userId = Auth::id();
         $cart = Cart::where('user_id', $userId)->where('status', 'pending')->first();
+        
         if ($cart) {
-            CartItem::where('cart_id', $cart->id)->where('id', $itemId)->delete();
+            $item = CartItem::where('cart_id', $cart->id)->where('id', $itemId)->first();
+            if ($item) {
+                $item->delete();
+                
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Đã xóa sản phẩm khỏi giỏ hàng!'
+                    ]);
+                }
+                return redirect()->back()->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng!');
+            }
         }
-        return redirect()->back()->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng!');
+        
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm!'
+            ], 404);
+        }
+        return redirect()->back()->with('error', 'Không tìm thấy sản phẩm!');
     }
 
     /**
      * Cập nhật số lượng sản phẩm trong giỏ hàng
      */
-    public function updateQuantity(Request $request, $itemId)
+    public function update(Request $request, $itemId)
     {
-        $userId = Auth::id();
-        $cart = Cart::where('user_id', $userId)->where('status', 'pending')->first();
-        if ($cart) {
-            $item = CartItem::where('cart_id', $cart->id)->where('id', $itemId)->first();
-            if ($item) {
-                $item->quantity = $request->quantity;
-                $item->save();
-            }
-        }
-        return redirect()->back()->with('success', 'Đã cập nhật số lượng!');
+        $item = CartItem::findOrFail($itemId);
+        $item->quantity = $request->input('quantity');
+        $item->save();
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -106,6 +149,26 @@ class ShoppingCartController extends Controller
     public function miniCart()
     {
         return view('client.shopping-cart.mini-cart');
+    }
+
+    /**
+     * Lấy số lượng sản phẩm trong giỏ hàng
+     */
+    public function getCartCount()
+    {
+        if (!Auth::check()) {
+            return response()->json(['count' => 0]);
+        }
+
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->with('items')
+            ->first();
+
+        $count = $cart ? $cart->items->sum('quantity') : 0;
+
+        return response()->json(['count' => $count]);
     }
 
     /**

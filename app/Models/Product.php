@@ -175,18 +175,12 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->thumbnail) {
-            return null;
+            return asset('assets2/img/product/2/default.png');
         }
-
-        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
-            return $this->thumbnail;
-        }
-
-        if (Storage::disk('public')->exists($this->thumbnail)) {
+        if (strpos($this->thumbnail, 'products/') === 0) {
             return asset('storage/' . $this->thumbnail);
         }
-
-        return null;
+        return asset('storage/products/' . $this->thumbnail);
     }
 
     public function reviews()
