@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="tp-footer-contact-item d-flex align-items-center">
                                     <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-location-dot"></i></span></div>
-                                    <div class="tp-footer-contact-content"><p><a>68 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội</a></p></div>
+                                    <div class="tp-footer-contact-content"><p><a>Tòa nhà FPT Polytechnic, Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội.</a></p></div>
                                 </div>
                             </div>
                         </div>

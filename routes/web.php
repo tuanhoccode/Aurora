@@ -265,8 +265,8 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/checkout', [App\Http\Controllers\Client\ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
 
     // Trang liên hệ
-    Route::get('/lien-he', function() {
+    Route::get('/contact', function() {
         return view('client.contact');
     })->name('contact');
-    Route::post('/lien-he', [App\Http\Controllers\Client\ContactController::class, 'send'])->name('contact.send');
+    Route::post('/contact', [App\Http\Controllers\Client\ContactController::class, 'send'])->name('contact.send');
 });
