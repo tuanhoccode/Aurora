@@ -1,6 +1,6 @@
 <!-- cart mini area start -->
 <div class="cartmini__overlay"></div>
-<div class="cartmini__area cartmini__style-darkRed">
+<div class="cartmini__area cartmini__style-neutral">
     <button type="button" class="cartmini__close-btn-new cartmini-close-btn" title="Đóng giỏ hàng">
         <i class="fa fa-times"></i>
     </button>
@@ -20,17 +20,59 @@
                 </div>
                 @if(isset($miniCartItems) && count($miniCartItems))
                     @foreach($miniCartItems as $item)
-                        <div class="cartmini__widget-item position-relative">
-                            <img src="{{ $item->image_url }}" alt="{{ $item->name }}">
-                            <div class="flex-grow-1">
-                                <div class="cartmini__item-title">{{ $item->name }}</div>
-                                @if(!empty($item->variant))
-                                    <div class="cartmini__item-variant">{{ $item->variant }}</div>
+                        <div class="cartmini__widget-item d-flex align-items-center">
+                            <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}">
+                            <div class="cartmini__item-info flex-grow-1">
+                                <div class="cartmini__item-title">{{ $item->product->name }}</div>
+                                @php
+                                    $variant = $item->productVariant;
+                                @endphp
+                                @if ($variant)
+                                    @php
+                                        $getAttrValue = function($entity, $keywords) {
+                                            if (!$entity || !isset($entity->attributeValues)) return null;
+                                            foreach ($entity->attributeValues as $attrVal) {
+                                                $attrName = strtolower($attrVal->attribute->name ?? '');
+                                                foreach ($keywords as $kw) {
+                                                    if (str_contains($attrName, $kw)) return $attrVal->value;
+                                                }
+                                            }
+                                            return null;
+                                        };
+                                        $size = $getAttrValue($variant, ['size', 'kích']);
+                                        $color = $getAttrValue($variant, ['color', 'màu']);
+                                        
+                                        $colorMap = [
+                                            'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
+                                            'vàng' => '#FFD600', 'đen' => '#000000', 'trắng' => '#FFFFFF', 'xám' => '#CBCBCB',
+                                            'tím' => '#800080', 'cam' => '#FFA500', 'hồng' => '#FF69B4',
+                                        ];
+                                        $colorHex = '#e0e0e0'; // Default color
+                                        if ($color) {
+                                            $colorKey = strtolower(trim($color));
+                                            foreach ($colorMap as $key => $hex) {
+                                                if (strpos($colorKey, $key) !== false) {
+                                                    $colorHex = $hex;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    @endphp
+                                    <div class="cartmini__item-variant d-flex align-items-center gap-3 mb-1">
+                                        <span class="cartmini__item-size">Size: <b>{{ $size ?? 'N/A' }}</b></span>
+                                        <span class="cartmini__item-color d-flex align-items-center">
+                                            Màu:
+                                            <span class="cartmini__color-dot ms-1" style="background:{{ $colorHex }}"></span>
+                                            <b class="ms-1">{{ $color ?? 'N/A' }}</b>
+                                        </span>
+                                    </div>
                                 @endif
-                                <div class="cartmini__item-qty">Số lượng: {{ $item->quantity }}</div>
+                                <div class="cartmini__item-qty">Số lượng: <b>{{ $item->quantity }}</b></div>
                             </div>
-                            <div class="cartmini__item-price">{{ number_format($item->price * $item->quantity, 0, ',', '.') }}₫</div>
-                            <button class="cartmini__remove-btn" title="Xóa sản phẩm" data-id="{{ $item->id }}"><i class="fa fa-trash"></i></button>
+                            <div class="cartmini__item-actions">
+                                <div class="cartmini__item-price">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
+                                <button class="cartmini__remove-btn" title="Xóa sản phẩm" data-id="{{ $item->id }}"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
                         </div>
                     @endforeach
                 @else
@@ -44,208 +86,32 @@
         </div>
         <div class="cartmini__checkout">
             <div class="cartmini__checkout-title mb-20 d-flex align-items-center justify-content-between">
-                <h4 class="mb-0">Tổng phụ:</h4>
-                <span id="cartmini-subtotal" class="fw-bold" style="font-size:1.25rem;color:#861944;">{{ isset($miniCartSubtotal) ? number_format($miniCartSubtotal, 0, ',', '.') . ' ₫' : '0 ₫' }}</span>
+                <h4 class="mb-0">Tổng Phụ:</h4>
+                <span id="cartmini-subtotal" class="fw-bold">{{ isset($miniCartSubtotal) ? number_format($miniCartSubtotal, 0, ',', '.') . ' ₫' : '0 ₫' }}</span>
             </div>
             <div class="cartmini__checkout-btn">
-                <a href="{{ route('shopping-cart.index') }}" class="tp-btn tp-btn-border w-100 mb-10">Xem giỏ hàng</a>
+                <a href="{{ route('shopping-cart.index') }}" class="tp-btn tp-btn-border w-100 mb-10">Xem Giỏ Hàng</a>
                 <a href="{{ route('shopping-cart.checkout') }}" class="tp-btn w-100 tp-btn-checkout">Thanh toán</a>
             </div>
         </div>
     </div>
 </div>
-<!-- cart mini area end -->
 
 <style>
-.cartmini__widget-item {
-    background: #f8f6fa;
-    box-shadow: 0 2px 8px rgba(134,25,68,0.07);
-    border: 1.5px solid #e2c6d6;
-    border-radius: 18px;
-    transition: box-shadow 0.2s, background 0.2s, transform 0.18s;
-    display: flex;
-    align-items: center;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    position: relative;
-}
-.cartmini__widget-item:hover {
-    background: #f3e6ef;
-    box-shadow: 0 6px 20px rgba(134,25,68,0.13);
-    transform: translateY(-2px) scale(1.025);
-}
-.cartmini__widget-item img {
-    width: 68px;
-    height: 68px;
-    object-fit: cover;
-    border-radius: 14px;
-    margin-right: 16px;
-    border: 2px solid #e2c6d6;
-    background: #fff;
-    box-shadow: 0 1px 4px rgba(134,25,68,0.07);
-}
-.cartmini__widget-item .flex-grow-1 {
-    min-width: 0;
-}
-.cartmini__widget-item .cartmini__remove-btn {
-    background: #fff;
-    border: 1.5px solid #f44336;
-    color: #f44336;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.15rem;
-    margin-left: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.18s;
-    box-shadow: 0 1px 4px rgba(244,67,54,0.07);
-    padding: 0;
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 2;
-}
-.cartmini__widget-item .cartmini__remove-btn:hover, .cartmini__widget-item .cartmini__remove-btn:focus {
-    background: #f44336;
-    color: #fff;
-    border: 1.5px solid #f44336;
-    box-shadow: 0 2px 8px rgba(244,67,54,0.13);
-}
-.cartmini__item-title {
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: #222d3a;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.cartmini__item-variant {
-    font-size: 0.97rem;
-    color: #888;
-    margin-bottom: 2px;
-}
-.cartmini__item-qty {
-    font-size: 0.97rem;
-    color: #861944;
-    font-weight: 500;
-}
-.cartmini__item-price {
-    font-weight: 700;
-    color: #861944;
-    margin-left: 10px;
-    font-size: 1.08rem;
-    white-space: nowrap;
-}
-.cartmini__checkout-title h4 {
-    font-size: 1.13rem;
-    font-weight: 600;
-    color: #222d3a;
-}
-.cartmini__checkout-title span {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #861944;
-}
-.cartmini__checkout-btn .tp-btn,
-.cartmini__checkout-btn .tp-btn-border,
-.cartmini__checkout-btn .tp-btn-checkout {
-    background: #861944;
-    color: #fff;
-    border: 1.5px solid #861944;
-    border-radius: 999px;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 10px 0;
-    margin-bottom: 6px;
-    transition: background 0.25s, color 0.2s, border 0.2s, box-shadow 0.2s, transform 0.15s;
-    box-shadow: 0 2px 8px rgba(134,25,68,0.08);
-}
-.cartmini__checkout-btn .tp-btn:hover,
-.cartmini__checkout-btn .tp-btn-border:hover,
-.cartmini__checkout-btn .tp-btn-checkout:hover,
-.tp-btn:hover,
-.tp-btn-border:hover,
-.tp-btn-checkout:hover {
-    background: #fff !important;
-    color: #861944 !important;
-    border: 1.5px solid #861944 !important;
-    box-shadow: 0 4px 16px rgba(134,25,68,0.13);
-    transform: translateY(-2px) scale(1.03);
-}
-.cartmini__empty img {
-    width: 90px;
-    margin-bottom: 18px;
-}
-.cartmini__empty p {
-    font-size: 1.1rem;
-    color: #888;
-    margin-bottom: 18px;
-}
-.cartmini__empty .tp-btn {
-    background: #861944;
-    color: #fff;
-    border-radius: 999px;
-    font-weight: 600;
-    padding: 10px 28px;
-    font-size: 1rem;
-    transition: background 0.25s, color 0.2s, border 0.2s, box-shadow 0.2s, transform 0.15s;
-    box-shadow: 0 2px 8px rgba(134,25,68,0.08);
-    border: 1.5px solid #861944;
-}
-.cartmini__empty .tp-btn:hover {
-    background: #fff;
-    color: #861944;
-    border: 1.5px solid #861944;
-    box-shadow: 0 4px 16px rgba(134,25,68,0.13);
-    transform: translateY(-2px) scale(1.03);
-}
-@media (max-width: 600px) {
-    .cartmini__widget-item {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px 8px;
-    }
-    .cartmini__widget-item img {
-        width: 90vw;
-        max-width: 120px;
-        height: 60vw;
-        max-height: 80px;
-        margin-bottom: 8px;
-    }
-    .cartmini__item-title, .cartmini__item-variant, .cartmini__item-qty, .cartmini__item-price {
-        font-size: 1.05rem;
-    }
-    .cartmini__item-price {
-        margin-left: 0;
-        margin-top: 4px;
-    }
-    .cartmini__widget-item .cartmini__remove-btn {
-        top: 8px;
-        right: 8px;
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
-    }
-    .cartmini__area {
-        width: 95vw; /* On mobile, take up most of the screen */
-        min-width: initial; /* Reset min-width */
-    }
-}
-.cartmini__area {
+.cartmini__area.cartmini__style-neutral {
+    background-color: #f8f9fa;
+    border-left: 1px solid #e9ecef;
     width: 33.33vw;
-    min-width: 400px;
+    min-width: 420px;
     max-width: 550px;
 }
+
 .cartmini__close-btn-new {
     position: absolute;
-    top: 15px;
-    right: 18px;
+    top: 20px;
+    right: 24px;
     font-size: 1.5rem;
-    color: #888;
+    color: #909090;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -258,5 +124,203 @@
     transform: rotate(90deg) scale(1.15);
     color: #f44336;
 }
+
+.cartmini__top-title h4 {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 1.5rem;
+    padding: 1.5rem 1.75rem 1rem;
+    margin-bottom: 0;
+}
+
+.cartmini__widget {
+    padding: 0 1.75rem;
+}
+
+.cartmini__widget-item {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cartmini__widget-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.cartmini__widget-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #f0f2f5;
+    flex-shrink: 0;
+}
+
+.cartmini__item-info {
+    min-width: 0; /* Important for flexbox ellipsis */
+    flex-grow: 1;
+    padding-top: 2px;
+}
+
+.cartmini__item-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.cartmini__item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem; /* 12px */
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.cartmini__item-variant {
+    font-size: 0.9rem;
+    color: #718096;
+    margin-bottom: 0.35rem;
+}
+
+.cartmini__item-variant b {
+    color: #4a5568;
+}
+
+.cartmini__color-dot {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    vertical-align: middle;
+}
+
+.cartmini__item-qty {
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.cartmini__item-price {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 1rem;
+    white-space: nowrap;
+    margin-bottom: auto; /* Pushes price to the top */
+}
+
+.cartmini__remove-btn {
+    background: #f1f3f5;
+    border: 1px solid #f1f3f5;
+    color: #868e96;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+}
+.cartmini__remove-btn:hover, .cartmini__remove-btn:focus {
+    background: #e64951;
+    border-color: #e64951;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* Checkout Area */
+.cartmini__checkout {
+    background: #fff;
+    padding: 1.5rem 1.75rem;
+    border-top: 1px solid #e9ecef;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+}
+
+.cartmini__checkout-title h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4a5568;
+    padding: 0;
+}
+.cartmini__checkout-title span {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #c81f55;
+}
+
+.cartmini__checkout-btn .tp-btn {
+    width: 100%;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.85rem;
+    transition: all 0.2s;
+}
+
+.cartmini__checkout-btn .tp-btn-border {
+    background-color: #fff;
+    color: #2d3748;
+    border: 1px solid #dee2e6;
+}
+.cartmini__checkout-btn .tp-btn-border:hover {
+    background-color: #f8f9fa;
+    color: #1a202c;
+    border-color: #ced4da;
+}
+
+.cartmini__checkout-btn .tp-btn-checkout {
+    background-color: #1a202c;
+    color: #fff;
+    border: 1px solid #1a202c;
+}
+.cartmini__checkout-btn .tp-btn-checkout:hover {
+    background-color: #000;
+    border-color: #000;
+    transform: translateY(-2px);
+}
+
+/* Empty Cart */
+.cartmini__empty {
+    padding: 4rem 1rem;
+    text-align: center;
+}
+.cartmini__empty img {
+    max-width: 100px;
+    margin-bottom: 1.5rem;
+}
+.cartmini__empty p {
+    font-size: 1rem;
+    color: #718096;
+    margin-bottom: 1.5rem;
+}
+.cartmini__empty .tp-btn {
+    background: #1a202c;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+}
+.cartmini__empty .tp-btn:hover {
+    background: #000;
+}
+
 </style>
 <!-- Đã loại bỏ toàn bộ script dữ liệu mẫu. Hãy dùng JS thực tế để render dữ liệu mini-cart. -->

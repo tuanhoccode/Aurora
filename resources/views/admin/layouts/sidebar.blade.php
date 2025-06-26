@@ -88,6 +88,17 @@
             </a>
         </li>
         <li>
+            <a
+                class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
+                href="{{ route('admin.product-images.all') }}"
+            >
+                <span class="nav-icon">
+                    <i class="fas fa-images"></i>
+                </span>
+                Quản lý ảnh
+            </a>
+        </li>
+        <li>
             <a class="nav-link {{ request()->routeIs('admin.stocks.index') ? 'active' : '' }}" href="{{ route('admin.stocks.index') }}">
                 <span class="nav-icon"><i class="fas fa-boxes"></i></span> Tồn kho
             </a>

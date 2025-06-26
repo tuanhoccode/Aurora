@@ -72,4 +72,15 @@ class ProductVariant extends Model
         }
         return 0;
     }
+
+    public function images()
+    {
+        return $this->hasMany(ProductGallery::class, 'product_variant_id');
+    }
+
+    public function productVariant()
+    {
+        return $this->belongsTo(\App\Models\ProductVariant::class, 'product_variant_id');
+    }
+
 }
