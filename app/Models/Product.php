@@ -64,14 +64,14 @@ class Product extends Model
             if ($product->isDirty('name')) {
                 $originalSlug = $product->getOriginal('slug');
                 $newSlug = Str::slug($product->name);
-                
+
                 // Kiểm tra xem slug đã tồn tại chưa
                 $count = 1;
                 while (Product::where('slug', $newSlug)->where('id', '!=', $product->id)->exists()) {
                     $newSlug = Str::slug($product->name) . '-' . $count;
                     $count++;
                 }
-                
+
                 $product->slug = $newSlug;
             }
         });
@@ -188,4 +188,11 @@ class Product extends Model
 
         return null;
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+
 }

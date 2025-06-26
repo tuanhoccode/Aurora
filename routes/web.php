@@ -2,6 +2,7 @@
 
 
 
+use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\StockController;
 
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,8 @@ use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -196,18 +199,33 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
 
-    // Quản lý tồn kho sản phẩm - product_stocks
-    Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
-    Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
-    Route::resource('stocks', StockController::class)->except(['show']);
-    Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
-});
+        // Quản lý tồn kho sản phẩm - product_stocks
+        Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
+        Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
+        Route::resource('stocks', StockController::class)->except(['show']);
+        Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
+
+        // Quản lý ảnh phụ
+        Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
+        Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
+        Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
+        Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+    });
+
 
 
 
 //Client
+
 Route::get('/', [HomeController::class, 'shop'])->name('home');
 
+// Chi tiết sản phẩm
+Route::get('/san-pham/{slug}', [ClientProductController::class, 'show'])
+    ->name('client.product.show');
+
+// Chi tiết danh mục
+Route::get('/danh-muc/{id}', [CategoryController::class, 'show'])
+    ->name('client.category.show');
 
 Route::middleware('web')->group(function () {
     //login & register
