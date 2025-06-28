@@ -242,3 +242,9 @@ Route::get('/auth/google', function () {
 
 //Callback từ gg
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+// Client Category
+Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+    Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+});

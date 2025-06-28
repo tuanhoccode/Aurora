@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\ViewErrorBag;
+use App\Models\Category;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         
+        view()->composer('*', function ($view) {
+            $view->with('headerCategories', Category::where('is_active', 1)->get());
+            $view->with('latestCategories', Category::where('is_active', 1)->orderByDesc('id')->take(3)->get());
+        });
     }
 }
