@@ -221,8 +221,19 @@
                                                     stroke-width="1.5" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                             </svg>
-                                            <span class="tp-header-action-badge">
-                                                {{ session('cart') ? count(session('cart')) : 0 }}
+                                            <span class="tp-header-action-badge cart-count">
+                                                @if(Auth::check())
+                                                    @php
+                                                        $cart = \App\Models\Cart::where('user_id', Auth::id())
+                                                            ->where('status', 'pending')
+                                                            ->with('items')
+                                                            ->first();
+                                                        $cartCount = $cart ? $cart->items->count() : 0;
+                                                    @endphp
+                                                    {{ $cartCount }}
+                                                @else
+                                                    0
+                                                @endif
                                             </span>
                                         </button>
                                     </div>

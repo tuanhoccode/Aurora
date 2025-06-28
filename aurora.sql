@@ -1,4 +1,5 @@
 -- phpMyAdmin SQL Dump
+
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
@@ -6,6 +7,7 @@
 -- Generation Time: Jun 19, 2025 at 02:13 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.20
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -401,7 +403,9 @@ INSERT INTO `login_logs` (`id`, `user_id`, `session_id`, `ip_address`, `user_age
 (114, 15, 'XjK6C6Hl80JQS9rCHNSyGeLVZmyixXpa8oxTaoby', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Avast/131.0.0.0', '2025-06-18 18:35:38', 1, 0, '2025-06-18 18:35:38', '2025-06-18 18:35:38'),
 (115, 16, 'h4J9I8mZKmiVjwuGKvrxPTaOodNhVxJhnovJNgbm', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', '2025-06-18 18:37:10', 0, 0, '2025-06-18 18:37:10', '2025-06-18 18:39:02'),
 (116, 16, 'JPrCExmJAG4i2WHwzbxu8C8pADQwJeElXT9yx1jv', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Avast/131.0.0.0', '2025-06-18 18:38:37', 1, 0, '2025-06-18 18:38:37', '2025-06-18 18:38:37'),
+
 (117, 16, 'S6JhCu5Trd2dd540hppGHKo7P5T3lFyDHmPfCnbL', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', '2025-06-18 18:40:05', 1, 0, '2025-06-18 18:40:05', '2025-06-18 18:40:05');
+
 
 -- --------------------------------------------------------
 
@@ -562,6 +566,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `brand_id`, `name`, `slug`, `views`, `short_description`, `description`, `thumbnail`, `type`, `sku`, `price`, `sale_price`, `stock`, `is_sale`, `is_active`, `created_at`, `updated_at`, `deleted_at`) VALUES
+
 (1, 3, 'Nike', 'nike', 2, '22', '<p>222</p>', 'products/PRD-ggg-1749541909.png', 'simple', 'PRD-222', '200000.00', NULL, 5, 2, 0, '2025-06-04 15:21:41', '2025-06-18 08:50:29', '2025-06-18 08:50:29'),
 (2, 6, 'Quần Adidas', 'quan-adidas', 0, 'S', '<p>s</p>', 'products/PRD-ao-1749541104.png', 'variant', 'PRD-SP001', '200000.00', NULL, 0, 0, 0, '2025-06-10 00:38:24', '2025-06-18 08:51:04', NULL),
 (3, 3, 'Áo Nike', '', 0, 'Áo', '<p>Nike</p>', 'products/product-ao-nike-1749545671.png', 'simple', 'PRD-SP006', '200000.00', '180000.00', 0, 1, 1, '2025-06-10 01:48:29', '2025-06-18 08:51:10', '2025-06-18 08:51:10'),
@@ -578,6 +583,7 @@ INSERT INTO `products` (`id`, `brand_id`, `name`, `slug`, `views`, `short_descri
 (15, 6, 'Áo polo1111', 'ao-polo1111', 0, '12345678987654', '<p>123456776543</p>', 'products/product-ao-polo1111-1750264191.jpg', 'simple', 'PRD-TEPLX', '19000.00', NULL, 19, 0, 1, '2025-06-18 09:29:51', '2025-06-18 09:29:51', NULL),
 (16, 6, 'quần tây1', 'quan-tay1', 0, '76543234', '<p>1234565432</p>', 'products/product-quan-tay-1750265550.jpg', 'variant', 'PRD-AGQBB', '30000.00', NULL, NULL, 0, 1, '2025-06-18 09:52:30', '2025-06-18 18:50:31', NULL),
 (17, 3, 'Áo meno', 'ao-meno', 0, '123456787654', '<p>12345wqwe</p>', 'products/product-ao-meno-1750297312.jpg', 'simple', 'PRD-SQ63T', '20.00', NULL, 23, 0, 1, '2025-06-18 18:41:52', '2025-06-18 18:41:52', NULL);
+
 
 -- --------------------------------------------------------
 
@@ -630,6 +636,7 @@ CREATE TABLE `product_variants` (
 --
 
 INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `stock`, `regular_price`, `sale_price`, `img`, `created_at`, `updated_at`) VALUES
+
 (1, 5, 'Á-S-XA', 5, '200000.00', '100000.00', 'products/variants/02gylVu5kKAHN0Gm97O9nmzZttDY6oKm81fclVCm.png', '2025-06-11 19:40:53', '2025-06-12 04:42:20'),
 (13, 5, 'Á-L-ĐỎ', 3, '200000.00', '150000.00', 'products/variants/26DWh7fmgGz1VyvaAwt6wUr1H3EAOxKj3XPC9lSp.png', '2025-06-11 20:09:44', '2025-06-11 20:09:44'),
 (15, 6, 'SH-S-XA', 5, '200000.00', '100000.00', 'products/variants/zBljQ5CjVhWFM9MHXTXr9sSMCTlFQJXdXEim75Sg.png', '2025-06-12 04:16:01', '2025-06-17 04:06:51'),
@@ -642,6 +649,7 @@ INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `stock`, `regular_pri
 (30, 10, 'HA-L-DO', 2, '200000.00', '100000.00', 'products/variants/4ZPDTspUG9ySfvrtSeQIfzrSWexC94NIMJEWMlBv.png', '2025-06-17 20:54:23', '2025-06-17 20:54:23'),
 (31, 12, 'AO-M-XA', 8, '100000.00', '90000.00', 'products/variants/lShmfpoNTTAR9JUVUiWWjA6LYItsemtMvsZSAH5d.jpg', '2025-06-18 09:00:32', '2025-06-18 09:03:06'),
 (32, 16, 'PA-M-XA', 70, '38000.00', '30000.00', 'products/variants/JaySxTtdKgaSjXw3VgVjSD1yp9EDv3TydRhfDwrE.jpg', '2025-06-18 09:53:07', '2025-06-18 09:53:07');
+
 
 -- --------------------------------------------------------
 
@@ -730,9 +738,11 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+
 ('dds4xibDPNzTDWr3t11PpbQfBY5e8JPmJnJ9MVTi', 16, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOFdhaDA0VE11ZEdYRTNjYnNlZVhmdmtMODg1c3ZaR0ZMYW1pNmJUbCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NTY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hc3NldHMvd2ViZm9udHMvZmEtc29saWQtOTAwLndvZmYyIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTY7fQ==', 1750297882),
 ('Dx4kFEAv7hJbUVpni1dM5cIfDG3ErF0BexS4YOdT', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoid3hWcmh0QW1kQUVndU1yZkxLR3NSR3U2QktxZDNpQ3ZoSzNaWjV0VCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9mb3Jnb3QtcGFzc3dvcmQiO319', 1750297171),
 ('JPrCExmJAG4i2WHwzbxu8C8pADQwJeElXT9yx1jv', 16, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Avast/131.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYndvaVBUWjBSVFY3dklJYjBSNDBmRXFhdVpiSmxoblhrMHhFV0E1RCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbi1oaXN0b3J5Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTY7fQ==', 1750297142);
+
 
 -- --------------------------------------------------------
 
@@ -798,7 +808,9 @@ INSERT INTO `users` (`id`, `phone_number`, `email`, `password`, `fullname`, `ava
 (11, '0319385331', 'rachael37@example.net', '$2y$12$2eoOd5Yi7oWfxWFSLkmgBOh9Utj23bBnxNLDM6Zgfqm.WTTqL8.Mq', 'Hollis Moore', 'default.png', 'other', '2006-02-25', 'customer', 'active', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, '2025-06-03 06:28:03', '2025-06-03 06:28:03'),
 (14, NULL, 'thanhngo7112005@gmail.com', '$2y$12$kMPg5D3VWbRSi5Icjbe30etd/pYMqN.jopHZaMVExXxz8UO1f0fGu', 'THÀNH NGÔ', NULL, NULL, NULL, 'customer', 'active', NULL, NULL, NULL, NULL, 0, NULL, '2025-06-18 09:59:48', '101273778499572064319', '2025-06-18 09:57:54', '2025-06-18 09:59:48'),
 (15, NULL, 'thanhntph49043@gmail.com', '$2y$12$M/5dl2Wo5J3B3.tjDmbHKe0YOENiThfCb04bbVV2MYmAhGLu.MMby', 'Ngô Trung Thành PH 4 9 0 4 3', NULL, NULL, NULL, 'customer', 'active', NULL, NULL, NULL, NULL, 0, NULL, '2025-06-18 18:35:38', '102068162118645501876', '2025-06-18 18:34:57', '2025-06-18 18:35:38'),
+
 (16, NULL, 'ngothanh678112005@gmail.com', '$2y$12$pcQhnRlP0kytKBaWNtUfb.6Z5hbgb83i7dsBzttUlhyk4EzZAx1i6', 't11', NULL, NULL, NULL, 'admin', 'active', NULL, NULL, NULL, NULL, 0, '5xnKUNPQ3TAb16rKuGUToDeMOZiP7dTG4qHrxmkb5uZ72b10SOskLT7b8NI6', '2025-06-18 18:36:50', NULL, '2025-06-18 18:36:30', '2025-06-19 01:40:30');
+
 
 -- --------------------------------------------------------
 
@@ -1148,7 +1160,9 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `login_logs`
 --
 ALTER TABLE `login_logs`
+
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -1232,7 +1246,9 @@ ALTER TABLE `temp_product_variants`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
+
   MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID người dùng', AUTO_INCREMENT=17;
+
 
 --
 -- AUTO_INCREMENT for table `user_addresses`

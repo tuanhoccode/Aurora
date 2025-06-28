@@ -1,14 +1,19 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductGallery extends Model
+class Review extends Model
 {
     protected $fillable = [
         'product_id',
-        'product_variant_id',
-        'url',
+        'order_id',
+        'user_id',
+        'rating',
+        'review_text',
+        'reason',
+        'is_active',
     ];
 
     public function product()
@@ -16,8 +21,8 @@ class ProductGallery extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function variant()
+    public function user()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(User::class);
     }
 }

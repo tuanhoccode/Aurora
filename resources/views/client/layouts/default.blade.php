@@ -9,6 +9,7 @@
    <title>@yield('title', 'Aurora') </title>
    <meta name="description" content="">
    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="csrf-token" content="{{ csrf_token() }}">
 
    <!-- Place favicon.ico in the root directory -->
    <link rel="shortcut icon" type="image/x-icon" href="{{asset('assets2/img/logo/favicon.png')}}">
@@ -91,7 +92,11 @@
    <script src="{{asset('assets2/js/isotope-pkgd.js')}}"></script>
    <script src="{{asset('assets2/js/imagesloaded-pkgd.js')}}"></script>
    <script src="{{asset('assets2/js/ajax-form.js')}}"></script>
+   <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+   <script src="/assets2/js/vendor/imagesloaded.pkgd.min.js"></script>
    <script src="{{asset('assets2/js/main.js')}}"></script>
+
+   @yield('scripts')
 </body>
 
 <!-- Mirrored from html.storebuild.shop/shofy-prv/shofy/index-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 18 May 2025 07:20:23 GMT -->

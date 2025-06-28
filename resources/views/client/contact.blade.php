@@ -133,16 +133,16 @@
                 <div class="contact__info mb-4">
                     <h4 class="mb-3">Thông tin liên hệ</h4>
                     <ul class="list-unstyled mb-0">
-                        <li><i class="fa fa-map-marker-alt"></i>68 Đường Trịnh Văn Bô - Phương Canh - Nam Từ Liêm - Hà Nội</li>
+                        <li><i class="fa fa-map-marker-alt"></i>Tòa nhà FPT Polytechnic, Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội.</li>
                         <li><i class="fa fa-envelope"></i> aurora@support.com</li>
                         <li><i class="fa fa-phone"></i> 0336689888</li>
                     </ul>
                 </div>
                 <div class="contact__map">
-                    <iframe src="https://www.google.com/maps?q=10.7769,106.7009&z=15&output=embed" width="100%" height="220" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3723.8639306974364!2d105.7446815!3d21.0381298!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313455e940879933%3A0xcf10b34e9f1a03df!2zVHLGsOG7nW5nIENhbyDEkeG6s25nIEZQVCBQb2x5dGVjaG5pYw!5e0!3m2!1svi!2s!4v1750843961896!5m2!1svi!2s"  width="100%" height="220" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </div>
     </div>
 </section>
-@endsection 
+@endsection

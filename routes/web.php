@@ -1,13 +1,15 @@
 <?php
 
 
+
+use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\StockController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-
 
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -24,9 +26,10 @@ use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\ProfileController;
-use App\Http\Controllers\Client\ShoppingCartController; 
-use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Client\ContactController;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -34,6 +37,8 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Two\GoogleProvider;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\client\OrderController;
 
 use function Laravel\Prompts\password;
 
@@ -44,7 +49,6 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
 
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
@@ -199,53 +203,68 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
 
-    // Quản lý tồn kho sản phẩm - product_stocks
-    Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
-    Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
-    Route::resource('stocks', StockController::class)->except(['show']);
-    Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
-});
+        // Quản lý tồn kho sản phẩm - product_stocks
+        Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
+        Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
+        Route::resource('stocks', StockController::class)->except(['show']);
+        Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
+
+        // Quản lý ảnh phụ
+        Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
+        Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
+        Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
+        Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+    });
+
 
 
 
 //Client
-Route::get('/', function () {
-    return view('client.home');
-})->name('home');
+
+Route::get('/', [HomeController::class, 'shop'])->name('home');
+
+// Chi tiết sản phẩm
+Route::get('/product/{slug}', [ClientProductController::class, 'show'])
+    ->name('client.product.show');
+
+// Chi tiết danh mục
+Route::get('/category/{id}', [CategoryController::class, 'show'])
+    ->name('client.category.show');
+
 Route::middleware('web')->group(function () {
-    // ->middleware(['auth', 'verified'])
-    //login & registerregister
+    //login & register
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('showRegister');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
     //404
     Route::fallback([ErrorController::class, 'notFound']);
+
     //reset password nhập email
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
 
-    //form nhập mk mới
+    //form nhập mật khẩu mới
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
     //Xác thực email khi đăng ký thành công
-    //trang thông báo
     Route::get('/email/verify', function () {
         return view('client.auth.verify-email');
     })->middleware('auth')->name('verification.notice');
-    //Xử lý xác thực từ link
-    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])->middleware(['signed'])
-        ->name('verification.verify');;
-    //Gửi lại link xác thực
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed'])->name('verification.verify');
+
     Route::post('/email/verification-notification', function (Request $req) {
         $req->user()->sendEmailVerificationNotification();
         return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
     })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
     //Trang lịch sử đăng nhập
     Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
-    //đăng xuất tất cả hỏi các tb
     Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
     //điều hướng đến gg
     Route::get('/auth/google', function () {
@@ -258,13 +277,12 @@ Route::middleware('web')->group(function () {
     //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
-    // Route::get('/profile-imformation', [ProfileController::class, 'showImformation'])->name('showImformation')->middleware('auth');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
     //changepassword
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
-   Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
     Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
     Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
     Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
@@ -273,13 +291,13 @@ Route::middleware('web')->group(function () {
     Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
 
     // Trang liên hệ
-    Route::get('/lien-he', function() {
+    Route::get('/contact', function() {
         return view('client.contact');
     })->name('contact');
-     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
-      Route::middleware(['auth'])->prefix('client')->group(function () {
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
     });
 });
