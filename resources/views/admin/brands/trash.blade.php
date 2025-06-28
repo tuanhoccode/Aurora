@@ -51,6 +51,8 @@
                         </select>
                     </form>
                 </div>
+<<<<<<< HEAD
+=======
                 <div class="col-md-6 text-end">
                     <button type="button" 
                             class="btn btn-success rounded-pill px-4 bulk-restore-btn me-2" 
@@ -65,6 +67,7 @@
                         Xóa vĩnh viễn đã chọn (<span class="selected-count">0</span>)
                     </button>
                 </div>
+>>>>>>> origin/main
             </div>
 
             {{-- Brands Table --}}
@@ -73,11 +76,14 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
+<<<<<<< HEAD
+=======
                                 <th class="border-0" style="width: 40px">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="selectAll">
                                     </div>
                                 </th>
+>>>>>>> origin/main
                                 <th class="border-0" style="width: 60px">
                                     <a href="{{ route('admin.brands.trash', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                        class="text-decoration-none text-dark d-flex align-items-center">
@@ -121,6 +127,8 @@
                         <tbody>
                             @foreach ($brands as $brand)
                                 <tr class="position-relative">
+<<<<<<< HEAD
+=======
                                     <td>
                                         <div class="form-check">
                                             <input type="checkbox" 
@@ -129,6 +137,7 @@
                                                    data-name="{{ $brand->name }}">
                                         </div>
                                     </td>
+>>>>>>> origin/main
                                     <td class="text-muted">{{ $brand->id }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -175,6 +184,20 @@
                                     <td>
                                         <div class="d-flex justify-content-end gap-2">
                                             <button type="button" 
+<<<<<<< HEAD
+                                                    class="btn btn-success btn-sm rounded-pill px-3" 
+                                                    onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Khôi phục">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm rounded-pill px-3" 
+                                                    onclick="confirmForceDelete('{{ $brand->id }}', '{{ $brand->name }}')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Xóa vĩnh viễn">
+                                                <i class="bi bi-x-octagon"></i>
+=======
                                                     class="btn btn-success btn-sm rounded-circle" 
                                                     onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
                                                     data-bs-toggle="tooltip" 
@@ -189,6 +212,7 @@
                                                     title="Xóa vĩnh viễn"
                                                     style="width: 32px; height: 32px;">
                                                 <i class="bi bi-x-lg"></i>
+>>>>>>> origin/main
                                             </button>
                                         </div>
                                     </td>
@@ -267,6 +291,27 @@
     </div>
 </div>
 
+<<<<<<< HEAD
+@push('scripts')
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    function confirmRestore(id, name) {
+        document.getElementById('restoreBrandName').textContent = name;
+        document.getElementById('restoreForm').action = `/admin/brands/${id}/restore`;
+        new bootstrap.Modal(document.getElementById('restoreModal')).show();
+    }
+
+    function confirmForceDelete(id, name) {
+        document.getElementById('forceDeleteBrandName').textContent = name;
+        document.getElementById('forceDeleteForm').action = `/admin/brands/force-delete/${id}`;
+        new bootstrap.Modal(document.getElementById('forceDeleteModal')).show();
+    }
+=======
 {{-- Bulk Restore Confirmation Modal --}}
 <div class="modal fade" id="bulkRestoreModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -454,6 +499,7 @@
             });
         };
     });
+>>>>>>> origin/main
 </script>
 @endpush
 @endsection

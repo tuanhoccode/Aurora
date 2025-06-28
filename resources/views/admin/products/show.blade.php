@@ -193,8 +193,8 @@
                                     <td><code>{{ $variant->sku }}</code></td>
                                     <td>
                                         @if($variant->img)
-                                            <img src="{{ asset('storage/' . $variant->img) }}" 
-                                                 class="img-thumbnail" 
+                                            <img src="{{ asset('storage/' . $variant->img) }}"
+                                                 class="img-thumbnail"
                                                  alt="Hình ảnh biến thể" style="max-width: 100px;">
                                         @else
                                             <span class="text-muted">Không có ảnh</span>
@@ -260,8 +260,8 @@
                 </div>
                 <div class="card-body">
                     @if($product->thumbnail)
-                    <img src="{{ asset('storage/' . $product->thumbnail) }}" 
-                         class="img-fluid rounded mb-3" 
+                    <img src="{{ asset('storage/' . $product->thumbnail) }}"
+                         class="img-fluid rounded mb-3"
                          alt="{{ $product->name }}">
                     @endif
 
@@ -269,8 +269,8 @@
                     <div class="row g-2">
                         @foreach(json_decode($product->gallery) as $image)
                         <div class="col-4">
-                            <img src="{{ asset('storage/' . $image) }}" 
-                                 class="img-fluid rounded" 
+                            <img src="{{ asset('storage/' . $image) }}"
+                                 class="img-fluid rounded"
                                  alt="Gallery image">
                         </div>
                         @endforeach
@@ -339,7 +339,7 @@
                     @method('DELETE')
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> 
+                        <i class="bi bi-trash"></i>
                         Chuyển vào thùng rác
                     </button>
                 </form>

@@ -66,7 +66,7 @@
                             <div class="card-body">
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Loại sản phẩm <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType" >
+                                    <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType">
                                         <option value="simple" {{ old('type') === 'simple' ? 'selected' : '' }}>Sản phẩm đơn giản</option>
                                         <option value="digital" {{ old('type') === 'digital' ? 'selected' : '' }}>Sản phẩm số</option>
                                         <option value="variant" {{ old('type') === 'variant' ? 'selected' : '' }}>Sản phẩm biến thể</option>
@@ -92,7 +92,7 @@
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Tên sản phẩm <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror" 
-                                        name="name" value="{{ old('name') }}"  placeholder="Nhập tên sản phẩm">
+                                        name="name" value="{{ old('name') }}" placeholder="Nhập tên sản phẩm">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -102,9 +102,9 @@
                                     <div class="col-md-6">
                                         <label class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
                                         <select class="form-select select2 @error('categories') is-invalid @enderror" 
-                                            name="categories[]" multiple >
+                                            name="categories[]" multiple>
                                             @foreach($categories as $category)
-                                                <option value="{{ $category->id }}" 
+                                                <option value="{{ $category->id }}"
                                                     {{ in_array($category->id, old('categories', [])) ? 'selected' : '' }}>
                                                     {{ $category->name }}
                                                 </option>
@@ -132,8 +132,8 @@
 
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Mô tả ngắn</label>
-                                    <textarea class="form-control @error('short_description') is-invalid @enderror" 
-                                        name="short_description" rows="2" 
+                                    <textarea class="form-control @error('short_description') is-invalid @enderror"
+                                        name="short_description" rows="2"
                                         placeholder="Nhập mô tả ngắn">{{ old('short_description') }}</textarea>
                                     @error('short_description')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -142,8 +142,8 @@
 
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Mô tả chi tiết</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" 
-                                        name="description" id="description" 
+                                    <textarea class="form-control @error('description') is-invalid @enderror"
+                                        name="description" id="description"
                                         rows="5">{{ old('description') }}</textarea>
                                     @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -163,7 +163,7 @@
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <input type="file" class="form-control @error('thumbnail') is-invalid @enderror" 
-                                        name="thumbnail" accept="image/*" >
+                                        name="thumbnail" accept="image/*">
                                     @error('thumbnail')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -186,7 +186,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">SKU</label>
-                                            <input type="text" class="form-control @error('sku') is-invalid @enderror" 
+                                            <input type="text" class="form-control @error('sku') is-invalid @enderror"
                                                 name="sku" value="{{ old('sku') }}">
                                             @error('sku')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -197,7 +197,7 @@
                                         <div class="mb-3">
                                             <label class="form-label">Giá <span class="text-danger">*</span></label>
                                             <input type="number" class="form-control @error('price') is-invalid @enderror" 
-                                                name="price" value="{{ old('price', 0) }}" min="0" step="1" >
+                                                name="price" value="{{ old('price', 0) }}" min="0" step="1">
                                             @error('price')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -207,7 +207,7 @@
 
                                 <div class="mb-3">
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="is_sale" id="isSale" 
+                                        <input type="checkbox" class="form-check-input" name="is_sale" id="isSale"
                                             {{ old('is_sale') ? 'checked' : '' }}>
                                         <label class="form-check-label" for="isSale">Đang giảm giá</label>
                                     </div>
@@ -216,8 +216,8 @@
                                 <div class="mb-3 sale-price-field" style="{{ old('is_sale') ? '' : 'display: none;' }}">
                                     <label class="form-label">Giá khuyến mãi</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control @error('sale_price') is-invalid @enderror" 
-                                               name="sale_price" value="{{ old('sale_price') }}" 
+                                        <input type="number" class="form-control @error('sale_price') is-invalid @enderror"
+                                               name="sale_price" value="{{ old('sale_price') }}"
                                                min="0" step="1000">
                                         <span class="input-group-text">đ</span>
                                     </div>
@@ -228,8 +228,8 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label">Tồn kho</label>
-                                    <input type="number" class="form-control @error('stock') is-invalid @enderror" 
-                                           name="stock" value="{{ old('stock', 0) }}" 
+                                    <input type="number" class="form-control @error('stock') is-invalid @enderror"
+                                           name="stock" value="{{ old('stock', 0) }}"
                                            min="0">
                                     @error('stock')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -250,7 +250,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-check form-switch">
-                                    <input type="checkbox" class="form-check-input" name="is_active" id="isActive" 
+                                    <input type="checkbox" class="form-check-input" name="is_active" id="isActive"
                                         {{ old('is_active', true) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="isActive">Kích hoạt</label>
                                 </div>
@@ -310,7 +310,3 @@
 @endpush
 
 @endsection
-
-
-
-

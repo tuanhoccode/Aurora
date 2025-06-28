@@ -28,7 +28,6 @@ class Product extends Model
         'is_sale',
         'views',
         'stock',
-        'gallery',
         'digital_file',
     ];
 
@@ -39,8 +38,12 @@ class Product extends Model
         'is_active' => 'boolean',
         'views' => 'integer',
         'stock' => 'integer',
-        'gallery' => 'array',
     ];
+
+    public function galleries()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
 
     protected static function boot()
     {
@@ -64,14 +67,14 @@ class Product extends Model
             if ($product->isDirty('name')) {
                 $originalSlug = $product->getOriginal('slug');
                 $newSlug = Str::slug($product->name);
-                
+
                 // Kiểm tra xem slug đã tồn tại chưa
                 $count = 1;
                 while (Product::where('slug', $newSlug)->where('id', '!=', $product->id)->exists()) {
                     $newSlug = Str::slug($product->name) . '-' . $count;
                     $count++;
                 }
-                
+
                 $product->slug = $newSlug;
             }
         });
@@ -106,14 +109,9 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function galleries()
-    {
-        return $this->hasMany(ProductGallery::class);
-    }
-
     public function stocks()
     {
-        return $this->hasMany(ProductStock::class);
+        return $this->hasMany(Stock::class);
     }
 
     public function attributeValues()
@@ -175,17 +173,18 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->thumbnail) {
-            return null;
+            return asset('assets2/img/product/2/default.png');
         }
-
-        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
-            return $this->thumbnail;
-        }
-
-        if (Storage::disk('public')->exists($this->thumbnail)) {
+        if (strpos($this->thumbnail, 'products/') === 0) {
             return asset('storage/' . $this->thumbnail);
         }
-
-        return null;
+        return asset('storage/products/' . $this->thumbnail);
     }
-} 
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+
+}

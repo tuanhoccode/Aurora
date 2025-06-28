@@ -153,12 +153,12 @@ class BrandController extends Controller
     {
         try {
             $brand = Brand::onlyTrashed()->findOrFail($id);
-            
+
             // Xóa logo nếu có
             if ($brand->logo) {
                 Storage::disk('public')->delete($brand->logo);
             }
-            
+
             $brand->forceDelete();
 
             return redirect()
@@ -204,7 +204,7 @@ class BrandController extends Controller
             }
 
             $brands = Brand::onlyTrashed()->whereIn('id', $ids)->get();
-            
+
             foreach ($brands as $brand) {
                 if ($brand->logo) {
                     Storage::disk('public')->delete($brand->logo);
@@ -283,9 +283,9 @@ class BrandController extends Controller
         try {
             $ids = $request->ids;
             $status = $request->status;
-            
+
             Brand::whereIn('id', $ids)->update(['is_active' => $status]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cập nhật trạng thái thành công'
