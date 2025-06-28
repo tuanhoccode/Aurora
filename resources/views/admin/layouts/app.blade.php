@@ -30,11 +30,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <!-- jQuery + Toastr JS (trước </body>) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
      <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-    
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -260,6 +260,10 @@
                                      src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=ffffff&size=128">
                             </a>
                             <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ route('home') }}" target="_blank">
+                                    <i class="fa fa-globe fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Xem trang khách
+                                </a>
                                 <a class="dropdown-item" href="#">
                                     <i class="fa fa-user fa-sm fa-fw me-2 text-gray-400"></i>
                                     Profile
@@ -279,7 +283,6 @@
                     @yield('content')
                 </main>
             </div>
-
             <!-- Footer -->
             <footer class="bg-white py-3 mt-auto shadow-sm">
                 <div class="container-fluid text-center">

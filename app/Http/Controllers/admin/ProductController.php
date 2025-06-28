@@ -101,7 +101,7 @@ class ProductController extends Controller
                         ->withErrors(['sku' => 'SKU đã tồn tại. Vui lòng chọn SKU khác.']);
                 }
             }
-            
+
             // Đảm bảo SKU có prefix PRD-
             if (!Str::startsWith(strtoupper($data['sku']), 'PRD-')) {
                 $data['sku'] = 'PRD-' . strtoupper($data['sku']);
@@ -197,7 +197,7 @@ class ProductController extends Controller
                 $query->with('attribute');
             }
         ]);
-        
+
         return view('admin.products.show', compact('product'));
     }
 
@@ -471,7 +471,7 @@ class ProductController extends Controller
     {
         try {
             $product = Product::onlyTrashed()->findOrFail($id);
-            
+
             // Xóa ảnh sản phẩm
             if ($product->thumbnail) {
                 Storage::disk('public')->delete($product->thumbnail);
@@ -479,7 +479,7 @@ class ProductController extends Controller
 
             // Xóa các liên kết
             $product->categories()->detach();
-            
+
             // Xóa vĩnh viễn sản phẩm
             $product->forceDelete();
 
@@ -535,7 +535,7 @@ class ProductController extends Controller
 
                 // Xóa các liên kết
                 $product->categories()->detach();
-                
+
                 // Xóa vĩnh viễn sản phẩm
                 $product->forceDelete();
             }

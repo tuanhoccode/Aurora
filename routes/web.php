@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Admin\StockController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
@@ -23,7 +24,9 @@ use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\ShoppingCartController; 
 use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\Client\ContactController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -39,7 +42,7 @@ Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 
@@ -195,6 +198,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-delete', [AttributeValueController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
+
+    // Quản lý tồn kho sản phẩm - product_stocks
+    Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
+    Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
+    Route::resource('stocks', StockController::class)->except(['show']);
+    Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
 });
 
 
@@ -242,11 +251,11 @@ Route::middleware('web')->group(function () {
     Route::get('/auth/google', function () {
         return Socialite::driver('google')->redirect();
     })->name('google.login');
-    
+
     //Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-    //Profile 
+    //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     // Route::get('/profile-imformation', [ProfileController::class, 'showImformation'])->name('showImformation')->middleware('auth');
@@ -254,9 +263,23 @@ Route::middleware('web')->group(function () {
     //changepassword
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
-    Route::middleware(['auth'])->prefix('client')->group(function () {
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-    });
+    // Shopping Cart routes
+   Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
+    Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
+    Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
+    Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
 
+    // Trang liên hệ
+    Route::get('/lien-he', function() {
+        return view('client.contact');
+    })->name('contact');
+     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+      Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
+    });
 });
