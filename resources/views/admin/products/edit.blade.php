@@ -74,7 +74,7 @@
                     <div class="card-body">
                         <div class="mb-4">
                             <label class="form-label fw-medium">Loại sản phẩm <span class="text-danger">*</span></label>
-                            <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType" required>
+                            <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType" >
                                 <option value="simple" {{ old('type', $product->type) === 'simple' ? 'selected' : '' }}>Sản phẩm đơn giản</option>
                                 <option value="digital" {{ old('type', $product->type) === 'digital' ? 'selected' : '' }}>Sản phẩm số</option>
                                 <option value="variant" {{ old('type', $product->type) === 'variant' ? 'selected' : '' }}>Sản phẩm biến thể</option>
@@ -144,7 +144,7 @@
                         <div class="mb-4">
                             <label class="form-label fw-medium">Tên sản phẩm <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror"
-                                name="name" value="{{ old('name', $product->name) }}" required placeholder="Nhập tên sản phẩm">
+                                name="name" value="{{ old('name', $product->name) }}"  placeholder="Nhập tên sản phẩm">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -155,7 +155,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
                                 <select class="form-select select2 @error('categories') is-invalid @enderror"
-                                    name="categories[]" multiple required>
+                                    name="categories[]" multiple>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}"
                                             {{ in_array($category->id, old('categories', $product->categories->pluck('id')->toArray())) ? 'selected' : '' }}>
@@ -222,18 +222,45 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 text-center position-relative bg-light">
-                                        @if($product->thumbnail)
-                                            <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="Current thumbnail"
-                                                class="img-fluid mb-2" style="max-height: 150px;">
-                                        @endif
-                                        <input type="file" class="form-control mb-2" name="thumbnail" accept="image/*">
-                                        <small class="text-muted d-block">Ảnh đại diện sản phẩm</small>
+                                        <label class="form-label mb-0 fw-medium">Ảnh đại diện</label>
+                                        <div class="mb-3">
+                                            @if($product->thumbnail)
+                                                <img src="{{ Storage::url($product->thumbnail) }}" 
+                                                     class="img-fluid rounded mb-3" 
+                                                     style="max-height: 200px; object-fit: cover;">
+                                            @endif
+                                            <input type="file" class="form-control @error('thumbnail') is-invalid @enderror" 
+                                                name="thumbnail" accept="image/*">
+                                            @error('thumbnail')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 text-center position-relative bg-light">
-                                        <input type="file" class="form-control mb-2" name="gallery[]" accept="image/*" multiple>
-                                        <small class="text-muted d-block">Thư viện ảnh (tối đa 5 ảnh)</small>
+                                        <label class="form-label mb-0 fw-medium">Hình ảnh phụ</label>
+                                        <div class="mb-3">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @if($product->gallery)
+                                                    @foreach(json_decode($product->gallery) as $image)
+                                                        <div class="position-relative">
+                                                            <img src="{{ Storage::url($image) }}" 
+                                                                 class="img-thumbnail" 
+                                                                 style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                                                            <button type="button" 
+                                                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 delete-gallery-image" 
+                                                                    data-path="{{ $image }}">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                            </div>
+                                            <input type="file" class="form-control image-upload" 
+                                                name="gallery_images[]" accept="image/*" multiple>
+                                            <div class="preview-images d-flex flex-wrap gap-2 mt-2"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -284,7 +311,7 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">VNĐ</span>
                                 <input type="number" class="form-control border-start-0 @error('price') is-invalid @enderror"
-                                    name="price" value="{{ old('price', $product->price) }}" required min="0" step="1000">
+                                    name="price" value="{{ old('price', $product->price) }}"  min="0" step="1000">
                             </div>
                             @error('price')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -365,6 +392,16 @@
         border-color: #435ebe;
         box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
     }
+    .preview-images img {
+        max-width: 100px;
+        max-height: 100px;
+        object-fit: cover;
+    }
+    .remove-image {
+        position: relative;
+        top: -20px;
+        left: -5px;
+    }
 </style>
 @endpush
 
@@ -434,6 +471,72 @@
             form.submit();
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview gallery images
+        const imageUpload = document.querySelector('.image-upload');
+        const previewContainer = document.querySelector('.preview-images');
+
+        imageUpload?.addEventListener('change', function(e) {
+            previewContainer.innerHTML = '';
+            const files = e.target.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-thumbnail';
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'btn btn-danger btn-sm remove-image';
+                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        removeBtn.onclick = function() {
+                            previewContainer.removeChild(img);
+                            previewContainer.removeChild(removeBtn);
+                        };
+                        
+                        previewContainer.appendChild(img);
+                        previewContainer.appendChild(removeBtn);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        // Delete gallery image
+        document.querySelectorAll('.delete-gallery-image').forEach(button => {
+            button.addEventListener('click', function() {
+                const path = this.dataset.path;
+                if (confirm('Bạn có chắc chắn muốn xóa hình ảnh này không?')) {
+                    // Gửi request để xóa hình ảnh
+                    fetch(`{{ route('admin.products.delete-gallery-image', $product->id) }}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ path: path })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Xóa hình ảnh khỏi giao diện
+                            this.closest('.position-relative').remove();
+                        } else {
+                            alert('Có lỗi xảy ra khi xóa hình ảnh');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi xóa hình ảnh');
+                    });
+                }
+            });
+        });
+    });
 </script>
 @endpush
 

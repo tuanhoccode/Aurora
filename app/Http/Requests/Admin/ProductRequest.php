@@ -16,7 +16,7 @@ class ProductRequest extends FormRequest
         return [
             'name' => 'required|string|max:250',
             'slug' => 'nullable|string|max:255|unique:products,slug,' . $this->product?->id,
-            'brand_id' => 'nullable|exists:brands,id',
+            'brand_id' => 'required|exists:brands,id',
             'categories' => 'required|array|min:1',
             'categories.*' => 'exists:categories,id',
             'short_description' => 'nullable|string|max:255',
@@ -26,6 +26,8 @@ class ProductRequest extends FormRequest
             'sale_price' => 'nullable|numeric|min:0|lt:price',
             'type' => 'required|in:simple,digital,variant',
             'thumbnail' => $this->isMethod('PUT') ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
             'is_sale' => 'nullable|boolean'
         ];
@@ -40,6 +42,10 @@ class ProductRequest extends FormRequest
             'categories.array' => 'Dữ liệu danh mục không hợp lệ',
             'categories.min' => 'Vui lòng chọn ít nhất một danh mục',
             'categories.*.exists' => 'Danh mục không tồn tại',
+            'brand_id.required' => 'Thương hiệu là bắt buộc',
+            'brand_id.exists' => 'Thương hiệu không tồn tại',
+            'short_description.max' => 'Mô tả ngắn không được vượt quá 255 ký tự',
+            'description.string' => 'Mô tả chi tiết phải là chuỗi',
             'price.required' => 'Giá sản phẩm là bắt buộc',
             'price.numeric' => 'Giá sản phẩm phải là số',
             'price.min' => 'Giá sản phẩm không được âm',
@@ -51,6 +57,9 @@ class ProductRequest extends FormRequest
             'thumbnail.image' => 'File phải là hình ảnh',
             'thumbnail.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif',
             'thumbnail.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
+            'gallery_images.*.image' => 'File phải là hình ảnh',
+            'gallery_images.*.mimes' => 'Chỉ chấp nhận các định dạng: jpeg, png, jpg, gif',
+            'gallery_images.*.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
             'type.required' => 'Loại sản phẩm là bắt buộc',
             'type.in' => 'Loại sản phẩm không hợp lệ'
         ];
@@ -79,6 +88,8 @@ class ProductRequest extends FormRequest
             'sale_price' => 'Giá khuyến mãi',
             'type' => 'Loại sản phẩm',
             'thumbnail' => 'Ảnh đại diện',
+            'gallery_images' => 'Hình ảnh',
+            'gallery_images.*' => 'Hình ảnh',
             'is_active' => 'Trạng thái',
             'is_sale' => 'Giảm giá'
         ];

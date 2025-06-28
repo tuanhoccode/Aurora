@@ -239,8 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                        class="form-control" 
                                        name="variants[${variantCount}][sku]" 
                                        id="sku-${variantCount}" 
-                                       value="${sku}" 
-                                       required 
+                                       value="${sku}"  
                                        readonly>
                             </div>
                         </div>
@@ -250,8 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                    class="form-control" 
                                    name="variants[${variantCount}][stock]" 
                                    value="0" 
-                                   min="0" 
-                                   required>
+                                   min="0">
                         </div>
                     </div>
                     <div class="row">
@@ -263,8 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                        class="form-control" 
                                        name="variants[${variantCount}][regular_price]" 
                                        min="0" 
-                                       step="0.01" 
-                                       required>
+                                       step="0.01" >
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">

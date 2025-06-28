@@ -38,6 +38,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Two\GoogleProvider;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\client\OrderController;
 
 use function Laravel\Prompts\password;
 
@@ -75,6 +76,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
         Route::put('/{product}', [ProductController::class, 'update'])->name('update');
         Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
+        Route::delete('/{product}/gallery-image', [ProductController::class, 'deleteGalleryImage'])->name('delete-gallery-image');
 
 
         // Toggle status
@@ -293,4 +295,9 @@ Route::middleware('web')->group(function () {
         return view('client.contact');
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
+    });
 });
