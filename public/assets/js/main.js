@@ -254,7 +254,7 @@
 
 	////////////////////////////////////////////////////
 	// 06. Search Js
-	$(".tp-search-open-btn").on("click", function () {
+	$(".tp-search-open-btn").on('click', function () {
 		$(".tp-search-area").addClass("opened");
 		$(".body-overlay").addClass("opened");
 	});
@@ -1649,32 +1649,9 @@
 
 	////////////////////////////////////////////////////
 	// 15. Masonary Js
-	$('.grid').imagesLoaded(function () {
-		// init Isotope
-		var $grid = $('.grid').isotope({
-			itemSelector: '.grid-item',
-			percentPosition: true,
-			masonry: {
-				// use outer width of grid-sizer for columnWidth
-				columnWidth: '.grid-item',
-			}
-		});
-
-
-		// filter items on button click
-		$('.masonary-menu').on('click', 'button', function () {
-			var filterValue = $(this).attr('data-filter');
-			$grid.isotope({ filter: filterValue });
-		});
-
-		//for menu active class
-		$('.masonary-menu button').on('click', function (event) {
-			$(this).siblings('.active').removeClass('active');
-			$(this).addClass('active');
-			event.preventDefault();
-		});
-
-	});
+	// $('.grid').imagesLoaded(function () {
+	//     // ... code bên trong nếu có ...
+	// });
 
 	/* magnificPopup img view */
 	$('.popup-image').magnificPopup({
@@ -2016,5 +1993,18 @@
 			classBtn : 'tp-btn tp-btn-border tp-btn-border-primary'
 		});
 	}
+
+	var amount = document.getElementById('amount');
+	console.log('amount:', amount);
+	function updateAmount(values) {
+		console.log('updateAmount called', values);
+		minInput.value = values[0];
+		maxInput.value = values[1];
+		if (amount) {
+			amount.textContent = Number(values[0]).toLocaleString('vi-VN') + ' đ - ' + Number(values[1]).toLocaleString('vi-VN') + ' đ';
+		}
+	}
+	slider.noUiSlider.on('update', updateAmount);
+	updateAmount(slider.noUiSlider.get());
 
 })(jQuery);
