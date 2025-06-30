@@ -212,6 +212,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // Quản lý ảnh phụ
         Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
         Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
+        Route::get('/product-images/{id}/edit', [ProductGalleryController::class, 'edit'])->name('product-images.edit');
+        Route::put('/product-images/{id}', [ProductGalleryController::class, 'update'])->name('product-images.update');
         Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
         Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
     });
@@ -296,8 +298,8 @@ Route::middleware('web')->group(function () {
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
-    Route::middleware(['auth'])->prefix('client')->group(function () { 
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
-        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
     });
 });

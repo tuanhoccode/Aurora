@@ -29,7 +29,7 @@
             width: 48px;
             height: 48px;
             font-size: 0;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
             border: 2px solid #e0e0e0;
             display: flex;
             align-items: center;
@@ -37,10 +37,12 @@
             transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.18s;
             z-index: 10;
         }
+
         .tp-product-related-slider .swiper-button-next:after,
         .tp-product-related-slider .swiper-button-prev:after {
             display: none;
         }
+
         .tp-product-related-slider .swiper-button-next svg,
         .tp-product-related-slider .swiper-button-prev svg {
             width: 28px;
@@ -49,34 +51,41 @@
             fill: #222;
             transition: fill 0.2s;
         }
+
         .tp-product-related-slider .swiper-button-next:hover,
         .tp-product-related-slider .swiper-button-prev:hover {
             background: #222;
             color: #fff;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
             transform: scale(1.08);
         }
+
         .tp-product-related-slider .swiper-button-next:hover svg,
         .tp-product-related-slider .swiper-button-prev:hover svg {
             fill: #fff;
         }
+
         .tp-product-related-slider .swiper-button-prev {
             left: 0;
         }
+
         .tp-product-related-slider .swiper-button-next {
             right: 0;
         }
+
         @media (max-width: 768px) {
+
             .tp-product-related-slider .swiper-button-prev,
             .tp-product-related-slider .swiper-button-next {
                 display: none;
             }
         }
+
         /* --- Related Products Modern Card --- */
         .related-product-card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
             border: 1px solid #f0f0f0;
             padding: 22px 18px 18px 18px;
             transition: box-shadow 0.25s, transform 0.2s;
@@ -87,10 +96,12 @@
             flex-direction: column;
             justify-content: flex-start;
         }
+
         .related-product-card:hover {
-            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
             transform: translateY(-4px) scale(1.03);
         }
+
         .related-product-thumb {
             width: 100%;
             height: 170px;
@@ -100,6 +111,7 @@
             margin-bottom: 18px;
             overflow: hidden;
         }
+
         .related-product-thumb img {
             max-height: 150px;
             max-width: 100%;
@@ -107,9 +119,11 @@
             border-radius: 10px;
             transition: transform 0.25s;
         }
+
         .related-product-card:hover .related-product-thumb img {
             transform: scale(1.08);
         }
+
         .related-product-title {
             font-size: 17px;
             font-weight: 600;
@@ -120,17 +134,20 @@
             align-items: center;
             justify-content: center;
         }
+
         .related-product-cats {
             font-size: 13px;
             color: #888;
             margin-bottom: 8px;
         }
+
         .related-product-price {
             font-size: 18px;
             font-weight: 700;
             color: #e53935;
             margin-bottom: 14px;
         }
+
         .related-product-btn {
             display: inline-block;
             background: var(--tp-theme-primary, #2d8cf0);
@@ -144,27 +161,33 @@
             transition: background 0.2s;
             text-decoration: none;
         }
+
         .related-product-btn:hover {
             background: #1a6dc2;
             color: #fff;
         }
+
         @media (max-width: 767px) {
             .related-product-thumb {
                 height: 120px;
             }
+
             .related-product-title {
                 font-size: 15px;
             }
+
             .related-product-card {
                 padding: 14px 6px 12px 6px;
             }
         }
+
         .tp-section-title-wrapper-6 {
             display: flex;
             flex-direction: column;
             align-items: center;
             margin-bottom: 38px;
         }
+
         .tp-section-title-pre-6 {
             font-size: 17px;
             color: #4a90e2;
@@ -175,6 +198,7 @@
             background: none;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
+
         .tp-section-title-6 {
             font-size: 2.4rem;
             font-weight: 700;
@@ -186,6 +210,7 @@
             display: inline-block;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
+
         .tp-section-title-6::after {
             content: '';
             display: block;
@@ -242,8 +267,14 @@
                                 <div class="row">
                                     <!-- Ảnh con bên trái -->
                                     <!-- Ảnh phụ bên trái (JS sẽ render) -->
-                                    <div class="col-2 d-flex flex-column gap-2" id="subImageGallery"></div>
-
+                                    <div class="col-2 d-flex flex-column gap-2" id="subImageGallery">
+                                        @foreach ($product->images as $image)
+                                            <img src="{{ asset('storage/' . $image->url) }}"
+                                                class="img-thumbnail thumbnail-preview mb-2"
+                                                style="width: 100%; height: 80px; object-fit: cover; cursor: pointer;"
+                                                onclick="document.getElementById('mainProductImage').src=this.src">
+                                        @endforeach
+                                    </div>
 
                                     <!-- Ảnh chính bên phải -->
                                     <div class="col-10 d-flex justify-content-center">
@@ -251,8 +282,7 @@
                                             <div class="position-relative overflow-hidden rounded-4">
                                                 <img id="mainProductImage"
                                                     src="{{ asset('storage/' . $product->thumbnail) }}"
-                                                    alt="{{ $product->name }}"
-                                                    class="img-fluid w-100"
+                                                    alt="{{ $product->name }}" class="img-fluid w-100"
                                                     style="object-fit: contain; max-height: 500px; transition: transform 0.3s ease;">
                                             </div>
                                         </div>
@@ -269,7 +299,17 @@
                                 <!-- inventory details -->
                                 <div class="tp-product-details-inventory d-flex align-items-center mb-10">
                                     <div class="tp-product-details-stock mb-10">
-                                        <span id="product-stock">Vui lòng chọn màu và kích cỡ</span>
+                                        <span id="product-stock">
+                                            @if ($hasVariants)
+                                                Vui lòng chọn màu và kích cỡ
+                                            @else
+                                                @if ($product->stock > 0)
+                                                    Trong kho: {{ $product->stock }}
+                                                @else
+                                                    Hết hàng
+                                                @endif
+                                            @endif
+                                        </span>
                                     </div>
                                     <div class="tp-product-details-rating-wrapper d-flex align-items-center mb-10">
                                         <div class="tp-product-details-rating">
@@ -347,7 +387,7 @@
                                     {{-- Ẩn giá đơn vị để JS dùng tính toán --}}
                                     <span id="unit-price" style="display:none;">{{ $unit }}</span>
                                     <!-- variations -->
-                                    
+
                                     @if ($hasVariants)
                                         @php
                                             // Định nghĩa tất cả các màu hệ thống
@@ -387,33 +427,30 @@
                                                     @php
                                                         $isAvailable = $productColors->contains($code);
                                                     @endphp
-                                                    <button type="button"
-                                                        class="tp-color-variation-btn {{ !$isAvailable ? 'disabled' : '' }}"
-                                                        data-color="{{ $code }}"
-                                                        style="{{ !$isAvailable ? 'opacity: 0.4; pointer-events: none;' : '' }}">
-                                                        <span class="color-circle"
-                                                            style="background-color: {{ $color['hex'] }};"></span>
-                                                        <span
-                                                            class="tp-color-variation-tootltip">{{ $color['name'] }}</span>
-                                                    </button>
+                                                    @if ($isAvailable)
+                                                        <button type="button" class="tp-color-variation-btn"
+                                                            data-color="{{ $code }}">
+                                                            <span class="color-circle"
+                                                                style="background-color: {{ $color['hex'] }};"></span>
+                                                            <span
+                                                                class="tp-color-variation-tootltip">{{ $color['name'] }}</span>
+                                                        </button>
+                                                    @endif
                                                 @endforeach
+
                                             </div>
                                         </div>
 
                                         <div class="tp-product-details-variation-item">
                                             <h4 class="tp-product-details-variation-title">Kích cỡ :</h4>
                                             <div class="tp-product-details-variation-list">
-                                                @foreach ($allSizes as $size)
-                                                    @php
-                                                        $isAvailable = $productSizes->contains($size);
-                                                    @endphp
-                                                    <button type="button"
-                                                        class="tp-size-variation-btn {{ !$isAvailable ? 'disabled' : '' }}"
-                                                        data-size="{{ $size }}"
-                                                        style="{{ !$isAvailable ? 'opacity: 0.4; pointer-events: none;' : '' }}">
+                                                @foreach ($productSizes as $size)
+                                                    <button type="button" class="tp-size-variation-btn"
+                                                        data-size="{{ $size }}">
                                                         <span>{{ $size }}</span>
                                                     </button>
                                                 @endforeach
+
                                             </div>
                                         </div>
                                     @endif
@@ -424,19 +461,25 @@
                                             <div class="tp-product-details-quantity">
                                                 <div class="tp-product-quantity mb-15 mr-15">
                                                     <span id="detail-cart-minus" class="tp-cart-minus">–</span>
-                                                    <input id="quantity" name="quantity" class="tp-cart-input" type="text"
-                                                        value="1">
+                                                    <input id="quantity" name="quantity" class="tp-cart-input"
+                                                        type="text" value="1">
                                                     <span id="detail-cart-plus" class="tp-cart-plus">+</span>
                                                 </div>
                                             </div>
                                             <div class="tp-product-details-add-to-cart mb-15 w-100">
-                                                <form id="detail-add-to-cart-form" class="add-to-cart-form" action="{{ route('shopping-cart.add') }}" method="POST">
+                                                <form id="detail-add-to-cart-form" class="add-to-cart-form"
+                                                    action="{{ route('shopping-cart.add') }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                    <input type="hidden" name="product_variant_id" id="product_variant_id" value="">
-                                                    <input type="hidden" name="variant_sku" id="variant_sku" value="">
-                                                    <input type="hidden" name="price" id="variant_price" value="{{ !$hasVariants ? ($product->sale_price ?? $product->price) : '' }}">
-                                                    <button type="submit" class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ hàng</button>
+                                                    <input type="hidden" name="product_variant_id"
+                                                        id="product_variant_id" value="">
+                                                    <input type="hidden" name="variant_sku" id="variant_sku"
+                                                        value="">
+                                                    <input type="hidden" name="price" id="variant_price"
+                                                        value="{{ !$hasVariants ? $product->sale_price ?? $product->price : '' }}">
+                                                    <button type="submit"
+                                                        class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ
+                                                        hàng</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -457,9 +500,9 @@
                                                     d="M12.9999 12.5983H3.13775C1.95486 12.5983 1 11.6742 1 10.5295V8.23993"
                                                     stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
                                                     stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M10.748 14.7774L12.9998 12.5983L10.748 10.4191" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
+                                                <path d="M10.748 14.7774L12.9998 12.5983L10.748 10.4191"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
                                             So sánh sản phẩm
                                         </button>
@@ -620,72 +663,68 @@
                                                         <p>Chưa có đánh giá nào cho sản phẩm này.</p>
                                                     @endforelse
                                                 </div>
-                                                        <div class="tp-product-details-review-form">
-                                                            <h3 class="tp-product-details-review-form-title">Review
-                                                                this
-                                                                product</h3>
-                                                            <p>Your email address will not be published. Required fields
-                                                                are
-                                                                marked *</p>
-                                                            <form action="#">
-                                                                <div
-                                                                    class="tp-product-details-review-form-rating d-flex align-items-center">
-                                                                    <p>Your Rating :</p>
-                                                                    <div
-                                                                        class="tp-product-details-review-form-rating-icon d-flex align-items-center">
-                                                                        <span><i class="fa-solid fa-star"></i></span>
-                                                                        <span><i class="fa-solid fa-star"></i></span>
-                                                                        <span><i class="fa-solid fa-star"></i></span>
-                                                                        <span><i class="fa-solid fa-star"></i></span>
-                                                                        <span><i class="fa-solid fa-star"></i></span>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="tp-product-details-review-input-wrapper">
-                                                                    <div class="tp-product-details-review-input-box">
-                                                                        <div class="tp-product-details-review-input">
-                                                                            <textarea id="msg" name="msg" placeholder="Write your review here..."></textarea>
-                                                                        </div>
-                                                                        <div class="tp-product-details-review-input-title">
-                                                                            <label for="msg">Your Name</label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="tp-product-details-review-input-box">
-                                                                        <div class="tp-product-details-review-input">
-                                                                            <input name="name" id="name"
-                                                                                type="text"
-                                                                                placeholder="Shahnewaz Sakil">
-                                                                        </div>
-                                                                        <div class="tp-product-details-review-input-title">
-                                                                            <label for="name">Your Name</label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="tp-product-details-review-input-box">
-                                                                        <div class="tp-product-details-review-input">
-                                                                            <input name="email" id="email"
-                                                                                type="email"
-                                                                                placeholder="shofy@mail.com">
-                                                                        </div>
-                                                                        <div class="tp-product-details-review-input-title">
-                                                                            <label for="email">Your Email</label>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="tp-product-details-review-suggetions mb-20">
-                                                                    <div class="tp-product-details-review-remeber">
-                                                                        <input id="remeber" type="checkbox">
-                                                                        <label for="remeber">Save my name, email, and
-                                                                            website
-                                                                            in this browser for the next time I
-                                                                            comment.</label>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="tp-product-details-review-btn-wrapper">
-                                                                    <button
-                                                                        class="tp-product-details-review-btn">Submit</button>
-                                                                </div>
-                                                            </form>
+                                                <div class="tp-product-details-review-form">
+                                                    <h3 class="tp-product-details-review-form-title">Review
+                                                        this
+                                                        product</h3>
+                                                    <p>Your email address will not be published. Required fields
+                                                        are
+                                                        marked *</p>
+                                                    <form action="#">
+                                                        <div
+                                                            class="tp-product-details-review-form-rating d-flex align-items-center">
+                                                            <p>Your Rating :</p>
+                                                            <div
+                                                                class="tp-product-details-review-form-rating-icon d-flex align-items-center">
+                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                            </div>
                                                         </div>
-                                                    </div> 
+                                                        <div class="tp-product-details-review-input-wrapper">
+                                                            <div class="tp-product-details-review-input-box">
+                                                                <div class="tp-product-details-review-input">
+                                                                    <textarea id="msg" name="msg" placeholder="Write your review here..."></textarea>
+                                                                </div>
+                                                                <div class="tp-product-details-review-input-title">
+                                                                    <label for="msg">Your Name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="tp-product-details-review-input-box">
+                                                                <div class="tp-product-details-review-input">
+                                                                    <input name="name" id="name" type="text"
+                                                                        placeholder="Shahnewaz Sakil">
+                                                                </div>
+                                                                <div class="tp-product-details-review-input-title">
+                                                                    <label for="name">Your Name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="tp-product-details-review-input-box">
+                                                                <div class="tp-product-details-review-input">
+                                                                    <input name="email" id="email" type="email"
+                                                                        placeholder="shofy@mail.com">
+                                                                </div>
+                                                                <div class="tp-product-details-review-input-title">
+                                                                    <label for="email">Your Email</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tp-product-details-review-suggetions mb-20">
+                                                            <div class="tp-product-details-review-remeber">
+                                                                <input id="remeber" type="checkbox">
+                                                                <label for="remeber">Save my name, email, and
+                                                                    website
+                                                                    in this browser for the next time I
+                                                                    comment.</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tp-product-details-review-btn-wrapper">
+                                                            <button class="tp-product-details-review-btn">Submit</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -695,19 +734,18 @@
                     </div>
                 </div>
             </div>
+            </div>
         </section>
 
         @php
-            // Lấy ID các category của sản phẩm hiện tại
             $currentCategoryIds = $product->categories->pluck('id')->toArray();
 
-            // Lọc sản phẩm liên quan theo category và giới hạn 4 sản phẩm
             $relatedByCategory = $relatedProducts
                 ->filter(function ($related) use ($currentCategoryIds) {
                     $relatedCategoryIds = $related->categories->pluck('id')->toArray();
                     return count(array_intersect($currentCategoryIds, $relatedCategoryIds)) > 0;
                 })
-                ->take(4); // 👈 giới hạn 4 sản phẩm
+                ->take(4);
         @endphp
         <section class="tp-related-product pt-95 pb-120">
             <div class="container">
@@ -726,7 +764,8 @@
                                         <div class="tp-product-item-2 mb-40">
                                             <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
                                                 @if (!empty($related->slug))
-                                                    <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                                    <a
+                                                        href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
                                                         <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
                                                     </a>
                                                 @else
@@ -736,47 +775,83 @@
                                                 @endif
                                                 <div class="tp-product-action-2 tp-product-action-blackStyle">
                                                     <div class="tp-product-action-item-2 d-flex flex-column">
-                                                        <form method="POST" action="{{ route('shopping-cart.add') }}" class="add-to-cart-form">
+                                                        <form method="POST" action="{{ route('shopping-cart.add') }}"
+                                                            class="add-to-cart-form">
                                                             @csrf
-                                                            <input type="hidden" name="product_id" value="{{ $related->id }}">
-                                                            <input type="hidden" name="product_variant_id" value="{{ $related->default_variant_id ?? '' }}">
+                                                            <input type="hidden" name="product_id"
+                                                                value="{{ $related->id }}">
+                                                            <input type="hidden" name="product_variant_id"
+                                                                value="{{ $related->default_variant_id ?? '' }}">
                                                             <input type="hidden" name="quantity" value="1">
-                                                            <input type="hidden" name="price" value="{{ $related->price }}">
-                                                            <button type="submit" class="tp-product-action-btn-2 tp-product-add-cart-btn">
-                                                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M3.34706 4.53799L3.85961 10.6239C3.89701 11.0923 4.28036 11.4436 4.74871 11.4436H4.75212H14.0265H14.0282C14.4711 11.4436 14.8493 11.1144 14.9122 10.6774L15.7197 5.11162C15.7384 4.97924 15.7053 4.84687 15.6245 4.73995C15.5446 4.63218 15.4273 4.5626 15.2947 4.54393C15.1171 4.55072 7.74498 4.54054 3.34706 4.53799ZM4.74722 12.7162C3.62777 12.7162 2.68001 11.8438 2.58906 10.728L1.81046 1.4837L0.529505 1.26308C0.181854 1.20198 -0.0501969 0.873587 0.00930333 0.526523C0.0705036 0.17946 0.406255 -0.0462578 0.746256 0.00805037L2.51426 0.313534C2.79901 0.363599 3.01576 0.5995 3.04042 0.888012L3.24017 3.26484C15.3748 3.26993 15.4139 3.27587 15.4726 3.28266C15.946 3.3514 16.3625 3.59833 16.6464 3.97849C16.9303 4.35779 17.0493 4.82535 16.9813 5.29376L16.1747 10.8586C16.0225 11.9177 15.1011 12.7162 14.0301 12.7162H14.0259H4.75402H4.74722Z" fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12.6629 7.67446H10.3067C9.95394 7.67446 9.66919 7.38934 9.66919 7.03804C9.66919 6.68673 9.95394 6.40161 10.3067 6.40161H12.6629C13.0148 6.40161 13.3004 6.68673 13.3004 7.03804C13.3004 7.38934 13.0148 7.67446 12.6629 7.67446Z" fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.38171 15.0212C4.63756 15.0212 4.84411 15.2278 4.84411 15.4836C4.84411 15.7395 4.63756 15.9469 4.38171 15.9469C4.12501 15.9469 3.91846 15.7395 3.91846 15.4836C3.91846 15.2278 4.12501 15.0212 4.38171 15.0212Z" fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.38082 15.3091C4.28477 15.3091 4.20657 15.3873 4.20657 15.4833C4.20657 15.6763 4.55592 15.6763 4.55592 15.4833C4.55592 15.3873 4.47687 15.3091 4.38082 15.3091ZM4.38067 16.5815C3.77376 16.5815 3.28076 16.0884 3.28076 15.4826C3.28076 14.8767 3.77376 14.3845 4.38067 14.3845C4.98757 14.3845 5.48142 14.8767 5.48142 15.4826C5.48142 16.0884 4.98757 16.5815 4.38067 16.5815Z" fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M13.9701 15.0212C14.2259 15.0212 14.4333 15.2278 14.4333 15.4836C14.4333 15.7395 14.2259 15.9469 13.9701 15.9469C13.7134 15.9469 13.5068 15.7395 13.5068 15.4836C13.5068 15.2278 13.7134 15.0212 13.9701 15.0212Z" fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M13.9692 15.3092C13.874 15.3092 13.7958 15.3874 13.7958 15.4835C13.7966 15.6781 14.1451 15.6764 14.1443 15.4835C14.1443 15.3874 14.0652 15.3092 13.9692 15.3092ZM13.969 16.5815C13.3621 16.5815 12.8691 16.0884 12.8691 15.4826C12.8691 14.8767 13.3621 14.3845 13.969 14.3845C14.5768 14.3845 15.0706 14.8767 15.0706 15.4826C15.0706 16.0884 14.5768 16.5815 13.969 16.5815Z" fill="currentColor" />
+                                                            <input type="hidden" name="price"
+                                                                value="{{ $related->price }}">
+                                                            <button type="submit"
+                                                                class="tp-product-action-btn-2 tp-product-add-cart-btn">
+                                                                <svg width="17" height="17" viewBox="0 0 17 17"
+                                                                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M3.34706 4.53799L3.85961 10.6239C3.89701 11.0923 4.28036 11.4436 4.74871 11.4436H4.75212H14.0265H14.0282C14.4711 11.4436 14.8493 11.1144 14.9122 10.6774L15.7197 5.11162C15.7384 4.97924 15.7053 4.84687 15.6245 4.73995C15.5446 4.63218 15.4273 4.5626 15.2947 4.54393C15.1171 4.55072 7.74498 4.54054 3.34706 4.53799ZM4.74722 12.7162C3.62777 12.7162 2.68001 11.8438 2.58906 10.728L1.81046 1.4837L0.529505 1.26308C0.181854 1.20198 -0.0501969 0.873587 0.00930333 0.526523C0.0705036 0.17946 0.406255 -0.0462578 0.746256 0.00805037L2.51426 0.313534C2.79901 0.363599 3.01576 0.5995 3.04042 0.888012L3.24017 3.26484C15.3748 3.26993 15.4139 3.27587 15.4726 3.28266C15.946 3.3514 16.3625 3.59833 16.6464 3.97849C16.9303 4.35779 17.0493 4.82535 16.9813 5.29376L16.1747 10.8586C16.0225 11.9177 15.1011 12.7162 14.0301 12.7162H14.0259H4.75402H4.74722Z"
+                                                                        fill="currentColor" />
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M12.6629 7.67446H10.3067C9.95394 7.67446 9.66919 7.38934 9.66919 7.03804C9.66919 6.68673 9.95394 6.40161 10.3067 6.40161H12.6629C13.0148 6.40161 13.3004 6.68673 13.3004 7.03804C13.3004 7.38934 13.0148 7.67446 12.6629 7.67446Z"
+                                                                        fill="currentColor" />
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M4.38171 15.0212C4.63756 15.0212 4.84411 15.2278 4.84411 15.4836C4.84411 15.7395 4.63756 15.9469 4.38171 15.9469C4.12501 15.9469 3.91846 15.7395 3.91846 15.4836C3.91846 15.2278 4.12501 15.0212 4.38171 15.0212Z"
+                                                                        fill="currentColor" />
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M4.38082 15.3091C4.28477 15.3091 4.20657 15.3873 4.20657 15.4833C4.20657 15.6763 4.55592 15.6763 4.55592 15.4833C4.55592 15.3873 4.47687 15.3091 4.38082 15.3091ZM4.38067 16.5815C3.77376 16.5815 3.28076 16.0884 3.28076 15.4826C3.28076 14.8767 3.77376 14.3845 4.38067 14.3845C4.98757 14.3845 5.48142 14.8767 5.48142 15.4826C5.48142 16.0884 4.98757 16.5815 4.38067 16.5815Z"
+                                                                        fill="currentColor" />
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M13.9701 15.0212C14.2259 15.0212 14.4333 15.2278 14.4333 15.4836C14.4333 15.7395 14.2259 15.9469 13.9701 15.9469C13.7134 15.9469 13.5068 15.7395 13.5068 15.4836C13.5068 15.2278 13.7134 15.0212 13.9701 15.0212Z"
+                                                                        fill="currentColor" />
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M13.9692 15.3092C13.874 15.3092 13.7958 15.3874 13.7958 15.4835C13.7966 15.6781 14.1451 15.6764 14.1443 15.4835C14.1443 15.3874 14.0652 15.3092 13.9692 15.3092ZM13.969 16.5815C13.3621 16.5815 12.8691 16.0884 12.8691 15.4826C12.8691 14.8767 13.3621 14.3845 13.969 14.3845C14.5768 14.3845 15.0706 14.8767 15.0706 15.4826C15.0706 16.0884 14.5768 16.5815 13.969 16.5815Z"
+                                                                        fill="currentColor" />
                                                                 </svg>
-                                                                <span class="tp-product-tooltip tp-product-tooltip-right">Thêm vào giỏ</span>
+                                                                <span
+                                                                    class="tp-product-tooltip tp-product-tooltip-right">Thêm
+                                                                    vào giỏ</span>
                                                             </button>
                                                         </form>
-                                                        <button type="button" class="tp-product-action-btn-2 tp-product-quick-view-btn" disabled style="opacity:0.5;cursor:not-allowed;">
-                                                            <svg width="18" height="15" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.99948 5.06828C7.80247 5.06828 6.82956 6.04044 6.82956 7.23542C6.82956 8.42951 7.80247 9.40077 8.99948 9.40077C10.1965 9.40077 11.1703 8.42951 11.1703 7.23542C11.1703 6.04044 10.1965 5.06828 8.99948 5.06828ZM8.99942 10.7482C7.0581 10.7482 5.47949 9.17221 5.47949 7.23508C5.47949 5.29705 7.0581 3.72021 8.99942 3.72021C10.9407 3.72021 12.5202 5.29705 12.5202 7.23508C12.5202 9.17221 10.9407 10.7482 8.99942 10.7482Z" fill="currentColor" />
-                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.41273 7.2346C3.08674 10.9265 5.90646 13.1215 8.99978 13.1224C12.0931 13.1215 14.9128 10.9265 16.5868 7.2346C14.9128 3.54363 12.0931 1.34863 8.99978 1.34773C5.90736 1.34863 3.08674 3.54363 1.41273 7.2346ZM9.00164 14.4703H8.99804H8.99714C5.27471 14.4676 1.93209 11.8629 0.0546754 7.50073C-0.0182251 7.33091 -0.0182251 7.13864 0.0546754 6.96883C1.93209 2.60759 5.27561 0.00288103 8.99714 0.000185582C8.99894 -0.000712902 8.99894 -0.000712902 8.99984 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z" fill="currentColor" />
+                                                        <button type="button"
+                                                            class="tp-product-action-btn-2 tp-product-quick-view-btn"
+                                                            disabled style="opacity:0.5;cursor:not-allowed;">
+                                                            <svg width="18" height="15" viewBox="0 0 18 15"
+                                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M8.99948 5.06828C7.80247 5.06828 6.82956 6.04044 6.82956 7.23542C6.82956 8.42951 7.80247 9.40077 8.99948 9.40077C10.1965 9.40077 11.1703 8.42951 11.1703 7.23542C11.1703 6.04044 10.1965 5.06828 8.99948 5.06828ZM8.99942 10.7482C7.0581 10.7482 5.47949 9.17221 5.47949 7.23508C5.47949 5.29705 7.0581 3.72021 8.99942 3.72021C10.9407 3.72021 12.5202 5.29705 12.5202 7.23508C12.5202 9.17221 10.9407 10.7482 8.99942 10.7482Z"
+                                                                    fill="currentColor" />
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M1.41273 7.2346C3.08674 10.9265 5.90646 13.1215 8.99978 13.1224C12.0931 13.1215 14.9128 10.9265 16.5868 7.2346C14.9128 3.54363 12.0931 1.34863 8.99978 1.34773C5.90736 1.34863 3.08674 3.54363 1.41273 7.2346ZM9.00164 14.4703H8.99804H8.99714C5.27471 14.4676 1.93209 11.8629 0.0546754 7.50073C-0.0182251 7.33091 -0.0182251 7.13864 0.0546754 6.96883C1.93209 2.60759 5.27561 0.00288103 8.99714 0.000185582C8.99894 -0.000712902 8.99894 -0.000712902 8.99984 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z"
+                                                                    fill="currentColor" />
                                                             </svg>
-                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Xem nhanh</span>
+                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Xem
+                                                                nhanh</span>
                                                         </button>
-                                                        <button type="button" class="tp-product-action-btn-2 tp-product-add-to-wishlist-btn" disabled style="opacity:0.5;cursor:not-allowed;">
-                                                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.60355 7.98635C2.83622 11.8048 7.7062 14.8923 9.0004 15.6565C10.299 14.8844 15.2042 11.7628 16.3973 7.98985C17.1806 5.55102 16.4535 2.46177 13.5644 1.53473C12.1647 1.08741 10.532 1.35966 9.40484 2.22804C9.16921 2.40837 8.84214 2.41187 8.60476 2.23329C7.41078 1.33952 5.85105 1.07778 4.42936 1.53473C1.54465 2.4609 0.820172 5.55014 1.60355 7.98635ZM9.00138 14.4703H9.00254H9.00254C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z" fill="currentColor" />
+                                                        <button type="button"
+                                                            class="tp-product-action-btn-2 tp-product-add-to-wishlist-btn"
+                                                            disabled style="opacity:0.5;cursor:not-allowed;">
+                                                            <svg width="18" height="18" viewBox="0 0 18 18"
+                                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M1.60355 7.98635C2.83622 11.8048 7.7062 14.8923 9.0004 15.6565C10.299 14.8844 15.2042 11.7628 16.3973 7.98985C17.1806 5.55102 16.4535 2.46177 13.5644 1.53473C12.1647 1.08741 10.532 1.35966 9.40484 2.22804C9.16921 2.40837 8.84214 2.41187 8.60476 2.23329C7.41078 1.33952 5.85105 1.07778 4.42936 1.53473C1.54465 2.4609 0.820172 5.55014 1.60355 7.98635ZM9.00138 14.4703H9.00254H9.00254C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z"
+                                                                    fill="currentColor" />
                                                             </svg>
-                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Thêm vào yêu thích</span>
+                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Thêm
+                                                                vào yêu thích</span>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="tp-product-content-2 pt-15">
                                                 <div class="tp-product-tag-2">
-                                                    <a href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
+                                                    <a
+                                                        href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
                                                 </div>
                                                 <h3 class="tp-product-title-2">
                                                     @if (!empty($related->slug))
-                                                        <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
+                                                        <a
+                                                            href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
                                                     @else
                                                         <span>{{ $related->name }}</span>
                                                     @endif
@@ -787,9 +862,11 @@
                                                     @endfor
                                                 </div>
                                                 <div class="tp-product-price-wrapper-2">
-                                                    <span class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
+                                                    <span
+                                                        class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
                                                     @if ($related->original_price && $related->original_price > $related->price)
-                                                        <span class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
+                                                        <span
+                                                            class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -801,10 +878,16 @@
                             </div>
                             <!-- Nút điều hướng -->
                             <div class="swiper-button-prev">
-                                <svg viewBox="0 0 32 32" width="28" height="28"><polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg viewBox="0 0 32 32" width="28" height="28">
+                                    <polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor"
+                                        stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
                             </div>
                             <div class="swiper-button-next">
-                                <svg viewBox="0 0 32 32" width="28" height="28"><polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg viewBox="0 0 32 32" width="28" height="28">
+                                    <polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor"
+                                        stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -843,16 +926,13 @@
             }
 
             function updateVariantInfo() {
-                if (!selectedColorCode || !selectedSize) {
-                    return;
-                }
+                if (!selectedColorCode || !selectedSize) return;
                 const variant = variants.find(v => {
                     const parts = v.sku.toUpperCase().split('-');
                     return parts[1] === selectedSize && parts[2] === selectedColorCode;
                 });
-                if (!variant) {
-                    return;
-                }
+                if (!variant) return;
+
                 document.getElementById('sku-display').textContent = variant.sku;
                 const price = Number(variant.sale_price ?? variant.regular_price);
                 const oldPrice = variant.sale_price ? Number(variant.regular_price) : null;
@@ -863,18 +943,19 @@
                 unitPriceEl.textContent = formatCurrency(price);
                 quantityInput.value = 1;
                 updateTotal();
+
                 if (stockEl) {
                     stockEl.textContent = variant.stock > 0 ? `Trong kho: ${variant.stock}` : 'Hết hàng';
                 }
+
                 if (mainImageEl && variant.img) {
                     mainImageEl.style.opacity = 0;
                     setTimeout(() => {
                         mainImageEl.src = '/storage/' + variant.img;
-                        mainImageEl.onload = () => {
-                            mainImageEl.style.opacity = 1;
-                        };
+                        mainImageEl.onload = () => mainImageEl.style.opacity = 1;
                     }, 150);
                 }
+
                 subImageGallery.innerHTML = '';
                 if (variant.images && variant.images.length > 0) {
                     variant.images.forEach(img => {
@@ -890,21 +971,38 @@
                                 mainImageEl.style.opacity = 0;
                                 setTimeout(() => {
                                     mainImageEl.src = this.src;
-                                    mainImageEl.onload = () => {
-                                        mainImageEl.style.opacity = 1;
-                                    };
+                                    mainImageEl.onload = () => mainImageEl.style.opacity =
+                                        1;
                                 }, 150);
                             }
                         });
                         subImageGallery.appendChild(imgEl);
                     });
                 }
+
                 const skuInput = document.getElementById('variant_sku');
                 if (skuInput) skuInput.value = variant.sku;
                 const variantIdInput = document.getElementById('product_variant_id');
                 if (variantIdInput) variantIdInput.value = variant.id;
                 const priceInput = document.getElementById('variant_price');
                 if (priceInput) priceInput.value = variant.sale_price ?? variant.regular_price;
+            }
+
+            function filterSizesByColor(colorCode) {
+                const availableSizes = variants
+                    .filter(v => v.sku.toUpperCase().split('-')[2] === colorCode)
+                    .map(v => v.sku.toUpperCase().split('-')[1]);
+
+                document.querySelectorAll('.tp-size-variation-btn').forEach(btn => {
+                    const size = btn.dataset.size.toUpperCase();
+                    btn.style.display = availableSizes.includes(size) ? '' : 'none';
+                });
+
+                if (!availableSizes.includes(selectedSize)) {
+                    selectedSize = null;
+                    document.querySelectorAll('.tp-size-variation-btn').forEach(btn => btn.classList.remove(
+                        'active'));
+                }
             }
 
             document.querySelectorAll('.tp-color-variation-btn').forEach(button => {
@@ -914,6 +1012,7 @@
                         .classList.remove('active'));
                     this.classList.add('active');
                     selectedColorCode = this.dataset.color.toUpperCase();
+                    filterSizesByColor(selectedColorCode);
                     updateVariantInfo();
                 });
             });
@@ -929,23 +1028,21 @@
                 });
             });
 
-            document.querySelector('#detail-cart-minus')?.addEventListener('click', (e) => {
+            document.querySelector('#detail-cart-minus')?.addEventListener('click', () => {
                 let val = parseInt(quantityInput.value) || 1;
                 if (val > 1) quantityInput.value = val - 1;
                 updateTotal();
             });
 
-            document.querySelector('#detail-cart-plus')?.addEventListener('click', (e) => {
+            document.querySelector('#detail-cart-plus')?.addEventListener('click', () => {
                 let val = parseInt(quantityInput.value) || 1;
                 quantityInput.value = val + 1;
                 updateTotal();
             });
 
             quantityInput.addEventListener('input', updateTotal);
-
             updateTotal();
 
-            // ✅ Chỉ gọi 1 lần Swiper ở đây
             new Swiper('.tp-product-related-slider-active', {
                 slidesPerView: 4,
                 spaceBetween: 20,
@@ -982,44 +1079,41 @@
                     if (hasVariants) {
                         const variantId = document.getElementById('product_variant_id').value;
                         if (!variantId) {
-                            if (window.toastr) {
-                                toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
-                            }
+                            if (window.toastr) toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
                             return;
                         }
                     }
 
                     const formData = new FormData(addToCartForm);
                     fetch(addToCartForm.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: formData
-                    })
-                    .then(res => {
-                        if (!res.ok) {
-                            // Nếu server trả về lỗi (vd: 500, 404), throw error để nhảy vào catch
-                            return res.text().then(text => { throw new Error(text || 'Lỗi không xác định từ server') });
-                        }
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            if (window.toastr) toastr.success(data.message || 'Đã thêm sản phẩm vào giỏ hàng!');
-                            
-                            // Gửi event để các script khác (như main.js) có thể lắng nghe và cập nhật
-                            document.dispatchEvent(new CustomEvent('cart:updated'));
-
-                        } else {
-                            if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Lỗi khi thêm vào giỏ hàng:', error);
-                        if (window.toastr) toastr.error('Không thể thêm sản phẩm. Vui lòng kiểm tra lại hoặc thử lại sau.');
-                    });
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            },
+                            body: formData
+                        })
+                        .then(res => {
+                            if (!res.ok) return res.text().then(text => {
+                                throw new Error(text || 'Lỗi không xác định từ server')
+                            });
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                if (window.toastr) toastr.success(data.message ||
+                                    'Đã thêm sản phẩm vào giỏ hàng!');
+                                document.dispatchEvent(new CustomEvent('cart:updated'));
+                            } else {
+                                if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi thêm vào giỏ hàng:', error);
+                            if (window.toastr) toastr.error(
+                                'Không thể thêm sản phẩm. Vui lòng thử lại sau.');
+                        });
                 });
             }
         });
