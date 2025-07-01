@@ -273,14 +273,14 @@ Route::middleware('web')->group(function () {
         return Socialite::driver('google')->redirect();
     })->name('google.login');
 
-    //Callback từ gg
+    // Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-    //Profile
+    // Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
-    //changepassword
+    // Change password
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
@@ -298,8 +298,17 @@ Route::middleware('web')->group(function () {
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
+
+    // Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
+        
+    });
+
+    // Client Category
+    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
 });
