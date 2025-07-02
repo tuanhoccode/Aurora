@@ -504,11 +504,13 @@
                     <h4 class="cart-summary-title">Tóm tắt đơn hàng</h4>
                     <div class="cart-summary__item">
                         <span>Tạm tính (<span class="cart-item-count">{{ $cartItems->sum('quantity') }}</span> sản phẩm)</span>
-                        <span id="cart-subtotal">{{ isset($cartTotal) ? number_format($cartTotal, 0, ',', '.') : '0' }}₫</span>
+                        <span id="cart-subtotal">
+  {{ isset($cartTotal) ? number_format($cartTotal + 20000, 0, ',', '.') : '0' }}₫
+</span>
                     </div>
                     <div class="cart-summary__item">
                         <span>Phí vận chuyển</span>
-                        <span class="text-success">Miễn phí</span>
+                        <span class="text-success">20.000</span>
                     </div>
                     
                     <div class="cart-summary__coupon my-4">
@@ -526,9 +528,9 @@
                     <hr class="my-4">
                     <div class="cart-summary__total">
                         <span>Tổng cộng</span>
-                        <span id="cart-grand-total">{{ isset($cartTotal) ? number_format($cartTotal, 0, ',', '.') : '0' }}₫</span>
+                        <span id="cart-grand-total">{{ isset($cartTotal) ? number_format($cartTotal+ 20000, 0, ',', '.') : '0' }}₫</span>
                     </div>
-                    <a href="#" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
+                    <a href="{{ route('shopping-cart.checkout') }}" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
             </div>
             @else

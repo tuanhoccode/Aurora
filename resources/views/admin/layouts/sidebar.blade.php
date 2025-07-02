@@ -48,7 +48,7 @@
         {{-- Bán hàng --}}
         <li class="sidebar-heading">Bán hàng</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
                 <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span> Đơn hàng
             </a>
         </li>
