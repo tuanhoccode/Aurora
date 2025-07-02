@@ -85,6 +85,18 @@
                                         <li class="has-mega-menu">
                                             <a href="{{ route('home') }}">Trang chủ</a>
                                         </li>
+                                        <li class="has-dropdown">
+                                            <a href="#">Danh mục</a>
+                                            <ul class="tp-submenu">
+                                                @foreach($categories as $category)
+                                                    <li>
+                                                        <a href="{{ route('client.categories.show', $category->id) }}">
+                                                            {{ $category->name }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </li>
                                         <li class="has-dropdown has-mega-menu">
                                             <a href="shop.html">Cửa hàng</a>
                                             <div class="shop-mega-menu tp-submenu tp-mega-menu">
@@ -148,15 +160,6 @@
                                                         <li><a href="about.html">Giới thiệu</a></li>
                                                     </ul>
                                                 </li>
-                                            </ul>
-                                        </li>
-                                        <li class="has-dropdown">
-                                            <a href="blog.html">Blog</a>
-                                            <ul class="tp-submenu">
-                                                <li><a href="blog.html">Blog tiêu chuẩn</a></li>
-                                                <li><a href="blog-grid.html">Blog lưới</a></li>
-                                                <li><a href="blog-list.html">Blog danh sách</a></li>
-                                                <li><a href="blog-details.html">Chi tiết blog</a></li>
                                             </ul>
                                         </li>
                                         <li><a href="{{ route('contact') }}">Liên hệ</a></li>
@@ -257,7 +260,7 @@
                                                 <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ sơ</a></li>
                                                 <li><a href=""><i class="fa-solid fa-heart"></i> Yêu thích</a></li>
                                                 <li><a href="{{ route('shopping-cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
-                                                <li><a href=""><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
+                                                <li><a href="{{ route('orders.index') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
                                                 <li class="tp-account-menu-divider"></li>
                                                 <li>
                                                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

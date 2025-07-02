@@ -28,7 +28,6 @@ class Product extends Model
         'is_sale',
         'views',
         'stock',
-        'gallery',
         'digital_file',
     ];
 
@@ -39,8 +38,12 @@ class Product extends Model
         'is_active' => 'boolean',
         'views' => 'integer',
         'stock' => 'integer',
-        'gallery' => 'array',
     ];
+
+    public function galleries()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
 
     protected static function boot()
     {
@@ -104,11 +107,6 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
-    }
-
-    public function galleries()
-    {
-        return $this->hasMany(ProductGallery::class);
     }
 
     public function stocks()

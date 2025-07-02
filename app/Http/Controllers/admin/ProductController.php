@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\Admin\ProductRequest;
 use Illuminate\Support\Facades\DB;
+use App\Models\ProductGallery;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -69,31 +71,35 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $data = $request->validated();
-
-        // Handle slug
-        $baseSlug = Str::slug($data['name']);
-        $slug = $baseSlug;
-        $counter = 1;
-
-        // Kiểm tra và tạo slug duy nhất
-        while (Product::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
-            $counter++;
-        }
-        $data['slug'] = $slug;
-
-        // Handle SKU - tự động tạo nếu không có hoặc kiểm tra trùng lặp
-        if (empty($data['sku'])) {
-            // Tạo SKU tự động
-            $data['sku'] = 'PRD-' . strtoupper(Str::random(5));
-        } else {
-            // Kiểm tra SKU có trùng không
-            $existingProduct = Product::where('sku', $data['sku'])->first();
-            if ($existingProduct) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['sku' => 'SKU đã tồn tại. Vui lòng chọn SKU khác.']);
+        try {
+            DB::beginTransaction();
+            
+            $data = $request->validated();
+            
+            // Xử lý slug
+            $baseSlug = Str::slug($data['name']);
+            $slug = $baseSlug;
+            $counter = 1;
+            
+            // Kiểm tra và tạo slug duy nhất
+            while (Product::where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+            $data['slug'] = $slug;
+            
+            // Xử lý SKU - tự động tạo nếu không có hoặc kiểm tra trùng lặp
+            if (empty($data['sku'])) {
+                // Tạo SKU tự động
+                $data['sku'] = 'PRD-' . strtoupper(Str::random(5));
+            } else {
+                // Kiểm tra SKU có trùng không
+                $existingProduct = Product::where('sku', $data['sku'])->first();
+                if ($existingProduct) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['sku' => 'SKU đã tồn tại. Vui lòng chọn SKU khác.']);
+                }
             }
 
             // Đảm bảo SKU có prefix PRD-
@@ -102,52 +108,84 @@ class ProductController extends Controller
             } else {
                 $data['sku'] = strtoupper($data['sku']);
             }
-        }
 
-        // Handle sale price
-        $data['is_sale'] = !empty($data['sale_price']);
-        if (!$data['is_sale']) {
-            $data['sale_price'] = null;
-        }
-
-        // Handle stock for non-variant products
-        if ($data['type'] !== 'variant') {
-            $data['stock'] = $request->input('stock', 0);
-        }
-
-        // Handle thumbnail
-        if ($request->hasFile('thumbnail')) {
-            $file = $request->file('thumbnail');
-            $filename = 'product-' . $slug . '-' . time() . '.' . $file->getClientOriginalExtension();
-            $data['thumbnail'] = $file->storeAs('products', $filename, 'public');
-        }
-
-        // Handle gallery
-        if ($request->hasFile('gallery')) {
-            $gallery = [];
-            foreach ($request->file('gallery') as $file) {
-                $filename = 'gallery-' . $slug . '-' . time() . '-' . Str::random(5) . '.' . $file->getClientOriginalExtension();
-                $gallery[] = $file->storeAs('products/gallery', $filename, 'public');
+            // Xử lý sale price
+            $data['is_sale'] = !empty($data['sale_price']);
+            if (!$data['is_sale']) {
+                $data['sale_price'] = null;
             }
-            $data['gallery'] = json_encode($gallery);
+
+            // Xử lý stock cho sản phẩm không phải biến thể
+            if ($data['type'] !== 'variant') {
+                $data['stock'] = $request->input('stock', 0);
+            }
+
+            // Xử lý thumbnail
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'product-' . $slug . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $data['thumbnail'] = $file->storeAs('products', $filename, 'public');
+            }
+
+            // Tạo sản phẩm
+            $product = Product::create($data);
+
+            // Xử lý gallery images
+            if ($request->hasFile('gallery_images')) {
+                Log::info('Processing gallery images upload');
+                
+                $galleryImages = $request->file('gallery_images');
+                Log::info('Number of images: ' . (is_array($galleryImages) ? count($galleryImages) : 0));
+                
+                if (is_array($galleryImages)) {
+                    foreach ($galleryImages as $image) {
+                        try {
+                            Log::info('Processing image: ' . $image->getClientOriginalName());
+                            
+                            // Kiểm tra xem file có phải là hình ảnh không
+                            if (!$image->isValid()) {
+                                Log::error('Invalid image: ' . $image->getClientOriginalName());
+                                continue;
+                            }
+                            
+                            // Lưu file vào storage
+                            $path = $image->store('products/gallery', 'public');
+                            Log::info('Stored image at: ' . $path);
+                            
+                            // Tạo record trong bảng product_galleries
+                            $gallery = $product->galleries()->create([
+                                'image' => $path
+                            ]);
+                            Log::info('Created gallery record with ID: ' . $gallery->id);
+                        } catch (\Exception $e) {
+                            Log::error('Error storing gallery image: ' . $e->getMessage());
+                            continue; // Skip this image and continue with others
+                        }
+                    }
+                }
+            }
+
+            // Sync categories
+            if (!empty($data['categories'])) {
+                $product->categories()->sync($data['categories']);
+            }
+
+            DB::commit();
+
+            // Redirect dựa vào nút được nhấn
+            if ($request->has('redirect_to_variant')) {
+                return redirect()->route('admin.product-variants.create', $product->id)
+                    ->with('success', 'Sản phẩm đã được tạo thành công. Bây giờ hãy tạo biến thể.');
+            }
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Sản phẩm đã được tạo thành công!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating product: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo sản phẩm. Vui lòng thử lại.');
         }
-
-        // Create product
-        $product = Product::create($data);
-
-        // Sync categories
-        if (!empty($data['categories'])) {
-            $product->categories()->sync($data['categories']);
-        }
-
-        // Redirect based on the button clicked
-        if ($request->has('redirect_to_variant')) {
-            return redirect()->route('admin.products.variants.create', $product)
-                ->with('success', 'Sản phẩm đã được tạo thành công. Bây giờ bạn có thể tạo biến thể.');
-        }
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Sản phẩm đã được tạo thành công.');
     }
 
     public function show(Product $product)
@@ -191,19 +229,13 @@ class ProductController extends Controller
         }
     }
 
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
         try {
-            // Lấy chỉ các trường cho phép
-            $data = $request->only([
-                'name', 'slug', 'brand_id', 'description', 'short_description',
-                'sku', 'price', 'sale_price', 'type', 'thumbnail', 'is_active',
-                'is_sale', 'views', 'stock', 'gallery', 'digital_file'
-            ]);
-
-            // Đảm bảo không có trường deleted_at
-            unset($data['deleted_at']);
-
+            DB::beginTransaction();
+            
+            $data = $request->validated();
+            
             // Xử lý checkbox is_active
             $data['is_active'] = $request->has('is_active') ? 1 : 0;
 
@@ -217,7 +249,9 @@ class ProductController extends Controller
                 $baseSlug = Str::slug($data['name']);
                 $slug = $baseSlug;
                 $counter = 1;
-                while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                while (Product::where('slug', $slug)
+                    ->where('id', '!=', $product->id)
+                    ->exists()) {
                     $slug = $baseSlug . '-' . $counter;
                     $counter++;
                 }
@@ -229,7 +263,9 @@ class ProductController extends Controller
                 $data['sku'] = $product->sku;
             } else {
                 if ($data['sku'] !== $product->sku) {
-                    $existingProduct = Product::where('sku', $data['sku'])->where('id', '!=', $product->id)->first();
+                    $existingProduct = Product::where('sku', $data['sku'])
+                        ->where('id', '!=', $product->id)
+                        ->first();
                     if ($existingProduct) {
                         return redirect()->back()
                             ->withInput()
@@ -256,7 +292,7 @@ class ProductController extends Controller
                 unset($data['stock']);
             }
 
-            // Xử lý thumbnail upload
+            // Xử lý thumbnail update
             if ($request->hasFile('thumbnail')) {
                 if ($product->thumbnail && Storage::disk('public')->exists($product->thumbnail)) {
                     Storage::disk('public')->delete($product->thumbnail);
@@ -266,33 +302,81 @@ class ProductController extends Controller
                 $data['thumbnail'] = $file->storeAs('products', $filename, 'public');
             }
 
-            // Xử lý gallery upload
-            if ($request->hasFile('gallery')) {
-                $gallery = [];
-                foreach ($request->file('gallery') as $file) {
-                    $filename = 'gallery-' . $data['slug'] . '-' . time() . '-' . Str::random(5) . '.' . $file->getClientOriginalExtension();
-                    $gallery[] = $file->storeAs('products/gallery', $filename, 'public');
+            // Xử lý gallery images update
+            if ($request->hasFile('gallery_images')) {
+                $galleryImages = $request->file('gallery_images');
+                
+                if (is_array($galleryImages)) {
+                    $successImages = [];
+                    $failedImages = [];
+                    
+                    foreach ($galleryImages as $image) {
+                        try {
+                            // Kiểm tra xem file có phải là hình ảnh không
+                            if (!$image->isValid()) {
+                                $failedImages[] = $image->getClientOriginalName();
+                                continue;
+                            }
+                            
+                            // Lưu file vào storage
+                            $path = $image->store('products/gallery', 'public');
+                            
+                            // Tạo record trong bảng product_galleries
+                            $gallery = new ProductGallery([
+                                'product_id' => $product->id,
+                                'image' => $path
+                            ]);
+                            $gallery->save();
+                            
+                            $successImages[] = $image->getClientOriginalName();
+                        } catch (\Exception $e) {
+                            $failedImages[] = $image->getClientOriginalName();
+                            Log::error('Error storing gallery image: ' . $e->getMessage());
+                            continue;
+                        }
+                    }
+                    
+                    // Thêm thông báo về kết quả upload
+                    if (!empty($successImages)) {
+                        session()->flash('success', 'Đã thêm ' . count($successImages) . ' hình ảnh thành công');
+                    }
+                    if (!empty($failedImages)) {
+                        session()->flash('warning', 'Có ' . count($failedImages) . ' hình ảnh không thể thêm: ' . implode(', ', $failedImages));
+                    }
                 }
-                $data['gallery'] = json_encode($gallery);
             }
 
-            $product->fill($data);
-            $product->save();
+            // Update product
+            $product->update($data);
 
+            // Sync categories
             if ($request->has('categories')) {
                 $product->categories()->sync($request->input('categories'));
             }
 
+            DB::commit();
+
+            // Thêm thông báo chi tiết
+            $message = 'Cập nhật sản phẩm thành công!';
+            if (!empty($successImages)) {
+                $message .= ' Đã thêm ' . count($successImages) . ' hình ảnh mới.';
+            }
+            
             return redirect()->route('admin.products.index')
-                ->with('success', 'Cập nhật sản phẩm thành công!');
+                ->with('success', $message);
+
         } catch (\Exception $e) {
-            Log::error('Error updating product:', [
-                'product_id' => $product->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error updating product: ' . $e->getMessage());
+            
+            // Thêm thông báo lỗi chi tiết
+            $message = 'Có lỗi xảy ra khi cập nhật sản phẩm.';
+            if ($e instanceof ValidationException) {
+                $message .= ' Vui lòng kiểm tra lại dữ liệu nhập.';
+            }
+            
+            return back()->withInput()
+                ->with('error', $message);
         }
     }
 
@@ -465,6 +549,34 @@ class ProductController extends Controller
                 'success' => false,
                 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function deleteGalleryImage(Request $request, Product $product)
+    {
+        try {
+            $path = $request->json('path');
+            
+            // Tìm và xóa gallery image
+            $gallery = $product->galleries()->where('image', $path)->first();
+            
+            if (!$gallery) {
+                return response()->json(['success' => false, 'message' => 'Hình ảnh không tồn tại'], 404);
+            }
+
+            // Xóa file từ storage
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            // Xóa record từ database
+            $gallery->delete();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting gallery image: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi xóa hình ảnh'], 500);
         }
     }
 }

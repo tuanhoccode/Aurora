@@ -66,7 +66,7 @@
                             <div class="card-body">
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Loại sản phẩm <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType" required>
+                                    <select class="form-select @error('type') is-invalid @enderror" name="type" id="productType">
                                         <option value="simple" {{ old('type') === 'simple' ? 'selected' : '' }}>Sản phẩm đơn giản</option>
                                         <option value="digital" {{ old('type') === 'digital' ? 'selected' : '' }}>Sản phẩm số</option>
                                         <option value="variant" {{ old('type') === 'variant' ? 'selected' : '' }}>Sản phẩm biến thể</option>
@@ -91,8 +91,8 @@
 
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Tên sản phẩm <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror"
-                                        name="name" value="{{ old('name') }}" required placeholder="Nhập tên sản phẩm">
+                                    <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror" 
+                                        name="name" value="{{ old('name') }}" placeholder="Nhập tên sản phẩm">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -101,8 +101,8 @@
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
-                                        <select class="form-select select2 @error('categories') is-invalid @enderror"
-                                            name="categories[]" multiple required>
+                                        <select class="form-select select2 @error('categories') is-invalid @enderror" 
+                                            name="categories[]" multiple>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category->id }}"
                                                     {{ in_array($category->id, old('categories', [])) ? 'selected' : '' }}>
@@ -162,8 +162,8 @@
                             <div class="card-body">
                                 <div class="mb-4">
                                     <label class="form-label fw-medium">Ảnh đại diện <span class="text-danger">*</span></label>
-                                    <input type="file" class="form-control @error('thumbnail') is-invalid @enderror"
-                                        name="thumbnail" accept="image/*" required>
+                                    <input type="file" class="form-control @error('thumbnail') is-invalid @enderror" 
+                                        name="thumbnail" accept="image/*">
                                     @error('thumbnail')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -196,8 +196,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Giá <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control @error('price') is-invalid @enderror"
-                                                name="price" value="{{ old('price', 0) }}" min="0" step="1" required>
+                                            <input type="number" class="form-control @error('price') is-invalid @enderror" 
+                                                name="price" value="{{ old('price', 0) }}" min="0" step="1">
                                             @error('price')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror

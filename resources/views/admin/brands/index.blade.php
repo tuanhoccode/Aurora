@@ -54,8 +54,6 @@
                             </select>
                         </form>
                     </div>
-<<<<<<< HEAD
-=======
                     <div class="col-md-6 text-end">
                         <button type="button" 
                                 class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2" 
@@ -87,7 +85,6 @@
                             <span class="badge bg-white text-danger ms-2 selected-count">0</span>
                         </button>
                     </div>
->>>>>>> origin/main
                 </div>
 
                 @if ($brands->count())
@@ -95,14 +92,11 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-<<<<<<< HEAD
-=======
                                     <th class="border-0" style="width: 40px">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" id="selectAll">
                                         </div>
                                     </th>
->>>>>>> origin/main
                                     <th class="border-0" style="width: 60px">
                                         <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -146,8 +140,6 @@
                             <tbody>
                                 @foreach ($brands as $brand)
                                     <tr class="position-relative">
-<<<<<<< HEAD
-=======
                                         <td>
                                             <div class="form-check">
                                                 <input type="checkbox" 
@@ -157,7 +149,6 @@
                                                        data-status="{{ $brand->is_active }}">
                                             </div>
                                         </td>
->>>>>>> origin/main
                                         <td class="text-muted">{{ $brand->id }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -252,20 +243,12 @@
                         <i class="bi bi-exclamation-triangle text-danger display-4"></i>
                     </div>
                     <p class="text-center mb-0">
-<<<<<<< HEAD
-                        Bạn có chắc chắn muốn xóa thương hiệu "<span id="brandName" class="fw-bold"></span>"?
-=======
                         Bạn có chắc chắn muốn xóa thương hiệu "<span id="deleteBrandName" class="fw-bold"></span>"?
->>>>>>> origin/main
                     </p>
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-<<<<<<< HEAD
-                    <form id="deleteForm" method="POST" style="display: inline;">
-=======
                     <form id="deleteForm" method="POST">
->>>>>>> origin/main
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger rounded-pill px-4">Xóa</button>
@@ -275,21 +258,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
-    @push('scripts')
-    <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-
-        function confirmDelete(id, name) {
-            document.getElementById('brandName').textContent = name;
-            document.getElementById('deleteForm').action = `/admin/brands/${id}`;
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
-        }
-=======
     {{-- Bulk Delete Confirmation Modal --}}
     <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -469,7 +437,6 @@
                 new bootstrap.Modal(document.getElementById('deleteModal')).show();
             };
         });
->>>>>>> origin/main
     </script>
     @endpush
 @endsection

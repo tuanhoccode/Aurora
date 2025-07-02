@@ -5,6 +5,32 @@
 @section('content')
 <div class="container">
     <h3 class="mb-4">Chỉnh sửa biến thể cho sản phẩm: <span class="text-primary">{{ $product->name }}</span></h3>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form action="{{ route('admin.products.variants.update', [$product->id, $variant->id]) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -49,11 +75,11 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Tồn kho</label>
-                        <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}" required>
+                        <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Giá gốc</label>
-                        <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}" required>
+                        <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Giá KM</label>

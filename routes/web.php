@@ -50,11 +50,10 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    /// Orders Routes
+/// Orders Routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::get('orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.updateStatus');
-    Route::patch('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
         // List và Form routes
@@ -82,7 +81,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{product}', [ProductController::class, 'update'])->name('update');
         Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
 
-
+        
         // Toggle status
         Route::put('/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('toggle-status');
 
