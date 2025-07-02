@@ -91,7 +91,7 @@
             </div>
             <div class="cartmini__checkout-btn">
                 <a href="{{ route('shopping-cart.index') }}" class="tp-btn tp-btn-border w-100 mb-10">Xem Giỏ Hàng</a>
-                <a href="{{ route('shopping-cart.checkout') }}" class="tp-btn w-100 tp-btn-checkout">Thanh toán</a>
+                <a href="{{ route('checkout') }}" class="tp-btn w-100 tp-btn-checkout">Thanh toán</a>
             </div>
         </div>
     </div>
