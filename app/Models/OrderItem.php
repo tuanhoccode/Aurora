@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
+    protected $table = 'order_items';
+
     protected $fillable = [
         'order_id',
         'product_id',
@@ -19,51 +20,22 @@ class OrderItem extends Model
         'name_variant',
         'attributes_variant',
         'price_variant',
-        'quantity_variant'
+        'quantity_variant',
     ];
+    public $timestamps = false; // Tắt timestamps để tránh thêm updated_at
 
-    protected $casts = [
-        'price' => 'float',
-        'old_price' => 'float',
-        'old_price_variant' => 'float',
-        'price_variant' => 'float',
-        'quantity' => 'integer',
-        'quantity_variant' => 'integer',
-        'attributes_variant' => 'array'
-    ];
-
-    public function order(): BelongsTo
+    public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function product(): BelongsTo
+    public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function productVariant(): BelongsTo
+    public function variant()
     {
-        return $this->belongsTo(ProductVariant::class);
-    }
-
-    public function getPriceAttribute($value): float
-    {
-        return number_format($value, 0, ',', '.');
-    }
-
-    public function getOldPriceAttribute($value): float
-    {
-        return number_format($value, 0, ',', '.');
-    }
-
-    public function getPriceVariantAttribute($value): float
-    {
-        return number_format($value, 0, ',', '.');
-    }
-
-    public function getOldPriceVariantAttribute($value): float
-    {
-        return number_format($value, 0, ',', '.');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 }

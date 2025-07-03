@@ -53,7 +53,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 /// Orders Routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('/orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
+    Route::patch('/orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
         // List và Form routes
@@ -231,8 +232,17 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
     ->name('client.product.show');
 
 // Chi tiết danh mục
-Route::get('/category/{id}', [CategoryController::class, 'show'])
-    ->name('client.category.show');
+// Đơn hàng (Order)
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
+    });
+
+    // Client Category
+    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+    });
 
 Route::middleware('web')->group(function () {
     //login & register

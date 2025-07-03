@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+@extends('admin.layouts.app')Add commentMore actions
 
 @section('content')
     {{-- Thông báo --}}
