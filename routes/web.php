@@ -233,9 +233,10 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
 
 // Chi tiết danh mục
 // Đơn hàng (Order)
+// Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () { 
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
-        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
     });
 
     // Client Category
