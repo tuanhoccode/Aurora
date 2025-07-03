@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('title', 'Quản lý thương hiệu')
+
 @section('content')
     <div class="container-fluid py-4">
         {{-- Header Section --}}
