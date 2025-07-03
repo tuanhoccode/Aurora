@@ -530,7 +530,7 @@
                         <span>Tổng cộng</span>
                         <span id="cart-grand-total">{{ isset($cartTotal) ? number_format($cartTotal+ 20000, 0, ',', '.') : '0' }}₫</span>
                     </div>
-                    <a href="{{ route('shopping-cart.checkout') }}" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
+                    <a href="{{ route('checkout') }}" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
             </div>
             @else

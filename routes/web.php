@@ -297,9 +297,22 @@ Route::middleware('web')->group(function () {
     Route::post('/shopping-cart/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
     Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+
     // Trang liên hệ
     Route::get('/contact', function () {
         return view('client.contact');
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+    // Đơn hàng (Order)
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
+    });
+
+    // Client Category
+    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+    });
 });
