@@ -312,4 +312,7 @@ Route::middleware('web')->group(function () {
         return view('client.contact');
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
 });
+
+Route::get('/quickview/{id}', [ProductController::class, 'quickView'])->name('product.quickview');
