@@ -51,17 +51,61 @@ class ShoppingCartController extends Controller
             ['created_at' => now(), 'updated_at' => now()]
         );
 
+        $quantity = (int) $request->input('quantity', 1);
+        if ($quantity < 1) $quantity = 1;
+
+        $product = \App\Models\Product::find($request->product_id);
+        if (!$product) {
+            $msg = 'Không tìm thấy sản phẩm!';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 404);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
+        if ($product->type === 'variant') {
+            // Sản phẩm có biến thể, bắt buộc phải có product_variant_id hợp lệ
+            if (!$request->product_variant_id) {
+                $msg = 'Vui lòng chọn đầy đủ màu và kích cỡ!';
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 400);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+            $variant = \App\Models\ProductVariant::find($request->product_variant_id);
+            if (!$variant) {
+                $msg = 'Không tìm thấy biến thể phù hợp!';
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 404);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+            if ($variant->stock < $quantity) {
+                $msg = 'Chỉ còn '.$variant->stock.' sản phẩm trong kho!';
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 400);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+        } else {
+            if ($product->stock < $quantity) {
+                $msg = 'Chỉ còn '.$product->stock.' sản phẩm trong kho!';
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 400);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+        }
+
         $item = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $request->product_id)
             ->where('product_variant_id', $request->product_variant_id)
             ->first();
 
         if ($item) {
-            $item->quantity += $request->quantity;
+            $item->quantity += $quantity;
             $item->save();
         } else {
-            $quantity = (int) $request->input('quantity', 1);
-            if ($quantity < 1) $quantity = 1;
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $request->product_id,
@@ -77,8 +121,7 @@ class ShoppingCartController extends Controller
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng!'
             ]);
         }
-
-        return redirect()->back()->with('success', 'Đã thêm vào giỏ hàng!');
+        return redirect()->back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng!');
     }
 
     /**
@@ -129,7 +172,61 @@ class ShoppingCartController extends Controller
     public function update(Request $request, $itemId)
     {
         $item = CartItem::findOrFail($itemId);
-        $item->quantity = $request->input('quantity');
+        $newQty = (int) $request->input('quantity');
+        if ($newQty < 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Số lượng không hợp lệ!'
+            ], 400);
+        }
+
+        // Kiểm tra tồn kho
+        $stock = null;
+        $productName = '';
+        if ($item->product_variant_id) {
+            $variant = $item->productVariant;
+            if (!$variant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Biến thể sản phẩm không tồn tại!'
+                ], 404);
+            }
+            $stock = $variant->stock;
+            $productName = $variant->sku ?? ($item->product->name ?? 'Sản phẩm');
+        } else {
+            $product = $item->product;
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm không tồn tại!'
+                ], 404);
+            }
+            $stock = $product->stock;
+            $productName = $product->name;
+        }
+
+        if ($stock === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không xác định được tồn kho sản phẩm!'
+            ], 400);
+        }
+
+        if ($stock < 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm này đã hết hàng!'
+            ], 400);
+        }
+
+        if ($newQty > $stock) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ còn ' . $stock . ' sản phẩm trong kho!'
+            ], 400);
+        }
+
+        $item->quantity = $newQty;
         $item->save();
 
         return response()->json(['success' => true]);
