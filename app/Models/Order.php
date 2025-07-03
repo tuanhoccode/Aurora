@@ -37,4 +37,14 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    // Trong App\Models\Order
+public function statusHistory()
+{
+    return $this->hasMany(OrderStatusHistory::class);
+}
+
+public function currentStatus()
+{
+    return $this->hasOne(OrderStatusHistory::class)->where('is_current', true);
+}
 }
