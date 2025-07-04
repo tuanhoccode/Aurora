@@ -29,6 +29,7 @@ use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\GoogleController;
 
+
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductGalleryController;
@@ -38,6 +39,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\Auth\LoginHistoryController;
+
 
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
@@ -232,17 +234,6 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
     ->name('client.product.show');
 
 // Chi tiết danh mục
-// Đơn hàng (Order)
-    Route::middleware(['auth'])->prefix('client')->group(function () { 
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
-        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
-    });
-
-    // Client Category
-    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
-        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-    });
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -325,4 +316,9 @@ Route::middleware('web')->group(function () {
         Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
+});
+
+Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
