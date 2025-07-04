@@ -3,6 +3,10 @@
 @section('content')
     @php
         $hasVariants = isset($product->variants) && count($product->variants) > 0;
+        $isOutOfStock = false;
+        if (!$hasVariants) {
+            $isOutOfStock = ($product->stock ?? 0) < 1;
+        }
     @endphp
     <style>
         .color-circle {
@@ -419,28 +423,33 @@
                                     @endif
                                     {{-- Số lượng + Thêm giỏ hàng --}}
                                     <div class="tp-product-details-action-wrapper">
-                                        <h3 class="tp-product-details-action-title">Số lượng</h3>
-                                        <div class="tp-product-details-action-item-wrapper d-flex align-items-center">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <label for="quantity" class="fw-bold mb-0 me-3" style="white-space:nowrap;">Số lượng</label>
                                             <div class="tp-product-details-quantity">
-                                                <div class="tp-product-quantity mb-15 mr-15">
+                                                <div class="tp-product-quantity d-flex align-items-center">
                                                     <span id="detail-cart-minus" class="tp-cart-minus">–</span>
                                                     <input id="quantity" name="quantity" class="tp-cart-input" type="text"
-                                                        value="1">
+                                                        value="1" min="1">
                                                     <span id="detail-cart-plus" class="tp-cart-plus">+</span>
                                                 </div>
                                             </div>
-                                            <div class="tp-product-details-add-to-cart mb-15 w-100">
-                                                <form id="detail-add-to-cart-form" class="add-to-cart-form" action="{{ route('shopping-cart.add') }}" method="POST">
-                                                    @csrf
-                                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                    <input type="hidden" name="product_variant_id" id="product_variant_id" value="">
-                                                    <input type="hidden" name="variant_sku" id="variant_sku" value="">
-                                                    <input type="hidden" name="price" id="variant_price" value="{{ !$hasVariants ? ($product->sale_price ?? $product->price) : '' }}">
-                                                    <button type="submit" class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ hàng</button>
-                                                </form>
-                                            </div>
                                         </div>
-                                        <button class="tp-product-details-buy-now-btn w-100">Mua ngay</button>
+                                        
+                                        <div id="out-of-stock-message" class="text-danger fw-bold mb-3" style="display:{{ $isOutOfStock ? '' : 'none' }}; font-size: 0.98rem;">
+                                            <i class="fa fa-exclamation-circle me-1"></i> Sản phẩm đã hết hàng, hãy quay lại vào lần sau.
+                                        </div>
+
+                                        <div class="tp-product-details-add-to-cart mb-2 w-100">
+                                              <form id="detail-add-to-cart-form" class="add-to-cart-form" action="{{ route('shopping-cart.add') }}" method="POST">
+                                                  @csrf
+                                                  <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                  <input type="hidden" name="product_variant_id" id="product_variant_id" value="">
+                                                  <input type="hidden" name="variant_sku" id="variant_sku" value="">
+                                                  <input type="hidden" name="price" id="variant_price" value="{{ !$hasVariants ? ($product->sale_price ?? $product->price) : '' }}">
+                                                  <button type="submit" class="tp-product-details-add-to-cart-btn w-100" @if($isOutOfStock) disabled @endif>Thêm vào giỏ hàng</button>
+                                              </form>
+                                        </div>
+                                        <button class="tp-product-details-buy-now-btn w-100" @if($isOutOfStock) disabled @endif>Mua ngay</button>
                                     </div>
                                     <div class="tp-product-details-action-sm">
                                         <button type="button" class="tp-product-details-action-sm-btn">
@@ -736,13 +745,25 @@
                                                 @endif
                                                 <div class="tp-product-action-2 tp-product-action-blackStyle">
                                                     <div class="tp-product-action-item-2 d-flex flex-column">
+                                                        @php
+                                                            $isOutOfStock = false;
+                                                            if ($related->type === 'variant') {
+                                                                $defaultVariant = $related->variants->where('id', $related->default_variant_id)->first();
+                                                                $isOutOfStock = !$related->default_variant_id || ($defaultVariant && $defaultVariant->stock <= 0);
+                                                            } else {
+                                                                $isOutOfStock = ($related->stock ?? 0) <= 0;
+                                                            }
+                                                        @endphp
+                                                        @if($isOutOfStock)
+                                                            <div class="text-danger fw-bold small mb-2">Sản phẩm đã hết hàng</div>
+                                                        @endif
                                                         <form method="POST" action="{{ route('shopping-cart.add') }}" class="add-to-cart-form">
                                                             @csrf
                                                             <input type="hidden" name="product_id" value="{{ $related->id }}">
                                                             <input type="hidden" name="product_variant_id" value="{{ $related->default_variant_id ?? '' }}">
                                                             <input type="hidden" name="quantity" value="1">
                                                             <input type="hidden" name="price" value="{{ $related->price }}">
-                                                            <button type="submit" class="tp-product-action-btn-2 tp-product-add-cart-btn">
+                                                            <button type="submit" class="tp-product-action-btn-2 tp-product-add-cart-btn" @if($isOutOfStock) disabled style="opacity:0.5;cursor:not-allowed;" @endif>
                                                                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.34706 4.53799L3.85961 10.6239C3.89701 11.0923 4.28036 11.4436 4.74871 11.4436H4.75212H14.0265H14.0282C14.4711 11.4436 14.8493 11.1144 14.9122 10.6774L15.7197 5.11162C15.7384 4.97924 15.7053 4.84687 15.6245 4.73995C15.5446 4.63218 15.4273 4.5626 15.2947 4.54393C15.1171 4.55072 7.74498 4.54054 3.34706 4.53799ZM4.74722 12.7162C3.62777 12.7162 2.68001 11.8438 2.58906 10.728L1.81046 1.4837L0.529505 1.26308C0.181854 1.20198 -0.0501969 0.873587 0.00930333 0.526523C0.0705036 0.17946 0.406255 -0.0462578 0.746256 0.00805037L2.51426 0.313534C2.79901 0.363599 3.01576 0.5995 3.04042 0.888012L3.24017 3.26484C15.3748 3.26993 15.4139 3.27587 15.4726 3.28266C15.946 3.3514 16.3625 3.59833 16.6464 3.97849C16.9303 4.35779 17.0493 4.82535 16.9813 5.29376L16.1747 10.8586C16.0225 11.9177 15.1011 12.7162 14.0301 12.7162H14.0259H4.75402H4.74722Z" fill="currentColor" />
                                                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M12.6629 7.67446H10.3067C9.95394 7.67446 9.66919 7.38934 9.66919 7.03804C9.66919 6.68673 9.95394 6.40161 10.3067 6.40161H12.6629C13.0148 6.40161 13.3004 6.68673 13.3004 7.03804C13.3004 7.38934 13.0148 7.67446 12.6629 7.67446Z" fill="currentColor" />
@@ -819,10 +840,9 @@
     {{-- 2. Script chính --}}
     <script>
         const variants = @json($variantsWithImages);
-
         let selectedColorCode = null;
         let selectedSize = null;
-
+        let currentStock = null;
         document.addEventListener("DOMContentLoaded", function() {
             const priceEl = document.getElementById('product-price');
             const oldPriceEl = document.getElementById('product-old-price');
@@ -832,18 +852,45 @@
             const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
             const totalPriceEl = document.getElementById('total-price');
             const subImageGallery = document.getElementById('subImageGallery');
+            const addToCartBtn = document.querySelector('.tp-product-details-add-to-cart-btn');
+            const buyNowBtn = document.querySelector('.tp-product-details-buy-now-btn');
+            const outMsg = document.getElementById('out-of-stock-message');
+            const form = document.getElementById('detail-add-to-cart-form');
+            const notFoundMsgId = 'not-found-variant-message';
 
-            const formatCurrency = (num) => num.toLocaleString('vi-VN') + '₫';
+            function showNotFoundMsg(msg) {
+                let el = document.getElementById(notFoundMsgId);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = notFoundMsgId;
+                    el.className = 'text-danger fw-bold mt-2';
+                    el.style.fontSize = '0.98rem';
+                    el.style.textAlign = 'left';
+                    addToCartBtn.parentElement.insertAdjacentElement('beforebegin', el);
+                }
+                el.innerHTML = `<i class='fa fa-exclamation-circle me-1'></i> ${msg}`;
+                el.style.display = '';
+            }
+            function hideNotFoundMsg() {
+                let el = document.getElementById(notFoundMsgId);
+                if (el) el.style.display = 'none';
+            }
 
-            function updateTotal() {
-                const unit = parseFloat(unitPriceEl.dataset.unit || 0);
-                const qty = parseInt(quantityInput.value) || 1;
-                quantityInput.value = qty < 1 ? 1 : qty;
-                totalPriceEl.textContent = formatCurrency(unit * qty);
+            function setOutOfStockUI(isOut) {
+                if (addToCartBtn) addToCartBtn.disabled = isOut;
+                if (buyNowBtn) buyNowBtn.disabled = isOut;
             }
 
             function updateVariantInfo() {
                 if (!selectedColorCode || !selectedSize) {
+                    currentStock = null;
+                    quantityInput.value = 1;
+                    quantityInput.setAttribute('max', 1);
+                    quantityInput.disabled = true;
+                    setOutOfStockUI(true);
+                    if (stockEl) stockEl.textContent = 'Vui lòng chọn màu và kích cỡ';
+                    showNotFoundMsg('Vui lòng chọn đầy đủ màu và kích cỡ!');
+                    if (outMsg) outMsg.style.display = 'none'; // Ẩn thông báo hết hàng
                     return;
                 }
                 const variant = variants.find(v => {
@@ -851,18 +898,33 @@
                     return parts[1] === selectedSize && parts[2] === selectedColorCode;
                 });
                 if (!variant) {
+                    currentStock = null;
+                    quantityInput.value = 1;
+                    quantityInput.setAttribute('max', 1);
+                    quantityInput.disabled = true;
+                    addToCartBtn.disabled = true;
+                    buyNowBtn.disabled = true;
+                    if (stockEl) stockEl.textContent = 'Không tìm thấy biến thể phù hợp';
+                    showNotFoundMsg('Không tìm thấy biến thể phù hợp!');
+                    if (outMsg) outMsg.style.display = 'none';
                     return;
                 }
+                hideNotFoundMsg();
                 document.getElementById('sku-display').textContent = variant.sku;
                 const price = Number(variant.sale_price ?? variant.regular_price);
                 const oldPrice = variant.sale_price ? Number(variant.regular_price) : null;
-                priceEl.textContent = formatCurrency(price);
-                oldPriceEl.textContent = oldPrice ? formatCurrency(oldPrice) : '';
+                priceEl.textContent = price.toLocaleString('vi-VN') + '₫';
+                oldPriceEl.textContent = oldPrice ? oldPrice.toLocaleString('vi-VN') + '₫' : '';
                 oldPriceEl.style.display = oldPrice ? 'inline' : 'none';
                 unitPriceEl.dataset.unit = price;
-                unitPriceEl.textContent = formatCurrency(price);
+                unitPriceEl.textContent = price.toLocaleString('vi-VN') + '₫';
+                currentStock = variant.stock;
                 quantityInput.value = 1;
-                updateTotal();
+                quantityInput.setAttribute('max', currentStock);
+                quantityInput.disabled = currentStock < 1;
+                setOutOfStockUI(currentStock < 1);
+                // Chỉ show thông báo hết hàng nếu biến thể hết hàng
+                if (outMsg) outMsg.style.display = (variant.stock < 1) ? '' : 'none';
                 if (stockEl) {
                     stockEl.textContent = variant.stock > 0 ? `Trong kho: ${variant.stock}` : 'Hết hàng';
                 }
@@ -910,42 +972,43 @@
             document.querySelectorAll('.tp-color-variation-btn').forEach(button => {
                 if (button.classList.contains('disabled')) return;
                 button.addEventListener('click', function() {
-                    document.querySelectorAll('.tp-color-variation-btn').forEach(btn => btn
-                        .classList.remove('active'));
+                    document.querySelectorAll('.tp-color-variation-btn').forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
                     selectedColorCode = this.dataset.color.toUpperCase();
                     updateVariantInfo();
                 });
             });
-
             document.querySelectorAll('.tp-size-variation-btn').forEach(button => {
                 if (button.classList.contains('disabled')) return;
                 button.addEventListener('click', function() {
-                    document.querySelectorAll('.tp-size-variation-btn').forEach(btn => btn.classList
-                        .remove('active'));
+                    document.querySelectorAll('.tp-size-variation-btn').forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
                     selectedSize = this.dataset.size.toUpperCase();
                     updateVariantInfo();
                 });
             });
-
             document.querySelector('#detail-cart-minus')?.addEventListener('click', (e) => {
                 let val = parseInt(quantityInput.value) || 1;
                 if (val > 1) quantityInput.value = val - 1;
                 updateTotal();
             });
-
             document.querySelector('#detail-cart-plus')?.addEventListener('click', (e) => {
                 let val = parseInt(quantityInput.value) || 1;
-                quantityInput.value = val + 1;
+                if (currentStock !== null && val < currentStock) {
+                    quantityInput.value = val + 1;
+                }
                 updateTotal();
             });
-
-            quantityInput.addEventListener('input', updateTotal);
-
+            quantityInput.addEventListener('input', function() {
+                let val = parseInt(quantityInput.value) || 1;
+                if (currentStock !== null) {
+                    if (val > currentStock) val = currentStock;
+                    if (val < 1) val = 1;
+                }
+                quantityInput.value = val;
+                updateTotal();
+            });
             updateTotal();
-
-            // ✅ Chỉ gọi 1 lần Swiper ở đây
             new Swiper('.tp-product-related-slider-active', {
                 slidesPerView: 4,
                 spaceBetween: 20,
@@ -976,18 +1039,27 @@
             if (addToCartForm) {
                 const hasVariants = variants.length > 0;
                 addToCartForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-
+                    // Kiểm tra tồn kho trước khi submit
+                    if (typeof currentStock !== 'undefined' && currentStock !== null && currentStock < 1) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        if (window.toastr) toastr.error('Sản phẩm đã hết hàng, hãy quay lại vào lần sau.');
+                        setOutOfStockUI(true);
+                        return false;
+                    }
                     if (hasVariants) {
                         const variantId = document.getElementById('product_variant_id').value;
-                        if (!variantId) {
+                        if (!variantId || isNaN(Number(variantId))) {
                             if (window.toastr) {
                                 toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
                             }
-                            return;
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            return false;
                         }
                     }
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
 
                     const formData = new FormData(addToCartForm);
                     fetch(addToCartForm.action, {
