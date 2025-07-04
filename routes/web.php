@@ -63,6 +63,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/', [ProductController::class, 'store'])->name('store');
+        // Product Gallery Images
+// Xóa ảnh gallery của sản phẩm
+Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
+    ->name('delete-gallery-image');
 
 
         // Quản lý thùng rác
