@@ -140,12 +140,13 @@
                                     <th>Phương thức thanh toán</th>
                                     <th>Tổng tiền</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($orders as $order)
-                                <tr>
+                            <tbody id="order-list">
+                                @php $defaultShow = 10; @endphp
+                                @foreach($orders as $index => $order)
+                                <tr class="order-item{{ $index >= $defaultShow ? ' d-none-by-js' : '' }}">
                                     <td>#{{ $order->code }}</td>
                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
@@ -162,7 +163,7 @@
                                             {{ $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận' }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <a href="{{ route('client.orders.show', ['order' => $order->id]) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-eye me-1"></i> Xem chi tiết
                                         </a>
@@ -173,10 +174,15 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-center">
-                            {{ $orders->links() }}
+                    <div class="text-center my-4">
+                        <div id="showing-info" class="mb-2">
+                            Đang hiển thị <span id="showing-count">{{ min($defaultShow, $orders->count()) }}</span> trong số {{ $orders->count() }} đơn hàng
                         </div>
+                        @if($orders->count() > $defaultShow)
+                            <button id="show-all-btn" class="btn btn-dark">
+                                <b>Xem thêm</b> <i class="fa fa-arrow-up-right-from-square"></i>
+                            </button>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -184,4 +190,29 @@
     </div>
 </section>
 <!-- orders area end -->
+@endsection
+
+@section('scripts')
+<script>
+    const defaultShow = {{ $defaultShow }};
+    const total = {{ $orders->count() }};
+    const items = document.querySelectorAll('.order-item');
+    const showAllBtn = document.getElementById('show-all-btn');
+    const showingCount = document.getElementById('showing-count');
+    let currentVisible = defaultShow;
+
+    if (showAllBtn) {
+        showAllBtn.addEventListener('click', function() {
+            let nextVisible = currentVisible + defaultShow;
+            for (let i = currentVisible; i < nextVisible && i < total; i++) {
+                items[i].classList.remove('d-none-by-js');
+            }
+            currentVisible += defaultShow;
+            showingCount.textContent = Math.min(currentVisible, total);
+            if (currentVisible >= total) {
+                showAllBtn.style.display = 'none';
+            }
+        });
+    }
+</script>
 @endsection

@@ -41,18 +41,10 @@
                     <div class="tp-search-close text-center mb-20">
                         <button class="tp-search-close-btn tp-search-close-btn"></button>
                     </div>
-                    <form action="#">
+                    <form action="{{ route('search') }}" method="GET">
                         <div class="tp-search-input mb-10">
-                            <input type="text" placeholder="Tìm kiếm sản phẩm...">
+                            <input type="text" name="query" placeholder="Tìm kiếm sản phẩm...">
                             <button type="submit"><i class="flaticon-search-1"></i></button>
-                        </div>
-                        <div class="tp-search-category">
-                            <span>Tìm kiếm theo : </span>
-                            <a href="#">Nam, </a>
-                            <a href="#">Nữ, </a>
-                            <a href="#">Trẻ em, </a>
-                            <a href="#">Áo, </a>
-                            <a href="#">Quần</a>
                         </div>
                     </form>
                 </div>
@@ -97,45 +89,9 @@
                                                 @endforeach
                                             </ul>
                                         </li>
-                                        <li class="has-dropdown has-mega-menu">
-                                            <a href="shop.html">Cửa hàng</a>
-                                            <div class="shop-mega-menu tp-submenu tp-mega-menu">
-                                                <div class="row">
-                                                    <div class="col-lg-4">
-                                                        <div class="shop-mega-menu-list">
-                                                            <a href="shop.html" class="shop-mega-menu-title">Trang cửa
-                                                                hàng</a>
-                                                            <ul>
-                                                                <li><a href="shop-category.html">Danh mục lưới</a></li>
-                                                                <li><a href="shop.html">Bố cục lưới</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-4">
-                                                        <div class="shop-mega-menu-list">
-                                                            <a href="shop.html" class="shop-mega-menu-title">Tính
-                                                                năng</a>
-                                                            <ul>
-                                                                <li><a href="shop-filter-dropdown.html">Bộ lọc
-                                                                        dropdown</a></li>
-                                                                <li><a href="shop-filter-offcanvas.html">Bộ lọc
-                                                                        Offcanvas</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-4">
-                                                        <div class="shop-mega-menu-img">
-                                                            <img src="{{ asset('assets2/img/menu/product/menu-product-img-1.jpg') }}"
-                                                                alt="">
-                                                            <div class="shop-mega-menu-btn">
-                                                                <a href="shop-category.html"
-                                                                    class="tp-menu-showcase-btn tp-menu-showcase-btn-2">Điện
-                                                                    thoại</a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <li class="has-mega-menu">
+                                            <a href="{{ route('shop') }}">Cửa hàng</a>
+                                        
                                         </li>
                                         <li class="has-dropdown has-mega-menu">
                                             <a href="">Sản phẩm</a>
@@ -170,8 +126,8 @@
                         <div class="col-xl-5 col-lg-7 col-md-7 col-sm-8 col-6">
                             <div class="tp-header-bottom-right d-flex align-items-center justify-content-end pl-30">
                                 <div class="tp-header-search-2 d-none d-sm-block">
-                                    <form action="#">
-                                        <input type="text" placeholder="Tìm kiếm sản phẩm...">
+                                    <form action="{{ route('search') }}" method="GET">
+                                        <input type="text" name="query" placeholder="Tìm kiếm sản phẩm...">
                                         <button type="submit">
                                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -260,7 +216,7 @@
                                                 <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ sơ</a></li>
                                                 <li><a href=""><i class="fa-solid fa-heart"></i> Yêu thích</a></li>
                                                 <li><a href="{{ route('shopping-cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
-                                                <li><a href="{{ route('client.orders.index') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
+                                                <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
                                                 <li class="tp-account-menu-divider"></li>
                                                 <li>
                                                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

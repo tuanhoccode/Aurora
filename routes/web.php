@@ -326,7 +326,7 @@ Route::middleware('web')->group(function () {
     });
 
     // Client Category
-    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+    Route::prefix('categories')->name('client.categories.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
@@ -336,5 +336,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
+
+Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
 

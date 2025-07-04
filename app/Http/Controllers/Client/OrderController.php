@@ -12,20 +12,15 @@ class OrderController extends Controller
 {
     public function index()
     {
-
         $orders = Order::where('user_id', Auth::id())
             ->with([
-                'status', 
+                'status',
                 'items.product',
                 'currentStatus.status',
                 'payment'
-            ]);
-
-        $orders = Order::where('user_id', auth()->id())
-            ->with(['currentStatus.status', 'items.product'])
-
+            ])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
         return view('client.orders.index', compact('orders'));
     }
