@@ -525,8 +525,8 @@
                     <div class="cart-summary__item">
                         <span>Tạm tính (<span class="cart-item-count">{{ $cartItems->sum('quantity') }}</span> sản phẩm)</span>
                         <span id="cart-subtotal">
-  {{ isset($cartTotal) ? number_format($cartTotal + 20000, 0, ',', '.') : '0' }}₫
-</span>
+                            {{ isset($cartTotal) ? number_format($cartTotal + 20000, 0, ',', '.') : '0' }}₫
+                        </span>
                     </div>
                     <div class="cart-summary__item">
                         <span>Phí vận chuyển</span>
@@ -550,7 +550,7 @@
                         <span>Tổng cộng</span>
                         <span id="cart-grand-total">{{ isset($cartTotal) ? number_format($cartTotal+ 20000, 0, ',', '.') : '0' }}₫</span>
                     </div>
-                    <a href="{{ route('shopping-cart.checkout') }}" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
+                    <a href="{{ route('checkout') }}" class="checkout-btn">Tiến hành thanh toán <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
             </div>
             @else

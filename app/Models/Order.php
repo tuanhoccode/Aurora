@@ -29,22 +29,34 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-     public function product()
+    public function product()
     {
         return $this->belongsTo(Product::class);
     }
-    // Trong App\Models\Order
-public function statusHistory()
-{
-    return $this->hasMany(OrderStatusHistory::class);
-}
 
-public function currentStatus()
-{
-    return $this->hasOne(OrderStatusHistory::class)->where('is_current', true);
-}
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
+
+    public function currentStatus()
+    {
+        return $this->hasOne(OrderStatusHistory::class)
+            ->where('is_current', true)
+            ->with('status');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
+    }
 }

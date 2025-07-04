@@ -10,106 +10,96 @@
         padding-bottom: 6rem;
     }
 
-    .breadcrumb__area {
-        background-color: #fff;
+    .table {
+        font-size: 1rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #23272f;
+        background-color: #f7f8fa;
+        border-top: none;
+        padding: 1rem 0.75rem;
+    }
+
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+
+    .table td:first-child {
+        font-weight: 600;
+    }
+
+    .table td:last-child {
+        text-align: right;
+    }
+
+    .table tbody tr {
         border-bottom: 1px solid #e9ecef;
     }
 
-    .order-items-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+    .table tbody tr:hover {
+        background-color: #f7f8fa;
     }
 
-    .order-header-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        gap: 1.2rem;
-        font-size: 1.08rem;
-        font-weight: 700;
-        color: #7b7e85;
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-        background: transparent;
-        align-items: center;
-    }
-
-    .order-card {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        align-items: center;
-        background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-        border: 1px solid #e9ecef;
-        padding: 1.2rem 1.5rem;
-        transition: box-shadow 0.2s;
-        gap: 1.2rem;
-    }
-
-    .order-card:hover {
-        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    }
-
-    .order-card__info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-width: 0;
-    }
-
-    .order-card__info .name {
-        font-size: 1.13rem;
-        font-weight: 700;
-        color: #23272f;
-        margin-bottom: 0.18rem;
-        line-height: 1.25;
-    }
-
-    .order-card__price,
-    .order-card__status,
-    .order-card__actions {
-        text-align: center;
-        min-width: 0;
-    }
-
-    .order-card__status .badge {
+    .badge {
         padding: 0.5rem 1rem;
+        font-size: 0.9rem;
         border-radius: 20px;
-        font-size: 0.95rem;
     }
 
-    .order-card__actions .btn {
-        background: #23272f;
-        color: #fff;
+    .btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 24px;
+        min-width: 100px;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn i {
+        font-size: 1rem;
+    }
+
+    .order-item__empty {
+        text-align: center;
+        padding: 4rem 0;
+    }
+
+    .order-item__empty i {
+        font-size: 5rem;
+        color: #e9ecef;
+        margin-bottom: 1.25rem;
+    }
+
+    .order-item__empty h4 {
+        font-size: 1.75rem;
+        color: #23272f;
+        margin-bottom: 0.75rem;
+    }
+
+    .order-item__empty p {
+        font-size: 1.1rem;
+        color: #7b7e85;
+        margin-bottom: 1.5rem;
+    }
+
+    .pagination {
+        font-size: 1rem;
+    }
+
+    .pagination .page-link {
         padding: 0.5rem 1rem;
         border-radius: 24px;
-        font-size: 0.95rem;
-        transition: all 0.2s;
-    }
-
-    .order-card__actions .btn:hover {
-        background: #4a90e2;
-        color: #fff;
-    }
-
-    @media (max-width: 991.98px) {
-        .order-header-row, .order-card {
-            grid-template-columns: 1fr;
-            font-size: 0.98rem;
-        }
-    }
-
-    @media (max-width: 600px) {
-        .order-card {
-            padding: 1rem;
-        }
     }
 </style>
 
 <!-- breadcrumb area start -->
-<section class="breadcrumb__area include-bg pt-95 pb-50">
+<section class="breadcrumb__area">
     <div class="container">
         <div class="row">
             <div class="col-xxl-12">
@@ -131,63 +121,64 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="order-items-grid">
-                    @if($orders->isEmpty())
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="fas fa-box-open fa-4x text-muted"></i>
-                            </div>
-                            <h4 class="text-muted mb-3">Chưa có đơn hàng nào</h4>
-                            <p class="text-muted mb-4">Bạn chưa đặt mua sản phẩm nào</p>
-                            <a href="{{ route('home') }}" class="btn btn-primary">
-                                <i class="fas fa-shopping-cart me-1"></i> Mua sắm ngay
-                            </a>
+                @if($orders->isEmpty())
+                    <div class="order-item__empty">
+                        <i class="fas fa-box-open"></i>
+                        <h4>Chưa có đơn hàng nào</h4>
+                        <p>Bạn chưa đặt mua sản phẩm nào</p>
+                        <a href="{{ route('home') }}" class="btn">
+                            <i class="fas fa-shopping-cart me-1"></i> Mua sắm ngay
+                        </a>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn hàng</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Phương thức thanh toán</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($orders as $order)
+                                <tr>
+                                    <td>#{{ $order->code }}</td>
+                                    <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                                    <td>
+                                        @if($order->payment && $order->payment->logo)
+                                            <img src="{{ $order->payment->logo_url }}" alt="{{ $order->payment->name }}" style="width: 24px; height: 24px; margin-right: 8px;">
+                                        @else
+                                            <i class="fas fa-money-bill-wave me-1"></i>
+                                        @endif
+                                        {{ $order->payment ? $order->payment->name : 'Chưa xác định' }}
+                                    </td>
+                                    <td>{{ number_format($order->total_amount, 0, ',', '.') }}đ</td>
+                                    <td>
+                                        <span class="badge bg-{{ $order->currentStatus ? ($order->currentStatus->status->name === 'Đã hoàn thành' ? 'success' : ($order->currentStatus->status->name === 'Đang giao hàng' ? 'warning' : 'primary')) : 'primary' }}">
+                                            {{ $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('client.orders.show', ['order' => $order->id]) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-center">
+                            {{ $orders->links() }}
                         </div>
-                    @else
-                        <div class="order-header-row">
-                            <div>Mã đơn hàng</div>
-                            <div>Ngày đặt</div>
-                            <div>Tổng tiền</div>
-                            <div>Trạng thái</div>
-                            <div>Hành động</div>
-                        </div>
-
-                        @foreach($orders as $order)
-                        <div class="order-card">
-                            <div class="order-card__info">
-                                <h5 class="name">#{{ $order->id }}</h5>
-                                <small class="text-muted">
-                                    {{ $order->created_at->format('d/m/Y H:i') }}
-                                </small>
-                            </div>
-
-                            <div class="order-card__price">
-                                <h5 class="text-primary">
-                                    {{ number_format($order->total_amount, 0, ',', '.') }}đ
-                                </h5>
-                            </div>
-
-                            <div class="order-card__status">
-                                <span class="badge bg-{{ $order->currentStatus->status->name === 'Đã hoàn thành' ? 'success' : ($order->currentStatus->status->name === 'Đang giao hàng' ? 'warning' : 'primary') }}">
-                                    {{ $order->currentStatus->status->name }}
-                                </span>
-                            </div>
-
-                            <div class="order-card__actions">
-                                <a href="{{ route('orders.show', $order) }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i> Xem chi tiết
-                                </a>
-                            </div>
-                        </div>
-                        @endforeach
-
-                        <div class="mt-4">
-                            <div class="d-flex justify-content-center">
-                                {{ $orders->links() }}
-                            </div>
-                        </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
