@@ -143,7 +143,7 @@
                     <div class="order-info">
                         <div class="order-info-item">
                             <i class="fas fa-clock"></i>
-                            <span>Ngày đặt: {{ $order->created_at->format('d/m/Y H:i') }}</span>
+                            <span>Ngày đặt: {{ $order->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
                         </div>
                         <div class="order-info-item">
                             @if($order->payment && $order->payment->logo)
