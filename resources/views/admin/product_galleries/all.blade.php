@@ -56,12 +56,6 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('admin.product-images.edit', $image->id) }}" 
-                                                class="btn btn-warning btn-sm rounded-pill px-3" 
-                                                data-bs-toggle="tooltip" 
-                                                title="Chỉnh sửa">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
                                             <button type="button" 
                                                     class="btn btn-danger btn-sm rounded-pill px-3" 
                                                     onclick="confirmDelete('{{ $image->id }}', '{{ $image->product->name ?? 'Ảnh sản phẩm' }}')"

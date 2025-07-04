@@ -58,4 +58,10 @@ class ProductController extends Controller
             'variantsWithImages'
         ));
     }
+
+    public function quickView($id)
+    {
+        $product = Product::findOrFail($id);
+        return view('client.partials.quickview', compact('product'))->render();
+    }
 }

@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -27,47 +24,39 @@ class Order extends Model
         'img_refunded_money'
     ];
 
-    protected $casts = [
-        'is_paid' => 'boolean',
-        'is_refunded' => 'boolean',
-        'is_refunded_canceled' => 'boolean',
-        'check_refunded_canceled' => 'boolean',
-        'total_amount' => 'float'
-    ];
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function payment(): BelongsTo
-    {
-        return $this->belongsTo(Payment::class);
-    }
-
-    public function coupon(): BelongsTo
-    {
-        return $this->belongsTo(Coupon::class);
-    }
-
-    public function items(): HasMany
+    public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public static function boot()
+    public function payment()
     {
-        parent::boot();
-
-        static::creating(function ($order) {
-            if (empty($order->code)) {
-                $order->code = 'ORD-' . Str::random(8);
-            }
-        });
+        return $this->belongsTo(Payment::class);
     }
 
-    public function getTotalAmountAttribute($value): float
+    public function user()
     {
-        return number_format($value, 0, ',', '.');
+        return $this->belongsTo(User::class);
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
+
+    public function currentStatus()
+    {
+        return $this->hasOne(OrderStatusHistory::class)
+            ->where('is_current', true)
+            ->with('status');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
     }
 }

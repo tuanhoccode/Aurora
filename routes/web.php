@@ -2,45 +2,48 @@
 
 
 
-use App\Http\Controllers\Admin\ProductGalleryController;
-use App\Http\Controllers\Admin\StockController;
+use App\Models\User;
+use Illuminate\Support\Str;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use function Laravel\Prompts\password;
+use Laravel\Socialite\Facades\Socialite;
+
+use Laravel\Socialite\Two\GoogleProvider;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-
+use App\Http\Controllers\Client\ContactController;
+use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\AttributeValueController;
-use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Auth\AdminLoginController;
-use App\Http\Controllers\Client\Auth\RegisterController;
+use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\Auth\LoginController;
-use App\Http\Controllers\Client\ErrorController;
-use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\Auth\GoogleController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
-use App\Http\Controllers\Client\Auth\ResetPasswordController;
-use App\Http\Controllers\Client\Auth\VerifyEmailController;
-use App\Http\Controllers\Client\ChangePasswordController;
-use App\Http\Controllers\Client\ProfileController;
-use App\Http\Controllers\Client\ProductController as ClientProductController;
+
+
 use App\Http\Controllers\Client\ShoppingCartController;
-use App\Http\Controllers\Client\ContactController;
-
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\Admin\ProductGalleryController;
+use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Two\GoogleProvider;
-use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\client\OrderController;
+use App\Http\Controllers\Client\ChangePasswordController;
+use App\Http\Controllers\Client\Auth\VerifyEmailController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 
-use function Laravel\Prompts\password;
+
+use App\Http\Controllers\Client\Auth\ResetPasswordController;
+use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
@@ -49,7 +52,11 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+/// Orders Routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
+    Route::patch('/orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
         // List và Form routes
@@ -76,7 +83,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
         Route::put('/{product}', [ProductController::class, 'update'])->name('update');
         Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
-        Route::delete('/{product}/gallery-image', [ProductController::class, 'deleteGalleryImage'])->name('delete-gallery-image');
 
 
         // Toggle status
@@ -203,11 +209,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-toggle', [AttributeValueController::class, 'bulkToggle'])->name('bulk-toggle');
     });
 
-        // Quản lý tồn kho sản phẩm - product_stocks
-        Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
-        Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
-        Route::resource('stocks', StockController::class)->except(['show']);
-        Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
+    // Quản lý tồn kho sản phẩm - product_stocks
+    Route::get('/stocks', [StockController::class, 'index'])->name('stocks.index');
+    Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
+    Route::resource('stocks', StockController::class)->except(['show']);
+    Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
 
         // Quản lý ảnh phụ
         Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
@@ -230,8 +236,19 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
     ->name('client.product.show');
 
 // Chi tiết danh mục
-Route::get('/category/{id}', [CategoryController::class, 'show'])
-    ->name('client.category.show');
+
+// Đơn hàng (Order)
+// Đơn hàng (Order)
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    });
+
+    // Client Category
+    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+    });
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -273,27 +290,32 @@ Route::middleware('web')->group(function () {
         return Socialite::driver('google')->redirect();
     })->name('google.login');
 
-    // Callback từ gg
+    //Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-    // Profile
+    //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
-    // Change password
+    //changepassword
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
     Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
-    Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
+    // Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
     Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
     Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
     Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
     Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
     Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
+    //Checkout
+    Route::get('/shopping-cart/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/shopping-cart/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
+    Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
 
     // Trang liên hệ
-    Route::get('/contact', function() {
+    Route::get('/contact', function () {
         return view('client.contact');
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
@@ -301,9 +323,8 @@ Route::middleware('web')->group(function () {
 
     // Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () {
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
-        
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
     });
 
     // Client Category
@@ -312,3 +333,11 @@ Route::middleware('web')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
 });
+
+Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+});
+
+
+

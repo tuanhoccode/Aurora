@@ -192,4 +192,13 @@ class Product extends Model
     }
 
 
+    public function getDefaultVariantIdAttribute()
+    {
+        // Lấy biến thể đầu tiên còn hàng, hoặc biến thể đầu tiên nếu không còn hàng
+        $variant = $this->variants()->orderBy('id')->where('stock', '>', 0)->first();
+        if (!$variant) {
+            $variant = $this->variants()->orderBy('id')->first();
+        }
+        return $variant ? $variant->id : null;
+    }
 }
