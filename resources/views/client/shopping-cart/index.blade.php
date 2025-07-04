@@ -77,6 +77,21 @@
         justify-content: center;
         min-width: 0;
     }
+    .qty-input {
+        width: 48px !important;
+        min-width: 40px !important;
+        height: 36px !important;
+        text-align: center !important;
+        font-size: 16px !important;
+        color: #111 !important;
+        background-color: #fff !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+    }
 
     .cart-item-card__info .name {
         font-size: 1.13rem;
@@ -422,8 +437,9 @@
                     $product = $item->product;
                     $variant = $item->productVariant;
                     $unitPrice = $item->price_at_time;
+                    $stock = $variant ? $variant->stock : ($product->stock ?? 0);
                     @endphp
-                    <div class="cart-item-card" data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}">
+                    <div class="cart-item-card" data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}" data-stock="{{ $stock }}">
                         <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image">
 
                         <div class="cart-item-card__info">
@@ -447,6 +463,7 @@
                                         
                                         $colorMap = [
                                             'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
+                                            'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
                                             'vàng' => '#FFD600', 'đen' => '#000000', 'trắng' => '#FFFFFF', 'xám' => '#CBCBCB',
                                             'tím' => '#800080', 'cam' => '#FFA500', 'hồng' => '#FF69B4',
                                         ];
@@ -476,10 +493,13 @@
 
                         <div class="cart-item-card__quantity">
                             <div class="cart-qty">
-                                <button type="button" class="qty-btn" onclick="updateCartQty({{ $item->id }}, -1)">-</button>
-                                <input type="text" class="qty-input" value="{{ $item->quantity }}" data-item-id="{{ $item->id }}">
-                                <button type="button" class="qty-btn" onclick="updateCartQty({{ $item->id }}, 1)">+</button>
+                                <button type="button" class="qty-btn" onclick="updateCartQty({{ $item->id }}, -1)" {{ $stock < 1 ? 'disabled' : '' }}>-</button>
+                                <input type="text" class="qty-input" value="{{ $item->quantity }}" data-item-id="{{ $item->id }}" min="1" max="{{ $stock }}" {{ $stock < 1 ? 'disabled' : '' }}>
+                                <button type="button" class="qty-btn" onclick="updateCartQty({{ $item->id }}, 1)" {{ $stock < 1 ? 'disabled' : '' }}>+</button>
                             </div>
+                            @if ($stock < 1)
+                                <div class="text-danger small mt-1">Hết hàng</div>
+                            @endif
                         </div>
 
                         <div class="cart-item-card__total">
@@ -554,11 +574,14 @@
     function updateCartQty(itemId, change) {
         let input = document.querySelector('.qty-input[data-item-id="' + itemId + '"]');
         if (!input) return;
-
         let currentQty = parseInt(input.value);
+        let stock = parseInt(input.getAttribute('max'));
         let newQty = currentQty + change;
         if (newQty < 1) return;
-
+        if (stock && newQty > stock) {
+            newQty = stock;
+            alert('Chỉ còn ' + stock + ' sản phẩm trong kho!');
+        }
         fetch('/shopping-cart/update/' + itemId, {
             method: 'PUT',
             headers: {
@@ -573,10 +596,7 @@
             ok: res.ok,
             data
         })))
-        .then(({
-            ok,
-            data
-        }) => {
+        .then(({ ok, data }) => {
             if (ok && data.success) {
                 input.value = newQty;
                 updateCartSummary();
@@ -642,5 +662,19 @@
         if (isNaN(newQty) || newQty < 1) newQty = 1;
         updateCartQty(itemId, newQty - parseInt(document.querySelector('.qty-input[data-item-id="'+itemId+'"]').value));
     }
+
+    document.querySelectorAll('.qty-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            let val = parseInt(this.value) || 1;
+            let max = parseInt(this.getAttribute('max'));
+            if (max && val > max) {
+                val = max;
+                alert('Chỉ còn ' + max + ' sản phẩm trong kho!');
+            }
+            if (val < 1) val = 1;
+            this.value = val;
+            updateCartQty(this.dataset.itemId, val - parseInt(this.defaultValue || 1));
+        });
+    });
 </script>
 @endsection

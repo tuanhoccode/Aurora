@@ -235,6 +235,19 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
 
 // Chi tiết danh mục
 
+// Đơn hàng (Order)
+// Đơn hàng (Order)
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
+    });
+
+    // Client Category
+    Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+    });
+
 Route::middleware('web')->group(function () {
     //login & register
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('showRegister');
@@ -305,6 +318,7 @@ Route::middleware('web')->group(function () {
     })->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
+
     // Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () { 
         Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
@@ -322,3 +336,6 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
+
+});
+
