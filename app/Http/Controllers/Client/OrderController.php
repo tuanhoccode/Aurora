@@ -19,7 +19,7 @@ class OrderController extends Controller
                 'items.product',
                 'currentStatus.status',
                 'payment'
-            ])
+            ]);
 
         $orders = Order::where('user_id', auth()->id())
             ->with(['currentStatus.status', 'items.product'])
