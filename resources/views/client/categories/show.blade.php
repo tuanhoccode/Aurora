@@ -130,9 +130,32 @@
                         <div class="col-xl-4 col-md-6 col-sm-6 mb-4">
                             <div class="tp-product-item-2 mb-40">
                                 <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                                    <a href="#">
+                                    <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
                                         <img src="{{ $product->image_url ?? asset('assets2/img/product/product-1.jpg') }}" alt="{{ $product->name }}">
                                     </a>
+                                    <div class="tp-product-action-2 tp-product-action-blackStyle">
+                                        <div class="tp-product-action-item-2 d-flex flex-column">
+                                            <form method="POST" action="{{ route('shopping-cart.add') }}" class="add-to-cart-form">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                <input type="hidden" name="product_variant_id" value="{{ $product->default_variant_id ?? '' }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <input type="hidden" name="price" value="{{ $product->price }}">
+                                                <button type="submit" class="tp-product-action-btn-2 tp-product-add-cart-btn">
+                                                    <i class="fa fa-shopping-cart"></i>
+                                                    <span class="tp-product-tooltip tp-product-tooltip-right">Thêm vào giỏ</span>
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}" class="tp-product-action-btn-2 tp-product-quick-view-btn">
+                                                <i class="fa fa-eye"></i>
+                                                <span class="tp-product-tooltip tp-product-tooltip-right">Xem chi tiết</span>
+                                            </a>
+                                            <button type="button" class="tp-product-action-btn-2 tp-product-add-to-wishlist-btn">
+                                                <i class="fa fa-heart"></i>
+                                                <span class="tp-product-tooltip tp-product-tooltip-right">Yêu thích</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="tp-product-content-2 pt-15">
                                     <div class="tp-product-tag-2">
