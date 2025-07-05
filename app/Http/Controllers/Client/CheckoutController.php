@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\OrderOrderStatus;
-use App\Models\ProductVariant;
 
 class CheckoutController extends Controller
 {
@@ -251,16 +250,61 @@ class CheckoutController extends Controller
 
             if ($secureHash === $vnp_SecureHash && $order) {
                 if ($request->vnp_ResponseCode === '00') {
+                    // ✅ 1. Cập nhật đơn hàng
                     $order->update(['status' => 'paid', 'is_paid' => 1]);
+
+                    // ✅ 2. Ghi log thanh toán vào bảng `payment_logs`
+                    \App\Models\PaymentLog::create([
+                        'order_id'       => $order->id,
+                        'txn_ref'        => $request->vnp_TxnRef,
+                        'response_code'  => $request->vnp_ResponseCode,
+                        'transaction_no' => $request->vnp_TransactionNo ?? null,
+                        'amount'         => $request->vnp_Amount / 100,
+                        'bank_code'      => $request->vnp_BankCode ?? null,
+                        'response_data'  => json_encode($inputData),
+                    ]);
+
+                    // ✅ 3. Ghi trạng thái đơn hàng vào bảng `order_order_status`
+                    \App\Models\OrderOrderStatus::create([
+                        'order_id'           => $order->id,
+                        'order_status_id'    => 2, // Ví dụ: 2 là "Đã thanh toán"
+                        'modified_by'        => Auth::id(),
+                        'note'               => 'Thanh toán VNPay thành công',
+                        'employee_evidence'  => null,
+                        'customer_confirmation' => null,
+                        'is_current'         => 1,
+                    ]);
+
+                    // ✅ 4. Thêm sản phẩm từ cart vào bảng `order_items`
                     $cart = Cart::where('user_id', Auth::id())->first();
                     if ($cart) {
+                        foreach ($cart->items as $item) {
+                            \App\Models\OrderItem::create([
+                                'order_id'         => $order->id,
+                                'product_id'       => $item->product_id,
+                                'product_variant_id' => $item->product_variant_id,
+                                'name'             => $item->product->name,
+                                'price'            => $item->price,
+                                'old_price'        => $item->product->price,
+                                'old_price_variant' => $item->variant_price ?? null,
+                                'quantity'         => $item->quantity,
+                                'name_variant'     => $item->variant_name ?? null,
+                                'attributes_variant' => $item->variant_attributes ?? null,
+                                'price_variant'    => $item->variant_price ?? null,
+                                'quantity_variant' => $item->quantity ?? null,
+                            ]);
+                        }
+
+                        // ✅ 5. Xoá giỏ hàng
                         $cart->items()->delete();
                         $cart->delete();
                     }
+
                     return redirect()->route('checkout.success', $order->code)
                         ->with('success', 'Thanh toán VNPay thành công!');
                 } else {
                     $order->update(['status' => 'failed', 'is_paid' => 0]);
+
                     Log::error('VNPay failed: ResponseCode = ' . $request->vnp_ResponseCode);
                     return redirect()->route('checkout')
                         ->withInput()
@@ -279,6 +323,7 @@ class CheckoutController extends Controller
                 ->with('error', 'Lỗi xử lý thanh toán VNPay: ' . $e->getMessage());
         }
     }
+
 
     public function success($order_number)
     {
