@@ -65,7 +65,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/', [ProductController::class, 'store'])->name('store');
         // Product Gallery Images
 // Xóa ảnh gallery của sản phẩm
-Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
+// Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
+//     ->name('delete-gallery-image');
+Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryImage'])
     ->name('delete-gallery-image');
 
 
@@ -342,6 +344,5 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
-
 
 
