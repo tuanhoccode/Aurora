@@ -143,7 +143,7 @@
                     <div class="order-info">
                         <div class="order-info-item">
                             <i class="fas fa-clock"></i>
-                            <span>Ngày đặt: {{ $order->created_at->format('d/m/Y H:i') }}</span>
+                            <span>Ngày đặt: {{ $order->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
                         </div>
                         <div class="order-info-item">
                             @if($order->payment && $order->payment->logo)
@@ -217,10 +217,15 @@
                             <div>
                                 <h5>{{ $item->product->name }}</h5>
                                 <p class="text-muted">SKU: {{ $item->product->sku }}</p>
-                                @if($item->variant)
+                                @if($item->attributes_variant)
                                     <p class="text-muted">
-                                        Size: {{ $item->variant->attributes->where('name', 'LIKE', '%size%')->first()?->value ?? 'N/A' }}<br>
-                                        Màu: {{ $item->variant->attributes->where('name', 'LIKE', '%color%')->first()?->value ?? 'N/A' }}
+                                        @foreach(json_decode($item->attributes_variant, true) as $name => $value)
+                                            @if($value)
+                                                <span class="badge bg-secondary me-2">
+                                                    {{ ucfirst(str_replace('_', ' ', $name)) }}: {{ $value }}
+                                                </span>
+                                            @endif
+                                        @endforeach
                                     </p>
                                 @endif
                             </div>

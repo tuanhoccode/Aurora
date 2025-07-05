@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\OrderOrderStatus;
+use App\Models\ProductVariant;
 
 class CheckoutController extends Controller
 {

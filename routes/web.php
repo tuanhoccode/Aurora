@@ -337,5 +337,8 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1e9d427931f200aacfca4bfba9e1364deaf3a2b3
 
