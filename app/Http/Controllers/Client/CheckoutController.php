@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\OrderOrderStatus;
+use App\Models\ProductVariant;
 
 class CheckoutController extends Controller
 {
@@ -126,6 +127,15 @@ class CheckoutController extends Controller
                 $orderItem->order_id = $order->id;
                 $orderItem->product_id = $item->product_id;
                 $orderItem->product_variant_id = $item->product_variant_id;
+                
+                // Lấy thông tin biến thể và thuộc tính
+                $variant = ProductVariant::findOrFail($item->product_variant_id);
+                $attributes = $variant->attributeValues->mapWithKeys(function($value) {
+                    return [$value->attribute->name => $value->value];
+                })->toArray();
+                
+                $orderItem->attributes_variant = json_encode($attributes);
+                
                 $orderItem->name = 'Sản phẩm ' . $item->product_id;
                 $orderItem->price = $item->price_at_time ?? 0;
                 $orderItem->quantity = $item->quantity ?? 0;

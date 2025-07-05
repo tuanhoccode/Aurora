@@ -2067,85 +2067,21 @@
 			});
 		});
 	}
-
-	var product_slider_2 = new Swiper('.tp-product-slider-2', {
-		slidesPerView: 4,
-		spaceBetween: 20,
-		loop: true,
-		autoplay: {
-			delay: 4000,
-		},
-		breakpoints: {
-			'1200': {
-				slidesPerView: 4,
-			},
-			'992': {
-				slidesPerView: 3,
-			},
-			'768': {
-				slidesPerView: 2,
-			},
-			'576': {
-				slidesPerView: 2,
-			},
-			'0': {
-				slidesPerView: 1,
-			},
-		},
-	});
-
-
-	var slider_thumb = new Swiper('.tp-product-details-thumb-slider', {
-		slidesPerView: 4,
-		spaceBetween: 12,
-		loop: true,
-		autoplay: {
-			delay: 4000,
-		},
-		breakpoints: {
-			'1200': {
-				slidesPerView: 4,
-			},
-			'992': {
-				slidesPerView: 3,
-			},
-			'768': {
-				slidesPerView: 2,
-			},
-			'576': {
-				slidesPerView: 2,
-			},
-			'0': {
-				slidesPerView: 1,
-			},
-		},
-	});
-
-	var product_slider_3 = new Swiper('.tp-product-slider-3', {
-		slidesPerView: 4,
-		spaceBetween: 20,
-		loop: false, // Thường thì slider này không cần lặp lại
-		navigation: {
-			nextEl: ".tp-product-slider-3-next",
-			prevEl: ".tp-product-slider-3-prev",
-		},
-		breakpoints: {
-			'1200': {
-				slidesPerView: 4,
-			},
-			'992': {
-				slidesPerView: 3,
-			},
-			'768': {
-				slidesPerView: 2,
-			},
-			'576': {
-				slidesPerView: 2,
-			},
-			'0': {
-				slidesPerView: 1,
-			},
-		},
+	document.querySelectorAll('.delete-btn').forEach(btn => {
+		btn.addEventListener('click', function(e) {
+			e.preventDefault();
+			Swal.fire({
+				title: 'Bạn chắc chắn muốn xóa?',
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Xóa',
+				cancelButtonText: 'Hủy'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					btn.closest('form').submit();
+				}
+			});
+		});
 	});
 
 })(jQuery);
