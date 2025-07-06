@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
