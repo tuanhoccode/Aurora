@@ -91,7 +91,6 @@
                                         </li>
                                         <li class="has-mega-menu">
                                             <a href="{{ route('shop') }}">Cửa hàng</a>
-                                        
                                         </li>
                                         <li class="has-dropdown has-mega-menu">
                                             <a href="">Sản phẩm</a>

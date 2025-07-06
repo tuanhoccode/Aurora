@@ -44,6 +44,7 @@ use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ShopController;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
@@ -243,13 +244,10 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
 
 // Chi tiết danh mục
 
-// Đơn hàng (Order)
-// Đơn hàng (Order)
-    Route::middleware(['auth'])->prefix('client')->group(function () {
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-    });
-
+Route::middleware(['auth'])->prefix('client')->group(function () { 
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
+    Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show'); 
+});
     // Client Category
     Route::prefix('danh-muc')->name('client.categories.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
@@ -328,9 +326,9 @@ Route::middleware('web')->group(function () {
 
 
     // Đơn hàng (Order)
-    Route::middleware(['auth'])->prefix('client')->group(function () {
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    Route::middleware(['auth'])->prefix('client')->group(function () { 
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders'); 
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
     });
 
     // Client Category
@@ -341,11 +339,13 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
-    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
 });
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
+
+Route::get('/shop', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 
 
