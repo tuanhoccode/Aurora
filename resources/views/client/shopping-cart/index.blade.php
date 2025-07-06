@@ -460,7 +460,7 @@
                                         };
                                         $size = $getAttrValue($variant, ['size', 'kích']);
                                         $color = $getAttrValue($variant, ['color', 'màu']);
-                                        
+
                                         $colorMap = [
                                             'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
                                             'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
@@ -532,7 +532,7 @@
                         <span>Phí vận chuyển</span>
                         <span class="text-success">20.000</span>
                     </div>
-                    
+
                     <div class="cart-summary__coupon my-4">
                         <a href="#coupon-form" class="coupon-toggle" data-bs-toggle="collapse" aria-expanded="false" aria-controls="coupon-form">
                             <i class="fa-light fa-tag"></i> Bạn có mã giảm giá?

@@ -63,6 +63,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/', [ProductController::class, 'store'])->name('store');
+        // Product Gallery Images
+// Xóa ảnh gallery của sản phẩm
+// Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
+//     ->name('delete-gallery-image');
+Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryImage'])
+    ->name('delete-gallery-image');
 
 
         // Quản lý thùng rác
@@ -84,7 +90,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{product}', [ProductController::class, 'update'])->name('update');
         Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
 
-        
+
         // Toggle status
         Route::put('/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('toggle-status');
 
@@ -215,12 +221,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('stocks', StockController::class)->except(['show']);
     Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
 
-    // Quản lý ảnh phụ
-    Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
-    Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
-    Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
-    Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
-});
+        // Quản lý ảnh phụ
+        Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
+        Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
+        Route::get('/product-images/{id}/edit', [ProductGalleryController::class, 'edit'])->name('product-images.edit');
+        Route::put('/product-images/{id}', [ProductGalleryController::class, 'update'])->name('product-images.update');
+        Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
+        Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+    });
 
 
 
@@ -237,9 +245,9 @@ Route::get('/product/{slug}', [ClientProductController::class, 'show'])
 
 // Đơn hàng (Order)
 // Đơn hàng (Order)
-    Route::middleware(['auth'])->prefix('client')->group(function () { 
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
     });
 
     // Client Category
@@ -320,9 +328,9 @@ Route::middleware('web')->group(function () {
 
 
     // Đơn hàng (Order)
-    Route::middleware(['auth'])->prefix('client')->group(function () { 
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index'); 
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show'); 
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
     });
 
     // Client Category
