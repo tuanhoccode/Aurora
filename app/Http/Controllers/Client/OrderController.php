@@ -2,10 +2,9 @@
 namespace App\Http\Controllers\client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\Order;
-
 use Auth;
-
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -27,20 +26,16 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-
         if ($order->user_id !== Auth::id()) {
-
             abort(403, 'Không có quyền truy cập đơn hàng này');
         }
 
         $order->load([
             'items.product',
-
             'items.variant.attributes.attribute',
             'items.variant.attributes.value',
             'status',
             'payment',
-
             'currentStatus.status'
         ]);
 

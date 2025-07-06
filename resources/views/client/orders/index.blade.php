@@ -173,17 +173,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <div class="text-center my-4">
-                        <div id="showing-info" class="mb-2">
-                            Đang hiển thị <span id="showing-count">{{ min($defaultShow, $orders->count()) }}</span> trong số {{ $orders->count() }} đơn hàng
-                        </div>
-                        @if($orders->count() > $defaultShow)
-                            <button id="show-all-btn" class="btn btn-dark">
-                                <b>Xem thêm</b> <i class="fa fa-arrow-up-right-from-square"></i>
-                            </button>
-                        @endif
-                    </div>
                 @endif
             </div>
         </div>

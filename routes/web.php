@@ -340,3 +340,4 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
 
+
