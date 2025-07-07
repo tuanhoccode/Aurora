@@ -1,4 +1,3 @@
-
 @extends('client.layouts.default')
 @section('title', 'Chi tiết sản phẩm')
 @section('content')
@@ -483,7 +482,12 @@
                                                 </form>
                                             </div>
                                         </div>
-                                        <button class="tp-product-details-buy-now-btn w-100">Mua ngay</button>
+                                        <form method="POST" action="{{ route('checkout') }}">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="tp-product-details-buy-now-btn w-100">Mua ngay</button>
+                                        </form>
                                     </div>
                                     <div class="tp-product-details-action-sm">
                                         <button type="button" class="tp-product-details-action-sm-btn">
