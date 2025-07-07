@@ -467,52 +467,51 @@
                                     <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}"
                                         alt="{{ $product->name }}" class="cart-item-card__image">
 
-                        <div class="cart-item-card__info">
-                            <h4 class="name" title="{{ $product->name }}">{{ $product->name }}</h4>
-                            <div class="meta-attributes">
-                                <div class="meta" title="{{ $variant->sku ?? $product->sku }}"><strong>Mã:</strong> {{ $variant->sku ?? $product->sku }}</div>
-                                @if ($variant)
-                                    @php
-                                        $getAttrValue = function($entity, $keywords) {
-                                            if (!$entity || !isset($entity->attributeValues)) return null;
-                                            foreach ($entity->attributeValues as $attrVal) {
-                                                $attrName = strtolower($attrVal->attribute->name ?? '');
-                                                foreach ($keywords as $kw) {
-                                                    if (str_contains($attrName, $kw)) return $attrVal->value;
-                                                }
-                                            }
-                                            return null;
-                                        };
-                                        $size = $getAttrValue($variant, ['size', 'kích']);
-                                        $color = $getAttrValue($variant, ['color', 'màu']);
-
-                                        $colorMap = [
-                                            'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
-                                            'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
-                                            'vàng' => '#FFD600', 'đen' => '#000000', 'trắng' => '#FFFFFF', 'xám' => '#CBCBCB',
-                                            'tím' => '#800080', 'cam' => '#FFA500', 'hồng' => '#FF69B4',
-                                        ];
-                                        $colorHex = '#e0e0e0';
-                                        if ($color) {
-                                            $colorKey = strtolower(trim($color));
-                                            foreach ($colorMap as $key => $hex) {
-                                                if (strpos($colorKey, $key) !== false) {
-                                                    $colorHex = $hex;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    @endphp
-                                    <div class="meta" title="{{ $size ?? 'N/A' }}"><strong>Size:</strong> {{ $size ?? 'N/A' }}</div>
-                                    <div class="meta" title="{{ $color ?? 'N/A' }}"><strong>Màu:</strong>
-                                        <span class="color-dot" style="background:{{ $colorHex }};"></span>
-                                        {{ $color ?? 'N/A' }}
+                                    <div class="cart-item-card__info">
+                                        <h4 class="name" title="{{ $product->name }}">{{ $product->name }}</h4>
+                                        <div class="meta-attributes">
+                                            <div class="meta" title="{{ $variant->sku ?? $product->sku }}"><strong>Mã:</strong> {{ $variant->sku ?? $product->sku }}</div>
+                                            @if ($variant)
+                                                @php
+                                                    $getAttrValue = function($entity, $keywords) {
+                                                        if (!$entity || !isset($entity->attributeValues)) return null;
+                                                        foreach ($entity->attributeValues as $attrVal) {
+                                                            $attrName = strtolower($attrVal->attribute->name ?? '');
+                                                            foreach ($keywords as $kw) {
+                                                                if (str_contains($attrName, $kw)) return $attrVal->value;
+                                                            }
+                                                        }
+                                                        return null;
+                                                    };
+                                                    $size = $getAttrValue($variant, ['size', 'kích']);
+                                                    $color = $getAttrValue($variant, ['color', 'màu']);
+                                                    $colorMap = [
+                                                        'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
+                                                        'vàng' => '#FFD600', 'đen' => '#000000', 'trắng' => '#FFFFFF', 'xám' => '#CBCBCB',
+                                                        'tím' => '#800080', 'cam' => '#FFA500', 'hồng' => '#FF69B4',
+                                                    ];
+                                                    $colorHex = '#e0e0e0';
+                                                    if ($color) {
+                                                        $colorKey = strtolower(trim($color));
+                                                        foreach ($colorMap as $key => $hex) {
+                                                            if (strpos($colorKey, $key) !== false) {
+                                                                $colorHex = $hex;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                @endphp
+                                                <div class="meta" title="{{ $size ?? 'N/A' }}"><strong>Size:</strong> {{ $size ?? 'N/A' }}</div>
+                                                <div class="meta" title="{{ $color ?? 'N/A' }}"><strong>Màu:</strong>
+                                                    <span class="color-dot" style="background:{{ $colorHex }};"></span>
+                                                    {{ $color ?? 'N/A' }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
-
                                     <div class="cart-item-card__price">
                                         <span>{{ number_format($unitPrice, 0, ',', '.') }}₫</span>
                                     </div>
-
                                     <div class="cart-item-card__quantity">
                                         <div class="cart-qty">
                                             <button type="button" class="qty-btn"
@@ -529,12 +528,10 @@
                                             <div class="text-danger small mt-1">Hết hàng</div>
                                         @endif
                                     </div>
-
                                     <div class="cart-item-card__total">
                                         <span
                                             class="line-total-price">{{ number_format($unitPrice * $item->quantity, 0, ',', '.') }}₫</span>
                                     </div>
-
                                     <div class="cart-item-card__remove">
                                         <form action="{{ url('/shopping-cart/remove/' . $item->id) }}" method="POST"
                                             onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');">
@@ -587,36 +584,9 @@
                                     class="fa-solid fa-arrow-right-long"></i></a>
                         </div>
                     </div>
-                    @endforeach
-                </div>
-            </div>
-            <div class="col-lg-4 offset-lg-1">
-                <div class="cart-summary-box">
-                    <h4 class="cart-summary-title">Tóm tắt đơn hàng</h4>
-                    <div class="cart-summary__item">
-                        <span>Tạm tính (<span class="cart-item-count">{{ $cartItems->sum('quantity') }}</span> sản phẩm)</span>
-                        <span id="cart-subtotal">
-                            {{ isset($cartTotal) ? number_format($cartTotal + 20000, 0, ',', '.') : '0' }}₫
-                        </span>
-                    </div>
-                    <div class="cart-summary__item">
-                        <span>Phí vận chuyển</span>
-                        <span class="text-success">20.000</span>
-                    </div>
-
-                    <div class="cart-summary__coupon my-4">
-                        <a href="#coupon-form" class="coupon-toggle" data-bs-toggle="collapse" aria-expanded="false" aria-controls="coupon-form">
-                            <i class="fa-light fa-tag"></i> Bạn có mã giảm giá?
-                        </a>
-                        <div class="collapse mt-3" id="coupon-form">
-                            <form class="coupon-input-group">
-                                <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
-                                <button type="submit" class="btn">Áp dụng</button>
-                            </form>
-                        </div>
-                    </div>
                 @endif
             </div>
+            
         </div>
     </section>
     <!-- cart area end -->

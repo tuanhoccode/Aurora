@@ -215,7 +215,9 @@
                                                 <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ sơ</a></li>
                                                 <li><a href=""><i class="fa-solid fa-heart"></i> Yêu thích</a></li>
                                                 <li><a href="{{ route('shopping-cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
+                                                @auth
                                                 <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
+                                                @endauth
                                                 <li class="tp-account-menu-divider"></li>
                                                 <li>
                                                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

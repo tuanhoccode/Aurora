@@ -2038,6 +2038,33 @@
 		});
 	});
 
+	// Khởi tạo Swiper cho banner danh mục trang chủ
+	if (document.querySelector('.tp-banner-swiper')) {
+		new Swiper('.tp-banner-swiper', {
+		  slidesPerView: 1,
+		  spaceBetween: 24,
+		  loop: true,
+		  navigation: {
+			nextEl: '.tp-banner-swiper-next',
+			prevEl: '.tp-banner-swiper-prev',
+		  },
+		  pagination: {
+			el: '.swiper-pagination',
+			clickable: true,
+		  },
+		  autoplay: {
+			delay: 4000,
+			disableOnInteraction: false,
+		  },
+		  breakpoints: {
+			0: { slidesPerView: 1 },
+			576: { slidesPerView: 1 },
+			768: { slidesPerView: 2 },
+			1200: { slidesPerView: 3 }
+		  }
+		});
+	  }
+
 })(jQuery);
 
 /**

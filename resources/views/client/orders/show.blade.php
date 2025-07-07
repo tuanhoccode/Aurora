@@ -116,7 +116,9 @@
                     <h3 class="breadcrumb__title">Chi tiết đơn hàng #{{ $order->id }}</h3>
                     <div class="breadcrumb__list">
                         <span><a href="{{ route('home') }}">Trang chủ</a></span>
+                        @auth
                         <span><a href="{{ route('client.orders') }}">Đơn hàng</a></span>
+                        @endauth
                         <span>Chi tiết</span>
                     </div>
                 </div>

@@ -203,72 +203,89 @@
       <!-- slider area end -->
 
       <!-- banner area start -->
+      @php use Illuminate\Support\Str; @endphp
+      @php $isSlider = $categories->count() > 3; @endphp
       <section class="tp-banner-area mt-20">
          <div class="container-fluid tp-gx-40">
-            <div class="row tp-gx-20">
-               <div class="col-xxl-4 col-lg-6">
-                  <div class="tp-banner-item-2 p-relative z-index-1 grey-bg-2 mb-20 fix">
-                     <div class="tp-banner-thumb-2 include-bg transition-3"
-                        data-background="{{asset('assets2/img/banner/2/banner-1.jpg')}}"></div>
-                     <h3 class="tp-banner-title-2">
-                        <a href="shop.html">Áo thun, áo kiểu nữ</a>
-                     </h3>
-                     <div class="tp-banner-btn-2">
-                        <a href="shop.html" class="tp-btn tp-btn-border tp-btn-border-sm">Shop Now
-                           <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                              xmlns="http://www.w3.org/2000/svg">
-                              <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                                 stroke-linecap="round" stroke-linejoin="round" />
-                              <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                           </svg>
-                        </a>
+            @if($isSlider)
+            <div class="swiper tp-banner-swiper">
+               <div class="swiper-wrapper">
+                  @foreach($categories as $i => $category)
+                  <div class="swiper-slide">
+                     <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
+                        <div class="custom-banner-text">
+                           <h3 class="tp-banner-title-2">
+                              <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                           </h3>
+                           <div class="tp-banner-btn-2">
+                              <a href="{{ route('client.categories.show', $category->id) }}" class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                                 <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                                       stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                                       stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                 </svg>
+                              </a>
+                           </div>
+                        </div>
+                        <div class="custom-banner-img">
+                           @if($category->icon)
+                               @if(Str::startsWith($category->icon, ['http://', 'https://']))
+                                   <img src="{{ $category->icon }}" alt="{{ $category->name }}">
+                               @else
+                                   <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                               @endif
+                           @else
+                               <img src="{{ asset('assets2/img/banner/2/banner-' . ($i+1) . '.jpg') }}" alt="{{ $category->name }}">
+                           @endif
+                        </div>
                      </div>
                   </div>
+                  @endforeach
                </div>
-               <div class="col-xxl-4 col-lg-6">
-                  <div class="tp-banner-item-2 p-relative z-index-1 grey-bg-2 mb-20 fix">
-                     <div class="tp-banner-thumb-2 include-bg transition-3"
-                        data-background="{{asset('assets2/img/banner/2/banner-2.jpg')}}"></div>
-                     <h3 class="tp-banner-title-2">
-                        <a href="shop.html">Túi xách, túi đeo chéo</a>
-                     </h3>
-                     <div class="tp-banner-btn-2">
-                        <a href="shop.html" class="tp-btn tp-btn-border tp-btn-border-sm">Shop Now
-                           <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                              xmlns="http://www.w3.org/2000/svg">
-                              <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                                 stroke-linecap="round" stroke-linejoin="round" />
-                              <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                           </svg>
-                        </a>
-                     </div>
-                  </div>
-               </div>
-               <div class="col-xxl-4 col-lg-6">
-                  <div class="tp-banner-item-2 p-relative z-index-1 grey-bg-2 mb-20 fix">
-                     <div class="tp-banner-thumb-2 include-bg transition-3"
-                        data-background="{{asset('assets2/img/banner/2/banner-3.jpg')}}"></div>
-                     <h3 class="tp-banner-title-2">
-                        <a href="shop.html">Giày tennis nam</a>
-                     </h3>
-                     <div class="tp-banner-btn-2">
-                        <a href="shop.html" class="tp-btn tp-btn-border tp-btn-border-sm">Shop Now
-                           <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                              xmlns="http://www.w3.org/2000/svg">
-                              <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                                 stroke-linecap="round" stroke-linejoin="round" />
-                              <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                           </svg>
-                        </a>
-                     </div>
-                  </div>
-               </div>
+               <div class="swiper-pagination"></div>
             </div>
+            @else
+            <div class="row tp-gx-20">
+               @foreach($categories->take(3) as $i => $category)
+               <div class="col-xxl-4 col-lg-6">
+                  <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
+                     <div class="custom-banner-text">
+                        <h3 class="tp-banner-title-2">
+                           <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                        </h3>
+                        <div class="tp-banner-btn-2">
+                           <a href="{{ route('client.categories.show', $category->id) }}" class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                              <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                 <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                 <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                           </a>
+                        </div>
+                     </div>
+                     <div class="custom-banner-img">
+                        @if($category->icon)
+                            @if(Str::startsWith($category->icon, ['http://', 'https://']))
+                                <img src="{{ $category->icon }}" alt="{{ $category->name }}">
+                            @else
+                                <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                            @endif
+                        @else
+                            <img src="{{ asset('assets2/img/banner/2/banner-' . ($i+1) . '.jpg') }}" alt="{{ $category->name }}">
+                        @endif
+                     </div>
+                  </div>
+               </div>
+               @endforeach
+            </div>
+            @endif
          </div>
       </section>
+
       <!-- product area start -->
       <section class="tp-product-area pb-90">
          <div class="container">

@@ -53,6 +53,11 @@
     }
 </style>
 <div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 mt-2" style="font-weight:700;font-size:2.2rem;line-height:1.2;">Tất cả sản phẩm</h2>
+        </div>
+    </div>
     <div class="row align-items-start">
         <!-- SIDEBAR FILTER -->
         <div class="col-xl-3 col-lg-3 mb-4">
@@ -132,7 +137,6 @@
         </div>
         <!-- PRODUCT LIST -->
         <div class="col-xl-9 col-lg-9">
-            <h2 class="mb-4 mt-2">Tất cả sản phẩm</h2>
             <div class="row tp-shop-items-wrapper tp-shop-item-primary">
                 @php $defaultShow = 9; @endphp
                 @foreach ($products as $index => $product)
@@ -209,8 +213,8 @@
                                     @endif
                                 </div>
                             </div>
-                        </div>
                     </div>
+                </div>
                 @endforeach
             </div>
             <div class="text-center my-4">
@@ -223,7 +227,7 @@
                     </button>
                 @endif
             </div>
-        </div>
+    </div>
     </div>
 </div>
 @endsection
