@@ -129,14 +129,6 @@ class CheckoutController extends Controller
                     $orderItem->name = 'Sản phẩm ' . $item->product_id;
                     $orderItem->price = $item->price_at_time ?? 0;
                     $orderItem->quantity = $item->quantity ?? 0;
-
-                    // Lấy thông tin biến thể và thuộc tính
-                    $variant = \App\Models\ProductVariant::findOrFail($item->product_variant_id);
-                    $attributes = $variant->attributeValues->mapWithKeys(function($value) {
-                        return [$value->attribute->name => $value->value];
-                    })->toArray();
-                    
-                    $orderItem->attributes_variant = json_encode($attributes);
                     $orderItem->save();
 
                     Log::info('OrderItem saved successfully', [
