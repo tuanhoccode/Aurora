@@ -29,7 +29,7 @@ use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\GoogleController;
 
-use App\Http\Controllers\Admin\CouponController;
+
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductGalleryController;
@@ -53,26 +53,7 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    //Coupon routes
-    Route::prefix('coupons')->name('coupons.')->group(function () {
-        Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
-        Route::post('/bulk-restore', [CouponController::class, 'bulkRestore'])->name('bulk-restore');
-        Route::post('/bulk-force-delete', [CouponController::class, 'bulkForceDelete'])->name('bulk-force-delete');
-
-        Route::post('/', [CouponController::class, 'store'])->name('store');
-
-        Route::get('/', [CouponController::class, 'index'])->name('index');
-        Route::get('/create', [CouponController::class, 'create'])->name('create');
-        Route::get('/{coupon}/edit', [CouponController::class, 'edit'])->name('edit');
-        Route::put('/{coupon}', [CouponController::class, 'update'])->name('update');
-        Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
-
-        Route::get('/trash', [CouponController::class, 'trash'])->name('trash');
-        Route::put('/{id}/restore', [CouponController::class, 'restore'])->name('restore');
-        Route::delete('/force-delete/{id}', [CouponController::class, 'forceDelete'])->name('force-delete');
-    });
-
-    /// Orders Routes
+/// Orders Routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
