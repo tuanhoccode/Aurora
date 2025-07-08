@@ -657,10 +657,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>" Cách bạn sử dụng tên thành phố hoặc thị trấn là tùy bạn. Tất cả kết quả có thể sử
-                                    dụng tự do cho bất kỳ công việc nào."</p>
+                                 <p>" Cách bạn sử dụng tên thành phố hoặc thị trấn là tùy bạn. Tất cả kết quả có thể sử dụng tự do cho bất kỳ công việc nào."</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-2.jpg')}}" alt="">
@@ -681,10 +681,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>"Rất hài lòng khi đưa con gái đến Brave care. Toàn bộ đội ngũ rất tuyệt vời! Cảm
-                                    ơn!"</p>
+                                 <p>"Rất hài lòng khi đưa con gái đến Brave care. Toàn bộ đội ngũ rất tuyệt vời! Cảm ơn!"</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-3.jpg')}}" alt="">
@@ -705,10 +705,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>"Cảm ơn vì tất cả nỗ lực và tinh thần đồng đội trong những tháng vừa qua! Cảm ơn rất
-                                    nhiều"</p>
+                                 <p>"Cảm ơn vì tất cả nỗ lực và tinh thần đồng đội trong những tháng vừa qua! Cảm ơn rất nhiều"</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-4.jpg')}}" alt="">
@@ -913,5 +913,4 @@
    <script src="{{asset('assets2/js/ajax-form.js')}}"></script>
    <script src="{{asset('assets2/js/main.js')}}"></script>
 </body>
-
 </html>

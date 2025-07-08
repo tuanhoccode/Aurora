@@ -8,14 +8,12 @@
         {{-- Chính --}}
         <li class="sidebar-heading">Chính</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-bell"></i></span> Thông báo
             </a>
         </li>
@@ -25,26 +23,22 @@
         {{-- Danh mục --}}
         <li class="sidebar-heading">Danh mục</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}"
-                href="{{ route('admin.products.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}" href="{{ route('admin.products.index') }}">
                 <span class="nav-icon"><i class="fas fa-box"></i></span> Sản phẩm
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}"
-                href="{{ route('admin.categories.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}">
                 <span class="nav-icon"><i class="fas fa-tags"></i></span> Danh mục
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
-                href="{{ route('admin.brands.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}" href="{{ route('admin.brands.index') }}">
                 <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}"
-                href="{{ route('admin.attributes.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
                 <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
             </a>
         </li>
@@ -54,20 +48,12 @@
         {{-- Bán hàng --}}
         <li class="sidebar-heading">Bán hàng</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}"
-                href="{{ route('admin.orders.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
                 <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span> Đơn hàng
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}"
-                href="{{ route('admin.coupons.index') }}">
-                <span class="nav-icon"><i class="fas fa-ticket-alt"></i></span> Mã giảm giá
-            </a>
-        </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-user-lock"></i></span> Vai trò & Phân quyền
             </a>
         </li>
@@ -77,8 +63,7 @@
         {{-- Người dùng --}}
         <li class="sidebar-heading">Người dùng</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}"
-                href="{{ route('admin.users.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                 <span class="nav-icon"><i class="fas fa-users"></i></span> Người dùng
             </a>
         </li>
@@ -88,26 +73,25 @@
         {{-- Nội dung --}}
         <li class="sidebar-heading">Nội dung</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-comments"></i></span> Đánh giá sản phẩm
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Trang CMS
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
-                href="{{ route('admin.product-images.all') }}">
+            <a
+                class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
+                href="{{ route('admin.product-images.all') }}"
+            >
                 <span class="nav-icon">
                     <i class="fas fa-images"></i>
                 </span>
@@ -115,8 +99,7 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.stocks.index') ? 'active' : '' }}"
-                href="{{ route('admin.stocks.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.stocks.index') ? 'active' : '' }}" href="{{ route('admin.stocks.index') }}">
                 <span class="nav-icon"><i class="fas fa-boxes"></i></span> Tồn kho
             </a>
         </li>
@@ -126,14 +109,12 @@
         {{-- Cài đặt --}}
         <li class="sidebar-heading">Cài đặt</li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-credit-card"></i></span> Cổng thanh toán
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-cogs"></i></span> Thiết lập hệ thống
             </a>
         </li>
