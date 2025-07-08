@@ -317,7 +317,7 @@
                        <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
                           <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
                        </a>
-                       <div class="tp-product-action-2 tp-product-action-blackStyle">
+                       {{-- <div class="tp-product-action-2 tp-product-action-blackStyle">
                           <div class="tp-product-action-item-2 d-flex flex-column">
                             <form method="POST" action="{{ route('shopping-cart.add') }}" class="add-to-cart-form">
                               @csrf
@@ -375,7 +375,7 @@
                               <span class="tp-product-tooltip tp-product-tooltip-right">Thêm vào yêu thích</span>
                             </button>
                           </div>
-                       </div>
+                       </div> --}}
                      </div>
                      <div class="tp-product-content-2 pt-15">
                        <div class="tp-product-tag-2">
