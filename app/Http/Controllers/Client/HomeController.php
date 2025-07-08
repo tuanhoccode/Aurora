@@ -10,8 +10,17 @@ class HomeController extends Controller
 {
     public function shop()
     {
-        // Lấy 8 sản phẩm mới nhất
+        // Lấy 8 sản phẩm còn hàng mới nhất
         $products = Product::with('brand')
+            ->where(function($q) {
+                $q->where('stock', '>', 0)
+                  ->orWhere(function($q2) {
+                      $q2->where('type', 'variant')
+                         ->whereHas('variants', function($q3) {
+                             $q3->where('stock', '>', 0);
+                         });
+                  });
+            })
             ->where('is_active', 1)
             ->latest()
             ->take(8)

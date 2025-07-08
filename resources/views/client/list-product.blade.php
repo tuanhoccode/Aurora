@@ -55,7 +55,7 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
-            <h2 class="mb-4 mt-2" style="font-weight:700;font-size:2.2rem;line-height:1.2;">Hiển thị danh mục: {{ $category->name }}</h2>
+            <h2 class="mb-4 mt-2" style="font-weight:700;font-size:2.2rem;line-height:1.2;">Tất cả sản phẩm</h2>
         </div>
     </div>
     <div class="row align-items-start">
@@ -213,8 +213,8 @@
                                     @endif
                                 </div>
                             </div>
-                        </div>
                     </div>
+                </div>
                 @endforeach
             </div>
             <div class="text-center my-4">
@@ -227,7 +227,7 @@
                     </button>
                 @endif
             </div>
-        </div>
+    </div>
     </div>
 </div>
 @endsection

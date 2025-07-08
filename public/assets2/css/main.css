@@ -21980,3 +21980,40 @@ product all slider
   justify-content: center;
 }
 /*# sourceMappingURL=main.css.map */
+
+.custom-banner-flex {
+  display: flex;
+  align-items: center;
+  min-height: 220px;
+  padding: 0 24px;
+  position: relative;
+  overflow: hidden;
+}
+.custom-banner-text {
+  flex: 1 1 0;
+  z-index: 2;
+  padding: 32px 0 32px 8px;
+}
+.custom-banner-img {
+  flex: 0 0 48%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  z-index: 1;
+}
+.custom-banner-img img {
+  max-width: 105%;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
+}
+@media (max-width: 991px) {
+  .custom-banner-flex { flex-direction: column; }
+  .custom-banner-img { justify-content: center; margin-top: 16px; }
+  .custom-banner-img img { max-width: 70vw; }
+}
+.custom-banner-img:hover img {
+  transform: scale(1.20) rotate(-2deg);
+  z-index: 2;
+}

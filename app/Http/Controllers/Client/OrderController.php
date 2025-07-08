@@ -13,13 +13,13 @@ class OrderController extends Controller
     {
         $orders = Order::where('user_id', Auth::id())
             ->with([
-                'status', 
+                'status',
                 'items.product',
                 'currentStatus.status',
                 'payment'
             ])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
         return view('client.orders.index', compact('orders'));
     }
