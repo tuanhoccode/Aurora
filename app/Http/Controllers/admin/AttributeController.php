@@ -1,13 +1,11 @@
 <?php
 
-
 namespace App\Http\Controllers\Admin;
 
-
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreAttributeRequest;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
-
 
 class AttributeController extends Controller
 {
@@ -18,40 +16,47 @@ class AttributeController extends Controller
     {
         $query = Attribute::query();
 
-
         // Tìm kiếm theo tên
         if ($request->filled('search')) {
             $searchTerm = trim($request->search);
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('is_active', $request->status);
         }
 
-
         // Sắp xếp
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDir = $request->get('sort_dir', 'desc');
-        $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'created_at'];
-       
+        $allowedSortFields = ['name', 'is_variant', 'is_active', 'created_at'];
+
+        // Đảm bảo $sortDir chỉ là 'asc' hoặc 'desc'
+        $sortDir = in_array(strtolower($sortDir), ['asc', 'desc']) ? strtolower($sortDir) : 'desc';
+
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
+        // Đếm số lượng giá trị thuộc tính liên quan
+        $query->withCount('values');
 
+        // Lấy danh sách thuộc tính với phân trang
         $attributes = $query->paginate(10)->withQueryString();
 
+        // Tính tổng số thuộc tính
+        $totalAttributes = Attribute::count();
 
         return view('admin.attributes.index', [
             'attributes' => $attributes,
+            'totalAttributes' => $totalAttributes,
             'sortBy' => $sortBy,
             'sortDir' => $sortDir
         ]);
     }
-
 
     /**
      * Hiển thị form tạo thuộc tính mới
@@ -61,33 +66,19 @@ class AttributeController extends Controller
         return view('admin.attributes.create');
     }
 
-
     /**
      * Lưu thuộc tính mới
      */
-    public function store(Request $request)
+    public function store(StoreAttributeRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'is_variant' => 'nullable|integer|in:0,1',
-                'is_active' => 'nullable|integer|in:0,1',
-            ]);
-
-
-            Attribute::create([
-                'name' => $validated['name'],
-                'is_variant' => (int) ($validated['is_variant'] ?? 0),
-                'is_active' => (int) ($validated['is_active'] ?? 0),
-            ]);
-
+            Attribute::create($request->validated());
 
             return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được tạo.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể tạo thuộc tính: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Hiển thị chi tiết thuộc tính
@@ -98,7 +89,6 @@ class AttributeController extends Controller
         return view('admin.attributes.show', compact('attribute'));
     }
 
-
     /**
      * Hiển thị form chỉnh sửa thuộc tính
      */
@@ -108,36 +98,20 @@ class AttributeController extends Controller
         return view('admin.attributes.edit', compact('attribute'));
     }
 
-
     /**
      * Cập nhật thuộc tính
      */
-    public function update(Request $request, $id)
+    public function update(StoreAttributeRequest $request, $id)
     {
         try {
             $attribute = Attribute::findOrFail($id);
-
-
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'is_variant' => 'nullable|integer|in:0,1',
-                'is_active' => 'nullable|integer|in:0,1',
-            ]);
-
-
-            $attribute->update([
-                'name' => $validated['name'],
-                'is_variant' => (int) ($validated['is_variant'] ?? 0),
-                'is_active' => (int) ($validated['is_active'] ?? 0),
-            ]);
-
+            $attribute->update($request->validated());
 
             return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được cập nhật.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể cập nhật thuộc tính: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Xóa mềm thuộc tính
@@ -152,10 +126,13 @@ class AttributeController extends Controller
             return redirect()->back()->with('error', 'Không thể xóa thuộc tính: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Hiển thị danh sách thuộc tính đã xóa mềm
+     */
     public function trashed(Request $request)
     {
         $query = Attribute::onlyTrashed();
-
 
         // Tìm kiếm theo tên
         if ($request->filled('search')) {
@@ -163,25 +140,21 @@ class AttributeController extends Controller
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('is_active', $request->status);
         }
 
-
         // Sắp xếp
         $sortBy = $request->get('sort_by', 'deleted_at');
         $sortDir = $request->get('sort_dir', 'desc');
         $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'deleted_at'];
-       
+
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortDir);
         }
 
-
         $attributes = $query->paginate(10)->withQueryString();
-
 
         return view('admin.attributes.trashed', [
             'attributes' => $attributes,
@@ -189,6 +162,10 @@ class AttributeController extends Controller
             'sortDir' => $sortDir
         ]);
     }
+
+    /**
+     * Khôi phục thuộc tính
+     */
     public function restore($id)
     {
         try {
@@ -202,7 +179,6 @@ class AttributeController extends Controller
             return redirect()->back()->with('error', 'Không thể khôi phục thuộc tính: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Xóa vĩnh viễn thuộc tính
@@ -218,7 +194,6 @@ class AttributeController extends Controller
         }
     }
 
-
     /**
      * Hiển thị danh sách thuộc tính biến thể
      */
@@ -229,10 +204,8 @@ class AttributeController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-
         return view('admin.attributes.variants', compact('variants'));
     }
-
 
     /**
      * Xóa hàng loạt thuộc tính
@@ -245,9 +218,7 @@ class AttributeController extends Controller
                 'ids.*' => 'required|integer|exists:attributes,id'
             ]);
 
-
             $count = Attribute::whereIn('id', $validated['ids'])->delete();
-
 
             return response()->json([
                 'success' => true,
@@ -261,7 +232,6 @@ class AttributeController extends Controller
         }
     }
 
-
     /**
      * Thay đổi trạng thái hàng loạt
      */
@@ -274,10 +244,8 @@ class AttributeController extends Controller
                 'status' => 'required|boolean'
             ]);
 
-
             $count = Attribute::whereIn('id', $validated['ids'])
                 ->update(['is_active' => $validated['status']]);
-
 
             return response()->json([
                 'success' => true,
@@ -291,7 +259,6 @@ class AttributeController extends Controller
         }
     }
 
-
     /**
      * Khôi phục hàng loạt thuộc tính
      */
@@ -303,12 +270,10 @@ class AttributeController extends Controller
                 'ids.*' => 'required|integer|exists:attributes,id'
             ]);
 
-
             $count = Attribute::withTrashed()
                 ->whereIn('id', $validated['ids'])
                 ->whereNotNull('deleted_at')
                 ->restore();
-
 
             return response()->json([
                 'success' => true,
@@ -322,7 +287,6 @@ class AttributeController extends Controller
         }
     }
 
-
     /**
      * Xóa vĩnh viễn hàng loạt thuộc tính
      */
@@ -334,11 +298,9 @@ class AttributeController extends Controller
                 'ids.*' => 'required|integer|exists:attributes,id'
             ]);
 
-
             $count = Attribute::withTrashed()
                 ->whereIn('id', $validated['ids'])
                 ->forceDelete();
-
 
             return response()->json([
                 'success' => true,
@@ -352,6 +314,3 @@ class AttributeController extends Controller
         }
     }
 }
-
-
-

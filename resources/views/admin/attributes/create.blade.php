@@ -7,24 +7,31 @@
                 <div class="card shadow-sm rounded">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 fw-bold">Thêm thuộc tính mới</h5>
-                         <a href="{{ route('admin.attributes.index') }}" class="btn btn-secondary btn-sm shadow-sm rounded">
+                        <a href="{{ route('admin.attributes.index') }}" class="btn btn-secondary btn-sm shadow-sm rounded">
                             <i class="mdi mdi-arrow-left me-1"></i> Quay lại danh sách
                         </a>
                     </div>
                     <div class="card-body">
                         @if(session('success'))
-                            <div class="alert alert-success shadow-sm rounded mb-3">{{ session('success') }}</div>
+                            <div class="alert alert-success shadow-sm rounded mb-3">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                         @endif
                         @if(session('error'))
-                            <div class="alert alert-danger shadow-sm rounded mb-3">{{ session('error') }}</div>
+                            <div class="alert alert-danger shadow-sm rounded mb-3">
+                                {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                         @endif
                         @if ($errors->any())
                             <div class="alert alert-danger shadow-sm rounded mb-3">
                                 <ul class="mb-0">
                                     @foreach ($errors->all() as $error)
-                                       <li>{{ $error }}</li>
+                                        <li>{{ $error }}</li>
                                     @endforeach
                                 </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         @endif
 
@@ -41,7 +48,7 @@
                                            id="name"
                                            class="form-control @error('name') is-invalid @enderror"
                                            value="{{ old('name') }}"
-                                           maxlength="100"
+                                           maxlength="255"
                                            placeholder="Nhập tên thuộc tính">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -81,6 +88,9 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="mdi mdi-plus-circle me-1"></i> Thêm mới
                                 </button>
+                                <a href="{{ route('admin.attributes.index') }}" class="btn btn-secondary">
+                                    <i class="mdi mdi-cancel me-1"></i> Hủy
+                                </a>
                             </div>
                         </form>
                     </div>
