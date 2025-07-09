@@ -32,6 +32,7 @@ use App\Http\Controllers\Client\Auth\GoogleController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Client\Auth\RegisterController;
@@ -247,6 +248,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/product-images/{id}', [ProductGalleryController::class, 'update'])->name('product-images.update');
     Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
     Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+
+    //Quản lý bình luận
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])-> name('comment.index');
+        Route::get('/{id}', [CommentController::class, 'showComment'])-> name('showComment');
+        Route::patch('/{id}/approve', [CommentController::class, 'approve'])-> name('approve');
+        Route::patch('/{id}/reject', [CommentController::class, 'reject'])-> name('reject');
+    });
 });
 
 
