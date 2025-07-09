@@ -24,16 +24,14 @@ class AttributeValue extends Model
         'deleted_at' => 'datetime',
     ];
 
-    // Define the many-to-many relationship with Product
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'attribute_value_product', 'attribute_value_id', 'product_id')
-            ->withTimestamps();
-    }
-
-    // Relationship with Attribute
     public function attribute()
     {
         return $this->belongsTo(Attribute::class);
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_attribute_values')
+                    ->withPivot('price', 'stock');
     }
 }
