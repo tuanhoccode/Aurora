@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Attribute;
-use Illuminate\Http\Request;
-use App\Models\AttributeValue;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreAttributeValueRequest;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AttributeValueController extends Controller
 {
     public function index(Request $request, $attributeId)
     {
         $attribute = Attribute::findOrFail($attributeId);
-        
-        $query = AttributeValue::where('attribute_id', $attributeId);
+
+        $query = AttributeValue::where('attribute_id', $attributeId)
+            ->withCount('products'); // Count products using the defined relationship
 
         // Tìm kiếm
         if ($request->has('search')) {
@@ -27,7 +29,7 @@ class AttributeValueController extends Controller
         }
 
         // Sắp xếp
-        $sortBy = $request->get('sort_by', 'id');
+        $sortBy = $request->get('sort_by', 'value');
         $sortDir = $request->get('sort_dir', 'desc');
         $query->orderBy($sortBy, $sortDir);
 
@@ -43,23 +45,22 @@ class AttributeValueController extends Controller
         return view('admin.attribute_values.create', compact('attribute'));
     }
 
-    public function store(Request $request, $attributeId)
+    public function store(StoreAttributeValueRequest $request, $attributeId)
     {
-        $attribute = Attribute::findOrFail($attributeId);
+        try {
+            $attribute = Attribute::findOrFail($attributeId);
 
-        $request->validate([
-            'value' => 'required|string|max:255',
-            'is_active' => 'required|boolean',
-        ]);
+            AttributeValue::create([
+                'attribute_id' => $attributeId,
+                'value' => $request->validated()['value'],
+                'is_active' => $request->validated()['is_active'],
+            ]);
 
-        AttributeValue::create([
-            'attribute_id' => $attributeId,
-            'value' => $request->value,
-            'is_active' => $request->is_active,
-        ]);
-
-        return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được thêm.');
+            return redirect()->route('admin.attribute_values.index', $attributeId)
+                ->with('success', 'Giá trị thuộc tính đã được thêm.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể thêm giá trị thuộc tính: ' . $e->getMessage());
+        }
     }
 
     public function edit($attributeId, $id)
@@ -69,39 +70,43 @@ class AttributeValueController extends Controller
         return view('admin.attribute_values.edit', compact('attribute', 'value'));
     }
 
-    public function update(Request $request, $attributeId, $id)
+    public function update(StoreAttributeValueRequest $request, $attributeId, $id)
     {
-        $request->validate([
-            'value' => 'required|string|max:255',
-            'is_active' => 'required|boolean',
-        ]);
+        try {
+            $value = AttributeValue::findOrFail($id);
+            $value->update($request->validated());
 
-        $value = AttributeValue::findOrFail($id);
-        $value->update([
-            'value' => $request->value,
-            'is_active' => $request->is_active,
-        ]);
-
-        return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được cập nhật.');
+            return redirect()->route('admin.attribute_values.index', $attributeId)
+                ->with('success', 'Giá trị thuộc tính đã được cập nhật.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể cập nhật giá trị thuộc tính: ' . $e->getMessage());
+        }
     }
 
     public function destroy($attributeId, $id)
     {
-        $value = AttributeValue::findOrFail($id);
-        $value->delete();
+        try {
+            $value = AttributeValue::findOrFail($id);
+            $value->delete();
 
-        return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được xóa mềm.');
+            return redirect()->route('admin.attribute_values.index', $attributeId)
+                ->with('success', 'Giá trị thuộc tính đã được xóa mềm.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể xóa giá trị thuộc tính: ' . $e->getMessage());
+        }
     }
 
     public function restore($attributeId, $id)
     {
-        $value = AttributeValue::withTrashed()->findOrFail($id);
-        $value->restore();
+        try {
+            $value = AttributeValue::withTrashed()->findOrFail($id);
+            $value->restore();
 
-        return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được khôi phục.');
+            return redirect()->route('admin.attribute_values.index', $attributeId)
+                ->with('success', 'Giá trị thuộc tính đã được khôi phục.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Không thể khôi phục giá trị thuộc tính: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -110,7 +115,7 @@ class AttributeValueController extends Controller
     public function bulkDelete(Request $request, $attributeId): JsonResponse
     {
         $ids = $request->ids;
-        
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
@@ -140,7 +145,7 @@ class AttributeValueController extends Controller
     {
         $ids = $request->ids;
         $status = $request->status;
-        
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
