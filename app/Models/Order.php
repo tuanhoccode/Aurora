@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -18,10 +19,15 @@ class Order extends Model
         'total_amount',
         'is_paid',
         'is_refunded',
-        'coupon_id',
         'is_refunded_canceled',
         'check_refunded_canceled',
-        'img_refunded_money'
+        'img_refunded_money',
+        'coupon_id',
+        'cancellation_reason',
+        'cancellation_note',
+        'cancellation_date',
+        'cancellation_by',
+        'cancellation_status'
     ];
 
     public function items()
@@ -38,6 +44,7 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
@@ -58,5 +65,10 @@ class Order extends Model
     public function status()
     {
         return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
+    }
+
+    public function canceller()
+    {
+        return $this->belongsTo(User::class, 'cancellation_by');
     }
 }

@@ -158,14 +158,26 @@
                                     </td>
                                     <td>{{ number_format($order->total_amount, 0, ',', '.') }}đ</td>
                                     <td>
-                                        <span class="badge bg-{{ $order->currentStatus ? ($order->currentStatus->status->name === 'Đã hoàn thành' ? 'success' : ($order->currentStatus->status->name === 'Đang giao hàng' ? 'warning' : 'primary')) : 'primary' }}">
-                                            {{ $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận' }}
+                                        @php
+                                            $currentStatus = optional($order->currentStatus);
+                                            $status = optional($currentStatus)->status;
+                                            $statusCode = $status ? $status->code : 'UNKNOWN';
+                                            $statusName = $status ? $status->name : 'Chờ xác nhận';
+                                        @endphp
+                                        <span class="badge {{ $statusCode === 'PENDING' ? 'bg-warning' : ($statusCode === 'PROCESSING' ? 'bg-info' : ($statusCode === 'DELIVERING' ? 'bg-primary' : ($statusCode === 'COMPLETED' ? 'bg-success' : 'bg-danger'))) }}">
+                                            {{ $statusName }}
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('client.orders.show', ['order' => $order->id]) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                        <a href="{{ route('client.orders.show', $order->id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Chi tiết
                                         </a>
+                                        <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                                <i class="fas fa-trash"></i> Hủy đơn
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -178,4 +190,16 @@
     </div>
 </section>
 <!-- orders area end -->
+@endsection
+
+@section('scripts')
+<script>
+    function confirmCancel(statusName) {
+        if (statusName !== 'Chờ xác nhận') {
+            alert('Đơn hàng không thể hủy vì không ở trạng thái "Chờ xác nhận"');
+            return false;
+        }
+        return confirm('Bạn có chắc muốn hủy đơn hàng này?');
+    }
+</script>
 @endsection

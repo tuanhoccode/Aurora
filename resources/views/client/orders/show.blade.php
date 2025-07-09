@@ -272,5 +272,36 @@
         </div>
     </div>
 </section>
+
+<!-- Form hủy đơn hàng -->
+@if($order->cancellation_status === null && 
+    ($order->currentStatus->status->code === 'PENDING' || $order->currentStatus->status->code === 'PROCESSING'))
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h4>Hủy đơn hàng</h4>
+            <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Lý do hủy đơn</label>
+                    <select name="reason" id="reason" class="form-select" required>
+                        <option value="">Chọn lý do...</option>
+                        <option value="Không thích sản phẩm">Không thích sản phẩm</option>
+                        <option value="Giao hàng chậm">Giao hàng chậm</option>
+                        <option value="Đổi ý">Đổi ý</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="note" class="form-label">Ghi chú (tùy chọn)</label>
+                    <textarea name="note" id="note" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger">Gửi yêu cầu hủy đơn</button>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- order detail area end -->
 @endsection

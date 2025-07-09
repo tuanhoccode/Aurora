@@ -335,7 +335,9 @@ Route::middleware('web')->group(function () {
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
 });
 
+Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
-
+Route::get('/shop', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
