@@ -6,16 +6,12 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Chi tiết bình luận</h1>
-            
+            <h1 class="h3 mb-0 text-gray-800">Chi tiết bình luận</h1>
         </div>
-        <div class="d-flex gap-2">
-            <a href="" class="btn btn-primary">
-                <i class="bi bi-pencil-square"></i> Chỉnh sửa
+        <div>
+            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
             </a>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Xóa
-            </button>
         </div>
     </div>
 
@@ -39,10 +35,21 @@
                                     <th>Sản phẩm:</th>
                                     <td>{{ $comment->product->name }}</td>
                                 </tr>
+                                @if($type === 'review')
+                                <tr>
+                                    <th>Bình luận:</th>
+                                    <td><code>{{$comment->review_text}}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Số sao: </th>
+                                    <td>{{$comment->rating}}★</td>
+                                </tr>
+                                @else
                                 <tr>
                                     <th>Bình luận:</th>
                                     <td><code>{{ $comment->content }}</code></td>
                                 </tr>
+                                @endif
                                 <tr>
                                     <th>Trạng thái:</th>
                                     <td>

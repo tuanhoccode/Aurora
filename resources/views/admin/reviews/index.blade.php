@@ -11,27 +11,19 @@
       margin-top: 5px;
    }
 </style>
-    <h1 class="h3 mb-0">Quản lý Người dùng</h1>
-    
-    {{-- Bulk Actions --}}
-    <div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Quản lý bình luận</h1>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success bulk-action" data-action="activate">
-                <i class="bi bi-check-circle"></i>
-                Kích hoạt
-            </button>
-            <button type="button" class="btn btn-warning bulk-action" data-action="deactivate">
-                <i class="bi bi-x-circle"></i>
-                Vô hiệu
-            </button>
-            <button type="button" class="btn btn-danger bulk-action" data-action="delete">
+            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-trash"></i>
-                Xóa
-            </button>
-            <button type="button" class="btn btn-light ms-auto cancel-bulk">
-                <i class="bi bi-x-lg"></i>
-                Hủy
-            </button>
+                Thùng rác @if ($trashComments > 0)
+                    <span class="badge bg-danger">{{ $trashComments }}</span>
+                @endif
+            </a>
+            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Thêm sản phẩm
+            </a>
         </div>
     </div>
 
@@ -63,16 +55,13 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
-                        <tr>
-                            <th width="40">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="selectAll">
-                                    <label class="form-check-label" for="selectAll"></label>
-                                </div>
-                                </th>
+                            <tr>
+                            
+                                
                                 <th>Người dùng </th>
                                 <th>Sản phẩm</th>
                                 <th>Nội dung</th>
+                                <th>Đánh giá</th>
                                 <th>Trạng thái</th>
                                 <th>Lý do</th>
                                 <th>Ngày bình luận</th>
@@ -80,15 +69,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($comments as $comment)
+                            @foreach($mergedList as $comment)
                                 <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input product-checkbox"
-                                                value="{{ $comment->id }}" id="comment-{{ $comment->id }}">
-                                            <label class="form-check-label" for="comment-{{ $comment->id }}"></label>
-                                        </div>
-                                    </td>
+                                    
                                     <td>
                                         {{ $comment->user ? $comment->user->fullname : 'N/A' }}
                                     </td>
@@ -98,7 +81,16 @@
                                     <td>
                                         {{ $comment->content }}
                                     </td>
-
+                                    <td>
+                                        @if($comment->type === 'review' && $comment->rating !== null)
+                                            {!! str_repeat('<i class="fa fa-star text-warning"></i>', $comment->rating) !!}
+                                            {!! str_repeat('<i class="fa fa-star text-muted"></i>', 5 - $comment->rating) !!}
+                                            <br>
+                                            
+                                        @else
+                                            <span class="text-muted">Không có</span>
+                                        @endif
+                                    </td>
                                     
                                     <td>
                                         @if ($comment->is_active === 1)
@@ -129,13 +121,13 @@
                                     </td> -->
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('admin.reviews.showComment', $comment->id) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('admin.reviews.showComment', ['type' => $comment->type, 'id' => $comment->id]) }}" class="btn btn-sm btn-info">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             {{-- Nút mở modal từ chối --}}
                                             @if (!$comment->is_active)
                                             {{-- Nút chấp nhận --}}
-                                            <form action="{{ route('admin.reviews.approve', $comment->id) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('admin.reviews.approve', ['type' => $comment->type, 'id' => $comment->id]) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="btn btn-sm btn-success">
@@ -147,11 +139,23 @@
                                             <button type="button"
                                                 class="btn btn-sm btn-warning btn-reject"
                                                 data-id="{{ $comment->id }}"
+                                                data-type="{{ $comment->type }}"
                                                 data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
                                                 data-content="{{ $comment->content }}">
                                                 <i class="bi bi-x-circle"></i> {{-- Từ chối --}}
                                             </button>
                                             @endif
+                                            <form action="{{route('admin.reviews.destroyComment', ['type' => $comment->type, 'id' => $comment->id])}}" method="post"  class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger delete-button"
+                                                data-type= "{{$comment->type}}"
+                                                onclick="return false;"
+                                                >
+                                                    
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -162,11 +166,11 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="text-muted">
-                        Hiển thị {{ $comments->firstItem() }} đến {{ $comments->lastItem() }} trong tổng số {{ $comments->total() }}
+                        Hiển thị {{ $mergedList->firstItem() }} đến {{ $mergedList->lastItem() }} trong tổng số {{ $mergedList->total() }}
                         sản phẩm
                     </div>
                     <div>
-                        {{ $comments->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
+                        {{ $mergedList->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
@@ -248,16 +252,7 @@
                         ids
                     };
 
-                    switch (action) {
-                        case 'activate':
-                        case 'deactivate':
-                            url = '{{ route('admin.products.bulk-toggle-status') }}';
-                            data.status = action === 'activate' ? 1 : 0;
-                            break;
-                        case 'delete':
-                            url = '{{ route('admin.products.bulk-delete') }}';
-                            break;
-                    }
+                    
 
                     // Send request
                     $.ajax({
@@ -311,25 +306,43 @@
                     $('#deleteModal').modal('show');
                 });
                 $('.btn-reject').click(function () {
-                const id = $(this).data('id');
-                const user = $(this).data('user');
-                const content = $(this).data('content');
+                    const id = $(this).data('id');
+                    const type = $(this).data('type');
+                    const user = $(this).data('user');
+                    const content = $(this).data('content');
 
-                $('#rejectUser').text(user);
-                $('#rejectContent').text(content);
-                $('#reasonInput').val('');
+                    const action = `/admin/reviews/reject/${type}/${id}`;
+                    $('#rejectForm').attr('action', action);
 
-                // Gán đúng route PATCH cho form
-                const actionUrl = '{{ route("admin.reviews.reject", ":id") }}'.replace(':id', id);
-                $('#rejectForm').attr('action', actionUrl);
+                    $('#rejectUser').text(user);
+                    $('#rejectContent').text(content);
+                    $('#reasonInput').val('');
 
-                const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
-                modal.show();
+                    const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+                    modal.show();
                 });
 
             });
         </script>
-        <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.delete-button').forEach(button => {
+                    button.addEventListener('click', function (e) {
+                        const type = this.dataset.type;
+                        const form = this.closest('form');
+                    
+                        if (type === 'review') {
+                            alert('Không thể xóa đánh giá sản phẩm. Bạn chỉ có thể duyệt hoặc từ chối.');
+                        } else if (type === 'comment') {
+                            if (confirm('Bạn có chắc chắn muốn xóa mềm bình luận này?')) {
+                                form.submit();
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form id="rejectForm" method="POST">
             @csrf

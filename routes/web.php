@@ -45,7 +45,9 @@ use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
+use Dom\Comment;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
@@ -251,10 +253,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     //Quản lý bình luận
     Route::prefix('reviews')->name('reviews.')->group(function () {
-        Route::get('/', [CommentController::class, 'index'])-> name('comment.index');
-        Route::get('/{id}', [CommentController::class, 'showComment'])-> name('showComment');
-        Route::patch('/{id}/approve', [CommentController::class, 'approve'])-> name('approve');
-        Route::patch('/{id}/reject', [CommentController::class, 'reject'])-> name('reject');
+        Route::get('/', [CommentController::class, 'index'])-> name('comments');
+        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])-> name('showComment');
+        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])-> name('approve');
+        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])-> name('reject');
+        Route::get('/trash-comment', [CommentController::class, 'trashComments'])-> name('trashComments');
+        
+        Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])-> name('destroyComment');
+        Route::put('/restore/{id}',[CommentController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}',[CommentController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/bulk-restore',[CommentController::class, 'bulkRestore'])->name('bulkRestore');
     });
 });
 
@@ -368,6 +376,9 @@ Route::middleware('web')->group(function () {
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+
+    //Đánh giá sản phẩm
+    Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 });
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');

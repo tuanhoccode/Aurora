@@ -89,7 +89,7 @@
         <li class="sidebar-heading">Nội dung</li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}"
-                href="{{ route('admin.reviews.comment.index') }}">
+                href="{{ route('admin.reviews.comments') }}">
                 <span class="nav-icon"><i class="fas fa-comments"></i></span> Đánh giá sản phẩm
             </a>
         </li>

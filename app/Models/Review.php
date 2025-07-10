@@ -16,6 +16,7 @@ class Review extends Model
         'review_text',
         'reason',
         'is_active',
+        'deleted_at',
     ];
 
     public function product()

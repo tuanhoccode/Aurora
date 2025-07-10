@@ -576,6 +576,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Đánh giá sản phẩm -->
             <div class="tp-product-details-bottom pb-140">
                 <div class="container">
                     <div class="row">
@@ -596,6 +598,7 @@
                                     </div>
                                 </nav>
                                 <div class="tab-content" id="navPresentationTabContent">
+                                    <!-- Mô tả sản phẩm  -->
                                     <div class="tab-pane fade" id="nav-description" role="tabpanel"
                                         aria-labelledby="nav-description-tab" tabindex="0">
                                         <div class="tp-product-details-desc-wrapper pt-80">
@@ -627,6 +630,8 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Đánh giá sản phẩm -->
                                     <div class="tab-pane fade" id="nav-review" role="tabpanel"
                                         aria-labelledby="nav-review-tab" tabindex="0">
                                         <div class="tp-product-details-review-wrapper pt-60">
@@ -647,7 +652,8 @@
                                                     </div>
 
                                                     <!-- Danh sách đánh giá -->
-                                                    @forelse ($product->reviews->where('is_active', 1)->sortByDesc('created_at') as $review)
+                                                    
+                                                    @forelse ($product->reviews->where('is_active', 1)->sortByDesc('created_at')->take(5) as $review)
                                                         <div class="review-item border-bottom pb-3 mb-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
@@ -667,65 +673,156 @@
                                                         <p>Chưa có đánh giá nào cho sản phẩm này.</p>
                                                     @endforelse
                                                 </div>
+                                            <div class="tp-product-details-review-list pr-110">
+                                                <h3 class="tp-product-details-review-title">Đánh giá và bình luận của khách hàng</h3>
+                                                
+                                                
+                                                <!-- Hiển thị reviews -->
+
+                                                @foreach($product->reviews->where('is_active', 1) ->sortByDesc('created_at')->take(3) as $review)
+                                                    <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                            <div class="tp-product-details-review-avater-thumb me-3">
+                                                                <a href="#">
+                                                                    <img src="{{ $review->user->avatar ?? asset('assets2/img/users/avatars.png') }}" alt="Avatar" width="50">
+                                                                </a>
+                                                            </div>
+                                                            <div class="tp-product-details-review-avater-content">
+                                                                <div class="tp-product-details-review-avater-rating text-warning mb-1">
+                                                                    {!!str_repeat('<i class="fa-solid fa-star"> </i>' , $review->rating)!!}
+                                                                    {!!str_repeat('<i class="fa-regular fa-star"> </i>' , 5- $review->rating)!!}
+                                                                </div>
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">{{$review->user->fullname}} </h3>
+                                                                <span class="tp-product-details-review-avater-meta d-block mb-1">{{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}</span>
+                                                                <div class="tp-product-details-review-avater-comment mb-1">
+                                                                    {{$review->review_text}}
+                                                                </div>
+                                                                @if($review->reason)
+                                                                <small class="text-muted">Lý do: {{$review ->reason}}</small>
+                                                                @endif
+                                                            </div>
+                                                    </div>
+
+                                                @endforeach
+
+                                                <!-- Hiển thị comment -->
+                                                @foreach($product->comments->where('is_active', 1) ->sortByDesc('created_at')->take(2) as $comment)
+                                                   <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                            <div class="tp-product-details-review-avater-4">
+                                                                <div class="tp-product-details-review-avater-thumb me-3">
+                                                                    <a href="#">
+                                                                        <img src="{{ $comment->user->avatar ?? asset('assets2/img/users/avatars.png') }}" alt="Avatar" width="50">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                            <div class="tp-product-details-review-avater-content">
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">{{$comment->user->fullname}}</h3>
+                                                                <span class="tp-product-details-review-avater-meta d-block mb-1">{{$comment->created_at->format('d/m/Y')}}</span>
+                                                                <div class="tp-product-details-review-avater-comment mb-1">
+                                                                    {{$comment->content}}
+                                                                </div>
+                                                                @if($comment->reason)
+                                                                    <small class="text-muted">Lý do: {{$comment ->reason}}</small>
+                                                                @endif
+                                                            </div>
+                                                   </div>
+                                                
+                                                @endforeach
+                                                 <!-- Phần đánh giá bình luận còn lại (ẩn) -->
+                                                    <div id="more-reviews" style="display: none;">
+                                                        <!-- Các đánh giá còn lại -->
+                                                        @foreach($product->reviews->where('is_active', 1)->sortByDesc('created_at')->skip(3) as $review)
+                                                            <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                                <div class="tp-product-details-review-avater-thumb me-3">
+                                                                    <a href="#">
+                                                                        <img src="{{ $review->user->avatar ?? asset('assets2/img/users/avatars.png') }}" width="50">
+                                                                    </a>
+                                                                </div>
+                                                                <div class="tp-product-details-review-avater-content">
+                                                                    <div class="text-warning mb-1">
+                                                                        {!! str_repeat('<i class="fa-solid fa-star"></i>', $review->rating) !!}
+                                                                        {!! str_repeat('<i class="fa-regular fa-star"></i>', 5 - $review->rating) !!}
+                                                                    </div>
+                                                                    <h3 class="tp-product-details-review-avater-title mb-1">{{$review->user->fullname}} </h3>
+                                                                    <span class="tp-product-details-review-avater-meta d-block mb-1">{{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}</span>
+                                                                    <div class="tp-product-details-review-avater-comment mb-1">
+                                                                        {{$review->review_text}}
+                                                                    </div>
+                                                                    @if($review->reason)
+                                                                        <small class="text-muted">Lý do: {{ $review->reason }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+
+                                                        <!-- Các bình luận còn lại -->
+                                                        @foreach($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
+                                                            <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                                <div class="tp-product-details-review-avater-thumb me-3">
+                                                                    <a href="#">
+                                                                        <img src="{{ $comment->user->avatar ?? asset('assets2/img/users/avatars.png') }}" width="50">
+                                                                    </a>
+                                                                </div>
+                                                                <div class="tp-product-details-review-avater-content">
+                                                                    <h3 class="tp-product-details-review-avater-title mb-1">{{$comment->user->fullname}}</h3>
+                                                                    <span class="tp-product-details-review-avater-meta d-block mb-1">{{$comment->created_at->format('d/m/Y')}}</span>
+                                                                    <div class="tp-product-details-review-avater-comment mb-1">
+                                                                        {{$comment->content}}
+                                                                    </div>
+                                                                    @if($comment->reason)
+                                                                        <small class="text-muted">Lý do: {{ $comment->reason }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                <!-- Nút Xem thêm -->
+                                                 @if($product->reviews->count() >3 || $product->comments->count()>2)
+                                                 <div class="text-center mt-3">
+                                                        <button id="show-more-btn" class="btn btn-outline-primary">Xem thêm đánh giá và bình luận</button>
+                                                 </div>
+                                                 @endif
+                                            </div>
+                                          </div>
+                                       </div> <!-- end col -->
+                                                <br><br>
                                                 <div class="tp-product-details-review-form">
-                                                    <h3 class="tp-product-details-review-form-title">Review
-                                                        this
-                                                        product</h3>
-                                                    <p>Your email address will not be published. Required fields
-                                                        are
-                                                        marked *</p>
-                                                    <form action="#">
+                                                    <h3 class="tp-product-details-review-form-title">Đánh giá sản phẩm này</h3>
+                                                    <form action="{{route('client.store', $product)}}" method="Post">
+                                                        @csrf
                                                         <div
                                                             class="tp-product-details-review-form-rating d-flex align-items-center">
-                                                            <p>Your Rating :</p>
-                                                            <div
-                                                                class="tp-product-details-review-form-rating-icon d-flex align-items-center">
-                                                                <span><i class="fa-solid fa-star"></i></span>
-                                                                <span><i class="fa-solid fa-star"></i></span>
-                                                                <span><i class="fa-solid fa-star"></i></span>
-                                                                <span><i class="fa-solid fa-star"></i></span>
-                                                                <span><i class="fa-solid fa-star"></i></span>
+                                                            <p>Đánh giá của bạn :</p>
+                                                            <div class="tp-product-details-review-form-rating-icon d-flex align-items-center">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}"
+                                                                           class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
+                                                                    <label for="star{{ $i }}" class="me-1 star-label" style="cursor: pointer;">
+                                                                        <i class="fa-regular fa-star" style="color: #ccc;"></i>
+                                                                    </label>
+                                                                @endfor
+                                                                @error('rating')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
                                                             </div>
                                                         </div>
+                                                        <!-- Nội dunng đánh giá -->
                                                         <div class="tp-product-details-review-input-wrapper">
                                                             <div class="tp-product-details-review-input-box">
                                                                 <div class="tp-product-details-review-input">
-                                                                    <textarea id="msg" name="msg" placeholder="Write your review here..."></textarea>
+                                                                    <textarea  name="review_text" placeholder="Viết đánh giá của bạn...">{{old('review_text')}}</textarea>
                                                                 </div>
+                                                                @error('review_text')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
                                                                 <div class="tp-product-details-review-input-title">
-                                                                    <label for="msg">Your Name</label>
+                                                                    <label for="msg">Bình luận của bạn</label>
                                                                 </div>
                                                             </div>
-                                                            <div class="tp-product-details-review-input-box">
-                                                                <div class="tp-product-details-review-input">
-                                                                    <input name="name" id="name" type="text"
-                                                                        placeholder="Shahnewaz Sakil">
-                                                                </div>
-                                                                <div class="tp-product-details-review-input-title">
-                                                                    <label for="name">Your Name</label>
-                                                                </div>
-                                                            </div>
-                                                            <div class="tp-product-details-review-input-box">
-                                                                <div class="tp-product-details-review-input">
-                                                                    <input name="email" id="email" type="email"
-                                                                        placeholder="shofy@mail.com">
-                                                                </div>
-                                                                <div class="tp-product-details-review-input-title">
-                                                                    <label for="email">Your Email</label>
-                                                                </div>
-                                                            </div>
+                                                           
                                                         </div>
-                                                        <div class="tp-product-details-review-suggetions mb-20">
-                                                            <div class="tp-product-details-review-remeber">
-                                                                <input id="remeber" type="checkbox">
-                                                                <label for="remeber">Save my name, email, and
-                                                                    website
-                                                                    in this browser for the next time I
-                                                                    comment.</label>
-                                                            </div>
-                                                        </div>
+                                                        
                                                         <div class="tp-product-details-review-btn-wrapper">
-                                                            <button class="tp-product-details-review-btn">Submit</button>
+                                                            <button type="submit" class="tp-product-details-review-btn">Gửi bình luận</button>
                                                         </div>
                                                     </form>
                                                 </div>
@@ -751,6 +848,8 @@
                 })
                 ->take(4);
         @endphp
+
+        <!-- //Sản phẩm tương tự -->
         <section class="tp-related-product pt-95 pb-120">
             <div class="container">
                 <div class="row">
@@ -1122,7 +1221,62 @@
             }
         });
     </script>
+    <!-- JavaScript để xử lý hiệu ứng chọn sao và nút xem thêm bình luận-->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stars = document.querySelectorAll('.star-label i');
+        const radioInputs = document.querySelectorAll('input[name="rating"]');
 
+        // Khôi phục trạng thái sao nếu có old('rating')
+        const selectedRating = {{ old('rating', 0) }};
+        if (selectedRating > 0) {
+            for (let i = 0; i < selectedRating; i++) {
+                stars[i].classList.remove('fa-regular');
+                stars[i].classList.add('fa-solid');
+                stars[i].style.color = '#ffc107';
+            }
+        }
+
+        // Xử lý sự kiện click vào sao
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                // Cập nhật trạng thái sao
+                stars.forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.remove('fa-regular');
+                        s.classList.add('fa-solid');
+                        s.style.color = '#ffc107'; // Màu vàng
+                    } else {
+                        s.classList.remove('fa-solid');
+                        s.classList.add('fa-regular');
+                        s.style.color = '#ccc'; // Màu trắng/xám
+                    }
+                });
+                // Cập nhật giá trị input radio
+                radioInputs[index].checked = true;
+            });
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('show-more-btn');
+        const more = document.getElementById('more-reviews');
+
+        if (btn && more) {
+            let isExpanded = false;
+
+            btn.addEventListener('click', function () {
+                if (isExpanded) {
+                    more.style.display = 'none';
+                    btn.textContent = 'Xem thêm đánh giá & bình luận';
+                } else {
+                    more.style.display = 'block';
+                    btn.textContent = 'Ẩn bớt đánh giá & bình luận';
+                }
+                isExpanded = !isExpanded;
+            });
+        }
+    });
+</script>
     <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
 
 @endsection

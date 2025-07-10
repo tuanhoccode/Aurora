@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Comment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $fillable = [
         'product_id',
         'user_id',
@@ -15,6 +16,7 @@ class Comment extends Model
         'reason',
         'is_active',
         'content',
+        'deleted_at',
     ];
     public function product(){
         return $this->belongsTo(Product::class);
