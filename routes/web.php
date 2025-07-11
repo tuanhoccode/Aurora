@@ -263,6 +263,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/restore/{id}',[CommentController::class, 'restore'])->name('restore');
         Route::delete('/force-delete/{id}',[CommentController::class, 'forceDelete'])->name('forceDelete');
         Route::post('/bulk-restore',[CommentController::class, 'bulkRestore'])->name('bulkRestore');
+        //Admin phản hồi bình luận
+        Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
+        Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
     });
 });
 

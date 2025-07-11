@@ -42,7 +42,7 @@
                                 </tr>
                                 <tr>
                                     <th>Số sao: </th>
-                                    <td>{{$comment->rating}}★</td>
+                                    <td>{{$comment->rating}}⭐</td>
                                 </tr>
                                 @else
                                 <tr>

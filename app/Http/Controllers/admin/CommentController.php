@@ -4,10 +4,14 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\admin\RejectCommentRequest;
+use App\Http\Requests\Admin\ReplyRequest;
 use App\Models\Comment;
+use App\Models\Product;
 use App\Models\Review;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
@@ -129,5 +133,68 @@ class CommentController extends Controller
         Comment::withTrashed()->whereIn('id', $ids)->forceDelete();
 
         return redirect()->route('admin.reviews.trash')->with('success', 'Đã xóa vĩnh viễn thành công');
+    }
+
+    //phản hồi comment
+    public function reply(ReplyRequest $req, $type, $id){
+        try {
+            
+            if ($type === 'review') {
+                $parent = Review::findOrFail($id);
+                if (!$parent->is_active) {
+                    return redirect()->back()->with('error', 'Không thể trả lời vì đánh giá này đã bị từ chối.');
+                }
+                if ($parent -> has_replies) {
+                    //Kiểm tra review đã có phản hồi chx
+                    return redirect()->back()->with('error', 'Đánh giá này đã đc trả lời');
+                }
+                Review::create([
+                    'user_id' =>Auth::id(),
+                    'product_id' => $parent->product_id,
+                    'order_id' => $parent->order_id,
+                    'review_id' => $id,
+                    'review_text' => $req ->content,
+                    'rating' => 0,
+                    'is_active' => 1,
+                ]);
+            } else {
+                $parent = Comment::findOrFail($id);
+                
+                if (!$parent->is_active) {
+                    return redirect()->back()->with('error', 'Không thể trả lời vì bình luận này đã bị từ chối.');
+                }
+                if ($parent -> has_replies) {
+                    //Kiểm tra review đã có phản hồi chx
+                    return redirect()->back()->with('error', 'Bình luận này đã đc trả lời');
+                }
+                Comment::create([
+                    'user_id' => Auth::id(),
+                    'product_id' => $parent->product_id,
+                    'parent_id' => $id,
+                    'content' => $req->content,
+                    'is_active' => 1,
+        
+                ]);
+            }
+            return redirect()->back()->with('success', 'Đã trả lời bình luận của khách hàng.');
+        } catch (\Exception $e) {
+            Log::error('Reply error: Type='. $type . ', ID=' . $id . ',Error=' . $e->getMessage());
+            return redirect()->back()->with('error', 'Đã xảy ra lỗi khi gửi phản hồi.');
+        }
+        
+    }
+
+    public function showStar($id){
+        $product = Product::findOrFail($id);
+        $reviews  = $product->reviews()
+        ->where('is_active', 1)
+        ->where('review_id', null)
+        ->where('rating', '>=', 1)
+        ->get();
+        //Tinh điểm trung bình
+        $averageRating = $reviews->count() > 0 ? $reviews -> avg('rating') :0;
+        //Tính số lượng đánh giá
+        $reviewCount = $reviews->count();
+        return view('product-details', compact('product', 'averageRating', 'reviewCount', 'hasVariant')) ;
     }
 }

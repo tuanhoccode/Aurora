@@ -14,9 +14,9 @@ class Review extends Model
         'user_id',
         'rating',
         'review_text',
+        'review_id',
         'reason',
         'is_active',
-        'deleted_at',
     ];
 
     public function product()
@@ -27,5 +27,17 @@ class Review extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function parent()
+    {
+        return $this->belongsTo(Review::class, 'review_id');
+    }
+    
+    public function replies()
+    {
+        return $this->hasMany(Review::class, 'review_id')->where('is_active', 1);
+    }
+    public function getHasRepliesAttribute(){
+        return $this->replies()->exists();
     }
 }

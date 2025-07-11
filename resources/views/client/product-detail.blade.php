@@ -322,7 +322,7 @@
                                                             <i class="far fa-star text-muted"></i>
                                                         @endif
                                                     @endfor
-                                                    <span>({{ $reviewCount }} đánh giá)</span>
+                                                    <span>({{ $reviewCount  }} đánh giá)</span>
                                                 </div>
                                             @else
                                                 <span>Chưa có đánh giá</span>
@@ -592,7 +592,7 @@
                                         <button class="nav-link" id="nav-review-tab" data-bs-toggle="tab"
                                             data-bs-target="#nav-review" type="button" role="tab"
                                             aria-controls="nav-review" aria-selected="false">
-                                            Đánh giá ({{ $reviewCount }})
+                                            Đánh giá 
                                         </button>
                                         <span id="productTabMarker" class="tp-product-details-tab-line"></span>
                                     </div>
@@ -644,6 +644,13 @@
 
                                                     <!-- Tổng điểm trung bình -->
                                                     <div class="mb-3">
+                                                        @php
+                                                            // Chỉ lấy các đánh giá gốc
+                                                            $validReviews = $product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1);
+                                                            $averageRating = $validReviews->count() > 0 ? $validReviews->avg('rating') : 0;
+                                                            $reviewCount = $validReviews->count();
+                                                        @endphp
+                                                        
                                                         <span class="fs-4 fw-bold text-warning">
                                                             {!! str_repeat('★', floor($averageRating)) !!}{!! str_repeat('☆', 5 - floor($averageRating)) !!}
                                                         </span>
@@ -653,7 +660,7 @@
 
                                                     <!-- Danh sách đánh giá -->
                                                     
-                                                    @forelse ($product->reviews->where('is_active', 1)->sortByDesc('created_at')->take(5) as $review)
+                                                    @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
                                                         <div class="review-item border-bottom pb-3 mb-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
@@ -661,9 +668,11 @@
                                                                     class="text-muted">{{ $review->created_at->format('d/m/Y') }}</small>
                                                             </div>
                                                             <div class="text-warning mb-1">
-                                                                {!! str_repeat('★', $review->rating) !!}{!! str_repeat('☆', 5 - $review->rating) !!}
+                                                                {!! str_repeat('★', $review->rating ?? 0) !!}{!! str_repeat('☆', 5 - $review->rating) !!}
                                                             </div>
                                                             <p class="mb-0">{{ $review->review_text }}</p>
+                                                           
+                                                            
                                                             @if ($review->reason)
                                                                 <small class="text-muted">Lý do:
                                                                     {{ $review->reason }}</small>
@@ -679,7 +688,7 @@
                                                 
                                                 <!-- Hiển thị reviews -->
 
-                                                @foreach($product->reviews->where('is_active', 1) ->sortByDesc('created_at')->take(3) as $review)
+                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
                                                     <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-thumb me-3">
                                                                 <a href="#">
@@ -696,6 +705,14 @@
                                                                 <div class="tp-product-details-review-avater-comment mb-1">
                                                                     {{$review->review_text}}
                                                                 </div>
+                                                                @foreach($review->replies->where('is_active', 1) as $reply)
+                                                                <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                    <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                    <p class="mb-0">{{$reply->review_text}}</p>
+                                                                    <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
+                                                                </div>
+
+                                                                @endforeach
                                                                 @if($review->reason)
                                                                 <small class="text-muted">Lý do: {{$review ->reason}}</small>
                                                                 @endif
@@ -705,7 +722,7 @@
                                                 @endforeach
 
                                                 <!-- Hiển thị comment -->
-                                                @foreach($product->comments->where('is_active', 1) ->sortByDesc('created_at')->take(2) as $comment)
+                                                @foreach($product->comments->where('is_active', 1)->where('parent_id', null) ->sortByDesc('created_at')->take(2) as $comment)
                                                    <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
@@ -720,9 +737,16 @@
                                                                 <div class="tp-product-details-review-avater-comment mb-1">
                                                                     {{$comment->content}}
                                                                 </div>
-                                                                @if($comment->reason)
-                                                                    <small class="text-muted">Lý do: {{$comment ->reason}}</small>
-                                                                @endif
+                                                                @foreach($comment->replies->where('is_active', 1) as $reply)
+                                                                    <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                        <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                        <p class="mb-0">{{$reply->content}}</p>
+                                                                        <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
+                                                                    </div>
+                                                                    @if($comment->reason)
+                                                                        <small class="text-muted">Lý do: {{$comment ->reason}}</small>
+                                                                    @endif
+                                                                @endforeach
                                                             </div>
                                                    </div>
                                                 
@@ -730,7 +754,7 @@
                                                  <!-- Phần đánh giá bình luận còn lại (ẩn) -->
                                                     <div id="more-reviews" style="display: none;">
                                                         <!-- Các đánh giá còn lại -->
-                                                        @foreach($product->reviews->where('is_active', 1)->sortByDesc('created_at')->skip(3) as $review)
+                                                        @foreach($product->reviews->where('is_active', 1)->where('rating', '>=', 1)->sortByDesc('created_at')->skip(3) as $review)
                                                             <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
@@ -747,6 +771,14 @@
                                                                     <div class="tp-product-details-review-avater-comment mb-1">
                                                                         {{$review->review_text}}
                                                                     </div>
+                                                                    @foreach($review->replies->where('is_active', 1) as $reply)
+                                                                        <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                            <strong class="text-primary">{{$reply->user->fullname ?? 'Shop'}}</strong> trả lời:
+                                                                            <p class="mb-0">{{$reply->review_text}}</p>
+                                                                            <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
+                                                                        </div>
+
+                                                                    @endforeach
                                                                     @if($review->reason)
                                                                         <small class="text-muted">Lý do: {{ $review->reason }}</small>
                                                                     @endif
@@ -768,6 +800,14 @@
                                                                     <div class="tp-product-details-review-avater-comment mb-1">
                                                                         {{$comment->content}}
                                                                     </div>
+                                                                    @foreach($comment->replies->where('is_active', 1) as $reply)
+                                                                        <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                            <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                            <p class="mb-0">{{$reply->content}}</p>
+                                                                            <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
+                                                                        </div>
+
+                                                                    @endforeach
                                                                     @if($comment->reason)
                                                                         <small class="text-muted">Lý do: {{ $comment->reason }}</small>
                                                                     @endif
@@ -998,11 +1038,12 @@
             </div>
         </section>
     </main>
-    {{-- 1. Link Swiper --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+        {{-- 1. Link Swiper --}}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
     {{-- 2. Script chính --}}
+    
     <script>
         const variants = @json($variantsWithImages);
 
@@ -1222,61 +1263,62 @@
         });
     </script>
     <!-- JavaScript để xử lý hiệu ứng chọn sao và nút xem thêm bình luận-->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const stars = document.querySelectorAll('.star-label i');
-        const radioInputs = document.querySelectorAll('input[name="rating"]');
-
-        // Khôi phục trạng thái sao nếu có old('rating')
-        const selectedRating = {{ old('rating', 0) }};
-        if (selectedRating > 0) {
-            for (let i = 0; i < selectedRating; i++) {
-                stars[i].classList.remove('fa-regular');
-                stars[i].classList.add('fa-solid');
-                stars[i].style.color = '#ffc107';
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stars = document.querySelectorAll('.star-label i');
+            const radioInputs = document.querySelectorAll('input[name="rating"]');
+        
+            // Khôi phục trạng thái sao nếu có old('rating')
+            const selectedRating = {{ old('rating', 0) }};
+            if (selectedRating > 0) {
+                for (let i = 0; i < selectedRating; i++) {
+                    stars[i].classList.remove('fa-regular');
+                    stars[i].classList.add('fa-solid');
+                    stars[i].style.color = '#ffc107';
+                }
             }
-        }
-
-        // Xử lý sự kiện click vào sao
-        stars.forEach((star, index) => {
-            star.addEventListener('click', () => {
-                // Cập nhật trạng thái sao
-                stars.forEach((s, i) => {
-                    if (i <= index) {
-                        s.classList.remove('fa-regular');
-                        s.classList.add('fa-solid');
-                        s.style.color = '#ffc107'; // Màu vàng
-                    } else {
-                        s.classList.remove('fa-solid');
-                        s.classList.add('fa-regular');
-                        s.style.color = '#ccc'; // Màu trắng/xám
-                    }
+        
+            // Xử lý sự kiện click vào sao
+            stars.forEach((star, index) => {
+                star.addEventListener('click', () => {
+                    // Cập nhật trạng thái sao
+                    stars.forEach((s, i) => {
+                        if (i <= index) {
+                            s.classList.remove('fa-regular');
+                            s.classList.add('fa-solid');
+                            s.style.color = '#ffc107'; // Màu vàng
+                        } else {
+                            s.classList.remove('fa-solid');
+                            s.classList.add('fa-regular');
+                            s.style.color = '#ccc'; // Màu trắng/xám
+                        }
+                    });
+                    // Cập nhật giá trị input radio
+                    radioInputs[index].checked = true;
                 });
-                // Cập nhật giá trị input radio
-                radioInputs[index].checked = true;
             });
         });
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        const btn = document.getElementById('show-more-btn');
-        const more = document.getElementById('more-reviews');
-
-        if (btn && more) {
-            let isExpanded = false;
-
-            btn.addEventListener('click', function () {
-                if (isExpanded) {
-                    more.style.display = 'none';
-                    btn.textContent = 'Xem thêm đánh giá & bình luận';
-                } else {
-                    more.style.display = 'block';
-                    btn.textContent = 'Ẩn bớt đánh giá & bình luận';
-                }
-                isExpanded = !isExpanded;
-            });
-        }
-    });
-</script>
-    <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
-
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById('show-more-btn');
+            const more = document.getElementById('more-reviews');
+        
+            if (btn && more) {
+                let isExpanded = false;
+            
+                btn.addEventListener('click', function () {
+                    if (isExpanded) {
+                        more.style.display = 'none';
+                        btn.textContent = 'Xem thêm đánh giá & bình luận';
+                    } else {
+                        more.style.display = 'block';
+                        btn.textContent = 'Ẩn bớt đánh giá & bình luận';
+                    }
+                    isExpanded = !isExpanded;
+                });
+            }
+        });
+    </script>
+        <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+    
 @endsection
+    

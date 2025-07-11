@@ -156,6 +156,34 @@
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
+                                            <!-- Nút mở modal trả lời -->
+                                            <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1" 
+                                                style="width: 40px; min-width: 30px; height: 32px;"
+                                                data-id="{{ $comment->id }}" 
+                                                data-type="{{ $comment->type }}"
+                                                data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
+                                                data-content="{{ $comment->content }}"
+                                                data-rating="{{ $comment->rating ?? 'Không có' }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#replyModal"
+                                                {{ (!$comment->is_active || $comment->has_replies) ? 'disabled' : '' }}
+                                                title="{{ !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : ($comment->has_replies ? 'Bình luận này đã được trả lời' : 'Trả lời bình luận') }}">
+                                                <i class="bi bi-reply-fill"></i>
+                                                @if($comment->has_replies)
+                                                    <span class="d-flex align-items-center gap-1 text-success small">
+                                                        <i class="bi bi-reply-fill"></i>
+                                                    </span>
+                                                @elseif(!$comment->is_active)
+                                                    <span class="d-flex align-items-center gap-1 text-danger small">
+                                                        <i class="bi bi-x-circle"></i> 
+                                                    </span>
+                                                @else
+                                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                                        <span class="visually-hidden"></span>
+                                                    </span>
+                                                @endif
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -324,6 +352,7 @@
 
             });
         </script>
+        
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.delete-button').forEach(button => {
@@ -341,36 +370,95 @@
                     });
                 });
             });
+
+
+            </script>
+            
+        <!-- //JS Trả lời bình luận  -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const replyButtons = document.querySelectorAll('.btn-reply');
+                const replyForm = document.getElementById('replyForm');
+                const replyUser = document.getElementById('replyUser');
+                const replyContent = document.getElementById('replyContent');
+                const replyRating = document.getElementById('replyRating');
+            
+                replyButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.dataset.id;
+                        const type = button.dataset.type;
+                        const user = button.dataset.user;
+                        const content = button.dataset.content;
+                        const rating = button.dataset.rating;
+                    
+                        replyForm.action = `/admin/reviews/${type}/reply/${id}`;
+                        replyUser.textContent = user;
+                        replyContent.textContent = content;
+                        replyRating.textContent = rating;
+                    });
+                });
+            });
         </script>
-    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <form id="rejectForm" method="POST">
-            @csrf
-            @method('PATCH')
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Từ chối bình luận</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Người dùng:</strong> <span id="rejectUser"></span></p>
-                    <p><strong>Nội dung:</strong> <span id="rejectContent"></span></p>
-                    <div class="mb-3">
-                        <label for="reasonInput" class="form-label">Lý do từ chối:</label>
-                        <textarea class="form-control" id="reasonInput" name="reason" rows="3" ></textarea>
-                        @error('reason')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+
+        <!-- Lý do k duyệt bình luận -->
+        <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form id="rejectForm" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Từ chối bình luận</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Người dùng:</strong> <span id="rejectUser"></span></p>
+                            <p><strong>Nội dung:</strong> <span id="rejectContent"></span></p>
+                            <div class="mb-3">
+                                <label for="reasonInput" class="form-label">Lý do từ chối:</label>
+                                <textarea class="form-control" id="reasonInput" name="reason" rows="3" ></textarea>
+                                @error('reason')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        </div>
+    <!--  trả lời bình luận -->
+        <!-- Modal trả lời -->
+            <!-- Modal trả lời -->
+                <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form id="replyForm" method="POST">
+                            @csrf
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Phản hồi khách hàng</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                </div> 
+                                <div class="modal-body">
+                                    <p><strong>Khách hàng:</strong><span id="replyUser"></span></p>
+                                    <p><strong>Đánh giá:</strong><span id="replyRating"></span>⭐</p>
+                                    <p><strong>Nội dung:</strong><span id="replyContent"></span></p>
+                                    <textarea name="content" id="content" class="form-control" rows="4" placeholder="Nội dung phản hồi..." ></textarea>
+                                    @error('content')
+                                    <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                                </div>
+                            </div>
+
+                        </form>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-    </div>
     @endpush
