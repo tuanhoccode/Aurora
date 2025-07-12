@@ -158,8 +158,7 @@
                                             </form>
                                             <!-- Nút mở modal trả lời -->
                                             <button type="button" 
-                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1" 
-                                                style="width: 40px; min-width: 30px; height: 32px;"
+                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"                                                style="width: 40px; min-width: 30px; height: 32px;"
                                                 data-id="{{ $comment->id }}" 
                                                 data-type="{{ $comment->type }}"
                                                 data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"

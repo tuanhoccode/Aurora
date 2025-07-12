@@ -114,9 +114,15 @@ class CommentController extends Controller
     }
     // Xóa vĩnh viễn 1 sản phẩm
     public function forceDelete($id){
-        $comment = Comment::withTrashed()->findOrFail($id);
-        $comment->forceDelete();
-        return redirect()->route('admin.reviews.trashComments')->with('success', 'Đã xõa vĩnh viễn sản phẩm');
+        try {
+            $comment = Comment::withTrashed()->findOrFail($id);
+            Comment::withTrashed()->where('parent_id', $id)->orderByDesc('deleted_at')->forceDelete();
+            $comment->forceDelete();
+            return redirect()->route('admin.reviews.trashComments')->with('success', 'Đã xõa vĩnh viễn sản phẩm');
+        } catch (\Exception $e) {
+            \Log::error("Lỗi xóa bình luận:". $e->getMessage());
+            return redirect()->back()->with('error', 'Không thể xóa bình luận. Có thể vì bình luận có phản hồi.');
+        }
     }
     // Khôi phục hàng loạt
     public function bulkRestore(Request $request)
