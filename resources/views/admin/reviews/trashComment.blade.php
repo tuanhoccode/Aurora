@@ -46,22 +46,22 @@
                                 <!-- <small class="text-muted d-block">{{ Str::limit($comment->short_description, 100) }}</small> -->
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border">{{ $comment->product->name }}</span>
+                                <span class="badge bg-light text-dark border">{{ $comment->product ? $comment->product->name : 'N/A' }}</span>
                             </td>
                             <td>
                                 {{$comment->content}}
                             </td>
                             <td>
                                 @if ($comment->is_active === 1)
-                                    <span class="badge d-inline-block text-center bg-success w-100" style="min-width: 110px;">
+                                    <span class="badge d-inline-block text-center bg-success w-10" style="min-width: 110px;">
                                     <i class="fas fa-check-circle me-1"></i> Đã duyệt
                                     </span>
                                 @elseif ($comment->is_active === 0 && $comment->reason)
-                                    <span class="badge d-inline-block text-center bg-danger w-100" style="min-width: 110px;">
+                                    <span class="badge d-inline-block text-center bg-danger w-10" style="min-width: 110px;">
                                         <i class="fas fa-times-circle me-1"></i> Không duyệt
                                     </span>
                                 @else
-                                    <span class="badge d-inline-block text-center bg-warning text-dark w-100" style="min-width: 110px;">
+                                    <span class="badge d-inline-block text-center bg-warning text-dark w-10" style="min-width: 110px;">
                                         <i class="fas fa-clock me-1"></i> Chờ duyệt
                                     </span>
                                 @endif
