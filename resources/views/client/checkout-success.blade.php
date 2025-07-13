@@ -71,9 +71,13 @@
             </div>
             <div class="checkout-success-actions">
                 <a href="{{ route('home') }}" class="tp-btn">Về trang chủ</a>
-                <a href="{{ route('client.orders.show', ['order' => $order->id]) }}" class="tp-btn">Xem đơn hàng</a>
+                @auth
+                    <a href="{{ route('client.orders.show', ['order' => $order->id]) }}" class="tp-btn">Xem đơn hàng</a>
+                @else
+                    <a href="{{ route('login') }}" class="tp-btn">Đăng nhập để xem đơn hàng</a>
+                @endauth
             </div>
         </div>
     </div>
 </section>
-@endsection
+@endsection 

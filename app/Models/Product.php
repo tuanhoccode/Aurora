@@ -186,6 +186,12 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
+
+
     public function getDefaultVariantIdAttribute()
     {
         // Lấy biến thể đầu tiên còn hàng, hoặc biến thể đầu tiên nếu không còn hàng

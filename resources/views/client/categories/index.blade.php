@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container py-5">
+    <h2 class="mb-4" style="font-weight:700;font-size:2.2rem;line-height:1.2;">Danh mục sản phẩm</h2>
     <div class="row">
         @php use Illuminate\Support\Str; @endphp
         @foreach($categories as $category)

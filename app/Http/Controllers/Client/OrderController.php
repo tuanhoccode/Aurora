@@ -13,7 +13,7 @@ class OrderController extends Controller
     {
         $orders = Order::where('user_id', Auth::id())
             ->with([
-                'status', 
+                'status',
                 'items.product',
                 'currentStatus.status',
                 'payment'

@@ -140,12 +140,13 @@
                                     <th>Phương thức thanh toán</th>
                                     <th>Tổng tiền</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($orders as $order)
-                                <tr>
+                            <tbody id="order-list">
+                                @php $defaultShow = 10; @endphp
+                                @foreach($orders as $index => $order)
+                                <tr class="order-item{{ $index >= $defaultShow ? ' d-none-by-js' : '' }}">
                                     <td>#{{ $order->code }}</td>
                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
