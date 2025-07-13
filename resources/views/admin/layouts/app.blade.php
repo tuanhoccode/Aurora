@@ -323,6 +323,25 @@
             }
         });
     </script>
+    @if (session('success'))
+   <script>
+      toastr.options = {
+         "positionClass": "toast-top-right",
+         "timeOut": 2000
+      };
+      toastr.success(@json(session('success')));
+   </script>
+   @endif
+
+   @if (session('error'))
+   <script>
+      toastr.options = {
+         "positionClass": "toast-top-right",
+         "timeOut": 2000
+      };
+      toastr.error(@json(session('error')));
+   </script>
+   @endif
 
     @stack('scripts')
 </body>

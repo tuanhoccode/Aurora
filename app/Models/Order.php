@@ -66,9 +66,9 @@ class Order extends Model
     {
         return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
     }
-
-    public function canceller()
+    public function orderDetail()
     {
-        return $this->belongsTo(User::class, 'cancellation_by');
+    return $this->hasMany(OrderItem::class, 'order_id', 'id');
     }
+    
 }

@@ -32,6 +32,7 @@ use App\Http\Controllers\Client\Auth\GoogleController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Client\Auth\RegisterController;
@@ -44,7 +45,9 @@ use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
+use Dom\Comment;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
@@ -227,6 +230,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{id}', [AttributeValueController::class, 'update'])->name('update');
         Route::delete('/{id}', [AttributeValueController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::get('/trashed', [AttributeValueController::class, 'trashed'])->name('trashed');
+        Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [AttributeValueController::class, 'forceDelete'])->name('forceDelete');
 
 
         // Bulk Actions
@@ -247,6 +253,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/product-images/{id}', [ProductGalleryController::class, 'update'])->name('product-images.update');
     Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
     Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+
+    //Quản lý bình luận
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])-> name('comments');
+        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])-> name('showComment');
+        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])-> name('approve');
+        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])-> name('reject');
+        Route::get('/trash-comment', [CommentController::class, 'trashComments'])-> name('trashComments');
+        
+        Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])-> name('destroyComment');
+        Route::put('/restore/{id}',[CommentController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}',[CommentController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/bulk-restore',[CommentController::class, 'bulkRestore'])->name('bulkRestore');
+        //Admin phản hồi bình luận
+        Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
+        Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
+    });
 });
 
 
@@ -359,7 +382,9 @@ Route::middleware('web')->group(function () {
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+
+    //Đánh giá sản phẩm
+    Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 });
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
