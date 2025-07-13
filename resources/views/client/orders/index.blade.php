@@ -173,12 +173,7 @@
                                         <a href="{{ route('client.orders.show', $order->id) }}" class="btn btn-outline-primary">
                                             <i class="fas fa-eye"></i> Chi tiết
                                         </a>
-                                        <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
-                                                <i class="fas fa-trash"></i> Hủy đơn
-                                            </button>
-                                        </form>
+
                                     </td>
                                 </tr>
                                 @endforeach
