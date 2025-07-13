@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <div class="container-fluid py-4">
         {{-- Header Section --}}
@@ -19,7 +18,6 @@
             </div>
         </div>
 
-
         {{-- Alert Messages --}}
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
@@ -28,14 +26,12 @@
             </div>
         @endif
 
-
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-
 
         {{-- Main Card --}}
         <div class="card shadow-sm rounded-3 border-0">
@@ -58,59 +54,13 @@
                             </select>
                         </form>
                     </div>
-                    <div class="col-md-6 text-end">
-                        <button type="button"
-                                class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2"
-                                style="display: none;"
-                                onclick="bulkToggleStatus(1)"
-                                data-bs-toggle="tooltip"
-                                title="Kích hoạt đã chọn">
-                            <i class="bi bi-check-circle me-1"></i>
-                            <i class="bi bi-toggle-on"></i>
-                            <span class="badge bg-white text-success ms-2 selected-count">0</span>
-                        </button>
-                        <button type="button"
-                                class="btn btn-secondary rounded-pill px-4 bulk-toggle-btn me-2"
-                                style="display: none;"
-                                onclick="bulkToggleStatus(0)"
-                                data-bs-toggle="tooltip"
-                                title="Vô hiệu đã chọn">
-                            <i class="bi bi-x-circle me-1"></i>
-                            <i class="bi bi-toggle-off"></i>
-                            <span class="badge bg-white text-secondary ms-2 selected-count">0</span>
-                        </button>
-                        <button type="button"
-                                class="btn btn-danger rounded-pill px-4 bulk-delete-btn"
-                                style="display: none;"
-                                data-bs-toggle="tooltip"
-                                title="Xóa đã chọn">
-                            <i class="bi bi-trash me-1"></i>
-                            <i class="bi bi-check2-square"></i>
-                            <span class="badge bg-white text-danger ms-2 selected-count">0</span>
-                        </button>
-                    </div>
                 </div>
-
 
                 @if ($attributes->count())
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th class="border-0" style="width: 40px">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="selectAll">
-                                        </div>
-                                    </th>
-                                    <th class="border-0" style="width: 60px">
-                                        <a href="{{ route('admin.attributes.index', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
-                                           class="text-decoration-none text-dark d-flex align-items-center">
-                                            ID
-                                            @if ($sortBy == 'id')
-                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
-                                            @endif
-                                        </a>
-                                    </th>
                                     <th class="border-0">
                                         <a href="{{ route('admin.attributes.index', array_merge(request()->query(), ['sort_by' => 'name', 'sort_dir' => ($sortBy == 'name' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -125,6 +75,15 @@
                                            class="text-decoration-none text-dark d-flex align-items-center">
                                             Biến thể
                                             @if ($sortBy == 'is_variant')
+                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="border-0" style="width: 120px">
+                                        <a href="{{ route('admin.attributes.index', array_merge(request()->query(), ['sort_by' => 'attribute_values_count', 'sort_dir' => ($sortBy == 'attribute_values_count' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            Số lượng giá trị
+                                            @if ($sortBy == 'attribute_values_count')
                                                 <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                             @endif
                                         </a>
@@ -154,15 +113,6 @@
                                 @foreach ($attributes as $attribute)
                                     <tr class="position-relative">
                                         <td>
-                                            <div class="form-check">
-                                                <input type="checkbox"
-                                                       class="form-check-input attribute-checkbox"
-                                                       value="{{ $attribute->id }}"
-                                                       data-name="{{ $attribute->name }}">
-                                            </div>
-                                        </td>
-                                        <td class="text-muted">{{ $attribute->id }}</td>
-                                        <td>
                                             <div class="d-flex align-items-center">
                                                 <span class="fw-medium">{{ $attribute->name }}</span>
                                             </div>
@@ -171,6 +121,11 @@
                                             <span class="badge rounded-pill {{ $attribute->is_variant ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary' }} px-3 py-2">
                                                 <i class="bi bi-circle-fill me-1 small"></i>
                                                 {{ $attribute->is_variant ? 'Là biến thể' : 'Không phải biến thể' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2">
+                                                {{ $attribute->attribute_values_count }}
                                             </span>
                                         </td>
                                         <td class="text-center">
@@ -213,7 +168,6 @@
                         </table>
                     </div>
 
-
                     {{-- Pagination --}}
                     @if ($attributes->hasPages())
                         <div class="d-flex justify-content-end mt-3">
@@ -229,7 +183,6 @@
             </div>
         </div>
     </div>
-
 
     {{-- Delete Confirmation Modal --}}
     <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -258,33 +211,7 @@
             </div>
         </div>
     </div>
-
-
-    {{-- Bulk Delete Confirmation Modal --}}
-    <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Xác nhận xóa hàng loạt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
-                    </div>
-                    <p class="text-center mb-0">
-                        Bạn có chắc chắn muốn xóa <span id="bulkDeleteCount" class="fw-bold"></span> thuộc tính đã chọn?
-                    </p>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitBulkDelete()">Xóa</button>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
-
 
 @push('scripts')
 <script>
@@ -294,133 +221,7 @@
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-
-
-        const selectAllCheckbox = document.getElementById('selectAll');
-        const attributeCheckboxes = document.querySelectorAll('.attribute-checkbox');
-        const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
-        const bulkToggleBtns = document.querySelectorAll('.bulk-toggle-btn');
-        const selectedCounts = document.querySelectorAll('.selected-count');
-        let selectedItems = [];
-
-
-        // Cập nhật UI khi có checkbox được chọn
-        function updateUI() {
-            const hasSelected = selectedItems.length > 0;
-            bulkDeleteBtn.style.display = hasSelected ? 'inline-block' : 'none';
-            bulkToggleBtns.forEach(btn => {
-                btn.style.display = hasSelected ? 'inline-block' : 'none';
-            });
-            selectedCounts.forEach(count => {
-                count.textContent = selectedItems.length;
-            });
-        }
-
-
-        // Xử lý khi checkbox được chọn
-        function handleCheckboxChange(checkbox) {
-            const attributeId = checkbox.value;
-            if (checkbox.checked) {
-                if (!selectedItems.includes(attributeId)) {
-                    selectedItems.push(attributeId);
-                }
-            } else {
-                selectedItems = selectedItems.filter(id => id !== attributeId);
-                selectAllCheckbox.checked = false;
-            }
-            updateUI();
-        }
-
-
-        // Xử lý chọn tất cả
-        selectAllCheckbox?.addEventListener('change', function() {
-            attributeCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-                handleCheckboxChange(checkbox);
-            });
-        });
-
-
-        // Xử lý chọn từng checkbox
-        attributeCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                handleCheckboxChange(this);
-            });
-        });
-
-
-        // Xử lý xóa hàng loạt
-        bulkDeleteBtn?.addEventListener('click', function() {
-            if (selectedItems.length === 0) {
-                alert('Vui lòng chọn ít nhất một thuộc tính');
-                return;
-            }
-
-
-            if (confirm('Bạn có chắc chắn muốn xóa các thuộc tính đã chọn?')) {
-                fetch('{{ route('admin.attributes.bulk-delete') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ ids: selectedItems })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Đã có lỗi xảy ra');
-                });
-            }
-        });
     });
-
-
-    // Xử lý thay đổi trạng thái hàng loạt
-    function bulkToggleStatus(status) {
-        const selectedItems = Array.from(document.querySelectorAll('.attribute-checkbox:checked')).map(cb => cb.value);
-       
-        if (selectedItems.length === 0) {
-            alert('Vui lòng chọn ít nhất một thuộc tính');
-            return;
-        }
-
-
-        const statusText = status ? 'kích hoạt' : 'vô hiệu hóa';
-        if (confirm(`Bạn có chắc chắn muốn ${statusText} các thuộc tính đã chọn?`)) {
-            fetch('{{ route('admin.attributes.bulk-toggle') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    ids: selectedItems,
-                    status: status
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Đã có lỗi xảy ra');
-            });
-        }
-    }
-
 
     // Xác nhận xóa một thuộc tính
     function confirmDelete(id, name) {
@@ -438,4 +239,3 @@
     }
 </script>
 @endpush
-

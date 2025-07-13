@@ -230,6 +230,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{id}', [AttributeValueController::class, 'update'])->name('update');
         Route::delete('/{id}', [AttributeValueController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::get('/trashed', [AttributeValueController::class, 'trashed'])->name('trashed');
+        Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [AttributeValueController::class, 'forceDelete'])->name('forceDelete');
 
 
         // Bulk Actions
