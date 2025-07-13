@@ -29,9 +29,8 @@ class AttributeValue extends Model
         return $this->belongsTo(Attribute::class);
     }
 
-    public function products()
+   public function products()
     {
-        return $this->belongsToMany(Product::class, 'product_attribute_values')
-                    ->withPivot('price', 'stock');
+        return $this->belongsToMany(ProductVariant::class, 'attribute_value_product_variant', 'attribute_value_id', 'product_variant_id');
     }
 }

@@ -16,8 +16,9 @@ class AttributeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Attribute::query();
-
+        $query = Attribute::query()->withCount(['attributeValues' => function ($query) {
+            $query->whereNull('deleted_at'); // Chỉ đếm attribute_values chưa xóa mềm
+        }]);
 
         // Tìm kiếm theo tên
         if ($request->filled('search')) {
@@ -25,25 +26,21 @@ class AttributeController extends Controller
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('is_active', $request->status);
         }
 
-
         // Sắp xếp
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDir = $request->get('sort_dir', 'desc');
-        $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'created_at'];
-       
+        $allowedSortFields = ['name', 'is_variant', 'is_active', 'created_at', 'attribute_values_count'];
+
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortDir);
         }
 
-
         $attributes = $query->paginate(10)->withQueryString();
-
 
         return view('admin.attributes.index', [
             'attributes' => $attributes,
@@ -145,8 +142,21 @@ class AttributeController extends Controller
     public function destroy($id)
     {
         try {
-            $attribute = Attribute::findOrFail($id);
+            // Tải Attribute cùng với AttributeValues (chưa xóa mềm) và các sản phẩm liên kết
+            $attribute = Attribute::with(['attributeValues' => function ($query) {
+                $query->whereNull('deleted_at'); // Chỉ lấy attribute_values chưa xóa mềm
+            }, 'attributeValues.products'])->findOrFail($id);
+
+            // Kiểm tra xem có AttributeValue nào liên kết với sản phẩm hay không
+            foreach ($attribute->attributeValues as $attributeValue) {
+                if ($attributeValue->products()->exists()) {
+                    return redirect()->back()->with('error', 'Không thể xóa thuộc tính "' . $attribute->name . '" vì có giá trị đang được liên kết với sản phẩm.');
+                }
+            }
+
+            // Xóa mềm Attribute nếu không có liên kết
             $attribute->delete();
+
             return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được xóa mềm.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể xóa thuộc tính: ' . $e->getMessage());
@@ -174,7 +184,7 @@ class AttributeController extends Controller
         $sortBy = $request->get('sort_by', 'deleted_at');
         $sortDir = $request->get('sort_dir', 'desc');
         $allowedSortFields = ['id', 'name', 'is_variant', 'is_active', 'deleted_at'];
-       
+
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortDir);
         }
@@ -352,6 +362,3 @@ class AttributeController extends Controller
         }
     }
 }
-
-
-

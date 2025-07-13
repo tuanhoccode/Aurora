@@ -13,8 +13,9 @@ class AttributeValueController extends Controller
     public function index(Request $request, $attributeId)
     {
         $attribute = Attribute::findOrFail($attributeId);
-        
-        $query = AttributeValue::where('attribute_id', $attributeId);
+
+        $query = AttributeValue::where('attribute_id', $attributeId)
+            ->withCount('products'); // Đếm số biến thể sản phẩm liên kết
 
         // Tìm kiếm
         if ($request->has('search')) {
@@ -29,10 +30,13 @@ class AttributeValueController extends Controller
         // Sắp xếp
         $sortBy = $request->get('sort_by', 'id');
         $sortDir = $request->get('sort_dir', 'desc');
-        $query->orderBy($sortBy, $sortDir);
+        $allowedSortFields = ['id', 'value', 'is_active', 'created_at', 'products_count'];
 
-        $values = $query->withTrashed()->paginate(10);
-        $values->appends($request->all());
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        $values = $query->paginate(10)->withQueryString();
 
         return view('admin.attribute_values.index', compact('attribute', 'values', 'sortBy', 'sortDir'));
     }
@@ -59,7 +63,7 @@ class AttributeValueController extends Controller
         ]);
 
         return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được thêm.');
+            ->with('success', 'Giá trị thuộc tính đã được thêm.');
     }
 
     public function edit($attributeId, $id)
@@ -83,25 +87,67 @@ class AttributeValueController extends Controller
         ]);
 
         return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được cập nhật.');
+            ->with('success', 'Giá trị thuộc tính đã được cập nhật.');
     }
 
     public function destroy($attributeId, $id)
     {
         $value = AttributeValue::findOrFail($id);
+
+        // Kiểm tra xem AttributeValue có liên kết với biến thể sản phẩm không
+        if ($value->products()->count() > 0) {
+            return redirect()->route('admin.attribute_values.index', $attributeId)
+                ->with('error', 'Không thể xóa giá trị thuộc tính "' . $value->value . '" vì nó đang được sử dụng bởi một hoặc nhiều biến thể sản phẩm.');
+        }
+
         $value->delete();
 
         return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được xóa mềm.');
+            ->with('success', 'Giá trị thuộc tính "' . $value->value . '" đã được xóa mềm.');
+    }
+
+    public function trashed(Request $request, $attributeId)
+    {
+        $attribute = Attribute::findOrFail($attributeId);
+        
+        $query = AttributeValue::onlyTrashed()
+                              ->where('attribute_id', $attributeId);
+
+        // Tìm kiếm
+        if ($request->has('search')) {
+            $query->where('value', 'like', '%' . $request->search . '%');
+        }
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'value');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSortFields = ['value', 'created_at', 'deleted_at'];
+
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        $values = $query->paginate(10)->withQueryString();
+
+        return view('admin.attribute_values.trashed', compact('attribute', 'values', 'sortBy', 'sortDir'));
     }
 
     public function restore($attributeId, $id)
     {
-        $value = AttributeValue::withTrashed()->findOrFail($id);
+        $value = AttributeValue::onlyTrashed()->findOrFail($id);
         $value->restore();
 
-        return redirect()->route('admin.attribute_values.index', $attributeId)
-                         ->with('success', 'Giá trị thuộc tính đã được khôi phục.');
+        return redirect()->route('admin.attribute_values.trashed', $attributeId)
+            ->with('success', 'Giá trị thuộc tính "' . $value->value . '" đã được khôi phục.');
+    }
+
+    public function forceDelete($attributeId, $id)
+    {
+        $value = AttributeValue::onlyTrashed()->findOrFail($id);
+        $value->forceDelete();
+
+        return redirect()->route('admin.attribute_values.trashed', $attributeId)
+            ->with('success', 'Giá trị thuộc tính "' . $value->value . '" đã được xóa vĩnh viễn.');
     }
 
     /**
@@ -110,7 +156,7 @@ class AttributeValueController extends Controller
     public function bulkDelete(Request $request, $attributeId): JsonResponse
     {
         $ids = $request->ids;
-        
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
@@ -140,7 +186,7 @@ class AttributeValueController extends Controller
     {
         $ids = $request->ids;
         $status = $request->status;
-        
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
