@@ -94,7 +94,7 @@
                         </div>
                         <div class="tp-login-input-box">
                            <div class="tp-login-input">
-                              <input id="password" name="password" type="password" placeholder="Nhập ít nhất 6 ký tự">
+                              <input id="tp_password" name="password" type="password" placeholder="Nhập ít nhất 6 ký tự">
                            </div>
                            <div class="tp-login-input-eye" id="password-show-toggle">
                               <span id="open-eye" class="open-eye">
