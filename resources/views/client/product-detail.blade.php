@@ -1318,6 +1318,29 @@
             }
         });
     </script>
+    <!-- Tránh khi load trang thì vẫn ở lại trang reviews và description -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+            //Gắn sự kiện click: Lưu tab được chọn vào localStorage
+            tabButtons.forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    const target = btn.getAttribute('data-bs-target');
+                    localStorage.setItem('activeProductTab', target);
+                });
+            });
+            //Khi reload lại, lất tab cũ
+            const lastActiveTab = localStorage.getItem('activeProductTab');
+            if (lastActiveTab) {
+                const tabTriggerEl = document.querySelector(`[data-bs-target="${lastActiveTab}"]`);
+                if (tabTriggerEl) {
+                    new bootstrap.Tab(tabTriggerEl).show();
+                }
+            }
+        }); 
+    </script>
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
     
 @endsection

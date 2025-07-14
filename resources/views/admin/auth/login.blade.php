@@ -71,7 +71,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <a href="auth-password.html" class="float-end text-muted text-unline-dashed ms-1">Quên mật khẩu</a>
+                                            <a href="{{route('password.request')}}" class="float-end text-muted text-unline-dashed ms-1">Quên mật khẩu</a>
                                             <label class="form-label" for="password">Mật khẩu</label>
                                             <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu của bạn" value="{{old('password')}}">
                                             @error('password')
@@ -82,7 +82,7 @@
                                         <div class="mb-3">
                                             <div class="form-check">
                                                 <input type="checkbox" class="form-check-input" id="checkbox-signin" name="remember">
-                                                <label class="form-check-label" for="checkbox-signin">Remember me</label>
+                                                <label class="form-check-label" for="checkbox-signin">Ghi nhớ tôi</label>
                                             </div>
                                         </div>
 
@@ -91,15 +91,15 @@
                                         </div>
                                     </form>
 
-                                    <p class="mt-3 fw-semibold no-span">OR sign with</p>
+                                    <!-- <p class="mt-3 fw-semibold no-span">OR sign with</p>
 
                                     <div class="d-grid gap-2">
                                         <a href="javascript:void(0);" class="btn btn-soft-dark"><i class="bx bxl-google fs-20 me-1"></i> Đăng nhập bằng Google</a>
                                         <a href="javascript:void(0);" class="btn btn-soft-primary"><i class="bx bxl-facebook fs-20 me-1"></i> Đăng nhập bằng Facebook</a>
-                                    </div>
+                                    </div> -->
                                 </div>
 
-                                <p class="text-danger text-center">Don't have an account? <a href="auth-signup.html" class="text-dark fw-bold ms-1">Sign Up</a></p>
+                                <!-- <p class="text-danger text-center">Don't have an account? <a href="auth-signup.html" class="text-dark fw-bold ms-1">Sign Up</a></p> -->
                             </div>
                         </div>
                     </div>
