@@ -2,6 +2,28 @@
 
 @section('title', 'Chi tiết sản phẩm')
 
+@push('styles')
+<style>
+.price-original {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+.price-sale {
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+.discount-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+}
+.variant-price-container {
+    min-width: 120px;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -85,6 +107,15 @@
                                         @endif
                                     </td>
                                 </tr>
+                                <tr>
+                                    <th>Lượt mua:</th>
+                                    <td>
+                                        <span class="badge bg-gradient-primary text-white fs-6 px-3 py-2" style="background: linear-gradient(90deg,#36d1c4 0,#5b86e5 100%); box-shadow:0 2px 8px rgba(54,209,196,0.15);">
+                                            <i class="bi bi-cart-check me-1"></i>
+                                            {{ number_format($product->getSuccessfulOrderItems()->sum('quantity')) }} lượt mua
+                                        </span>
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                         <div class="col-md-6">
@@ -136,21 +167,19 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="150">Giá gốc:</th>
-                            <td>{{ number_format($product->price) }}đ</td>
-                        </tr>
-                        @if($product->is_sale)
-                        <tr>
-                            <th>Giá khuyến mãi:</th>
-                            <td class="text-danger">{{ number_format($product->sale_price) }}đ</td>
-                        </tr>
-                        <tr>
-                            <th>Giảm giá:</th>
-                            <td class="text-success">
-                                -{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%
+                            <th width="150">Giá:</th>
+                            <td>
+                                @if($product->is_sale && $product->sale_price < $product->price)
+                                    <div class="d-flex flex-column">
+                                        <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
+                                        <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
+                                        <span class="badge bg-danger discount-badge">Giảm {{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                    </div>
+                                @else
+                                    <span class="fw-bold">{{ number_format($product->price) }}đ</span>
+                                @endif
                             </td>
                         </tr>
-                        @endif
                         @if($product->type === 'simple')
                         <tr>
                             <th>Kho hàng:</th>
@@ -185,6 +214,7 @@
                                     <th>Giá</th>
                                     <th>Kho</th>
                                     <th>Trạng thái</th>
+                                    <th>Lượt mua</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -213,11 +243,13 @@
                                         @endforeach
                                     </td>
                                     <td>
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-bold">Giá gốc: {{ number_format($variant->regular_price) }}đ</span>
-                                            @if($variant->sale_price > 0)
-                                            <span class="text-danger">Giá KM: {{ number_format($variant->sale_price) }}đ</span>
-                                            <span class="text-success">Giảm: {{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                        <div class="d-flex flex-column variant-price-container">
+                                            @if($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                                <span class="price-original">Giá gốc: {{ number_format($variant->regular_price) }}đ</span>
+                                                <span class="price-sale">Giá khuyến mãi: {{ number_format($variant->sale_price) }}đ</span>
+                                                <span class="badge bg-danger discount-badge">Giảm {{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                            @else
+                                                <span class="fw-bold">Giá: {{ number_format($variant->regular_price) }}đ</span>
                                             @endif
                                         </div>
                                     </td>
@@ -231,6 +263,12 @@
                                     <td>
                                         <span class="badge {{ $variant->stock > 0 ? 'bg-success' : 'bg-danger' }}">
                                             {{ $variant->stock > 0 ? 'Còn hàng' : 'Hết hàng' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-gradient-primary text-white px-3 py-2" style="background: linear-gradient(90deg,#36d1c4 0,#5b86e5 100%); box-shadow:0 2px 8px rgba(54,209,196,0.15);">
+                                            <i class="bi bi-cart-check me-1"></i>
+                                            {{ number_format($variant->orderItems()->whereHas('order.currentStatus', function($q){ $q->where('order_status_id', 4)->where('is_current', 1); })->sum('quantity')) }} lượt
                                         </span>
                                     </td>
                                 </tr>

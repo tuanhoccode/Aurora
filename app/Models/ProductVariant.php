@@ -55,6 +55,11 @@ class ProductVariant extends Model
         )->with('attribute');
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(\App\Models\OrderItem::class, 'product_variant_id');
+    }
+
     public function getIsOnSaleAttribute()
     {
         return $this->sale_price && $this->sale_price < $this->regular_price;

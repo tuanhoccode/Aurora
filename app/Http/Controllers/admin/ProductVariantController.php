@@ -91,6 +91,12 @@ class ProductVariantController extends Controller
         $selectedValues = $variant->attributeValues->pluck('id')->toArray();
 
 
+        if (request()->has('modal')) {
+            // Trả về partial form cho modal
+            return view('admin.products.variants._edit_form', compact('product', 'variant', 'attributes', 'selectedValues'));
+        }
+
+
         return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
     }
 
@@ -197,6 +203,14 @@ class ProductVariantController extends Controller
      */
     public function destroy(Product $product, ProductVariant $variant)
     {
+        // Kiểm tra nếu biến thể đã từng được mua trong đơn hàng thành công thì không cho xóa
+        $hasSuccessfulOrder = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
+            $q->where('order_status_id', 4)->where('is_current', 1);
+        })->exists();
+        if ($hasSuccessfulOrder) {
+            return redirect()->route('admin.products.edit', $product)
+                ->with('error', 'Không thể xóa biến thể này vì đã có đơn hàng giao thành công!');
+        }
         try {
             DB::beginTransaction();
 

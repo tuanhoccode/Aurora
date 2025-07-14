@@ -191,39 +191,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let skuParts = [productCode];
             let variantLabel = [];
 
-            // Tạo SKU và nhãn từ tổ hợp
-            // Chỉ lấy size và màu sắc cho SKU
-            let colorValue = null;
-            let sizeValue = null;
-            
-            // Tìm size và color trong combination
+            // Tạo nhãn từ tổ hợp (không tự động tạo SKU nữa)
             combination.forEach(attr => {
-                if (attr.name === 'màu sắc' || attr.name === 'color') {
-                    colorValue = attr.value;
-                } else if (attr.name === 'kích thước' || attr.name === 'size') {
-                    sizeValue = attr.value;
-                }
-                // Vẫn thêm tất cả vào label để hiển thị
                 variantLabel.push(attr.value);
             });
 
-            // Thêm size trước, color sau vào SKU
-            if (sizeValue) {
-                skuParts.push(sizeValue.toUpperCase());
-            }
-            if (colorValue) {
-                const code = colorCodes[colorValue.toLowerCase()] || colorValue.toUpperCase().substring(0, 2);
-                skuParts.push(code);
-            }
-
-            const sku = skuParts.join('-');
             const label = variantLabel.join(' - ');
+            // Để trống SKU để hệ thống tự tạo theo format SKU-TWCTE
 
-            console.log(`Variant ${variantCount} SKU generation:`, {
+            console.log(`Variant ${variantCount} generation:`, {
                 productCode,
-                colorValue,
-                sizeValue,
-                sku,
                 label
             });
 
@@ -239,8 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                        class="form-control" 
                                        name="variants[${variantCount}][sku]" 
                                        id="sku-${variantCount}" 
-                                       value="${sku}"  
-                                       readonly>
+                                       value="" 
+                                       placeholder="Để trống để tự tạo">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -330,12 +307,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if all required fields are filled
         let isValid = true;
         variantItems.forEach((item, index) => {
-            const sku = item.querySelector('input[name*="[sku]"]').value.trim();
             const stock = item.querySelector('input[name*="[stock]"]').value;
             const regularPrice = item.querySelector('input[name*="[regular_price]"]').value;
             const attributeValues = item.querySelectorAll('input[name*="[attribute_values][]"]');
 
-            if (!sku || !stock || !regularPrice || attributeValues.length === 0) {
+            if (!stock || !regularPrice || attributeValues.length === 0) {
                 isValid = false;
                 console.log(`Variant ${index + 1} has missing required fields`);
             }

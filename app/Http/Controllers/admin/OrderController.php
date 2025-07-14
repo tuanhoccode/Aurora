@@ -104,7 +104,16 @@ class OrderController extends Controller
                 'note' => $note,
             ]);
 
-            
+            // 12. Trừ kho khi chuyển sang trạng thái giao hàng thành công
+            if ($from != 4 && $to == 4) {
+                foreach ($order->items as $item) {
+                    if ($item->variant) {
+                        $item->variant->decrement('stock', $item->quantity);
+                    } else if ($item->product) {
+                        $item->product->decrement('stock', $item->quantity);
+                    }
+                }
+            }
 
             DB::commit();
 

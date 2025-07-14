@@ -267,10 +267,10 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
     Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
 });
 // Client Category
-Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+Route::prefix('categories')->name('client.categories.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-});
+}); 
 
 Route::middleware('web')->group(function () {
     //login & register

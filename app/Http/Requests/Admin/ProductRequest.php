@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class ProductRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => 'required|string|max:250',
             'slug' => 'nullable|string|max:255|unique:products,slug,' . $this->product?->id,
             'brand_id' => 'required|exists:brands,id',
@@ -22,7 +23,7 @@ class ProductRequest extends FormRequest
             'short_description' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'sku' => 'nullable|string|max:50|unique:products,sku,' . $this->product?->id,
-            'price' => 'required|numeric|min:0',
+            'price' => $this->input('type') === 'variant' ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:price',
             'type' => 'required|in:simple,digital,variant',
             'thumbnail' => $this->isMethod('PUT') ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -31,6 +32,49 @@ class ProductRequest extends FormRequest
             'is_active' => 'nullable|boolean',
             'is_sale' => 'nullable|boolean'
         ];
+
+        // Thêm validation cho biến thể nếu là sản phẩm biến thể và có dữ liệu variants
+        if ($this->input('type') === 'variant' && $this->has('variants')) {
+            $rules['variants'] = 'required|array|min:1';
+            $rules['variants.*.sku'] = [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('product_variants', 'sku')->ignore($this->product?->id, 'product_id')
+            ];
+            $rules['variants.*.price'] = 'required|numeric|min:0';
+            $rules['variants.*.sale_price'] = 'nullable|numeric|min:0';
+            $rules['variants.*.stock'] = 'required|numeric|min:0';
+            $rules['variants.*.attributes'] = 'required|array|min:1';
+            $rules['variants.*.attributes.*'] = 'exists:attribute_values,id';
+            $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048';
+        }
+
+        return $rules;
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // Kiểm tra SKU trùng lặp trong cùng một request cho biến thể (chỉ khi có SKU)
+            if ($this->input('type') === 'variant' && $this->has('variants') && !empty($this->input('variants'))) {
+                $skus = collect($this->input('variants'))->pluck('sku')->filter();
+                $duplicateSkus = $skus->duplicates();
+                
+                if ($duplicateSkus->count() > 0) {
+                    $validator->errors()->add('variants', 'Có SKU trùng lặp trong danh sách biến thể: ' . $duplicateSkus->implode(', '));
+                }
+                
+                // Kiểm tra giá khuyến mãi không lớn hơn giá gốc
+                foreach ($this->input('variants') as $index => $variant) {
+                    if (!empty($variant['sale_price']) && !empty($variant['price'])) {
+                        if ($variant['sale_price'] >= $variant['price']) {
+                            $validator->errors()->add("variants.{$index}.sale_price", 'Giá khuyến mãi phải nhỏ hơn giá gốc');
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public function messages(): array
@@ -61,7 +105,29 @@ class ProductRequest extends FormRequest
             'gallery_images.*.mimes' => 'Chỉ chấp nhận các định dạng: jpeg, png, jpg, gif',
             'gallery_images.*.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
             'type.required' => 'Loại sản phẩm là bắt buộc',
-            'type.in' => 'Loại sản phẩm không hợp lệ'
+            'type.in' => 'Loại sản phẩm không hợp lệ',
+            // Messages cho biến thể
+            'variants.required' => 'Vui lòng tạo ít nhất một biến thể',
+            'variants.array' => 'Dữ liệu biến thể không hợp lệ',
+            'variants.min' => 'Vui lòng tạo ít nhất một biến thể',
+            'variants.*.sku.string' => 'SKU phải là chuỗi',
+            'variants.*.sku.max' => 'SKU không được vượt quá 50 ký tự',
+            'variants.*.sku.unique' => 'SKU đã tồn tại trong hệ thống',
+            'variants.*.price.required' => 'Giá của biến thể là bắt buộc',
+            'variants.*.price.numeric' => 'Giá phải là số',
+            'variants.*.price.min' => 'Giá không được âm',
+            'variants.*.sale_price.numeric' => 'Giá khuyến mãi phải là số',
+            'variants.*.sale_price.min' => 'Giá khuyến mãi không được âm',
+            'variants.*.stock.required' => 'Tồn kho của biến thể là bắt buộc',
+            'variants.*.stock.numeric' => 'Tồn kho phải là số',
+            'variants.*.stock.min' => 'Tồn kho không được âm',
+            'variants.*.attributes.required' => 'Thuộc tính của biến thể là bắt buộc',
+            'variants.*.attributes.array' => 'Thuộc tính phải là mảng',
+            'variants.*.attributes.min' => 'Vui lòng chọn ít nhất một thuộc tính',
+            'variants.*.attributes.*.exists' => 'Thuộc tính không tồn tại',
+            'variants.*.image.image' => 'File phải là hình ảnh',
+            'variants.*.image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif',
+            'variants.*.image.max' => 'Kích thước hình ảnh không được vượt quá 2MB'
         ];
     }
 

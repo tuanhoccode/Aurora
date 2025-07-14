@@ -910,6 +910,16 @@
         let selectedColorCode = null;
         let selectedSize = null;
 
+        const colorMap = {
+          'Đỏ': 'DO',
+          'Vàng': 'VANG',
+          'Đen': 'DEN',
+          'Trắng': 'TRANG',
+          'Xám': 'XAM',
+          'Xanh': 'XA',
+          // ... bổ sung nếu có thêm màu
+        };
+
         document.addEventListener("DOMContentLoaded", function() {
             const priceEl = document.getElementById('product-price');
             const oldPriceEl = document.getElementById('product-old-price');

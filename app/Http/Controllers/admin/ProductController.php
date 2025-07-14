@@ -65,8 +65,10 @@ class ProductController extends Controller
         $brands = Brand::where('is_active', 1)->get();
         $categories = Category::where('is_active', 1)->get();
         $trashedCount = Product::onlyTrashed()->count();
+        $attributes = \App\Models\Attribute::with('values')->where('is_active', 1)->get();
+        $stocks = \App\Models\Stock::all();
 
-        return view('admin.products.create', compact('brands', 'categories', 'trashedCount'));
+        return view('admin.products.create', compact('brands', 'categories', 'trashedCount', 'attributes', 'stocks'));
     }
 
     public function store(ProductRequest $request)
@@ -129,6 +131,55 @@ class ProductController extends Controller
 
             // Tạo sản phẩm
             $product = Product::create($data);
+
+            // Lưu biến thể nếu là sản phẩm biến thể và có dữ liệu variants
+            if ($data['type'] === 'variant' && $request->has('variants') && !empty($request->input('variants'))) {
+                $usedSkus = []; // Mảng để theo dõi SKU đã sử dụng
+                
+                foreach ($request->input('variants') as $idx => $variantData) {
+                    // Kiểm tra SKU trùng lặp
+                    $sku = $variantData['sku'] ?? null;
+                    if ($sku) {
+                        // Kiểm tra SKU đã tồn tại trong session này
+                        if (in_array($sku, $usedSkus)) {
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors(['variants' => "SKU '{$sku}' bị trùng lặp. Vui lòng kiểm tra lại."]);
+                        }
+                        
+                        // Kiểm tra SKU đã tồn tại trong database
+                        $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
+                        if ($existingVariant) {
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong hệ thống. Vui lòng chọn SKU khác."]);
+                        }
+                        
+                        $usedSkus[] = $sku;
+                    }
+                    
+                    $variant = $product->variants()->create([
+                        'sku' => $sku,
+                        'regular_price' => $variantData['price'] ?? null,
+                        'sale_price' => $variantData['sale_price'] ?? null,
+                        'stock' => $variantData['stock'] ?? 0,
+                    ]);
+                    
+                    // Lưu thuộc tính cho biến thể
+                    if (!empty($variantData['attributes'])) {
+                        $variant->attributeValues()->sync($variantData['attributes']);
+                    }
+                    
+                    // Lưu ảnh cho biến thể nếu có
+                    if ($request->hasFile("variants.$idx.image")) {
+                        $file = $request->file("variants.$idx.image");
+                        $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('products/variants', $filename, 'public');
+                        $variant->img = $path;
+                        $variant->save();
+                    }
+                }
+            }
 
             // Xử lý gallery images
             if ($request->hasFile('gallery_images')) {
@@ -214,9 +265,11 @@ class ProductController extends Controller
             $brands = Brand::where('is_active', 1)->get();
             $categories = Category::where('is_active', 1)->get();
             $trashedCount = Product::onlyTrashed()->count();
+            $attributes = \App\Models\Attribute::with('values')->where('is_active', 1)->get();
+            $stocks = \App\Models\Stock::all();
 
             // Luôn trả về view edit sản phẩm, không chuyển sang select
-            return view('admin.products.edit', compact('product', 'brands', 'categories', 'trashedCount'));
+            return view('admin.products.edit', compact('product', 'brands', 'categories', 'trashedCount', 'attributes', 'stocks'));
         } catch (\Exception $e) {
             Log::error('Error loading product:', [
                 'error' => $e->getMessage(),
@@ -348,6 +401,67 @@ class ProductController extends Controller
 
             // Update product
             $product->update($data);
+
+            // Xử lý cập nhật biến thể nếu là sản phẩm biến thể và có dữ liệu variants
+            if ($data['type'] === 'variant' && $request->has('variants') && !empty($request->input('variants'))) {
+                $usedSkus = []; // Mảng để theo dõi SKU đã sử dụng
+                
+                foreach ($request->input('variants') as $idx => $variantData) {
+                    // Kiểm tra SKU trùng lặp
+                    $sku = $variantData['sku'] ?? null;
+                    if ($sku) {
+                        // Kiểm tra SKU đã tồn tại trong session này
+                        if (in_array($sku, $usedSkus)) {
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors(['variants' => "SKU '{$sku}' bị trùng lặp. Vui lòng kiểm tra lại."]);
+                        }
+                        
+                        // Kiểm tra SKU đã tồn tại trong database (trừ biến thể hiện tại)
+                        $existingVariant = \App\Models\ProductVariant::where('sku', $sku)
+                            ->where('product_id', '!=', $product->id)
+                            ->first();
+                        if ($existingVariant) {
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong hệ thống. Vui lòng chọn SKU khác."]);
+                        }
+                        
+                        $usedSkus[] = $sku;
+                    }
+                    
+                    // Tìm biến thể hiện tại hoặc tạo mới
+                    $variant = $product->variants()->where('sku', $sku)->first();
+                    if (!$variant) {
+                        $variant = $product->variants()->create([
+                            'sku' => $sku,
+                            'regular_price' => $variantData['price'] ?? null,
+                            'sale_price' => $variantData['sale_price'] ?? null,
+                            'stock' => $variantData['stock'] ?? 0,
+                        ]);
+                    } else {
+                        $variant->update([
+                            'regular_price' => $variantData['price'] ?? null,
+                            'sale_price' => $variantData['sale_price'] ?? null,
+                            'stock' => $variantData['stock'] ?? 0,
+                        ]);
+                    }
+                    
+                    // Lưu thuộc tính cho biến thể
+                    if (!empty($variantData['attributes'])) {
+                        $variant->attributeValues()->sync($variantData['attributes']);
+                    }
+                    
+                    // Lưu ảnh cho biến thể nếu có
+                    if ($request->hasFile("variants.$idx.image")) {
+                        $file = $request->file("variants.$idx.image");
+                        $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('products/variants', $filename, 'public');
+                        $variant->img = $path;
+                        $variant->save();
+                    }
+                }
+            }
 
             // Sync categories
             if ($request->has('categories')) {

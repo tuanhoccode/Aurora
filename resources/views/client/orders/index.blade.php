@@ -183,7 +183,7 @@
 
 @section('scripts')
 <script>
-    const defaultShow = {{ $defaultShow }};
+    const defaultShow = 10;
     const total = {{ $orders->count() }};
     const items = document.querySelectorAll('.order-item');
     const showAllBtn = document.getElementById('show-all-btn');
