@@ -21,7 +21,11 @@ class LogoutAllRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        //Lấy người dùng hiện tại
+        $user = $this->user();
+        $isGoogleUser = !empty($user->google_id);
+        //Tk gg k cần validate mk
+        return $isGoogleUser ?[] : [
             'password' => 'required|string|min:6'
         ];
     }

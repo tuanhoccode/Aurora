@@ -19,17 +19,6 @@
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> Thêm người dùng
                 </a>
-                {{-- <div class="dropdown">
-                    <button class="btn btn-light" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-export me-2"></i>Xuất Excel</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-import me-2"></i>Nhập Excel</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Xóa đã chọn</a></li>
-                    </ul>
-                </div> --}}
             </div>
         </div>
 
@@ -37,43 +26,39 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Danh sách người dùng</h5>
-                {{-- <div class="btn-group">
-                    <button type="button" class="btn btn-light active" data-bs-toggle="tooltip" title="Dạng bảng">
-                        <i class="fas fa-list"></i>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-toggle="tooltip" title="Dạng lưới">
-                        <i class="fas fa-th"></i>
-                    </button>
-                </div> --}}
             </div>
             <div class="card-body">
-
                 <!-- User Table -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th width="40">
+                                {{-- <th width="40">
                                     <input type="checkbox" class="form-check-input select-all">
-                                </th>
-                                <th width="60">ID</th>
+                                </th> --}}
+                                {{-- <th width="60">ID</th> --}}
                                 <th>Tên người dùng</th>
                                 <th>Email</th>
                                 <th>Vai trò</th>
                                 <th>Ngày đăng ký</th>
                                 <th>Trạng thái</th>
-                                <th width="100">Thao tác</th>
+                                <th width="100" class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($users as $user)
                                 <tr>
-                                    <td>
+                                    {{-- <td>
                                         <input type="checkbox" class="form-check-input select-user" name="selected_users[]"
                                             value="{{ $user->id }}">
+                                    </td> --}}
+                                    {{-- <td>{{ $user->id }}</td> --}}
+                                    <td class="fw-medium">
+                                        <a href="{{ route('admin.users.show', $user->id) }}"
+                                            class="text-decoration-none text-primary">
+                                            {{ $user->fullname }}
+                                        </a>
                                     </td>
-                                    <td>{{ $user->id }}</td>
-                                    <td class="fw-medium text-primary">{{ $user->fullname }}</td>
                                     <td>{{ $user->email }}</td>
                                     <td>
                                         @php
@@ -98,25 +83,34 @@
                                             <span class="badge bg-danger">InActive</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-sm btn-light"
-                                                title="Xem chi tiết">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-light"
-                                                title="Chỉnh sửa">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('admin.users.destroy', ['user' => $user->id, 'page' => request('page')]) }}" method="POST"
-                                                onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <input type="hidden" name="page" value="{{ request('page') }}">
-                                                <button class="btn btn-sm btn-light text-danger" title="Xóa">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                    <td class="text-center align-middle">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button"
+                                                id="actionDropdown{{ $user->id }}" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end"
+                                                aria-labelledby="actionDropdown{{ $user->id }}">
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.users.edit', $user->id) }}">
+                                                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form
+                                                        action="{{ route('admin.users.destroy', ['user' => $user->id, 'page' => request('page')]) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="page" value="{{ request('page') }}">
+                                                        <button class="dropdown-item text-danger" type="submit">
+                                                            <i class="fas fa-trash me-2"></i>Xóa
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>
@@ -135,7 +129,6 @@
                         {{ $users->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
