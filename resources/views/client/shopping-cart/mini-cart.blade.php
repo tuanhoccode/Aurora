@@ -12,62 +12,81 @@
                 </div>
             </div>
             <div class="cartmini__shipping-info" id="mini-cart-shipping-info">
-                {{-- Thông tin phí vận chuyển sẽ được JS chèn vào đây --}}
             </div>
             <div class="cartmini__widget" id="cartmini-widget-container">
                 <div class="cartmini__spinner" style="display:none;text-align:center;padding:24px 0;">
                     <i class="fa fa-spinner fa-spin fa-2x" style="color:#861944;"></i>
                 </div>
+                @php
+                    $getAttrValue = function($entity, $keywords) {
+                        if (!$entity || !isset($entity->attributeValues)) return null;
+                        foreach ($entity->attributeValues as $attrVal) {
+                            $attrName = strtolower($attrVal->attribute->name ?? '');
+                            foreach ($keywords as $kw) {
+                                if (str_contains($attrName, $kw)) return $attrVal->value;
+                            }
+                        }
+                        return null;
+                    };
+                @endphp
                 @if(isset($miniCartItems) && count($miniCartItems))
                     @foreach($miniCartItems as $item)
-                        <div class="cartmini__widget-item d-flex align-items-center">
-                            <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}">
-                            <div class="cartmini__item-info flex-grow-1">
-                                <div class="cartmini__item-title">{{ $item->product->name }}</div>
-                                @php
-                                    $variant = $item->productVariant;
-                                @endphp
-                                @if ($variant)
-                                    @php
-                                        $getAttrValue = function($entity, $keywords) {
-                                            if (!$entity || !isset($entity->attributeValues)) return null;
-                                            foreach ($entity->attributeValues as $attrVal) {
-                                                $attrName = strtolower($attrVal->attribute->name ?? '');
-                                                foreach ($keywords as $kw) {
-                                                    if (str_contains($attrName, $kw)) return $attrVal->value;
-                                                }
-                                            }
-                                            return null;
-                                        };
-                                        $size = $getAttrValue($variant, ['size', 'kích']);
-                                        $color = $getAttrValue($variant, ['color', 'màu']);
-                                        
-                                        $colorMap = [
-                                            'đỏ' => '#FF0000', 'xanh' => '#00FF00', 'xanh lá' => '#00FF00', 'xanh dương' => '#0074D9',
-                                            'vàng' => '#FFD600', 'đen' => '#000000', 'trắng' => '#FFFFFF', 'xám' => '#CBCBCB',
-                                            'tím' => '#800080', 'cam' => '#FFA500', 'hồng' => '#FF69B4',
-                                        ];
-                                        $colorHex = '#e0e0e0'; // Default color
-                                        if ($color) {
-                                            $colorKey = strtolower(trim($color));
-                                            foreach ($colorMap as $key => $hex) {
-                                                if (strpos($colorKey, $key) !== false) {
-                                                    $colorHex = $hex;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    @endphp
-                                    <div class="cartmini__item-variant d-flex align-items-center gap-3 mb-1">
-                                        <span class="cartmini__item-size">Size: <b>{{ $size ?? 'N/A' }}</b></span>
-                                        <span class="cartmini__item-color d-flex align-items-center">
-                                            Màu:
-                                            <span class="cartmini__color-dot ms-1" style="background:{{ $colorHex }}"></span>
-                                            <b class="ms-1">{{ $color ?? 'N/A' }}</b>
-                                        </span>
-                                    </div>
-                                @endif
-                                <div class="cartmini__item-qty">Số lượng: <b>{{ $item->quantity }}</b></div>
+                        @php
+                            $product = $item->product;
+                            $variant = $item->productVariant;
+                            $unitPrice = $item->price_at_time;
+                            $stock = $variant ? $variant->stock : $product->stock ?? 0;
+                            $size = $getAttrValue($variant, ['size', 'kích']);
+                            $color = $getAttrValue($variant, ['color', 'màu']);
+                        @endphp
+                        <div class="cartmini__widget-item d-flex align-items-center @if($stock < 1) cartmini-item-out-of-stock @endif" style="gap:1rem;" data-product-id="{{ $item->product_id }}" data-variant-id="{{ $item->product_variant_id }}">
+                            @if(!empty($product->slug))
+                            <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}" class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
+                                <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                            </a>
+                            @else
+                                <span class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
+                                    <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                                </span>
+                            @endif
+                            <div class="cart-product-info flex-grow-1" style="min-width:0;">
+                                <div class="product-name">
+                                    @if(!empty($product->slug))
+                                    <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
+                                    @else
+                                        <span>{{ $product->name }}</span>
+                                    @endif
+                                    @if($stock < 1)
+                                        <span class="badge bg-danger ms-2">Hết hàng</span>
+                                    @endif
+                                </div>
+                                <div class="product-meta">
+                                    <span class="sku">Mã: {{ $variant->sku ?? $product->sku }}</span>
+                                    @if ($color)
+                                        <span class="color">Màu: {{ $color }}</span>
+                                    @endif
+                                    @if ($size)
+                                        <span class="size">Size: {{ $size }}</span>
+                                    @endif
+                                    @if (isset($variant) && isset($variant->attributeValues))
+                                        @foreach ($variant->attributeValues as $attrVal)
+                                            @php $attrName = strtolower($attrVal->attribute->name ?? ''); @endphp
+                                            @if (
+                                                !str_contains($attrName, 'size') &&
+                                                !str_contains($attrName, 'kích') &&
+                                                !str_contains($attrName, 'color') &&
+                                                !str_contains($attrName, 'màu'))
+                                                <span>{{ $attrVal->attribute->name ?? '' }}: {{ $attrVal->value }}</span>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                    @if($stock < 1)
+                                        <span class="text-danger small">Sản phẩm này đã hết hàng</span>
+                                    @endif
+                                </div>
+                                <div class="cartmini__item-qty">
+                                    Số lượng: <b>{{ $item->quantity > $stock ? $stock : $item->quantity }}</b>
+                                </div>
                             </div>
                             <div class="cartmini__item-actions">
                                 <div class="cartmini__item-price">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
@@ -85,13 +104,8 @@
             </div>
         </div>
         <div class="cartmini__checkout">
-            <div class="cartmini__checkout-title mb-20 d-flex align-items-center justify-content-between">
-                <h4 class="mb-0">Tổng Phụ:</h4>
-                <span id="cartmini-subtotal" class="fw-bold">{{ isset($miniCartSubtotal) ? number_format($miniCartSubtotal, 0, ',', '.') . ' ₫' : '0 ₫' }}</span>
-            </div>
             <div class="cartmini__checkout-btn">
                 <a href="{{ route('shopping-cart.index') }}" class="tp-btn tp-btn-border w-100 mb-10">Xem Giỏ Hàng</a>
-                <a href="{{ route('checkout') }}" class="tp-btn w-100 tp-btn-checkout">Thanh toán</a>
             </div>
         </div>
     </div>
@@ -104,6 +118,26 @@
     width: 33.33vw;
     min-width: 420px;
     max-width: 550px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.cartmini__wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.cartmini__top-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.cartmini__widget {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 1.75rem;
 }
 
 .cartmini__close-btn-new {
@@ -131,10 +165,6 @@
     font-size: 1.5rem;
     padding: 1.5rem 1.75rem 1rem;
     margin-bottom: 0;
-}
-
-.cartmini__widget {
-    padding: 0 1.75rem;
 }
 
 .cartmini__widget-item {
@@ -321,6 +351,97 @@
 .cartmini__empty .tp-btn:hover {
     background: #000;
 }
-
+.cart-item-card__image-wrapper {
+    margin-right: 10px;
+}
+.cart-item-card__image {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #f0f2f5;
+}
+.product-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #23272f;
+    margin-bottom: 2px;
+    line-height: 1.3;
+    max-width: 180px;
+    white-space: normal;
+    overflow: hidden;
+}
+.product-meta {
+    font-size: 0.97rem;
+    color: #7b7e85;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+}
+.cartmini-item-out-of-stock {
+    opacity: 0.6;
+    background: #f8d7da !important;
+}
 </style>
-<!-- Đã loại bỏ toàn bộ script dữ liệu mẫu. Hãy dùng JS thực tế để render dữ liệu mini-cart. -->
+
+<script>
+$(document)
+    .off('click', '.cartmini__remove-btn')
+    .on('click', '.cartmini__remove-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var itemId = $btn.data('id');
+        if (!itemId) return;
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+            var $spinner = $('.cartmini__spinner');
+            $spinner.show();
+            $.ajax({
+                url: '/shopping-cart/remove/' + itemId,
+                method: 'DELETE',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(res) {
+                    $spinner.hide();
+                    if (res.success) {
+                        if (window.toastr) {
+                            toastr.success(res.message || 'Đã xóa sản phẩm khỏi giỏ hàng!');
+                        } else {
+                            alert(res.message || 'Đã xóa sản phẩm khỏi giỏ hàng!');
+                        }
+                        // Phát sự kiện cart:item-removed cho product-detail (dùng ID từ response backend)
+                        var event = new CustomEvent('cart:item-removed', { detail: { product_id: res.product_id, variant_id: res.product_variant_id } });
+                        document.dispatchEvent(event);
+                        if (window.shoppingCart) {
+                            window.shoppingCart.updateCartCount();
+                            window.shoppingCart.updateMiniCart();
+                        } else {
+                            location.reload();
+                        }
+                    } else {
+                        if (res.message && res.message.includes('Không tìm thấy sản phẩm')) {
+                            if (window.shoppingCart) {
+                                window.shoppingCart.updateCartCount();
+                                window.shoppingCart.updateMiniCart();
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert(res.message || 'Có lỗi xảy ra!');
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    $spinner.hide();
+                    if(xhr.status === 401) {
+                        alert('Bạn cần đăng nhập để thao tác!');
+                    } else {
+                        alert('Không thể xóa sản phẩm. Vui lòng thử lại!');
+                    }
+                }
+            });
+        }
+    });
+</script>

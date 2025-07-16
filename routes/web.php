@@ -131,6 +131,8 @@ Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryIma
         Route::get('/{brand}/edit', [BrandController::class, 'edit'])->name('edit');
         Route::put('/{brand}', [BrandController::class, 'update'])->name('update');
         Route::delete('/{brand}', [BrandController::class, 'destroy'])->name('destroy');
+        Route::put('/{brand}/toggle-visible', [BrandController::class, 'toggleVisible'])->name('toggle-visible');
+        Route::put('/{brand}/toggle-active', [BrandController::class, 'toggleActive'])->name('toggle-active');
     });
 
 
@@ -311,7 +313,7 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
     Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
     Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
-    Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
+    Route::match(['put', 'post'], '/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
     //Checkout
     Route::get('/shopping-cart/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/shopping-cart/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
@@ -345,7 +347,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
-Route::get('/shop', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
+Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 
 

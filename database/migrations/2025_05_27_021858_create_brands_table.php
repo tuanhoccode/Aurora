@@ -12,7 +12,8 @@ class CreateBrandsTable extends Migration
             $table->increments('id')->comment('Brand ID');
             $table->string('name', 100)->unique()->comment('Brand name (unique)');
             $table->string('logo', 255)->nullable()->comment('Brand logo');
-            $table->boolean('is_active')->default(1)->comment('1 if brand is active, 0 if inactive');
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_visible')->default(true);
             $table->timestamps(0);
             $table->softDeletes()->comment('Soft delete timestamp');
         });

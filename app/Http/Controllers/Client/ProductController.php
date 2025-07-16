@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -49,13 +50,26 @@ class ProductController extends Controller
             ->take(5)
             ->get();
 
+        // Lấy danh sách sản phẩm/biến thể đã có trong giỏ hàng
+        $cartProductIds = [];
+        $cartVariantIds = [];
+        if (Auth::check()) {
+            $cart = \App\Models\Cart::with('items')->where('user_id', Auth::id())->where('status', 'pending')->first();
+            if ($cart) {
+                $cartProductIds = $cart->items->pluck('product_id')->toArray();
+                $cartVariantIds = $cart->items->pluck('product_variant_id')->filter()->toArray();
+            }
+        }
+
         return view('client.product-detail', compact(
             'product',
             'productVariants',
             'averageRating',
             'reviewCount',
             'relatedProducts',
-            'variantsWithImages'
+            'variantsWithImages',
+            'cartProductIds',
+            'cartVariantIds'
         ));
     }
 

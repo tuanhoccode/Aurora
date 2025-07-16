@@ -6,16 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Admin\BrandRequest;
 
 class BrandController extends Controller
 {
     public function index(Request $request)
     {
-        // Lấy tham số sắp xếp từ request
-        $sortBy = $request->input('sort_by', 'created_at'); // Mặc định sắp xếp theo ngày tạo
-        $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
 
         $brands = Brand::query()
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -36,17 +34,18 @@ class BrandController extends Controller
         return view('admin.brands.create');
     }
 
-    public function store(Request $request)
+    public function store(BrandRequest $request)
     {
         try {
-            $data = $this->validateBrand($request);
+            $data = $request->validated();
+            unset($data['slug']);
 
             // Xử lý upload logo
             if ($request->hasFile('logo')) {
                 $data['logo'] = $request->file('logo')->store('brands', 'public');
             }
 
-            $validated['is_active'] = $request->has('is_active');
+            $data['is_active'] = $request->has('is_active');
 
             Brand::create($data);
 
@@ -71,21 +70,23 @@ class BrandController extends Controller
         return view('admin.brands.edit', compact('brand'));
     }
 
-    public function update(Request $request, Brand $brand)
+    public function update(BrandRequest $request, Brand $brand)
     {
         try {
-            $data = $this->validateBrand($request, $brand);
+            $data = $request->validated();
+            unset($data['slug']);
 
-            // Xử lý upload logo mới
             if ($request->hasFile('logo')) {
-                // Xóa logo cũ nếu có
                 if ($brand->logo) {
                     Storage::disk('public')->delete($brand->logo);
                 }
                 $data['logo'] = $request->file('logo')->store('brands', 'public');
             }
 
-            $validated['is_active'] = $request->has('is_active');
+            $data['is_active'] = $request->input('is_active', 0);
+            if (isset($data['is_active']) && !$data['is_active']) {
+                $data['is_visible'] = 0;
+            }
 
             $brand->update($data);
 
@@ -103,6 +104,12 @@ class BrandController extends Controller
     public function destroy(Brand $brand)
     {
         try {
+            // Prevent delete if brand has products
+            if ($brand->products()->count() > 0) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Không thể xóa thương hiệu này vì vẫn còn sản phẩm liên kết.');
+            }
             $brand->delete();
             return redirect()
                 ->route('admin.brands.index')
@@ -116,9 +123,8 @@ class BrandController extends Controller
 
     public function trash(Request $request)
     {
-        // Lấy tham số sắp xếp từ request
-        $sortBy = $request->input('sort_by', 'deleted_at'); // Mặc định sắp xếp theo ngày xóa
-        $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
+        $sortBy = $request->input('sort_by', 'deleted_at');
+        $sortDir = $request->input('sort_dir', 'desc');
 
         $brands = Brand::onlyTrashed()
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -154,6 +160,12 @@ class BrandController extends Controller
         try {
             $brand = Brand::onlyTrashed()->findOrFail($id);
 
+            if ($brand->products()->count() > 0) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Không thể xóa vĩnh viễn thương hiệu này vì vẫn còn sản phẩm liên kết.');
+            }
+
             // Xóa logo nếu có
             if ($brand->logo) {
                 Storage::disk('public')->delete($brand->logo);
@@ -181,11 +193,30 @@ class BrandController extends Controller
                 ], 400);
             }
 
-            Brand::whereIn('id', $ids)->delete();
-
+            $brands = Brand::whereIn('id', $ids)->get();
+            $notDeleted = [];
+            $deleted = [];
+            foreach ($brands as $brand) {
+                if ($brand->products()->count() > 0) {
+                    $notDeleted[] = $brand->name;
+                    continue;
+                }
+                $brand->delete();
+                $deleted[] = $brand->id;
+            }
+            $response = [];
+            if (count($notDeleted) > 0) {
+                $response['error'] = 'Không thể xóa các thương hiệu sau vì vẫn còn sản phẩm liên kết: ' . implode(', ', $notDeleted);
+            }
+            if (count($deleted) > 0) {
+                $response['deleted_ids'] = $deleted;
+            }
+            if (count($response) > 0) {
+                return response()->json($response, count($notDeleted) > 0 ? 400 : 200);
+            }
             return response()->json([
-                'success' => 'Đã chuyển các thương hiệu đã chọn vào thùng rác'
-            ]);
+                'error' => 'Không có thương hiệu nào được xóa.'
+            ], 400);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Đã có lỗi xảy ra: ' . $e->getMessage()
@@ -204,12 +235,23 @@ class BrandController extends Controller
             }
 
             $brands = Brand::onlyTrashed()->whereIn('id', $ids)->get();
+            $notDeleted = [];
 
             foreach ($brands as $brand) {
+                if ($brand->products()->count() > 0) {
+                    $notDeleted[] = $brand->name;
+                    continue;
+                }
                 if ($brand->logo) {
                     Storage::disk('public')->delete($brand->logo);
                 }
                 $brand->forceDelete();
+            }
+
+            if (count($notDeleted) > 0) {
+                return response()->json([
+                    'error' => 'Không thể xóa vĩnh viễn các thương hiệu sau vì vẫn còn sản phẩm liên kết: ' . implode(', ', $notDeleted)
+                ], 400);
             }
 
             return response()->json([
@@ -298,13 +340,55 @@ class BrandController extends Controller
         }
     }
 
-    protected function validateBrand(Request $request, Brand $brand = null)
+    /**
+     * Toggle visible status for a brand
+     */
+    public function toggleVisible(Request $request, $id)
     {
-        return $request->validate([
-            'name' => 'required|string|max:255|unique:brands,name,' . ($brand ? $brand->id : ''),
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'nullable'
-        ]);
+        $brand = Brand::findOrFail($id);
+        if (!$brand->is_active) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Không thể chuyển trạng thái hiển thị khi thương hiệu không hoạt động.'
+                ], 400);
+            }
+            return redirect()->route('admin.brands.index')
+                ->with('error', 'Không thể chuyển trạng thái hiển thị khi thương hiệu không hoạt động.');
+        }
+        $brand->is_visible = !$brand->is_visible;
+        $brand->save();
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'is_visible' => $brand->is_visible
+            ]);
+        }
+        return redirect()->route('admin.brands.index')
+            ->with('success', 'Đã chuyển trạng thái hiển thị thương hiệu thành công!');
+    }
+
+    /**
+     * Toggle active status for a brand
+     */
+    public function toggleActive(Request $request, $id)
+    {
+        $brand = Brand::findOrFail($id);
+        $brand->is_active = !$brand->is_active;
+        // Nếu chuyển sang không hoạt động thì tự động ẩn hiển thị
+        if (!$brand->is_active) {
+            $brand->is_visible = 0;
+        }
+        $brand->save();
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'is_active' => $brand->is_active,
+                'is_visible' => $brand->is_visible
+            ]);
+        }
+        return redirect()->route('admin.brands.index')
+            ->with('success', 'Đã chuyển trạng thái hoạt động thương hiệu thành công!');
     }
 
     protected function deleteLogoFileIfExists($path)
