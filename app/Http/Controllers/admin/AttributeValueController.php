@@ -156,6 +156,7 @@ class AttributeValueController extends Controller
     public function bulkDelete(Request $request, $attributeId): JsonResponse
     {
         $ids = $request->ids;
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
@@ -185,6 +186,7 @@ class AttributeValueController extends Controller
     {
         $ids = $request->ids;
         $status = $request->status;
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
