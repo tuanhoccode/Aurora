@@ -35,58 +35,49 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
    <style>
-      .product-badge-outofstock {
-         position: absolute;
-         top: 10px;
-         left: 10px;
-         background: #d90429;
-         color: #fff;
-         padding: 4px 12px;
-         border-radius: 4px;
-         font-size: 0.95rem;
-         font-weight: bold;
-         z-index: 20;
-         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      .product-out-of-stock-overlay {
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         bottom: 0;
-         background: rgba(255, 255, 255, 0.8);
-         z-index: 10;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         font-weight: bold;
-         color: #d90429;
-         font-size: 1.1rem;
-         text-align: center;
-         border-radius: 8px;
-         gap: 8px;
-      }
-
-      .tp-product-thumb-2.out-of-stock img {
-         filter: grayscale(1) brightness(0.85);
-         opacity: 0.7;
-      }
-
-      .tp-product-thumb-2.out-of-stock {
-         pointer-events: none;
-      }
-
-      .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
-         display: none;
-      }
-
-      .tp-product-thumb-2 img {
-         max-width: 100%;
-         height: auto;
-         display: block;
-         margin: 0 auto;
-      }
+     .product-badge-outofstock {
+       position: absolute;
+       top: 10px; left: 10px;
+       background: #d90429;
+       color: #fff;
+       padding: 4px 12px;
+       border-radius: 4px;
+       font-size: 0.95rem;
+       font-weight: bold;
+       z-index: 20;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+     }
+     .product-out-of-stock-overlay {
+       position: absolute;
+       top: 0; left: 0; right: 0; bottom: 0;
+       background: rgba(255,255,255,0.8);
+       z-index: 10;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       font-weight: bold;
+       color: #d90429;
+       font-size: 1.1rem;
+       text-align: center;
+       border-radius: 8px;
+       gap: 8px;
+     }
+     .tp-product-thumb-2.out-of-stock img {
+       filter: grayscale(1) brightness(0.85);
+       opacity: 0.7;
+     }
+     .tp-product-thumb-2.out-of-stock {
+       pointer-events: none;
+     }
+     .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
+       display: none;
+     }
+     .tp-product-thumb-2 img {
+       max-width: 100%;
+       height: auto;
+       display: block;
+       margin: 0 auto;
+     }
    </style>
 
 </head>
@@ -219,83 +210,79 @@
             @if($isSlider)
             <div class="swiper tp-banner-swiper">
                <div class="swiper-wrapper">
-                 @foreach($categories as $i => $category)
-                <div class="swiper-slide">
-                  <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
-                   <div class="custom-banner-text">
-                     <h3 class="tp-banner-title-2">
-                       <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
-                     </h3>
-                     <div class="tp-banner-btn-2">
-                       <a href="{{ route('client.categories.show', $category->id) }}"
-                        class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                        <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                       </a>
+                  @foreach($categories as $i => $category)
+                  <div class="swiper-slide">
+                     <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
+                        <div class="custom-banner-text">
+                           <h3 class="tp-banner-title-2">
+                              <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                           </h3>
+                           <div class="tp-banner-btn-2">
+                              <a href="{{ route('client.categories.show', $category->id) }}" class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                                 <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                                       stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                                       stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                 </svg>
+                              </a>
+                           </div>
+                        </div>
+                        <div class="custom-banner-img">
+                           @if($category->icon)
+                               @if(Str::startsWith($category->icon, ['http://', 'https://']))
+                                   <img src="{{ $category->icon }}" alt="{{ $category->name }}">
+                               @else
+                                   <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                               @endif
+                           @else
+                               <img src="{{ asset('assets2/img/banner/2/banner-' . ($i+1) . '.jpg') }}" alt="{{ $category->name }}">
+                           @endif
+                        </div>
                      </div>
-                   </div>
-                   <div class="custom-banner-img">
-                     @if($category->icon)
-                     @if(Str::startsWith($category->icon, ['http://', 'https://']))
-                   <img src="{{ $category->icon }}" alt="{{ $category->name }}">
-                  @else
-                   <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
-                  @endif
-                  @else
-                   <img src="{{ asset('assets2/img/banner/2/banner-' . ($i + 1) . '.jpg') }}"
-                     alt="{{ $category->name }}">
-                  @endif
-                   </div>
                   </div>
-                </div>
-              @endforeach
+                  @endforeach
                </div>
                <div class="swiper-pagination"></div>
             </div>
-         @else
+            @else
             <div class="row tp-gx-20">
                @foreach($categories->take(3) as $i => $category)
                <div class="col-xxl-4 col-lg-6">
-                <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
-                  <div class="custom-banner-text">
-                   <h3 class="tp-banner-title-2">
-                     <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
-                   </h3>
-                   <div class="tp-banner-btn-2">
-                     <a href="{{ route('client.categories.show', $category->id) }}"
-                       class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                       <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                          stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                       </svg>
-                     </a>
-                   </div>
+                  <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
+                     <div class="custom-banner-text">
+                        <h3 class="tp-banner-title-2">
+                           <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                        </h3>
+                        <div class="tp-banner-btn-2">
+                           <a href="{{ route('client.categories.show', $category->id) }}" class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                              <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                 <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                 <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                           </a>
+                        </div>
+                     </div>
+                     <div class="custom-banner-img">
+                        @if($category->icon)
+                            @if(Str::startsWith($category->icon, ['http://', 'https://']))
+                                <img src="{{ $category->icon }}" alt="{{ $category->name }}">
+                            @else
+                                <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                            @endif
+                        @else
+                            <img src="{{ asset('assets2/img/banner/2/banner-' . ($i+1) . '.jpg') }}" alt="{{ $category->name }}">
+                        @endif
+                     </div>
                   </div>
-                  <div class="custom-banner-img">
-                   @if($category->icon)
-                     @if(Str::startsWith($category->icon, ['http://', 'https://']))
-                    <img src="{{ $category->icon }}" alt="{{ $category->name }}">
-                   @else
-                    <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
-                   @endif
-                @else
-                  <img src="{{ asset('assets2/img/banner/2/banner-' . ($i + 1) . '.jpg') }}"
-                   alt="{{ $category->name }}">
-                @endif
-                  </div>
-                </div>
                </div>
-            @endforeach
+               @endforeach
             </div>
-         @endif
+            @endif
          </div>
       </section>
 
@@ -318,25 +305,46 @@
             </div>
             <div class="row justify-content-center">
                @foreach ($products as $product)
+                 @php
+                   $isOutOfStock = $product->type === 'variant'
+                       ? ($product->variants->sum('stock') <= 0)
+                       : (($product->stock ?? 0) <= 0);
+                 @endphp
+                 @if(!$isOutOfStock)
+                 <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                   <div class="tp-product-item-2 mb-40">
+                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                       <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
+                          <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
+                       </a>
+                     </div>
+                     <div class="tp-product-content-2 pt-15">
+                       <div class="tp-product-tag-2">
+                          <a href="#">{{ $product->brand->name ?? 'Không có thương hiệu' }}</a>
+                       </div>
+                       <h3 class="tp-product-title-2">
+                          <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
+                       </h3>
+                       <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                          @for ($i = 0; $i < 5; $i++)
+                            <span><i class="fa-solid fa-star"></i></span>
+                          @endfor
+                       </div>
+                       <div class="tp-product-price-wrapper-2">
+                          <span class="tp-product-price-2 new-price">${{ number_format($product->price, 2) }}</span>
+                          @if ($product->original_price && $product->original_price > $product->price)
+                            <span class="tp-product-price-2 old-price">${{ number_format($product->original_price, 2) }}</span>
+                          @endif
+                       </div>
+                     </div>
                    </div>
-                   <div class="tp-product-price-wrapper-2">
-                     <span class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }}
-                       đ</span>
-                     @if ($product->original_price && $product->original_price > $product->price)
-                   <span
-                     class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }}
-                     đ</span>
-                  @endif
-                   </div>
-                  </div>
-                </div>
-               </div>
-            @endif
-            @endforeach
+                 </div>
+               @endif
+               @endforeach
             </div>
          </div>
       </section>
-
+      <!-- product area end -->
 
       <!-- best seller area start -->
       <section class="tp-seller-area pb-140">
@@ -518,10 +526,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>" Cách bạn sử dụng tên thành phố hoặc thị trấn là tùy bạn. Tất cả kết quả có thể sử
-                                    dụng tự do cho bất kỳ công việc nào."</p>
+                                 <p>" Cách bạn sử dụng tên thành phố hoặc thị trấn là tùy bạn. Tất cả kết quả có thể sử dụng tự do cho bất kỳ công việc nào."</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-2.jpg')}}" alt="">
@@ -542,10 +550,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>"Rất hài lòng khi đưa con gái đến Brave care. Toàn bộ đội ngũ rất tuyệt vời! Cảm
-                                    ơn!"</p>
+                                 <p>"Rất hài lòng khi đưa con gái đến Brave care. Toàn bộ đội ngũ rất tuyệt vời! Cảm ơn!"</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-3.jpg')}}" alt="">
@@ -566,10 +574,10 @@
                                  <span><i class="fa-solid fa-star"></i></span>
                               </div>
                               <div class="tp-testimonial-content">
-                                 <p>"Cảm ơn vì tất cả nỗ lực và tinh thần đồng đội trong những tháng vừa qua! Cảm ơn rất
-                                    nhiều"</p>
+                                 <p>"Cảm ơn vì tất cả nỗ lực và tinh thần đồng đội trong những tháng vừa qua! Cảm ơn rất nhiều"</p>
                               </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                              <div
+                                 class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
                                  <div class="tp-testimonial-user d-flex align-items-center">
                                     <div class="tp-testimonial-avater mr-10">
                                        <img src="{{asset('assets2/img/users/user-4.jpg')}}" alt="">
@@ -774,5 +782,4 @@
    <script src="{{asset('assets2/js/ajax-form.js')}}"></script>
    <script src="{{asset('assets2/js/main.js')}}"></script>
 </body>
-
 </html>
