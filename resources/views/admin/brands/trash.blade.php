@@ -115,7 +115,7 @@
                                         @endif
                                     </a>
                                 </th>
-                                <th class="border-0 text-end" style="width: 200px">Thao tác</th>
+                                <th class="border-0 text-end" style="width: 60px">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -172,24 +172,23 @@
                                             {{ $brand->deleted_at->format('d/m/Y') }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <button type="button" 
-                                                    class="btn btn-success btn-sm rounded-circle" 
-                                                    onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Khôi phục"
-                                                    style="width: 32px; height: 32px;">
-                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-dark p-0 m-0" type="button" id="dropdownMenu{{ $brand->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots fs-4"></i>
                                             </button>
-                                            <button type="button" 
-                                                    class="btn btn-danger btn-sm rounded-circle" 
-                                                    onclick="confirmForceDelete('{{ $brand->id }}', '{{ $brand->name }}')"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Xóa vĩnh viễn"
-                                                    style="width: 32px; height: 32px;">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 py-2" aria-labelledby="dropdownMenu{{ $brand->id }}" style="min-width: 180px;">
+                                                <li>
+                                                    <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-success" onclick="confirmRestore('{{ $brand->id }}', '{{ $brand->name }}')">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> <span>Khôi phục</span>
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-danger" onclick="confirmForceDelete('{{ $brand->id }}', '{{ $brand->name }}')">
+                                                        <i class="bi bi-x-lg"></i> <span>Xóa vĩnh viễn</span>
+                                                    </button>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>

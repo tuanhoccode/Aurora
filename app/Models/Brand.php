@@ -17,11 +17,13 @@ class Brand extends Model
         'slug',
         'logo',
         'description',
-        'is_active'
+        'is_active',
+        'is_visible',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_visible' => 'boolean',
     ];
 
     public $timestamps = true;
@@ -57,5 +59,9 @@ class Brand extends Model
 
         // Nếu không tìm thấy trong storage, trả về null
         return null;
+    }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 }

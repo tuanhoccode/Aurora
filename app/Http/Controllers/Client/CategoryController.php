@@ -74,8 +74,8 @@ class CategoryController extends Controller
         $query->latest();
     }
 
-    $products = $query->paginate(12)->withQueryString();
-    $brands = Brand::where('is_active', 1)->get();
+    $products = $query->get();
+    $brands = Brand::where('is_active', 1)->where('is_visible', 1)->get();
     $statuses = [
         'active' => 'Đang bán',
         'sale' => 'Đang khuyến mãi',

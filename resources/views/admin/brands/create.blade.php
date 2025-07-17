@@ -18,15 +18,6 @@
                         @if(session('error'))
                             <div class="alert alert-danger shadow-sm rounded mb-3">{{ session('error') }}</div>
                         @endif
-                        @if ($errors->any())
-                            <div class="alert alert-danger shadow-sm rounded mb-3">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                       <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
 
                         <form method="POST" 
                               action="{{ route('admin.brands.store') }}" 
@@ -43,7 +34,8 @@
                                            class="form-control @error('name') is-invalid @enderror" 
                                            value="{{ old('name') }}" 
                                            maxlength="100" 
-                                           placeholder="Nhập tên thương hiệu">
+                                           placeholder="Nhập tên thương hiệu"
+                                           oninput="updateSlug()">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -62,6 +54,16 @@
                                     @enderror
                                 </div>
                             </div> {{-- End row --}}
+
+                            <div class="mb-3">
+                                <label for="slug" class="form-label fw-bold">Slug</label>
+                                <input type="text" 
+                                       name="slug" 
+                                       id="slug" 
+                                       class="form-control" 
+                                       readonly 
+                                       tabindex="-1">
+                            </div>
 
                             <div class="mb-3">
                                 <label for="logo" class="form-label fw-bold">Logo thương hiệu</label>
@@ -93,3 +95,21 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+function slugify(str) {
+    return str.toString().normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .replace(/[^\w\s-]/g, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+function updateSlug() {
+    const name = document.getElementById('name').value;
+    document.getElementById('slug').value = slugify(name);
+}
+</script>
+@endpush

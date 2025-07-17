@@ -15,7 +15,7 @@ class ShopController extends Controller
         $query = Product::query();
 
         // Lọc theo trạng thái
-        if ($request->has('on_sale')) {
+        if ($request->has('is_sale')) {
             $query->where('is_sale', true);
         }
         if ($request->has('in_stock')) {
@@ -23,40 +23,30 @@ class ShopController extends Controller
         }
 
         // Lọc theo nhiều thương hiệu
-        if ($request->filled('brands')) {
-            $query->whereIn('brand_id', (array)$request->brands);
+        if ($request->filled('brand_ids')) {
+            $query->whereIn('brand_id', (array)$request->brand_ids);
         }
 
         // Lọc theo nhiều khoảng giá
-        $priceRanges = [
-            ['min' => 0, 'max' => 200000],
-            ['min' => 200000, 'max' => 500000],
-            ['min' => 500000, 'max' => 800000],
-            ['min' => 800000, 'max' => 1000000],
-        ];
-        if ($request->filled('prices')) {
-            $query->where(function($q) use ($request, $priceRanges) {
-                foreach ((array)$request->prices as $idx) {
-                    if (isset($priceRanges[$idx])) {
-                        $q->orWhere(function($sub) use ($priceRanges, $idx) {
-                            $sub->where('price', '>=', $priceRanges[$idx]['min'])
-                                ->where('price', '<=', $priceRanges[$idx]['max']);
-                        });
-                    }
+        if ($request->filled('price_ranges')) {
+            $query->where(function($q) use ($request) {
+                foreach ((array)$request->price_ranges as $range) {
+                    [$min, $max] = explode('-', $range);
+                    $q->orWhereBetween('price', [(int)$min, (int)$max]);
                 }
             });
         }
 
-        // Lọc theo danh mục
-        if ($request->filled('category')) {
+        // Lọc theo nhiều danh mục (many-to-many)
+        if ($request->filled('category_ids')) {
             $query->whereHas('categories', function($q) use ($request) {
-                $q->where('categories.id', $request->category);
+                $q->whereIn('categories.id', (array)$request->category_ids);
             });
         }
 
         $products = $query->get();
         $categories = Category::all();
-        $brands = Brand::all();
+        $brands = Brand::where('is_active', 1)->where('is_visible', 1)->get();
 
         return view('client.list-product', compact('products', 'categories', 'brands'));
     }
