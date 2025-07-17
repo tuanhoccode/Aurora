@@ -538,14 +538,20 @@
                             const visibleBtn = row.querySelector('.toggle-visible-btn');
                             const visibleSpan = row.querySelector('.badge.bg-secondary-subtle');
                             if (data.is_active) {
-                                if (visibleBtn) visibleBtn.disabled = false;
-                                if (visibleBtn) visibleBtn.style.cursor = 'pointer';
+                                if (visibleBtn) {
+                                    visibleBtn.disabled = false;
+                                    visibleBtn.removeAttribute('disabled');
+                                    visibleBtn.style.cursor = 'pointer';
+                                }
                             } else {
-                                if (visibleBtn) visibleBtn.disabled = true;
-                                if (visibleBtn) visibleBtn.style.cursor = 'not-allowed';
-                                if (visibleBtn) visibleBtn.classList.remove('bg-success-subtle', 'text-success');
-                                if (visibleBtn) visibleBtn.classList.add('bg-secondary-subtle', 'text-secondary');
-                                if (visibleBtn) visibleBtn.textContent = 'Ẩn';
+                                if (visibleBtn) {
+                                    visibleBtn.disabled = true;
+                                    visibleBtn.setAttribute('disabled', 'disabled');
+                                    visibleBtn.style.cursor = 'not-allowed';
+                                    visibleBtn.classList.remove('bg-success-subtle', 'text-success');
+                                    visibleBtn.classList.add('bg-secondary-subtle', 'text-secondary');
+                                    visibleBtn.textContent = 'Ẩn';
+                                }
                             }
                         }
                     });

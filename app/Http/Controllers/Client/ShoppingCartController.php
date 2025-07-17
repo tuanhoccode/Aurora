@@ -108,17 +108,22 @@ class ShoppingCartController extends Controller
             ->first();
 
         if ($item) {
-            $item->quantity += $quantity;
-            $item->save();
-        } else {
-            CartItem::create([
-                'cart_id' => $cart->id,
-                'product_id' => $request->product_id,
-                'product_variant_id' => $request->product_variant_id,
-                'quantity' => $quantity,
-                'price_at_time' => $request->price,
-            ]);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm này đã có trong giỏ hàng!'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'Sản phẩm này đã có trong giỏ hàng!');
         }
+
+        CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $request->product_id,
+            'product_variant_id' => $request->product_variant_id,
+            'quantity' => $quantity,
+            'price_at_time' => $request->price,
+        ]);
 
         if ($request->expectsJson()) {
             return response()->json([
