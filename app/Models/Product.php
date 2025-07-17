@@ -183,7 +183,7 @@ class Product extends Model
 
     public function reviews()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Review::class)->where('is_active', 1);
     }
 
     public function images()
@@ -200,5 +200,9 @@ class Product extends Model
             $variant = $this->variants()->orderBy('id')->first();
         }
         return $variant ? $variant->id : null;
+    }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

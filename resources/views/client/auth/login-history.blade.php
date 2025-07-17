@@ -9,6 +9,9 @@
       margin-top: 5px;
    }
 </style>
+@php
+   $isGoogleUser = !empty(Auth::user()->google_id);
+@endphp
 <div class="container py-5">
     <h2 class="mb-4 text-center">📜 Lịch sử đăng nhập</h2>
 
@@ -71,11 +74,17 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                         </div>
                         <div class="modal-body">
-                            <p>Vui lòng nhập mật khẩu để xác nhận đăng xuất khỏi tất cả thiết bị.</p>
-                            <input type="password" name="password" class="form-control" placeholder="Mật khẩu">
-                            @error('password')
-                            <div class="error">{{$message}}</div>
-                            @enderror
+                            @if($isGoogleUser)
+                                <p class="text-center text-success fw-bold">
+                                    Bạn đang sử dụng tài khoản Google. Không cần mật khẩu để đăng xuất khỏi các thiết bị
+                                </p>
+                            @else
+                                <p>Vui lòng nhập mật khẩu để xác nhận đăng xuất khỏi tất cả thiết bị.</p>
+                                <input type="password" name="password" class="form-control" placeholder="Mật khẩu">
+                                @error('password')
+                                <div class="error">{{$message}}</div>
+                                @enderror
+                            @endif
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
