@@ -34,7 +34,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th>ID</th>
+                                    {{-- <th>ID</th> --}}
                                     <th>Mã</th>
                                     <th>Giảm</th>
                                     <th>Hạn sử dụng</th>
@@ -45,7 +45,7 @@
                             <tbody>
                                 @foreach ($coupons as $coupon)
                                     <tr>
-                                        <td>{{ $coupon->id }}</td>
+                                        {{-- <td>{{ $coupon->id }}</td> --}}
                                         <td>{{ $coupon->code }}</td>
                                         <td>{{ $coupon->discount_type === 'percent' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}</td>
                                         <td>{{ $coupon->end_date ? $coupon->end_date->format('d/m/Y') : 'Không có' }}</td>
