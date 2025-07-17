@@ -89,7 +89,7 @@
                                 </div>
                             </div>
                             <div class="cartmini__item-actions">
-                                <div class="cartmini__item-price">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
+                                <div class="cartmini__item-price" data-unit-price="{{ $item->price_at_time }}">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
                                 <button class="cartmini__remove-btn" title="Xóa sản phẩm" data-id="{{ $item->id }}"><i class="fa-regular fa-trash-can"></i></button>
                             </div>
                         </div>
@@ -168,16 +168,17 @@
 }
 
 .cartmini__widget-item {
+    display: grid;
+    grid-template-columns: 70px 1.8fr 1fr;
+    align-items: center;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
     border: 1px solid #e9ecef;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1.25rem;
+    padding: 1.1rem 1.2rem;
     margin-bottom: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: 1.1rem;
+    min-height: 80px;
 }
 
 .cartmini__widget-item:hover {
@@ -380,6 +381,98 @@
     align-items: flex-start;
     flex-wrap: nowrap;
 }
+.cartmini__widget-item .cart-product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    gap: 2px;
+}
+.cartmini__widget-item .product-name {
+    font-size: 1.13rem;
+    font-weight: 700;
+    color: #23272f;
+    margin-bottom: 0.18rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    display: block;
+}
+.cartmini__widget-item .product-name a {
+    color: #23272f;
+    text-decoration: none;
+    transition: color 0.18s;
+}
+.cartmini__widget-item .product-name a:hover {
+    color: #1677ff;
+    text-decoration: underline;
+}
+.cartmini__widget-item .product-meta {
+    font-size: 0.97rem;
+    color: #7b7e85;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    max-width: 180px;
+}
+.cartmini__widget-item .product-meta .meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+.cartmini__widget-item .product-meta strong {
+    font-weight: 500;
+    color: #2d3748;
+    margin-right: 2px;
+}
+.cartmini__widget-item .badge.bg-danger {
+    margin-left: 6px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+.cartmini__widget-item .cartmini__item-qty {
+    font-size: 0.97rem;
+    color: #4a5568;
+    margin-top: 2px;
+}
+.cartmini__widget-item .cartmini__item-price {
+    font-weight: 700;
+    color: #1677ff;
+    font-size: 1.08rem;
+    white-space: nowrap;
+    text-align: right;
+}
+.cartmini__widget-item .cartmini__remove-btn {
+    background: #f7f8fa;
+    border: 1.5px solid #e2e8f0;
+    color: #b0b3b8;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    margin-top: 0.2rem;
+}
+.cartmini__widget-item .cartmini__remove-btn:hover {
+    background: #ef5350;
+    border-color: #ef5350;
+    color: #fff;
+    transform: scale(1.08);
+}
 .cartmini-item-out-of-stock {
     opacity: 0.6;
     background: #f8d7da !important;
@@ -444,4 +537,23 @@ $(document)
             });
         }
     });
+
+// Lắng nghe sự kiện cập nhật số lượng từ trang giỏ hàng chính
+if (window.addEventListener) {
+    window.addEventListener('cart:qty-updated', function(e) {
+        var itemId = e.detail.itemId;
+        var qty = e.detail.quantity;
+        // Tìm item trong mini-cart DOM và cập nhật số lượng
+        var $item = $('.cartmini__widget-item[data-item-id="' + itemId + '"]');
+        if ($item.length) {
+            $item.find('.cartmini__item-qty b').text(qty);
+            // Nếu có tổng tiền, cập nhật lại luôn
+            var price = $item.find('.cartmini__item-price').data('unit-price');
+            if (price) {
+                var total = parseInt(price, 10) * parseInt(qty, 10);
+                $item.find('.cartmini__item-price').text(total.toLocaleString('vi-VN') + '₫');
+            }
+        }
+    });
+}
 </script>

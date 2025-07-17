@@ -940,6 +940,25 @@
             min-width: 180px;
             font-size: 1.08rem;
         }
+        .bulk-delete-floating-btn {
+            position: absolute;
+            top: -54px;
+            right: 0;
+            z-index: 10;
+            min-width: 180px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+            display: none;
+        }
+        @media (max-width: 991.98px) {
+            .bulk-delete-floating-btn {
+                top: -44px;
+                min-width: 120px;
+                font-size: 0.98rem;
+            }
+        }
     </style>
 
     <section class="pt-4 pb-6">
@@ -953,8 +972,11 @@
             <div class="row g-4 justify-content-center">
                 @if (isset($cartItems) && count($cartItems))
                     <div class="col-12 col-lg-8">
-                        <form id="cart-checkout-form" method="POST" action="{{ route('checkout') }}">
+                        <form id="cart-checkout-form" method="POST" action="{{ route('checkout') }}" style="position:relative;">
                             @csrf
+                            <button type="button" id="bulk-delete-btn" class="btn btn-danger bulk-delete-floating-btn">
+                                <i class="fa fa-trash"></i> Xóa sản phẩm đã chọn
+                            </button>
                             <div id="cartTable">
                                 <div class="table-responsive scrollbar mx-n1 px-1">
                                     <table class="table fs-9 mb-0 border-top border-translucent align-middle">
@@ -993,6 +1015,8 @@
                                                     };
                                                     $size = $getAttrValue($variant, ['size', 'kích']);
                                                     $color = $getAttrValue($variant, ['color', 'màu']);
+                                                    // Lấy sản phẩm liên quan thực tế nếu có, demo nếu không
+                                                    $relatedProducts = $stock < 1 ? ($item->relatedProducts ?? []) : [];
                                                 @endphp
                                                 <tr class="cart-table-row btn-reveal-trigger @if ($stock < 1) cart-item-out-of-stock @endif"
                                                     data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}"
@@ -1071,7 +1095,7 @@
                                                     <td class="quantity align-middle text-center">
                                                         <div class="tp-product-quantity mb-15 mr-15 d-flex justify-content-center align-items-center" style="gap:8px;">
                                                             <button type="button" class="qty-btn-custom minus" @if($stock < 1) disabled @endif @if($item->quantity <= 1)  @endif>-</button>
-                                                            <input type="text" class="qty-input" value="{{ $item->quantity }}" style="min-width:38px;max-width:54px;text-align:center;font-weight:600;" @if($stock < 1) disabled @endif />
+                                                            <input type="text" class="qty-input" value="{{ $stock < 1 ? 0 : $item->quantity }}" style="min-width:38px;max-width:54px;text-align:center;font-weight:600;" @if($stock < 1) disabled @endif />
                                                             <button type="button" class="qty-btn-custom plus" @if($stock < 1) disabled @endif @if($item->quantity >= $stock) @endif>+</button>
                                                         </div>
                                                     </td>
@@ -1091,6 +1115,57 @@
                                                         </form>
                                                     </td>
                                                 </tr>
+                                                @if ($stock < 1)
+                                                <tr class="related-products-row">
+                                                    <td colspan="6" style="padding:0;border:none;">
+                                                        <div class="related-products-trigger" style="position:relative;cursor:pointer;width:100%;padding:10px 0 10px 60px;background:#f8f9fa;border-top:1px dashed #e3e6ea;">
+                                                            <span class="text-primary fw-semibold" style="font-size:1.01rem;">
+                                                                <i class="fa fa-light fa-lightbulb me-1"></i> Gợi ý sản phẩm liên quan <i class="fa fa-chevron-down"></i>
+                                                            </span>
+                                                            <div class="related-products-dropdown" style="display:none;position:absolute;left:0;top:100%;z-index:20;background:#fff;border:1px solid #e3e6ea;border-radius:10px;box-shadow:0 4px 16px rgba(44,62,80,0.10);padding:28px 32px;min-width:520px;max-width:900px;">
+                                                                <div class="related-products-slider-container position-relative" style="max-width:700px;margin:0 auto;padding-top:18px;padding-bottom:18px;">
+                                                                    <div class="swiper related-products-swiper">
+                                                                        <div class="swiper-wrapper">
+                                                                            @foreach ($relatedProducts as $rel)
+                                                                            <div class="swiper-slide">
+                                                                                <div class="related-product-simple" style="padding: 0 16px; min-width:0; max-width:100%; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start;">
+                                                                                    <a href="{{ route('client.product.show', ['slug' => $rel->slug]) }}" style="width:100%;display:block;" tabindex="-1">
+                                                                                        <div class="related-product-thumb-simple" style="width:100%;height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;background:#fafbfc;border-radius:10px;cursor:pointer;transition:box-shadow 0.18s,transform 0.18s;">
+                                                                                            <img src="{{ $rel->image_url }}" alt="{{ $rel->name }}" style="max-height:90px;max-width:100%;object-fit:contain;transition:transform 0.18s,filter 0.18s;">
+                                                                                        </div>
+                                                                                    </a>
+                                                                                    <div class="related-product-brand" style="color:#888;font-size:13px;">{{ $rel->brand->name ?? '' }}</div>
+                                                                                    <a href="{{ route('client.product.show', ['slug' => $rel->slug]) }}" style="color:#222;text-decoration:none;font-size:15px;font-weight:500;margin-bottom:2px;cursor:pointer;display:block;" title="{{ $rel->name }}">
+                                                                                        <div class="related-product-title-simple" style="font-size:15px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $rel->name }}</div>
+                                                                                    </a>
+                                                                                    <div class="related-product-rating" style="color:#ffb400;font-size:13px;margin-bottom:1px;">
+                                                                                        @for ($i = 0; $i < 5; $i++)
+                                                                                            <span class="fa fa-star"></span>
+                                                                                        @endfor
+                                                                                    </div>
+                                                                                    <div class="related-product-price-simple" style="font-size:15px;font-weight:700;color:#e53935;">{{ number_format($rel->price,0,',','.') }}₫</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                        <!-- Swiper navigation -->
+                                                                        <div class="swiper-button-prev" style="left:-8px;width:32px;height:32px;">
+                                                                            <svg viewBox="0 0 32 32" width="22" height="22">
+                                                                                <polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                                                            </svg>
+                                                                        </div>
+                                                                        <div class="swiper-button-next" style="right:-8px;width:32px;height:32px;">
+                                                                            <svg viewBox="0 0 32 32" width="22" height="22">
+                                                                                <polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                @endif
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -1151,6 +1226,10 @@
 @endsection
 
 @section('scripts')
+@parent
+<!-- SwiperJS CDN nếu chưa có -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const cartTableBody = document.getElementById('cart-table-body');
@@ -1229,6 +1308,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (cb) cb(false, data);
             } else {
                 if (cb) cb(true, data);
+                document.dispatchEvent(new CustomEvent('cart:qty-updated', {
+                    detail: { itemId: itemId, quantity: qty }
+                }));
             }
         })
         .catch(error => {
@@ -1388,6 +1470,144 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '{{ route('checkout') }}';
         });
     }
+
+    // --- Bổ sung xử lý xóa hàng loạt ---
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    function updateBulkDeleteBtn() {
+        const checked = getAllItemCheckboxes().filter(cb => cb.checked);
+        if (checked.length > 0) {
+            bulkDeleteBtn.style.display = 'inline-block';
+            bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa ${checked.length > 1 ? checked.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'}`;
+        } else {
+            bulkDeleteBtn.style.display = 'none';
+            bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa sản phẩm đã chọn`;
+        }
+    }
+    cartTableBody.addEventListener('change', function(e) {
+        if (e.target.classList.contains('cart-item-checkbox')) {
+            updateBulkDeleteBtn();
+        }
+    });
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', updateBulkDeleteBtn);
+    }
+    updateBulkDeleteBtn();
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            const checked = getAllItemCheckboxes().filter(cb => cb.checked);
+            if (checked.length === 0) return;
+            const ids = checked.map(cb => cb.value);
+            if (!confirm(`Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`)) return;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch('/shopping-cart/bulk-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ ids })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    ids.forEach(id => {
+                        const row = document.querySelector(`tr[data-item-id="${id}"]`);
+                        if (row) row.remove();
+                    });
+                    updateCartSummary();
+                    updateBulkDeleteBtn();
+                    updateSelectAllState();
+                    if (window.toastr) toastr.success('Đã xóa các sản phẩm đã chọn!');
+                } else {
+                    if (window.toastr) toastr.error(data.message || 'Có lỗi khi xóa hàng loạt!');
+                }
+            })
+            .catch(() => {
+                if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
+            });
+        });
+    }
+});
+
+$(document).on('click', '.related-products-trigger', function(e) {
+    e.stopPropagation();
+    var $dropdown = $(this).find('.related-products-dropdown');
+    $('.related-products-dropdown').not($dropdown).fadeOut(120); // Ẩn các dropdown khác
+    $dropdown.stop(true, true).fadeToggle(150);
+});
+$(document).on('click', function(e) {
+    // Chỉ đóng dropdown nếu click ngoài cả trigger và dropdown
+    if (
+        !$(e.target).closest('.related-products-trigger').length &&
+        !$(e.target).closest('.related-products-dropdown').length
+    ) {
+        $('.related-products-dropdown').fadeOut(120);
+    }
+});
+$(document).on('click', '.related-products-dropdown', function(e) {
+    e.stopPropagation();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.related-products-swiper').forEach(function(swiperEl) {
+        new Swiper(swiperEl, {
+            slidesPerView: 3,
+            spaceBetween: 12,
+            loop: false,
+            navigation: {
+                nextEl: swiperEl.querySelector('.swiper-button-next'),
+                prevEl: swiperEl.querySelector('.swiper-button-prev'),
+            },
+            breakpoints: {
+                1200: { slidesPerView: 3 },
+                992: { slidesPerView: 2 },
+                0: { slidesPerView: 1 }
+            }
+        });
+    });
 });
 </script>
 @endsection
+
+<style>
+.related-products-slider-container { max-width:700px; margin:0 auto; padding-top:18px; padding-bottom:18px; }
+.related-products-swiper { padding: 0 28px; }
+.swiper-wrapper { gap: 0 !important; }
+.related-product-simple { min-width:0; max-width:100%; padding:0 16px; }
+.related-product-thumb-simple:hover img {
+    filter: brightness(0.95);
+    transform: scale(1.04);
+    box-shadow: 0 4px 16px rgba(44,62,80,0.13);
+}
+.related-product-title-simple:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+.swiper-button-prev, .swiper-button-next {
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.13);
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    top: 50%; transform: translateY(-50%);
+    opacity: 0.92;
+    transition: box-shadow 0.18s, background 0.18s;
+}
+.swiper-button-prev:hover, .swiper-button-next:hover {
+    background: #e3f0fc;
+    box-shadow: 0 4px 16px rgba(44,62,80,0.18);
+}
+.swiper-button-prev { left: -8px; }
+.swiper-button-next { right: -8px; }
+.swiper-button-prev:after, .swiper-button-next:after { display:none; }
+@media (max-width: 900px) {
+    .related-products-slider-container { max-width:98vw; }
+    .related-products-swiper { padding: 0 8px; }
+    .related-product-simple { padding: 0 6px; }
+}
+@media (max-width: 600px) {
+    .related-products-slider-container { padding-top:8px; padding-bottom:8px; }
+    .related-product-thumb-simple { height:70px; }
+    .related-product-simple { padding: 0 2px; }
+}
+</style>

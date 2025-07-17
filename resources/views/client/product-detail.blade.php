@@ -1212,10 +1212,7 @@
                     if (qtyInput) qtyInput.disabled = true;
                     if (minusBtn) minusBtn.classList.add('disabled');
                     if (plusBtn) plusBtn.classList.add('disabled');
-                    if (window.toastr && !addToCartBtn.classList.contains('already-toast')) {
-                        toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-                        addToCartBtn.classList.add('already-toast');
-                    }
+                    addToCartBtn.classList.add('already-toast');
                 }
                 function setNormalUI() {
                     addToCartBtn.disabled = false;

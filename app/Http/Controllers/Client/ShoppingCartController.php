@@ -17,18 +17,22 @@ class ShoppingCartController extends Controller
     {
         $userId = Auth::id();
         $cart = Cart::with([
-            'items.product',
+            'items.product.categories',
             'items.productVariant.attributeValues.attribute'
         ])->where('user_id', $userId)->first();
 
         $cartItems = $cart ? $cart->items : collect();
+        foreach ($cartItems as $item) {
+            $product = $item->product;
+            if ($product && ($product->stock < 1)) {
+                $item->relatedProducts = $product->relatedProducts(10);
+            }
+        }
         /** @var \Illuminate\Database\Eloquent\Collection|\App\Models\CartItem[] $cartItems */
         $cartTotal = $cartItems->sum(function($item) {
             return $item->price_at_time * $item->quantity;
         });
-        // Tính giảm giá (ví dụ: chưa có voucher thì = 0)
         $discount = 0;
-        // Tính phí vận chuyển (ví dụ: miễn phí nếu tổng >= 500k, ngược lại 30k)
         $shipping = $cartTotal >= 500000 ? 0 : ($cartTotal > 0 ? 30000 : 0);
         // Tổng cộng
         $total = $cartTotal - $discount + $shipping;
@@ -178,6 +182,34 @@ class ShoppingCartController extends Controller
         }
         // SỬA: luôn redirect về trang giỏ hàng
         return redirect()->route('shopping-cart.index')->with('error', 'Không tìm thấy sản phẩm!');
+    }
+
+    /**
+     * Xóa nhiều sản phẩm khỏi giỏ hàng
+     */
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có sản phẩm nào được chọn để xóa!'
+            ], 400);
+        }
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->where('status', 'pending')->first();
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy giỏ hàng!'
+            ], 404);
+        }
+        $deleted = $cart->items()->whereIn('id', $ids)->delete();
+        return response()->json([
+            'success' => true,
+            'deleted' => $deleted,
+            'message' => 'Đã xóa thành công ' . $deleted . ' sản phẩm khỏi giỏ hàng!'
+        ]);
     }
 
     /**

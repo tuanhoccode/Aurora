@@ -393,5 +393,7 @@ Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'ind
 
 Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
+Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+
 
 

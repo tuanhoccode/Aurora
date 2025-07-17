@@ -205,4 +205,30 @@ class Product extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function relatedProducts($limit = 10)
+    {
+        $categoryIds = $this->categories()->pluck('categories.id');
+        $related = Product::where('id', '!=', $this->id)
+            ->where('is_active', 1)
+            ->where('stock', '>', 0)
+            ->whereHas('categories', function($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            })
+            ->inRandomOrder()
+            ->take($limit)
+            ->get();
+
+        if ($related->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->whereNotIn('id', $related->pluck('id')->push($this->id))
+                ->inRandomOrder()
+                ->take($limit - $related->count())
+                ->get();
+            $related = $related->concat($more);
+        }
+        return $related;
+    }
 }
