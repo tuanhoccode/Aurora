@@ -258,16 +258,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     //Quản lý bình luận
     Route::prefix('reviews')->name('reviews.')->group(function () {
-        Route::get('/', [CommentController::class, 'index'])-> name('comments');
-        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])-> name('showComment');
-        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])-> name('approve');
-        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])-> name('reject');
-        Route::get('/trash-comment', [CommentController::class, 'trashComments'])-> name('trashComments');
-        
-        Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])-> name('destroyComment');
-        Route::put('/restore/{id}',[CommentController::class, 'restore'])->name('restore');
-        Route::delete('/force-delete/{id}',[CommentController::class, 'forceDelete'])->name('forceDelete');
-        Route::post('/bulk-restore',[CommentController::class, 'bulkRestore'])->name('bulkRestore');
+        Route::get('/', [CommentController::class, 'index'])->name('comments');
+        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])->name('showComment');
+        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])->name('approve');
+        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])->name('reject');
+        Route::get('/trash-comment', [CommentController::class, 'trashComments'])->name('trashComments');
+
+        Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])->name('destroyComment');
+        Route::put('/restore/{id}', [CommentController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [CommentController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/bulk-restore', [CommentController::class, 'bulkRestore'])->name('bulkRestore');
         //Admin phản hồi bình luận
         Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
         Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
@@ -356,11 +356,22 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
     Route::match(['put', 'post'], '/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
     //Checkout
+    Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
+    // Checkout
     Route::get('/shopping-cart/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/shopping-cart/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
     Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
+    Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
+    // Address Management
+    Route::get('/address/create', [CheckoutController::class, 'createAddress'])->name('address.create');
+    Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
+    Route::get('/address/edit/{id?}', [CheckoutController::class, 'editAddress'])->name('address.edit');
+    Route::post('/address/save', [CheckoutController::class, 'saveAddress'])->name('address.save');
     // Trang liên hệ
     Route::get('/contact', function () {
         return view('client.contact');
