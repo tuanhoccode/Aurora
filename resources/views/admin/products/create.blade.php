@@ -69,14 +69,14 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+              <!-- <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
               <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
               @error('gallery_images')
                 <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
+              @enderror -->
             </div>
           </div>
-          <!-- Sau phần thuộc tính sản phẩm, thêm lựa chọn kiểu sản phẩm dạng select -->
+          <!-- Card: Kiểu sản phẩm -->
           <div class="card mb-4">
             <div class="card-header bg-light">
               <i class="fas fa-cube me-1"></i> Kiểu sản phẩm
@@ -86,82 +86,6 @@
                 <option value="simple" selected>Sản phẩm đơn giản</option>
                 <option value="variant">Sản phẩm biến thể</option>
               </select>
-            </div>
-          </div>
-          <!-- Card: Biến thể sản phẩm với tab nhỏ bên trong, thêm id để JS ẩn/hiện -->
-          <div class="card mb-4" id="variantCard">
-            <div class="card-header bg-light">
-              <strong>Biến thể sản phẩm</strong>
-            </div>
-            <div class="card-body">
-              <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
-                    <i class="fas fa-plus"></i> Tạo biến thể
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
-                    <i class="fas fa-list"></i> Danh sách biến thể
-                  </button>
-                </li>
-              </ul>
-              <div class="tab-content" id="variantTabContent">
-                <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
-                  <!-- Chọn thuộc tính để tạo biến thể -->
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
-                    <div class="row">
-                      @foreach($attributes as $attribute)
-                        <div class="col-md-6 mb-2">
-                          <label class="form-label">{{ $attribute->name }}</label>
-                          <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}][]" multiple>
-                            <option value="">Chọn thuộc tính</option>
-                            @foreach($attribute->values as $value)
-                              <option value="{{ $value->id }}">{{ $value->value }}</option>
-                            @endforeach
-                          </select>
-                        </div>
-                      @endforeach
-                    </div>
-                  </div>
-                  <div class="mb-3">
-                    <div class="alert alert-info" id="variantPreview" style="display:none;">
-                      <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
-                    </div>
-                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
-                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
-                    </button>
-                  </div>
-                </div>
-                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
-                  <div id="variantTableWrapper" style="display:none;">
-                    <h5 class="mb-3">Danh sách biến thể</h5>
-                    <div class="table-responsive">
-                      <table class="table table-bordered align-middle" id="variantTable">
-                        <thead class="table-light">
-                          <tr>
-                            <th>Thuộc tính</th>
-                            <th>SKU</th>
-                            <th>Giá gốc</th>
-                            <th>Giá khuyến mãi</th>
-                            <th>Tồn kho</th>
-                            <th>Ảnh</th>
-                            <th style="width: 40px;"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <!-- Dòng biến thể sẽ được JS sinh ra -->
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div id="noVariantsMessage" class="text-center py-4">
-                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
-                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -255,10 +179,94 @@
           </div>
         </div>
       </div>
+      
+      <!-- Biến thể sản phẩm - Khối riêng biệt với chiều ngang đầy đủ -->
+      <div class="row" id="variantSection" style="display: none;">
+        <div class="col-12">
+          <div class="card mb-4" id="variantCard">
+            <div class="card-header bg-light">
+              <i class="fas fa-cubes me-1"></i> <strong>Biến thể sản phẩm</strong>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
+                    <i class="fas fa-plus"></i> Tạo biến thể
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
+                    <i class="fas fa-list"></i> Danh sách biến thể
+                  </button>
+                </li>
+              </ul>
+              <div class="tab-content" id="variantTabContent">
+                <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
+                  <!-- Chọn thuộc tính để tạo biến thể -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
+                    <div class="row">
+                      @foreach($attributes as $attribute)
+                        <div class="col-md-6 mb-2">
+                          <label class="form-label">{{ $attribute->name }}</label>
+                          <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}][]" multiple>
+                            <option value="">Chọn thuộc tính</option>
+                            @foreach($attribute->values as $value)
+                              <option value="{{ $value->id }}">{{ $value->value }}</option>
+                            @endforeach
+                          </select>
+                        </div>
+                      @endforeach
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="alert alert-info" id="variantPreview" style="display:none;">
+                      <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
+                    </div>
+                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
+                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
+                    </button>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div id="variantTableWrapper" style="display:none;">
+                    <h5 class="mb-3">Danh sách biến thể</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered align-middle" id="variantTable">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Thuộc tính</th>
+                            <th>SKU</th>
+                            <th>Giá gốc</th>
+                            <th>Giá khuyến mãi</th>
+                            <th>Tồn kho</th>
+                            <th>Ảnh</th>
+                            <th style="width: 40px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- Dòng biến thể sẽ được JS sinh ra -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div id="noVariantsMessage" class="text-center py-4">
+                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="mt-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
         <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
-        <button class="btn btn-primary" type="submit">Đăng sản phẩm</button>
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-save me-1"></i> Lưu sản phẩm
+        </button>
       </div>
     </form>
   </div>
@@ -268,7 +276,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
 #variantTable .badge {
-  font-size: 0.95em;
+  font-size: 0.85em;
   margin-bottom: 2px;
 }
 #variantTable td, #variantTable th {
@@ -476,7 +484,7 @@
         <td>${attrStr}</td>
         <td><input type="text" class="form-control" name="variants[${idx}][sku]" value="${sku}" placeholder="Để trống để tự tạo"></td>
         <td><input type="number" class="form-control variant-price" name="variants[${idx}][price]" min="0" placeholder="Giá gốc"></td>
-        <td><input type="number" class="form-control variant-sale-price" name="variants[${idx}][sale_price]" min="0" placeholder="Giá khuyến mãi"><span class="discount-percentage"></span></td>
+        <td><input type="number" class="form-control variant-sale-price" name="variants[${idx}][sale_price]" min="0" placeholder="Giá khuyến mãi"></td>
         <td><input type="number" class="form-control" name="variants[${idx}][stock]" min="0" placeholder="Tồn kho"></td>
         <td><input type="file" class="form-control" name="variants[${idx}][image]" accept="image/*"></td>
         <td class="text-center"><button type="button" class="btn btn-sm btn-danger remove-variant-row"><i class="fas fa-trash"></i></button></td>
@@ -485,6 +493,9 @@
     $('#variantTable tbody').html(tbody);
     $('#variantTableWrapper').show();
     $('#noVariantsMessage').hide();
+    
+    // Cập nhật badge số lượng biến thể
+    $('#variantCountBadge').text(combos.length + ' biến thể');
 
     if (duplicateCombos.length > 0) {
       alert('Đã bỏ qua các biến thể bị trùng thuộc tính!');
@@ -549,20 +560,20 @@
   // Ẩn/hiện card biến thể theo kiểu sản phẩm
   $('#productTypeSelect').on('change', function() {
     if ($(this).val() === 'variant') {
-      $('#variantCard').show();
+      $('#variantSection').show();
       $('#priceStockCard').hide();
     } else {
-      $('#variantCard').hide();
+      $('#variantSection').hide();
       $('#priceStockCard').show();
     }
   });
   // Khởi tạo trạng thái ban đầu
   $(function() {
     if ($('#productTypeSelect').val() === 'variant') {
-      $('#variantCard').show();
+      $('#variantSection').show();
       $('#priceStockCard').hide();
     } else {
-      $('#variantCard').hide();
+      $('#variantSection').hide();
       $('#priceStockCard').show();
     }
   });

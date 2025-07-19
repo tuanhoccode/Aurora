@@ -75,27 +75,12 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                @if($product->gallery)
-                  @foreach(json_decode($product->gallery) as $image)
-                    <div class="position-relative">
-                      <img src="{{ Storage::url($image) }}" class="img-thumbnail" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                      <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 delete-gallery-image" data-path="{{ $image }}">
-                        <i class="fas fa-times"></i>
-                      </button>
-                    </div>
-                  @endforeach
-                @endif
-              </div>
-              <input type="file" class="form-control image-upload @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
-              <div class="preview-images d-flex flex-wrap gap-2 mt-2"></div>
-              @error('gallery_images')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
+              
+             
+              
             </div>
           </div>
-          <!-- Sau phần thuộc tính sản phẩm, thêm lựa chọn kiểu sản phẩm dạng select -->
+          <!-- Card: Kiểu sản phẩm -->
           <div class="card mb-4">
             <div class="card-header bg-light">
               <i class="fas fa-cube me-1"></i> Kiểu sản phẩm
@@ -105,118 +90,6 @@
                 <option value="simple" {{ old('type', $product->type) == 'simple' ? 'selected' : '' }}>Sản phẩm đơn giản</option>
                 <option value="variant" {{ old('type', $product->type) == 'variant' ? 'selected' : '' }}>Sản phẩm biến thể</option>
               </select>
-            </div>
-          </div>
-          <!-- Card: Biến thể sản phẩm với tab nhỏ bên trong, thêm id để JS ẩn/hiện -->
-          <div class="card mb-4" id="variantCard">
-            <div class="card-header bg-light">
-              <strong>Biến thể sản phẩm</strong>
-            </div>
-            <div class="card-body">
-              <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
-                    <i class="fas fa-plus"></i> Tạo biến thể
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
-                    <i class="fas fa-list"></i> Danh sách biến thể
-                  </button>
-                </li>
-              </ul>
-              <div class="tab-content" id="variantTabContent">
-                <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
-                  <!-- Chọn thuộc tính để tạo biến thể -->
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
-                    <div class="row">
-                      @foreach($attributes as $attribute)
-                        <div class="col-md-6 mb-2">
-                          <label class="form-label">{{ $attribute->name }}</label>
-                          <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}]">
-                            <option value="">Chọn thuộc tính</option>
-                            @foreach($attribute->values as $value)
-                              <option value="{{ $value->id }}">{{ $value->value }}</option>
-                            @endforeach
-                          </select>
-                        </div>
-                      @endforeach
-                    </div>
-                  </div>
-                  <div class="mb-3">
-                    <div class="alert alert-info" id="variantPreview" style="display:none;">
-                      <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
-                    </div>
-                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
-                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
-                    </button>
-                  </div>
-                </div>
-                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
-                  <div id="variantTableWrapper" @if($product->variants->count() == 0) style="display:none;" @endif>
-                    <h5 class="mb-3">Danh sách biến thể</h5>
-                    <div class="table-responsive">
-                      <table class="table table-bordered align-middle" id="variantTable">
-                        <thead class="table-light">
-                          <tr>
-                            <th>Thuộc tính</th>
-                            <th>SKU</th>
-                            <th>Giá gốc</th>
-                            <th>Giá khuyến mãi</th>
-                            <th>Tồn kho</th>
-                            <th>Ảnh</th>
-                            <th style="width: 80px;">Thao tác</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($product->variants as $variant)
-                            @php
-                              $hasSuccessfulOrder = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
-                                $q->where('order_status_id', 4)->where('is_current', 1);
-                              })->exists();
-                            @endphp
-                            <tr>
-                              <td>
-                                @foreach($variant->attributeValues as $attributeValue)
-                                  <span class="badge bg-secondary me-1">{{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}</span>
-                                @endforeach
-                              </td>
-                              <td>{{ $variant->sku }}</td>
-                              <td>{{ number_format($variant->regular_price) }}đ</td>
-                              <td>
-                                @if($variant->sale_price)
-                                  {{ number_format($variant->sale_price) }}đ
-                                  @php
-                                    $discount = round((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100);
-                                  @endphp
-                                  <br><small class="text-danger">Giảm {{ $discount }}%</small>
-                                @else
-                                  <span class="text-muted">-</span>
-                                @endif
-                              </td>
-                              <td>{{ $variant->stock }}</td>
-                              <td>
-                                @if($variant->img)
-                                  <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
-                                @endif
-                              </td>
-                              <td>
-                                <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-variant-btn" data-id="{{ $variant->id }}" data-sku="{{ $variant->sku }}" @if($hasSuccessfulOrder) disabled data-bs-toggle="tooltip" title="Không thể xóa: Biến thể đã có đơn hàng giao thành công" @endif><i class="fas fa-trash"></i></button>
-                              </td>
-                            </tr>
-                          @endforeach
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div id="noVariantsMessage" class="text-center py-4" @if($product->variants->count() > 0) style="display:none;" @endif>
-                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
-                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -310,6 +183,119 @@
           </div>
         </div>
       </div>
+      
+      <!-- Biến thể sản phẩm - Khối riêng biệt với chiều ngang đầy đủ -->
+      <div class="row" id="variantSection" @if($product->type !== 'variant') style="display: none;" @endif>
+        <div class="col-12">
+          <div class="card mb-4" id="variantCard">
+            <div class="card-header bg-light">
+              <i class="fas fa-cubes me-1"></i> <strong>Biến thể sản phẩm</strong>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
+                    <i class="fas fa-plus"></i> Tạo biến thể
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
+                    <i class="fas fa-list"></i> Danh sách biến thể
+                  </button>
+                </li>
+              </ul>
+              <div class="tab-content" id="variantTabContent">
+                <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
+                  <!-- Chọn thuộc tính để tạo biến thể -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
+                    <div class="row">
+                      @foreach($attributes as $attribute)
+                        <div class="col-md-6 mb-2">
+                          <label class="form-label">{{ $attribute->name }}</label>
+                          <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}][]" multiple>
+                            <option value="">Chọn thuộc tính</option>
+                            @foreach($attribute->values as $value)
+                              <option value="{{ $value->id }}">{{ $value->value }}</option>
+                            @endforeach
+                          </select>
+                        </div>
+                      @endforeach
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="alert alert-info" id="variantPreview" style="display:none;">
+                      <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
+                    </div>
+                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
+                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
+                    </button>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div id="variantTableWrapper" @if($product->variants->count() == 0) style="display:none;" @endif>
+                    <h5 class="mb-3">Danh sách biến thể</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered align-middle" id="variantTable">
+                        <thead class="table-light">
+                          <tr>
+                            <th style="min-width: 200px;">Thuộc tính</th>
+                            <th style="min-width: 120px;">SKU</th>
+                            <th style="min-width: 120px;">Giá gốc</th>
+                            <th style="min-width: 120px;">Giá khuyến mãi</th>
+                            <th style="min-width: 100px;">Tồn kho</th>
+                            <th style="min-width: 150px;">Ảnh</th>
+                            <th style="width: 100px;">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($product->variants as $variant)
+                            @php
+                              $hasSuccessfulOrder = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
+                                $q->where('order_status_id', 4)->where('is_current', 1);
+                              })->exists();
+                            @endphp
+                            <tr class="variant-old-row">
+                              <td>
+                                @foreach($variant->attributeValues as $attributeValue)
+                                  <input type="hidden" name="variants_old[{{ $variant->id }}][attributes][{{ $attributeValue->attribute_id }}]" value="{{ $attributeValue->id }}">
+                                  <span class="badge bg-secondary me-1">{{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}</span>
+                                @endforeach
+                              </td>
+                              <td><input type="text" class="form-control" name="variants_old[{{ $variant->id }}][sku]" value="{{ $variant->sku }}" readonly></td>
+                              <td><input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ $variant->regular_price }}" min="0" placeholder="Giá gốc"></td>
+                              <td>
+                                <input type="number" class="form-control variant-sale-price" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ $variant->sale_price }}" min="0" placeholder="Giá khuyến mãi">
+                                <small class="text-muted discount-percentage" style="display:none;"></small>
+                              </td>
+                              <td><input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ $variant->stock }}" min="0" placeholder="Tồn kho"></td>
+                              <td>
+                                <input type="file" class="form-control" name="variants_old[{{ $variant->id }}][image]" accept="image/*">
+                                @if($variant->img)
+                                  <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
+                                @endif
+                              </td>
+                              <td>
+                                <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-variant-btn" data-id="{{ $variant->id }}" data-sku="{{ $variant->sku }}" @if($hasSuccessfulOrder) disabled data-bs-toggle="tooltip" title="Không thể xóa: Biến thể đã có đơn hàng giao thành công" @endif><i class="fas fa-trash"></i></button>
+                              </td>
+                            </tr>
+                          @endforeach
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div id="noVariantsMessage" class="text-center py-4" @if($product->variants->count() > 0) style="display:none;" @endif>
+                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="mt-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
         <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
@@ -376,6 +362,37 @@
     'xxl': 'XXL',
     'xs': 'XS',
   };
+
+  // Hàm loại bỏ dấu tiếng Việt
+  function removeVietnameseTones(str) {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    return str;
+  }
+
+  // Bảng ánh xạ màu sắc giống bên create
+  const colorMap = {
+    'Đỏ': 'DO',
+    'Vàng': 'VANG',
+    'Đen': 'DEN',
+    'Trắng': 'TRANG',
+    'Xám': 'XAM',
+    'Xanh': 'XA',
+    // ... bổ sung nếu có thêm màu
+  };
+
   function viToEnConvert(str) {
     let lower = str.toLowerCase().trim();
     if (viToEn[lower]) return viToEn[lower];
@@ -391,9 +408,9 @@
   function calculateVariantCount() {
     let attributes = [];
     $('.variant-attribute-select').each(function() {
-      let value = $(this).val();
-      if(value) {
-        attributes.push(1); // Mỗi thuộc tính chỉ chọn 1 giá trị
+      let values = $(this).val();
+      if(values && values.length > 0) {
+        attributes.push(values.length); // Mỗi thuộc tính có thể chọn nhiều giá trị
       }
     });
     
@@ -411,18 +428,19 @@
   $('.variant-attribute-select').on('change', function() {
     calculateVariantCount();
   });
+  // Sửa lại JS để khi tạo biến thể mới, index của variants mới không bị trùng với variants_old
   $('#generateVariantsBtn').on('click', function() {
     let attributes = [];
     $('.variant-attribute-select').each(function() {
       let attrName = $(this).closest('.mb-2').find('label').text();
       let attrId = $(this).attr('name').match(/\d+/)[0];
-      let value = $(this).val();
-      if(value) {
+      let values = $(this).val();
+      if(values && values.length > 0) {
         attributes.push({
           id: attrId,
           name: attrName,
-          values: [$(this).find('option:selected').text()],
-          valueIds: [value]
+          values: values.map(v => $(this).find(`option[value="${v}"]`).text()),
+          valueIds: values
         });
       }
     });
@@ -437,10 +455,12 @@
       alert('Vui lòng chọn ít nhất một thuộc tính để tạo biến thể!');
       return;
     }
+    // Lấy số lượng dòng hiện tại (bao gồm cả cũ và mới)
+    let currentRows = $('#variantTable tbody tr').length;
     let combos = cartesian(attributes);
     let tbody = '';
     combos.forEach(function(combo, idx) {
-      let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
+      let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${currentRows+idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
       let sku = productSlug;
       combo.forEach(c => {
         let attrLower = c.attr.toLowerCase();
@@ -459,19 +479,20 @@
       });
       tbody += `<tr>
         <td>${attrStr}</td>
-        <td><input type=\"text\" class=\"form-control\" name=\"variants[${idx}][sku]\" value=\"${sku}\" readonly></td>
-        <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${idx}][price]\" min=\"0\" placeholder=\"Giá gốc\"></td>
+        <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${sku}\" readonly></td>
+        <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\"></td>
         <td>
-          <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\">
+          <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\">
           <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
         </td>
-        <td><input type=\"number\" class=\"form-control\" name=\"variants[${idx}][stock]\" min=\"0\" placeholder=\"Tồn kho\"></td>
-        <td><input type=\"file\" class=\"form-control\" name=\"variants[${idx}][image]\" accept=\"image/*\"></td>
+        <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" placeholder=\"Tồn kho\"></td>
+        <td><input type=\"file\" class=\"form-control\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\"></td>
         <td class=\"text-center\"><button type=\"button\" class=\"btn btn-sm btn-danger remove-variant-row\"><i class=\"fas fa-trash\"></i></button></td>
       </tr>`;
     });
-    $('#variantTable tbody').html(tbody);
+    $('#variantTable tbody').append(tbody);
     $('#variantTableWrapper').show();
+    $('#noVariantsMessage').hide();
     $('#variantTable').off('click', '.remove-variant-row').on('click', '.remove-variant-row', function() {
       $(this).closest('tr').remove();
       // Kiểm tra nếu không còn biến thể nào thì hiển thị thông báo
@@ -515,19 +536,19 @@
   // Ẩn/hiện card biến thể và giá & tồn kho theo kiểu sản phẩm
   $('#productTypeSelect').on('change', function() {
     if ($(this).val() === 'variant') {
-      $('#variantCard').show();
+      $('#variantSection').show();
       $('#priceStockCard').hide();
     } else {
-      $('#variantCard').hide();
+      $('#variantSection').hide();
       $('#priceStockCard').show();
     }
   });
   $(function() {
     if ($('#productTypeSelect').val() === 'variant') {
-      $('#variantCard').show();
+      $('#variantSection').show();
       $('#priceStockCard').hide();
     } else {
-      $('#variantCard').hide();
+      $('#variantSection').hide();
       $('#priceStockCard').show();
     }
   });
@@ -610,6 +631,55 @@
       form.submit();
     }
   });
+
+// Hàm lấy key tổ hợp thuộc tính từ 1 dòng biến thể
+function getVariantKeyFromRow(row) {
+    let attrs = [];
+    row.find('input[name*="[attributes]"]').each(function() {
+        attrs.push($(this).val());
+    });
+    return attrs.sort().join('-');
+}
+
+// Kiểm tra và đánh dấu các dòng biến thể bị trùng tổ hợp thuộc tính
+function checkDuplicateVariantCombinations() {
+    let keys = {};
+    $('#variantTable tbody tr').each(function() {
+        let row = $(this);
+        let key = getVariantKeyFromRow(row);
+        if (!key) return;
+        if (keys[key]) {
+            // Đánh dấu dòng trùng
+            row.addClass('table-danger');
+            if (row.find('.duplicate-attr-msg').length === 0) {
+                row.find('td:first').append('<div class="text-danger small duplicate-attr-msg">Tổ hợp thuộc tính này đã tồn tại!</div>');
+            }
+        } else {
+            row.removeClass('table-danger');
+            row.find('.duplicate-attr-msg').remove();
+            keys[key] = true;
+        }
+    });
+}
+
+// Gọi lại hàm kiểm tra mỗi khi thêm/xóa dòng hoặc thay đổi thuộc tính
+$(document).on('change', 'input[name*="[attributes]"]', checkDuplicateVariantCombinations);
+$(document).on('click', '.remove-variant-row', function() {
+    setTimeout(checkDuplicateVariantCombinations, 100);
+});
+$(document).on('DOMNodeInserted', '#variantTable tbody', function() {
+    setTimeout(checkDuplicateVariantCombinations, 100);
+});
+
+// Chặn submit nếu còn dòng bị trùng tổ hợp thuộc tính
+$('form').on('submit', function(e) {
+    checkDuplicateVariantCombinations();
+    if ($('#variantTable tbody tr.table-danger').length > 0) {
+        alert('Có biến thể bị trùng tổ hợp thuộc tính. Vui lòng kiểm tra lại!');
+        e.preventDefault();
+        return false;
+    }
+});
 </script>
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>

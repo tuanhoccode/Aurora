@@ -36,11 +36,21 @@ class ProductRequest extends FormRequest
         // Thêm validation cho biến thể nếu là sản phẩm biến thể và có dữ liệu variants
         if ($this->input('type') === 'variant' && $this->has('variants')) {
             $rules['variants'] = 'required|array|min:1';
+            // Nếu là PUT (update), ignore id của các biến thể cũ
+            if ($this->isMethod('PUT') && $this->has('variants_old')) {
+                foreach ($this->input('variants_old') as $variantId => $variantData) {
+                    $rules["variants_old.$variantId.sku"] = [
+                        'nullable',
+                        'string',
+                        'max:50',
+                        Rule::unique('product_variants', 'sku')->ignore($variantId)
+                    ];
+                }
+            }
             $rules['variants.*.sku'] = [
                 'nullable',
                 'string',
-                'max:50',
-                Rule::unique('product_variants', 'sku')->ignore($this->product?->id, 'product_id')
+                'max:50'
             ];
             $rules['variants.*.price'] = 'required|numeric|min:0';
             $rules['variants.*.sale_price'] = 'nullable|numeric|min:0';

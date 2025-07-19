@@ -68,29 +68,37 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <label class="form-label">SKU</label>
-                        <input type="text" name="sku" id="skuInput" class="form-control" value="{{ old('sku', $variant->sku) }}" placeholder="Để trống để tự tạo">
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="img">Ảnh sản phẩm</label>
+                            <div>
+                                @if(!empty($variant->img))
+                                    <img src="{{ asset('storage/' . $variant->img) }}" alt="Ảnh sản phẩm" class="img-thumbnail mb-2" style="max-width: 150px;">
+                                @endif
+                                <input type="file" class="form-control" id="img" name="img">
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Tồn kho</label>
-                        <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Giá gốc</label>
-                        <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Giá KM</label>
-                        <input type="number" name="sale_price" class="form-control" min="0" value="{{ old('sale_price', $variant->sale_price) }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Ảnh</label>
-                        <input type="file" name="img" class="form-control">
-                        @if($variant->img)
-                            <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail mt-2" style="max-width: 100px;">
-                        @endif
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="sku">SKU</label>
+                            <input type="text" class="form-control" id="sku" name="sku" value="{{ old('sku', $variant->sku ?? '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" for="stock">Tồn kho</label>
+                            <input type="number" class="form-control" id="stock" name="stock" value="{{ old('stock', $variant->stock ?? '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" for="regular_price">Giá gốc</label>
+                            <input type="number" class="form-control" id="regular_price" name="regular_price"
+                                value="{{ old('regular_price', ($variant->regular_price ?? '')) }}" min="0" step="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" for="sale_price">Giá khuyến mãi</label>
+                            <input type="number" class="form-control" id="sale_price" name="sale_price"
+                                value="{{ old('sale_price', ($variant->sale_price ?? '')) }}" min="0" step="1">
+                        </div>
                     </div>
                 </div>
             </div>

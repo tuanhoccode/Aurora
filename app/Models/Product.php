@@ -195,12 +195,17 @@ class Product extends Model
 
     public function reviews()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Review::class)->where('is_active', 1);
     }
 
     public function images()
     {
         return $this->hasMany(ProductGallery::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
     }
 
 

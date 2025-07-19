@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                        class="form-control" 
                                        name="variants[${variantCount}][regular_price]" 
                                        min="0" 
-                                       step="0.01" >
+                                       step="1" >
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                        class="form-control" 
                                        name="variants[${variantCount}][sale_price]" 
                                        min="0" 
-                                       step="0.01">
+                                       step="1">
                             </div>
                         </div>
                     </div>

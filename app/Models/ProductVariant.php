@@ -27,8 +27,8 @@ class ProductVariant extends Model
 
     protected $casts = [
         'stock' => 'integer',
-        'regular_price' => 'decimal:2',
-        'sale_price' => 'decimal:2'
+        'regular_price' => 'integer',
+        'sale_price' => 'integer'
     ];
 
     public function product(): BelongsTo

@@ -137,8 +137,11 @@
                 <div class="order-detail-card">
                     <div class="order-detail-card__header">
                         <h4>Thông tin đơn hàng</h4>
-                        <span class="order-status bg-{{ $order->currentStatus ? ($order->currentStatus->status->name === 'Đã hoàn thành' ? 'success' : ($order->currentStatus->status->name === 'Đang giao hàng' ? 'warning' : 'primary')) : 'primary' }}">
-                            {{ $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận' }}
+                        @php
+                            $currentStatusName = $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận';
+                        @endphp
+                        <span class="badge bg-{{ $currentStatusName === 'Đã hủy' ? 'danger' : ($currentStatusName === 'Chờ xác nhận' ? 'primary' : 'success') }}">
+                            {{ $currentStatusName }}
                         </span>
                     </div>
 

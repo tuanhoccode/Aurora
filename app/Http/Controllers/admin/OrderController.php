@@ -64,6 +64,11 @@ class OrderController extends Controller
             $from = $currentStatus?->order_status_id;
             $to = $request->order_status_id;
 
+            // CHẶN cập nhật nếu trạng thái hiện tại là Đã hủy
+            if ($from == 8) {
+                return redirect()->back()->with('error', "Đơn hàng đã bị hủy và không thể cập nhật trạng thái nữa!");
+            }
+
             // 5. Kiểm tra hợp lệ
             if ($from !== null && !in_array($to, $validTransitions[$from] ?? [])) {
                 $currentName = OrderStatus::find($from)?->name ?? 'Không rõ';
