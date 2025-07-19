@@ -223,6 +223,15 @@
             background: #4a90e2;
             opacity: 0.18;
         }
+
+        .tp-cart-minus.disabled,
+        .tp-cart-plus.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            background: #eee !important;
+            color: #aaa !important;
+            cursor: not-allowed !important;
+        }
     </style>
     <main>
         <!-- breadcrumb area start -->
@@ -909,8 +918,7 @@
                                         <div class="tp-product-item-2 mb-40">
                                             <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
                                                 @if (!empty($related->slug))
-                                                    <a
-                                                        href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                                    <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
                                                         <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
                                                     </a>
                                                 @else
@@ -918,85 +926,14 @@
                                                         <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
                                                     </span>
                                                 @endif
-                                                <div class="tp-product-action-2 tp-product-action-blackStyle">
-                                                    <div class="tp-product-action-item-2 d-flex flex-column">
-                                                        <form method="POST" action="{{ route('shopping-cart.add') }}"
-                                                            class="add-to-cart-form">
-                                                            @csrf
-                                                            <input type="hidden" name="product_id"
-                                                                value="{{ $related->id }}">
-                                                            <input type="hidden" name="product_variant_id"
-                                                                value="{{ $related->default_variant_id ?? '' }}">
-                                                            <input type="hidden" name="quantity" value="1">
-                                                            <input type="hidden" name="price"
-                                                                value="{{ $related->price }}">
-                                                            <button type="submit"
-                                                                class="tp-product-action-btn-2 tp-product-add-cart-btn">
-                                                                <svg width="17" height="17" viewBox="0 0 17 17"
-                                                                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M3.34706 4.53799L3.85961 10.6239C3.89701 11.0923 4.28036 11.4436 4.74871 11.4436H4.75212H14.0265H14.0282C14.4711 11.4436 14.8493 11.1144 14.9122 10.6774L15.7197 5.11162C15.7384 4.97924 15.7053 4.84687 15.6245 4.73995C15.5446 4.63218 15.4273 4.5626 15.2947 4.54393C15.1171 4.55072 7.74498 4.54054 3.34706 4.53799ZM4.74722 12.7162C3.62777 12.7162 2.68001 11.8438 2.58906 10.728L1.81046 1.4837L0.529505 1.26308C0.181854 1.20198 -0.0501969 0.873587 0.00930333 0.526523C0.0705036 0.17946 0.406255 -0.0462578 0.746256 0.00805037L2.51426 0.313534C2.79901 0.363599 3.01576 0.5995 3.04042 0.888012L3.24017 3.26484C15.3748 3.26993 15.4139 3.27587 15.4726 3.28266C15.946 3.3514 16.3625 3.59833 16.6464 3.97849C16.9303 4.35779 17.0493 4.82535 16.9813 5.29376L16.1747 10.8586C16.0225 11.9177 15.1011 12.7162 14.0301 12.7162H14.0259H4.75402H4.74722Z"
-                                                                        fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M12.6629 7.67446H10.3067C9.95394 7.67446 9.66919 7.38934 9.66919 7.03804C9.66919 6.68673 9.95394 6.40161 10.3067 6.40161H12.6629C13.0148 6.40161 13.3004 6.68673 13.3004 7.03804C13.3004 7.38934 13.0148 7.67446 12.6629 7.67446Z"
-                                                                        fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M4.38171 15.0212C4.63756 15.0212 4.84411 15.2278 4.84411 15.4836C4.84411 15.7395 4.63756 15.9469 4.38171 15.9469C4.12501 15.9469 3.91846 15.7395 3.91846 15.4836C3.91846 15.2278 4.12501 15.0212 4.38171 15.0212Z"
-                                                                        fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M4.38082 15.3091C4.28477 15.3091 4.20657 15.3873 4.20657 15.4833C4.20657 15.6763 4.55592 15.6763 4.55592 15.4833C4.55592 15.3873 4.47687 15.3091 4.38082 15.3091ZM4.38067 16.5815C3.77376 16.5815 3.28076 16.0884 3.28076 15.4826C3.28076 14.8767 3.77376 14.3845 4.38067 14.3845C4.98757 14.3845 5.48142 14.8767 5.48142 15.4826C5.48142 16.0884 4.98757 16.5815 4.38067 16.5815Z"
-                                                                        fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M13.9701 15.0212C14.2259 15.0212 14.4333 15.2278 14.4333 15.4836C14.4333 15.7395 14.2259 15.9469 13.9701 15.9469C13.7134 15.9469 13.5068 15.7395 13.5068 15.4836C13.5068 15.2278 13.7134 15.0212 13.9701 15.0212Z"
-                                                                        fill="currentColor" />
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                        d="M13.9692 15.3092C13.874 15.3092 13.7958 15.3874 13.7958 15.4835C13.7966 15.6781 14.1451 15.6764 14.1443 15.4835C14.1443 15.3874 14.0652 15.3092 13.9692 15.3092ZM13.969 16.5815C13.3621 16.5815 12.8691 16.0884 12.8691 15.4826C12.8691 14.8767 13.3621 14.3845 13.969 14.3845C14.5768 14.3845 15.0706 14.8767 15.0706 15.4826C15.0706 16.0884 14.5768 16.5815 13.969 16.5815Z"
-                                                                        fill="currentColor" />
-                                                                </svg>
-                                                                <span
-                                                                    class="tp-product-tooltip tp-product-tooltip-right">Thêm
-                                                                    vào giỏ</span>
-                                                            </button>
-                                                        </form>
-                                                        <button type="button"
-                                                            class="tp-product-action-btn-2 tp-product-quick-view-btn"
-                                                            disabled style="opacity:0.5;cursor:not-allowed;">
-                                                            <svg width="18" height="15" viewBox="0 0 18 15"
-                                                                fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M8.99948 5.06828C7.80247 5.06828 6.82956 6.04044 6.82956 7.23542C6.82956 8.42951 7.80247 9.40077 8.99948 9.40077C10.1965 9.40077 11.1703 8.42951 11.1703 7.23542C11.1703 6.04044 10.1965 5.06828 8.99948 5.06828ZM8.99942 10.7482C7.0581 10.7482 5.47949 9.17221 5.47949 7.23508C5.47949 5.29705 7.0581 3.72021 8.99942 3.72021C10.9407 3.72021 12.5202 5.29705 12.5202 7.23508C12.5202 9.17221 10.9407 10.7482 8.99942 10.7482Z"
-                                                                    fill="currentColor" />
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M1.41273 7.2346C3.08674 10.9265 5.90646 13.1215 8.99978 13.1224C12.0931 13.1215 14.9128 10.9265 16.5868 7.2346C14.9128 3.54363 12.0931 1.34863 8.99978 1.34773C5.90736 1.34863 3.08674 3.54363 1.41273 7.2346ZM9.00164 14.4703H8.99804H8.99714C5.27471 14.4676 1.93209 11.8629 0.0546754 7.50073C-0.0182251 7.33091 -0.0182251 7.13864 0.0546754 6.96883C1.93209 2.60759 5.27561 0.00288103 8.99714 0.000185582C8.99894 -0.000712902 8.99894 -0.000712902 8.99984 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z"
-                                                                    fill="currentColor" />
-                                                            </svg>
-                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Xem
-                                                                nhanh</span>
-                                                        </button>
-                                                        <button type="button"
-                                                            class="tp-product-action-btn-2 tp-product-add-to-wishlist-btn"
-                                                            disabled style="opacity:0.5;cursor:not-allowed;">
-                                                            <svg width="18" height="18" viewBox="0 0 18 18"
-                                                                fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M1.60355 7.98635C2.83622 11.8048 7.7062 14.8923 9.0004 15.6565C10.299 14.8844 15.2042 11.7628 16.3973 7.98985C17.1806 5.55102 16.4535 2.46177 13.5644 1.53473C12.1647 1.08741 10.532 1.35966 9.40484 2.22804C9.16921 2.40837 8.84214 2.41187 8.60476 2.23329C7.41078 1.33952 5.85105 1.07778 4.42936 1.53473C1.54465 2.4609 0.820172 5.55014 1.60355 7.98635ZM9.00138 14.4703H9.00254H9.00254C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C9.00164 -0.000712902 9.00164 -0.000712902 9.00254 0.000185582C12.725 0.00288103 16.0676 2.60759 17.945 6.96883C18.0188 7.13864 18.0188 7.33091 17.945 7.50073C16.0685 11.8629 12.725 14.4676 9.00254 14.4703H9.00164Z"
-                                                                    fill="currentColor" />
-                                                            </svg>
-                                                            <span class="tp-product-tooltip tp-product-tooltip-right">Thêm
-                                                                vào yêu thích</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
                                             </div>
                                             <div class="tp-product-content-2 pt-15">
                                                 <div class="tp-product-tag-2">
-                                                    <a
-                                                        href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
+                                                    <a href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
                                                 </div>
                                                 <h3 class="tp-product-title-2">
                                                     @if (!empty($related->slug))
-                                                        <a
-                                                            href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
+                                                        <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
                                                     @else
                                                         <span>{{ $related->name }}</span>
                                                     @endif
@@ -1007,11 +944,9 @@
                                                     @endfor
                                                 </div>
                                                 <div class="tp-product-price-wrapper-2">
-                                                    <span
-                                                        class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
+                                                    <span class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
                                                     @if ($related->original_price && $related->original_price > $related->price)
-                                                        <span
-                                                            class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
+                                                        <span class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -1048,6 +983,8 @@
     
     <script>
         const variants = @json($variantsWithImages);
+        const cartProductIds = @json($cartProductIds ?? []);
+        const cartVariantIds = @json($cartVariantIds ?? []);
 
         let selectedColorCode = null;
         let selectedSize = null;
@@ -1100,8 +1037,12 @@
                 quantityInput.value = 1;
                 updateTotal();
 
+                // Chỉ xử lý chức năng: disable input và nút nếu hết hàng
                 if (stockEl) {
                     stockEl.textContent = variant.stock > 0 ? `Trong kho: ${variant.stock}` : 'Hết hàng';
+                    quantityInput.disabled = variant.stock < 1;
+                    const addBtn = document.getElementById('add-to-cart-btn');
+                    if (addBtn) addBtn.disabled = variant.stock < 1;
                 }
 
                 if (mainImageEl && variant.img) {
@@ -1142,6 +1083,7 @@
                 if (variantIdInput) variantIdInput.value = variant.id;
                 const priceInput = document.getElementById('variant_price');
                 if (priceInput) priceInput.value = variant.sale_price ?? variant.regular_price;
+                if (typeof checkAndToggleAddToCartBtn === 'function') checkAndToggleAddToCartBtn();
             }
 
             function filterSizesByColor(colorCode) {
@@ -1190,14 +1132,53 @@
                 updateTotal();
             });
 
+            function getMaxQty() {
+                let maxQty = 9999;
+                if (variants.length > 0 && selectedColorCode && selectedSize) {
+                    const variant = variants.find(v => {
+                        const parts = v.sku.toUpperCase().split('-');
+                        return parts[1] === selectedSize && parts[2] === selectedColorCode;
+                    });
+                    if (variant) maxQty = variant.stock;
+                } else {
+                    maxQty = {{ $product->stock ?? 9999 }};
+                }
+                return maxQty;
+            }
+
             document.querySelector('#detail-cart-plus')?.addEventListener('click', () => {
                 let val = parseInt(quantityInput.value) || 1;
-                quantityInput.value = val + 1;
+                let maxQty = getMaxQty();
+                if (val >= maxQty) {
+                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+                    quantityInput.value = maxQty;
+                } else {
+                    quantityInput.value = val + 1;
+                }
                 updateTotal();
             });
 
-            quantityInput.addEventListener('input', updateTotal);
-            updateTotal();
+            quantityInput.addEventListener('input', function() {
+                let val = parseInt(quantityInput.value) || 1;
+                let maxQty = getMaxQty();
+                if (val > maxQty) {
+                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+                    val = maxQty;
+                }
+                if (val < 1) val = 1;
+                quantityInput.value = val;
+                updateTotal();
+            });
+
+            quantityInput.addEventListener('blur', function() {
+                let val = parseInt(quantityInput.value) || 1;
+                let maxQty = getMaxQty();
+                if (val > maxQty) {
+                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+                    quantityInput.value = maxQty;
+                }
+                updateTotal();
+            });
 
             new Swiper('.tp-product-related-slider-active', {
                 slidesPerView: 4,
@@ -1226,9 +1207,87 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const addToCartForm = document.querySelector('#detail-add-to-cart-form');
+            const addToCartBtn = addToCartForm ? addToCartForm.querySelector('button[type="submit"]') : null;
+            const hasVariants = variants.length > 0;
+            const productId = {{ $product->id }};
+
+            function checkAndToggleAddToCartBtn() {
+                if (!addToCartBtn) return;
+                const qtyInput = document.getElementById('quantity');
+                const minusBtn = document.getElementById('detail-cart-minus');
+                const plusBtn = document.getElementById('detail-cart-plus');
+                // Định nghĩa hàm đồng bộ UI khi đã có trong giỏ
+                function setInCartUI() {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.textContent = 'Đã có trong giỏ hàng';
+                    addToCartBtn.classList.add('in-cart');
+                    if (qtyInput) qtyInput.disabled = true;
+                    if (minusBtn) minusBtn.classList.add('disabled');
+                    if (plusBtn) plusBtn.classList.add('disabled');
+                    addToCartBtn.classList.add('already-toast');
+                }
+                function setNormalUI() {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = 'Thêm vào giỏ hàng';
+                    addToCartBtn.classList.remove('in-cart', 'already-toast');
+                    if (qtyInput) qtyInput.disabled = false;
+                    if (minusBtn) minusBtn.classList.remove('disabled');
+                    if (plusBtn) plusBtn.classList.remove('disabled');
+                }
+                if (hasVariants) {
+                    const variantId = document.getElementById('product_variant_id').value;
+                    const variantIdStr = String(variantId);
+                    const cartVariantIdsStr = cartVariantIds.map(String);
+                    if (variantId && cartVariantIdsStr.includes(variantIdStr)) {
+                        setInCartUI();
+                    } else {
+                        setNormalUI();
+                    }
+                } else {
+                    if (cartProductIds.includes(Number(productId))) {
+                        setInCartUI();
+                    } else {
+                        setNormalUI();
+                    }
+                }
+            }
+
+            checkAndToggleAddToCartBtn();
+
+            if (hasVariants) {
+                document.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        setTimeout(checkAndToggleAddToCartBtn, 0);
+                    });
+                });
+            }
+
             if (addToCartForm) {
-                const hasVariants = variants.length > 0;
                 addToCartForm.addEventListener('submit', function(e) {
+                    if (hasVariants) {
+                        const variantId = document.getElementById('product_variant_id').value;
+                        const variantIdStr = String(variantId);
+                        const cartVariantIdsStr = cartVariantIds.filter(Boolean).map(String);
+                        if (!variantId) {
+                            if (window.toastr) toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
+                            return;
+                        }
+                        if (cartVariantIdsStr.includes(variantIdStr)) {
+                            e.preventDefault();
+                            if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
+                            addToCartBtn.disabled = true;
+                            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
+                            return false;
+                        }
+                    } else {
+                        if (cartProductIds.includes(Number(productId))) {
+                            e.preventDefault();
+                            if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
+                            addToCartBtn.disabled = true;
+                            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
+                            return false;
+                        }
+                    }
                     e.preventDefault();
                     e.stopImmediatePropagation();
 
@@ -1241,37 +1300,80 @@
                     }
 
                     const formData = new FormData(addToCartForm);
+                    const qtyInput = document.getElementById('quantity');
+                    if (qtyInput) formData.set('quantity', qtyInput.value);
+
                     fetch(addToCartForm.action, {
-                            method: 'POST',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            },
-                            body: formData
-                        })
-                        .then(res => {
-                            if (!res.ok) return res.text().then(text => {
-                                throw new Error(text || 'Lỗi không xác định từ server')
-                            });
-                            return res.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                if (window.toastr) toastr.success(data.message ||
-                                    'Đã thêm sản phẩm vào giỏ hàng!');
-                                document.dispatchEvent(new CustomEvent('cart:updated'));
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: formData
+                    })
+                    .then(res => {
+                        if (!res.ok) return res.text().then(text => { throw new Error(text || 'Lỗi không xác định từ server') });
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            if (window.toastr) toastr.success(data.message || 'Đã thêm sản phẩm vào giỏ hàng!');
+                            document.dispatchEvent(new CustomEvent('cart:updated'));
+                            // Cập nhật biến và disable nút
+                            if (hasVariants) {
+                                const variantId = document.getElementById('product_variant_id').value;
+                                cartVariantIds.push(String(variantId));
                             } else {
-                                if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
+                                cartProductIds.push(Number(productId));
                             }
-                        })
-                        .catch(error => {
-                            console.error('Lỗi khi thêm vào giỏ hàng:', error);
-                            if (window.toastr) toastr.error(
-                                'Không thể thêm sản phẩm. Vui lòng thử lại sau.');
-                        });
+                            checkAndToggleAddToCartBtn();
+                        } else {
+                            if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi thêm vào giỏ hàng:', error);
+                        if (window.toastr) toastr.error('Không thể thêm sản phẩm. Vui lòng thử lại sau.');
+                    });
                 });
             }
+        });
+
+        // Kiểm tra số lượng trước khi gửi request (không đổi giao diện input)
+        const addToCartForm = document.querySelector('#detail-add-to-cart-form');
+        if (addToCartForm) {
+            addToCartForm.addEventListener('submit', function(e) {
+                const qty = parseInt(document.getElementById('quantity').value) || 1;
+                let maxQty = 9999;
+                if (variants.length > 0) {
+                    const variantId = document.getElementById('product_variant_id').value;
+                    const variant = variants.find(v => v.id == variantId);
+                    if (variant) maxQty = variant.stock;
+                } else {
+                    maxQty = {{ $product->stock ?? 9999 }};
+                }
+                if (qty > maxQty) {
+                    e.preventDefault();
+                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+                    else alert('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+                    document.getElementById('quantity').value = maxQty;
+                    return false;
+                }
+            });
+        }
+
+        // Lắng nghe sự kiện cart:item-removed để đồng bộ lại trạng thái nút khi xóa sản phẩm khỏi mini-cart (không dùng API)
+        document.addEventListener('cart:item-removed', function(e) {
+            const detail = e.detail || {};
+            if (typeof detail.product_id !== 'undefined') {
+                const idx = cartProductIds.indexOf(Number(detail.product_id));
+                if (idx !== -1) cartProductIds.splice(idx, 1);
+            }
+            if (typeof detail.variant_id !== 'undefined' && detail.variant_id) {
+                const idx = cartVariantIds.map(String).indexOf(String(detail.variant_id));
+                if (idx !== -1) cartVariantIds.splice(idx, 1);
+            }
+            checkAndToggleAddToCartBtn();
         });
     </script>
     <!-- JavaScript để xử lý hiệu ứng chọn sao và nút xem thêm bình luận-->
@@ -1330,6 +1432,29 @@
             }
         });
     </script>
+    <!-- Tránh khi load trang thì vẫn ở lại trang reviews và description -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+            //Gắn sự kiện click: Lưu tab được chọn vào localStorage
+            tabButtons.forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    const target = btn.getAttribute('data-bs-target');
+                    localStorage.setItem('activeProductTab', target);
+                });
+            });
+            //Khi reload lại, lất tab cũ
+            const lastActiveTab = localStorage.getItem('activeProductTab');
+            if (lastActiveTab) {
+                const tabTriggerEl = document.querySelector(`[data-bs-target="${lastActiveTab}"]`);
+                if (tabTriggerEl) {
+                    new bootstrap.Tab(tabTriggerEl).show();
+                }
+            }
+        }); 
+    </script>
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
     
 @endsection

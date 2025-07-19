@@ -39,9 +39,9 @@ class ProductVariant extends Model
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'attribute_value_product', 'product_id', 'attribute_value_id')
-                    ->using(AttributeValue::class)
-                    ->withPivot(['attribute_value_id'])
-                    ->withTimestamps();
+            ->using(AttributeValue::class)
+            ->withPivot(['attribute_value_id'])
+            ->withTimestamps();
     }
 
     // Quan hệ giá trị thuộc tính thông qua bảng attribute_value_product_variant (liên kết theo product_variant_id)
@@ -87,5 +87,4 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
-
 }

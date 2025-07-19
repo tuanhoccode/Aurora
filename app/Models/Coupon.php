@@ -34,4 +34,5 @@ class Coupon extends Model
     ];
 
     protected $dates = ['start_date', 'end_date', 'deleted_at'];
+    
 }

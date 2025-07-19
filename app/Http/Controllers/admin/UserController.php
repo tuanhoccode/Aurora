@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\Admin\StoreUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\Rule;
@@ -21,7 +21,32 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        return view('admin.users.show', compact('user'));
+        $user->load('address');
+
+        $orders = \App\Models\Order::where('user_id', $user->id)->get()->map(function ($order) {
+            $order->payment_status_badge = $order->is_paid
+                ? '<span class="badge bg-success">Đã thanh toán</span>'
+                : '<span class="badge bg-warning text-dark">Chưa thanh toán</span>';
+
+            if ($order->is_refunded) {
+                $order->fulfilment_status_badge = '<span class="badge bg-danger">Đã hoàn tiền</span>';
+            } elseif ($order->is_refunded_canceled) {
+                $order->fulfilment_status_badge = '<span class="badge bg-secondary">Đã hủy</span>';
+            } else {
+                $order->fulfilment_status_badge = '<span class="badge bg-info">Đang xử lý</span>';
+            }
+
+            return $order;
+        });
+
+        $reviews = \App\Models\Review::where('user_id', $user->id)->get()->map(function ($review) {
+            $review->product_name = 'Sản phẩm #' . $review->product_id;
+            $review->stars = str_repeat('★', $review->rating) . str_repeat('☆', 5 - $review->rating);
+            $review->content = $review->review_text;
+            return $review;
+        });
+
+        return view('admin.users.show', compact('user', 'orders', 'reviews'));
     }
 
     public function create()
@@ -40,10 +65,19 @@ class UserController extends Controller
                 $file = $request->file('avatar');
                 $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('avatars', $filename, 'public');
-                $data['avatar'] = 'storage/' . $path;
+                $data['avatar'] = $path;
             }
 
-            User::create($data);
+            $user = User::create($data);
+
+            \App\Models\UserAddress::create([
+                'user_id' => $user->id,
+                'address' => $request->input('address'),
+                'phone_number' => $request->input('address_phone'),
+                'fullname' => $request->input('address_name'),
+                'is_default' => 1,
+            ]);
+
             return redirect()->route('admin.users.index')->with('success', 'Thêm người dùng thành công.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm người dùng: ' . $e->getMessage());
@@ -72,26 +106,18 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('address')->findOrFail($id);
         return view('admin.users.edit', compact('user'));
     }
 
     public function update(Request $request, $id)
     {
         try {
-            $user = User::findOrFail($id);
+            $user = User::with('address')->findOrFail($id);
 
             $request->validate([
-                'phone_number' => [
-                    'required',
-                    'string',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-                'email' => [
-                    'nullable',
-                    'email',
-                    Rule::unique('users')->ignore($user->id),
-                ],
+                'phone_number' => ['nullable', 'string', Rule::unique('users')->ignore($user->id)],
+                'email' => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
                 'fullname' => 'nullable|string|max:100',
                 'avatar' => 'nullable|image|max:2048',
                 'gender' => 'nullable|in:male,female,other',
@@ -103,30 +129,47 @@ class UserController extends Controller
                 'bank_account' => 'nullable|string|max:255',
                 'reason_lock' => 'nullable|string|max:255',
                 'is_change_password' => 'nullable|boolean',
+                'address' => 'nullable|string|max:255',
+                'address_phone' => 'nullable|string|max:20',
+                'address_name' => 'nullable|string|max:100',
             ]);
 
-            $user->phone_number = $request->phone_number;
-            $user->email = $request->email;
-            $user->fullname = $request->fullname;
-            $user->gender = $request->gender;
-            $user->birthday = $request->birthday;
-            $user->role = $request->role;
-            $user->status = $request->status;
-            $user->bank_name = $request->bank_name;
-            $user->user_bank_name = $request->user_bank_name;
-            $user->bank_account = $request->bank_account;
-            $user->reason_lock = $request->reason_lock;
-            $user->is_change_password = $request->input('is_change_password', $user->is_change_password);
+            $user->update([
+                'phone_number' => $request->phone_number,
+                'email' => $request->email,
+                'fullname' => $request->fullname,
+                'gender' => $request->gender,
+                'birthday' => $request->birthday,
+                'role' => $request->role,
+                'status' => $request->status,
+                'bank_name' => $request->bank_name,
+                'user_bank_name' => $request->user_bank_name,
+                'bank_account' => $request->bank_account,
+                'reason_lock' => $request->reason_lock,
+                'is_change_password' => $request->input('is_change_password', false),
+            ]);
 
             if ($request->hasFile('avatar')) {
                 if ($user->avatar && Storage::disk('public')->exists(str_replace('storage/', '', $user->avatar))) {
                     Storage::disk('public')->delete(str_replace('storage/', '', $user->avatar));
                 }
                 $path = $request->file('avatar')->store('avatars', 'public');
-                $user->avatar = 'storage/' . $path;
+                $user->avatar = $path;
+                $user->save();
             }
 
-            $user->save();
+            // Cập nhật hoặc tạo địa chỉ nếu có dữ liệu
+            if ($request->filled('address') || $request->filled('address_phone') || $request->filled('address_name')) {
+                $user->address()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'address' => $request->input('address'),
+                        'phone_number' => $request->input('address_phone'),
+                        'fullname' => $request->input('address_name'),
+                        'is_default' => 1,
+                    ]
+                );
+            }
 
             return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
         } catch (\Exception $e) {

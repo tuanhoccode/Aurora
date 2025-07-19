@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,14 +11,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, CanResetPasswordTrait;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'fullname',
         'email',
@@ -40,33 +32,32 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         'google_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    protected $casts = [
-        'birthday' => 'datetime',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthday' => 'datetime',
         ];
     }
-    public function address(){
-            return $this -> hasOne(UserAddress::class);
+
+    public function address()
+    {
+        return $this->hasOne(UserAddress::class)->where('is_default', 1);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

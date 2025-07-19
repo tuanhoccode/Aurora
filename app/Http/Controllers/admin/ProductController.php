@@ -42,7 +42,7 @@ class ProductController extends Controller
 
         $products = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        $brands = Brand::where('is_active', 1)->get();
+        $brands = Brand::where('is_active', 1)->get(); // admin vẫn lấy tất cả brand đang hoạt động, không lọc is_visible
         $categories = Category::where('is_active', 1)->get();
         $totalProducts = Product::count();
         $activeProducts = Product::where('is_active', 1)->count();

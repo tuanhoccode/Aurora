@@ -34,26 +34,26 @@
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body p-4">
                 @if ($coupons->count())
-                    {{-- SỬA TẠI ĐÂY --}}
+
                     <div class="d-flex justify-content-between mb-3">
                         <div class="d-flex gap-2">
                             {{-- Form XÓA --}}
-                            <form id="bulk-delete-form" action="{{ route('admin.coupons.bulk-force-delete') }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn các mã đã chọn?')">
+                            {{-- <form id="bulk-delete-form" action="{{ route('admin.coupons.bulk-force-delete') }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn các mã đã chọn?')">
                                 @csrf
                                 <input type="hidden" name="ids_json" id="delete_ids">
                                 <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
                                     <i class="bi bi-trash3"></i> Xóa vĩnh viễn
                                 </button>
-                            </form>
+                            </form> --}}
 
                             {{-- Form KHÔI PHỤC --}}
-                            <form id="bulk-restore-form" action="{{ route('admin.coupons.bulk-restore') }}" method="POST" onsubmit="return confirm('Khôi phục các mã đã chọn?')">
+                            {{-- <form id="bulk-restore-form" action="{{ route('admin.coupons.bulk-restore') }}" method="POST" onsubmit="return confirm('Khôi phục các mã đã chọn?')">
                                 @csrf
                                 <input type="hidden" name="ids_json" id="restore_ids">
                                 <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
                                     <i class="bi bi-arrow-clockwise"></i> Khôi phục
                                 </button>
-                            </form>
+                            </form> --}}
                         </div>
                     </div>
 
@@ -61,8 +61,6 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all"></th>
-                                    <th>ID</th>
                                     <th>Mã</th>
                                     <th>Giảm</th>
                                     <th>Hết hạn</th>
@@ -72,10 +70,9 @@
                             <tbody>
                                 @foreach ($coupons as $coupon)
                                     <tr>
-                                        <td>
+                                        {{-- <td>
                                             <input type="checkbox" class="row-checkbox" value="{{ $coupon->id }}">
-                                        </td>
-                                        <td>{{ $coupon->id }}</td>
+                                        </td> --}}
                                         <td>{{ $coupon->code }}</td>
                                         <td>{{ $coupon->discount_type === 'percent' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}</td>
                                         <td>{{ $coupon->end_date ? $coupon->end_date->format('d/m/Y') : 'Không có' }}</td>

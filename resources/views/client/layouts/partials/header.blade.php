@@ -1,4 +1,4 @@
-<div id="loading">
+{{-- <div id="loading">
     <div id="loading-center">
         <div id="loading-center-absolute">
             <!-- loading content here -->
@@ -20,7 +20,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 <!-- pre loader area end -->
 
 <!-- back to top start -->
@@ -215,6 +215,7 @@
                                                 <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ sơ</a></li>
                                                 <li><a href=""><i class="fa-solid fa-heart"></i> Yêu thích</a></li>
                                                 <li><a href="{{ route('shopping-cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
+                                                <li><a href="{{ route('loginHistory') }}"><i class="fa-solid fa-user"></i> Phiên đăng nhập</a></li>
                                                 @auth
                                                 <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
                                                 @endauth

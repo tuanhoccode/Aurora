@@ -96,10 +96,6 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save me-1"></i> Lưu thay đổi
                                 </button>
-                                {{-- Nút quay lại đã chuyển lên card header --}}
-                                {{-- <a href="{{ route('admin.brands.index') }}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i> Quay lại
-                                </a> --}}
                             </div>
                         </form>
                     </div>
