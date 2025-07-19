@@ -27,8 +27,8 @@ class ProductVariant extends Model
 
     protected $casts = [
         'stock' => 'integer',
-        'regular_price' => 'integer',
-        'sale_price' => 'integer'
+        'regular_price' => 'decimal:2',
+        'sale_price' => 'decimal:2'
     ];
 
     public function product(): BelongsTo
@@ -53,11 +53,6 @@ class ProductVariant extends Model
             'product_variant_id',
             'attribute_value_id'
         )->with('attribute');
-    }
-
-    public function orderItems()
-    {
-        return $this->hasMany(\App\Models\OrderItem::class, 'product_variant_id');
     }
 
     public function getIsOnSaleAttribute()
@@ -86,5 +81,9 @@ class ProductVariant extends Model
     public function productVariant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'product_variant_id', 'id');
     }
 }

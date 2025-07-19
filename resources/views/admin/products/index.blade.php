@@ -115,133 +115,164 @@
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th width="40">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="selectAll">
+                                    <label class="form-check-label" for="selectAll"></label>
                                 </div>
                             </th>
+                            <th width="60">ID</th>
                             <th width="80">Ảnh</th>
                             <th>Tên sản phẩm</th>
                             <th>Mã SP</th>
-                            <th>Giá bán</th>
                             <th>Danh mục</th>
                             <th>Thương hiệu</th>
+                            <th>Giá bán</th>
                             <th>Tồn kho</th>
-                            <th>Loại</th>
+                            <th>Loại SP</th>
                             <th>Trạng thái</th>
                             <th width="100">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($products as $product)
-                        @php
-                          $hasLockedVariant = $product->variants->contains(function($variant) {
-                            return $variant->orderItems()->whereHas('order.currentStatus', function($q) {
-                              $q->where('order_status_id', 4)->where('is_current', 1);
-                            })->exists();
-                          });
-                        @endphp
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}" id="product-{{ $product->id }}">
-                                </div>
-                            </td>
-                            <td>
-                                <img src="{{ $product->thumbnail ? asset('storage/' . $product->thumbnail) : 'https://via.placeholder.com/50' }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
-                            </td>
-                            <td>
-                                <div class="fw-semibold text-primary">
-                                    @if($product->slug)
-                                        <a href="{{ route('client.product.show', $product->slug) }}" target="_blank" class="text-decoration-none text-primary">
-                                            {{ $product->name }}
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input product-checkbox"
+                                            value="{{ $product->id }}" id="product-{{ $product->id }}">
+                                        <label class="form-check-label" for="product-{{ $product->id }}"></label>
+                                    </div>
+                                </td>
+                                <td>{{ $product->id }}</td>
+                                <td>
+                                    @if ($product->thumbnail)
+                                        <img src="{{ asset('storage/' . $product->thumbnail) }}" class="rounded shadow-sm"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                    @else
+                                        <img src="https://via.placeholder.com/50" class="rounded shadow-sm"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-primary">{{ $product->name }}</div>
+                                    <small class="text-muted">{{ $product->short_description }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ $product->sku }}</span>
+                                </td>
+                                <td>
+                                    @foreach ($product->categories as $category)
+                                        <span class="badge bg-info">{{ $category->name }}</span>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @if ($product->brand)
+                                        <span class="badge bg-secondary">{{ $product->brand->name }}</span>
+                                    @else
+                                        <span class="badge bg-light text-dark border">Không có</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($product->is_sale)
+                                        <div class="text-decoration-line-through text-muted">
+                                            {{ number_format($product->price) }}đ
+                                        </div>
+                                        <div class="fw-medium text-danger">
+                                            {{ number_format($product->sale_price) }}đ
+                                        </div>
+                                        <small class="text-success">
+                                            -{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%
+                                        </small>
+                                    @else
+                                        <div class="fw-medium">
+                                            {{ number_format($product->price) }}đ
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($product->type === 'variant')
+                                        @php
+                                            $totalStock = $product->variants->sum('stock');
+                                        @endphp
+                                        @if ($totalStock > 0)
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i>
+                                                {{ number_format($totalStock) }} sản phẩm
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Hết hàng
+                                            </span>
+                                        @endif
+                                    @else
+                                        @if ($product->stock > 0)
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i>
+                                                {{ number_format($product->stock) }} sản phẩm
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Hết hàng
+                                            </span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($product->type === 'variant')
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-boxes"></i> Biến thể
+                                        </span>
+                                    @else
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-box"></i> Đơn giản
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" class="form-check-input toggle-status"
+                                            data-id="{{ $product->id }}" {{ $product->is_active ? 'checked' : '' }}>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('admin.products.show', $product->id) }}"
+                                            class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                    @else
-                                        {{ $product->name }}
-                                    @endif
-                                </div>
-                                <div class="text-muted small">{{ Str::limit($product->short_description, 40) }}</div>
-                            </td>
-                            <td><span class="badge bg-light text-dark border">{{ $product->sku }}</span></td>
-                            <td>
-                                @if ($product->is_sale && $product->sale_price < $product->price)
-                                    <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
-                                    <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
-                                    <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
-                                @else
-                                    <span>{{ number_format($product->price) }}đ</span>
-                                @endif
-                            </td>
-                            <td>
-                                @foreach ($product->categories as $category)
-                                    <span class="badge bg-info text-dark me-1">{{ $category->name }}</span>
-                                @endforeach
-                            </td>
-                            <td>
-                                @if ($product->brand)
-                                    <span class="badge bg-secondary">{{ $product->brand->name }}</span>
-                                @else
-                                    <span class="badge bg-light text-dark border">Không có</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($product->type === 'variant')
-                                    @php $totalStock = $product->variants->sum('stock'); @endphp
-                                    @if ($totalStock > 0)
-                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ number_format($totalStock) }}</span>
-                                    @else
-                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Hết hàng</span>
-                                    @endif
-                                @else
-                                    @if ($product->stock > 0)
-                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ number_format($product->stock) }}</span>
-                                    @else
-                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Hết hàng</span>
-                                    @endif
-                                @endif
-                            </td>
-                            <td>
-                                @if ($product->type === 'variant')
-                                    <span class="badge bg-primary"><i class="bi bi-boxes"></i> Biến thể</span>
-                                @else
-                                    <span class="badge bg-info"><i class="bi bi-box"></i> Đơn giản</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" class="form-check-input toggle-status" data-id="{{ $product->id }}" {{ $product->is_active ? 'checked' : '' }}>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-three-dots fs-5"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('admin.products.show', $product->id) }}"><i class="bi bi-eye me-2"></i>Xem</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('admin.products.edit', $product->id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item text-danger delete-product @if($hasLockedVariant) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($hasLockedVariant) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
+                                        <a href="{{ route('admin.products.edit', $product->id) }}"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger delete-product"
+                                            data-id="{{ $product->id }}" data-name="{{ $product->name }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="12" class="text-center py-4">
-                                <div class="text-muted mb-1"><i class="bi bi-inbox fa-2x"></i></div>
-                                Không có sản phẩm nào
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="12" class="text-center py-4">
+                                    <div class="text-muted mb-1">
+                                        <i class="bi bi-inbox fa-2x"></i>
+                                    </div>
+                                    Không có sản phẩm nào
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="text-muted">
-                    Hiển thị {{ $products->firstItem() }} đến {{ $products->lastItem() }} trong tổng số {{ $products->total() }} sản phẩm
+                    Hiển thị {{ $products->firstItem() }} đến {{ $products->lastItem() }} trong tổng số {{ $products->total() }}
+                    sản phẩm
                 </div>
                 <div>
                     {{ $products->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
@@ -380,12 +411,7 @@
             });
 
             // Delete confirmation
-            $('.delete-product').click(function(e) {
-                if ($(this).data('locked')) {
-                    alert('Sản phẩm đang có trong đơn hàng giao thành công và không thể xóa.');
-                    e.preventDefault();
-                    return false;
-                }
+            $('.delete-product').click(function() {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
 
@@ -395,13 +421,4 @@
             });
         });
     </script>
-@endpush
-
-@push('styles')
-    <style>
-        .disabled-link {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-    </style>
 @endpush

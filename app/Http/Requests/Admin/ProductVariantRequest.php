@@ -15,7 +15,7 @@ class ProductVariantRequest extends FormRequest
     {
         return [
             'variants' => 'required|array|min:1',
-            'variants.*.sku' => 'nullable|string|max:255|unique:product_variants,sku',
+            'variants.*.sku' => 'required|string|max:255|unique:product_variants,sku',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.regular_price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.regular_price',
@@ -31,6 +31,7 @@ class ProductVariantRequest extends FormRequest
             'variants.required' => 'Phải có ít nhất một biến thể',
             'variants.array' => 'Dữ liệu biến thể không hợp lệ',
             'variants.min' => 'Phải có ít nhất một biến thể',
+            'variants.*.sku.required' => 'Mã SKU là bắt buộc',
             'variants.*.sku.unique' => 'Mã SKU đã tồn tại',
             'variants.*.sku.max' => 'Mã SKU không được vượt quá 255 ký tự',
             'variants.*.stock.required' => 'Số lượng tồn kho là bắt buộc',

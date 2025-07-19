@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -22,7 +22,7 @@ class Order extends Model
         'coupon_id',
         'is_refunded_canceled',
         'check_refunded_canceled',
-        'img_refunded_money',
+        'img_refunded_money'
     ];
 
     public function items()
@@ -40,27 +40,31 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Lịch sử trạng thái nhiều bản ghi
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
     public function statusHistory()
     {
         return $this->hasMany(OrderStatusHistory::class);
     }
 
-    // Trạng thái hiện tại (is_current = true)
     public function currentStatus()
     {
         return $this->hasOne(OrderStatusHistory::class)
             ->where('is_current', true)
-            ->with('status')
-            ->orderByDesc('created_at');
+            ->with('status');
     }
 
-    // Trạng thái hiện tại từ order_order_status (is_current = true)
-    public function currentOrderStatus()
+    public function status()
     {
-        return $this->hasOne(\App\Models\OrderOrderStatus::class)
-            ->where('is_current', true)
-            ->with('status')
-            ->orderByDesc('created_at');
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
     }
+
+    public function orderDetail()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+    }
+    
 }

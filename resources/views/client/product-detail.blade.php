@@ -3,8 +3,6 @@
 @section('content')
     @php
         $hasVariants = isset($product->variants) && count($product->variants) > 0;
-        $reviews = $product->reviews ?? collect();
-        $comments = $product->comments ?? collect();
     @endphp
     <style>
         .color-circle {
@@ -657,7 +655,7 @@
                                                     <div class="mb-3">
                                                         @php
                                                             // Chỉ lấy các đánh giá gốc
-                                                            $validReviews = $reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1);
+                                                            $validReviews = $product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1);
                                                             $averageRating = $validReviews->count() > 0 ? $validReviews->avg('rating') : 0;
                                                             $reviewCount = $validReviews->count();
                                                         @endphp
@@ -671,7 +669,7 @@
 
                                                     <!-- Danh sách đánh giá -->
                                                     
-                                                    @forelse ($reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
+                                                    @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
                                                         <div class="review-item border-bottom pb-3 mb-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
@@ -699,7 +697,7 @@
                                                 
                                                 <!-- Hiển thị reviews -->
 
-                                                @forelse ($reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
+                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
                                                     <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-thumb me-3">
                                                                 <a href="#">
@@ -733,7 +731,7 @@
                                                 @endforeach
 
                                                 <!-- Hiển thị comment -->
-                                                @foreach($comments->where('is_active', 1)->where('parent_id', null) ->sortByDesc('created_at')->take(2) as $comment)
+                                                @foreach($product->comments->where('is_active', 1)->where('parent_id', null) ->sortByDesc('created_at')->take(2) as $comment)
                                                    <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
@@ -765,7 +763,7 @@
                                                  <!-- Phần đánh giá bình luận còn lại (ẩn) -->
                                                     <div id="more-reviews" style="display: none;">
                                                         <!-- Các đánh giá còn lại -->
-                                                        @foreach($reviews->where('is_active', 1)->where('rating', '>=', 1)->sortByDesc('created_at')->skip(3) as $review)
+                                                        @foreach($product->reviews->where('is_active', 1)->where('rating', '>=', 1)->sortByDesc('created_at')->skip(3) as $review)
                                                             <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
@@ -798,7 +796,7 @@
                                                         @endforeach
 
                                                         <!-- Các bình luận còn lại -->
-                                                        @foreach($comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
+                                                        @foreach($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
                                                             <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
@@ -827,7 +825,7 @@
                                                         @endforeach
                                                     </div>
                                                 <!-- Nút Xem thêm -->
-                                                 @if($reviews->count() >3 || $comments->count()>2)
+                                                 @if($product->reviews->count() >3 || $product->comments->count()>2)
                                                  <div class="text-center mt-3">
                                                         <button id="show-more-btn" class="btn btn-outline-primary">Xem thêm đánh giá và bình luận</button>
                                                  </div>
@@ -988,16 +986,6 @@
 
         let selectedColorCode = null;
         let selectedSize = null;
-
-        const colorMap = {
-          'Đỏ': 'DO',
-          'Vàng': 'VANG',
-          'Đen': 'DEN',
-          'Trắng': 'TRANG',
-          'Xám': 'XAM',
-          'Xanh': 'XA',
-          // ... bổ sung nếu có thêm màu
-        };
 
         document.addEventListener("DOMContentLoaded", function() {
             const priceEl = document.getElementById('product-price');
