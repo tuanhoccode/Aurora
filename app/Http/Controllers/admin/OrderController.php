@@ -169,8 +169,13 @@ class OrderController extends Controller
             $from = $currentStatus?->order_status_id ?? 1;
             $to = $request->order_status_id;
 
-            // Kiểm tra hợp lệ
-            if (!in_array($to, $validTransitions[$from] ?? [])) {
+            // CHẶN cập nhật nếu trạng thái hiện tại là Đã hủy
+            if ($from == 8) {
+                return redirect()->back()->with('error', "Đơn hàng đã bị hủy và không thể cập nhật trạng thái nữa!");
+            }
+
+            // 5. Kiểm tra hợp lệ
+            if ($from !== null && !in_array($to, $validTransitions[$from] ?? [])) {
                 $currentName = OrderStatus::find($from)?->name ?? 'Không rõ';
                 $targetName = OrderStatus::find($to)?->name ?? 'Không rõ';
                 $validStatuses = implode(', ', array_map(fn($id) => OrderStatus::find($id)?->name ?? 'Không rõ', $validTransitions[$from] ?? []));
@@ -226,6 +231,17 @@ class OrderController extends Controller
                 'code' => $newCode,
                 'note' => $note,
             ]);
+
+            // 12. Trừ kho khi chuyển sang trạng thái giao hàng thành công
+            if ($from != 4 && $to == 4) {
+                foreach ($order->items as $item) {
+                    if ($item->variant) {
+                        $item->variant->decrement('stock', $item->quantity);
+                    } else if ($item->product) {
+                        $item->product->decrement('stock', $item->quantity);
+                    }
+                }
+            }
 
             DB::commit();
 

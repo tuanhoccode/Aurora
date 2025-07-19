@@ -24,25 +24,16 @@ class OrderStatusHistory extends Model
         'customer_confirmation' => 'boolean',
     ];
 
-    /**
-     * Đơn hàng liên quan
-     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    /**
-     * Trạng thái tương ứng (ví dụ: Đang giao, Giao thành công)
-     */
     public function status(): BelongsTo
     {
         return $this->belongsTo(OrderStatus::class, 'order_status_id');
     }
 
-    /**
-     * Người thay đổi trạng thái (nhân viên hoặc hệ thống)
-     */
     public function modifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'modifier_id');

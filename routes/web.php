@@ -292,10 +292,10 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
     Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
 });
 // Client Category
-Route::prefix('danh-muc')->name('client.categories.')->group(function () {
+Route::prefix('categories')->name('client.categories.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-});
+}); 
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -395,9 +395,14 @@ Route::middleware('web')->group(function () {
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-
+ // Tracking đơn hàng
+    Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
+    // Hủy đơn hàng
+    Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
+
+   
 });
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');

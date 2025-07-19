@@ -137,8 +137,11 @@
                 <div class="order-detail-card">
                     <div class="order-detail-card__header">
                         <h4>Thông tin đơn hàng</h4>
-                        <span class="order-status bg-{{ $order->currentStatus ? ($order->currentStatus->status->name === 'Đã hoàn thành' ? 'success' : ($order->currentStatus->status->name === 'Đang giao hàng' ? 'warning' : 'primary')) : 'primary' }}">
-                            {{ $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận' }}
+                        @php
+                            $currentStatusName = $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận';
+                        @endphp
+                        <span class="badge bg-{{ $currentStatusName === 'Đã hủy' ? 'danger' : ($currentStatusName === 'Chờ xác nhận' ? 'primary' : 'success') }}">
+                            {{ $currentStatusName }}
                         </span>
                     </div>
 
@@ -218,15 +221,15 @@
                             
                             <div>
                                 <h5>{{ $item->product->name }}</h5>
-                                <p class="text-muted">SKU: {{ $item->product->sku }}</p>
-                                @if($item->attributes_variant)
+                                <p class="text-muted">
+                                    SKU: {{ $item->variant ? $item->variant->sku : $item->product->sku }}
+                                </p>
+                                @if($item->variant && $item->variant->attributeValues)
                                     <p class="text-muted">
-                                        @foreach(json_decode($item->attributes_variant, true) as $name => $value)
-                                            @if($value)
-                                                <span class="badge bg-secondary me-2">
-                                                    {{ ucfirst(str_replace('_', ' ', $name)) }}: {{ $value }}
-                                                </span>
-                                            @endif
+                                        @foreach($item->variant->attributeValues as $attrValue)
+                                            <span class="badge bg-secondary me-2">
+                                                {{ $attrValue->attribute->name }}: {{ $attrValue->value }}
+                                            </span>
                                         @endforeach
                                     </p>
                                 @endif
