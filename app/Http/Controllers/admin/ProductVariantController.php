@@ -91,12 +91,6 @@ class ProductVariantController extends Controller
         $selectedValues = $variant->attributeValues->pluck('id')->toArray();
 
 
-        if (request()->has('modal')) {
-            // Trả về partial form cho modal
-            return view('admin.products.variants._edit_form', compact('product', 'variant', 'attributes', 'selectedValues'));
-        }
-
-
         return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
     }
 
@@ -203,34 +197,34 @@ class ProductVariantController extends Controller
      */
     public function destroy(Product $product, ProductVariant $variant)
     {
-        // Kiểm tra nếu biến thể đã từng được mua trong đơn hàng hoặc đang có trong giỏ hàng thì không cho xóa
-        $hasOrder = $variant->orderItems()->exists();
-        $hasCart = \App\Models\CartItem::where('product_variant_id', $variant->id)->exists();
-        if ($hasOrder || $hasCart) {
-            return redirect()->route('admin.products.edit', $product)
-                ->with('error', 'Không thể xoá biến thể đã có đơn hàng hoặc giỏ hàng');
-        }
         try {
             DB::beginTransaction();
 
+
             Log::info('Attempting to delete variant:', ['variant_id' => $variant->id]);
+
 
             // Delete image if exists
             if ($variant->img && Storage::disk('public')->exists($variant->img)) {
                 Storage::disk('public')->delete($variant->img);
             }
 
+
             // Delete attribute value associations
             DB::table('attribute_value_product_variant')
                 ->where('product_variant_id', $variant->id)
                 ->delete();
 
+
             // Delete variant
             $variant->delete();
 
+
             Log::info('Variant deleted:', ['variant_id' => $variant->id]);
 
+
             DB::commit();
+
 
             return redirect()->route('admin.products.edit', $product)
                 ->with('success', 'Biến thể đã được xóa thành công.');
