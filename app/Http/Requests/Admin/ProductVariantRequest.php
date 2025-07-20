@@ -15,7 +15,30 @@ class ProductVariantRequest extends FormRequest
     {
         return [
             'variants' => 'required|array|min:1',
-            'variants.*.sku' => 'nullable|string|max:255|unique:product_variants,sku',
+            'variants.*.sku' => [
+                'nullable',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    if (empty($value)) {
+                        return;
+                    }
+                    
+                    // Kiểm tra SKU đã tồn tại trong hệ thống chưa
+                    $existingVariant = \App\Models\ProductVariant::where('sku', $value)->first();
+                    
+                    // Nếu đang cập nhật, bỏ qua kiểm tra cho chính bản ghi hiện tại
+                    $variantId = $this->route('variant') ? $this->route('variant')->id : null;
+                    if ($existingVariant && $variantId && $existingVariant->id == $variantId) {
+                        return;
+                    }
+                    
+                    if ($existingVariant) {
+                        $productName = $existingVariant->product ? $existingVariant->product->name : 'không xác định';
+                        $fail("Mã SKU '{$value}' đã được sử dụng trong sản phẩm '{$productName}'");
+                    }
+                },
+            ],
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.regular_price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.regular_price',
@@ -31,7 +54,7 @@ class ProductVariantRequest extends FormRequest
             'variants.required' => 'Phải có ít nhất một biến thể',
             'variants.array' => 'Dữ liệu biến thể không hợp lệ',
             'variants.min' => 'Phải có ít nhất một biến thể',
-            'variants.*.sku.unique' => 'Mã SKU đã tồn tại',
+            'variants.*.sku.unique' => 'Mã SKU đã tồn tại trong sản phẩm này',
             'variants.*.sku.max' => 'Mã SKU không được vượt quá 255 ký tự',
             'variants.*.stock.required' => 'Số lượng tồn kho là bắt buộc',
             'variants.*.stock.integer' => 'Số lượng tồn kho phải là số nguyên',
