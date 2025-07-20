@@ -118,8 +118,27 @@ class ProductController extends Controller
                 $data['thumbnail'] = $file->storeAs('products', $filename, 'public');
             }
 
+            // Log dữ liệu đầu vào
+            \Log::info('Creating new product:', [
+                'input_data' => $data,
+                'request_all' => $request->all()
+            ]);
+
             // Tạo sản phẩm
             $product = Product::create($data);
+            
+            // Nếu là sản phẩm biến thể, cập nhật lại price từ form
+            if ($data['type'] === 'variant' && $request->has('price')) {
+                $price = $request->input('price');
+                $product->price = $price;
+                $product->save();
+                
+                \Log::info('Updated product price for new variant product:', [
+                    'product_id' => $product->id,
+                    'price' => $price,
+                    'saved_price' => $product->price
+                ]);
+            }
 
             // Lưu biến thể nếu là sản phẩm biến thể và có dữ liệu variants
             if ($data['type'] === 'variant' && $request->has('variants') && !empty($request->input('variants'))) {
@@ -142,22 +161,20 @@ class ProductController extends Controller
                                 ->withErrors(['variants' => "SKU '{$sku}' bị trùng lặp. Vui lòng kiểm tra lại."]);
                         }
                         
-                        // Kiểm tra SKU đã tồn tại trong database
-                        $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
+                        // Kiểm tra SKU đã tồn tại trong cùng sản phẩm
+                        $existingVariant = \App\Models\ProductVariant::where('sku', $sku)
+                            ->where('product_id', $product->id)
+                            ->first();
+                            
                         if ($existingVariant) {
-                            // Lấy câu SQL cuối cùng
-                            $sql = optional(DB::getQueryLog())[count(DB::getQueryLog())-1]['query'] ?? null;
-                            \Log::warning('SKU duplicate in database', [
+                            \Log::warning('SKU duplicate in the same product', [
                                 'sku' => $sku,
-                                'request' => $request->all(),
-                                'product_id' => $product->id ?? null,
-                                'variant_data' => $variantData ?? null,
+                                'product_id' => $product->id,
                                 'existing_variant_id' => $existingVariant->id,
-                                'sql' => $sql,
                             ]);
                             return redirect()->back()
                                 ->withInput()
-                                ->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong hệ thống. Vui lòng chọn SKU khác."]);
+                                ->withErrors(['variants' => "SKU '{$sku}' đã được sử dụng trong sản phẩm này. Vui lòng chọn SKU khác."]);
                         }
                         
                         $usedSkus[] = $sku;
@@ -400,8 +417,41 @@ class ProductController extends Controller
                 }
             }
 
+            // Log dữ liệu đầu vào
+            \Log::info('Updating product data:', [
+                'product_id' => $product->id,
+                'input_data' => $data,
+                'request_all' => $request->all()
+            ]);
+            
+            // Lấy giá từ request trực tiếp
+            $price = $request->input('price');
+            
+            // Cập nhật giá vào dữ liệu trước khi lưu
+            $data['price'] = $price;
+            
             // Update product
             $product->update($data);
+            
+            // Nếu là sản phẩm biến thể, cập nhật lại price từ form
+            if ($data['type'] === 'variant' && !is_null($price)) {
+                // Cập nhật trực tiếp vào model và lưu lại
+                $product->price = $price;
+                $product->save();
+                
+                \Log::info('Updated product price for variant product:', [
+                    'product_id' => $product->id,
+                    'price' => $price,
+                    'saved_price' => $product->price
+                ]);
+                
+                // Log lại để kiểm tra
+                $refreshedProduct = Product::find($product->id);
+                \Log::info('Refreshed product data after save:', [
+                    'product_id' => $refreshedProduct->id,
+                    'price' => $refreshedProduct->price
+                ]);
+            }
 
             // Xử lý cập nhật biến thể nếu là sản phẩm biến thể
             if ($data['type'] === 'variant') {
@@ -420,24 +470,79 @@ class ProductController extends Controller
                     
                     foreach ($request->input('variants') as $index => $variantData) {
                         try {
-                            // Kiểm tra SKU trùng lặp
-                            $sku = $variantData['sku'] ?? null;
-                            if ($sku) {
-                                // Kiểm tra SKU đã tồn tại trong database
-                                $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
-                                if ($existingVariant) {
-                                    throw new \Exception("SKU '{$sku}' đã tồn tại trong hệ thống.");
-                                }
-                                
-                                // Kiểm tra SKU trùng trong cùng request
-                                if (in_array($sku, $usedSkus)) {
-                                    throw new \Exception("SKU '{$sku}' bị trùng lặp trong form.");
-                                }
-                                $usedSkus[] = $sku;
-                            } else {
-                                // Tạo SKU tự động nếu không có
-                                $sku = 'VAR-' . strtoupper(Str::random(8));
+                            // Lấy danh sách giá trị thuộc tính để tạo SKU
+                            $attributeValues = [];
+                            if (!empty($variantData['attributes'])) {
+                                $attributeValues = \App\Models\AttributeValue::whereIn('id', $variantData['attributes'])
+                                ->with('attribute') // Load quan hệ attribute để sắp xếp
+                                ->orderBy('attribute_id')
+                                ->get()
+                                ->map(function($item) {
+                                    // Sử dụng value hoặc slug để tạo mã
+                                    return [
+                                        'id' => $item->id,
+                                        'value' => $item->value,
+                                        'slug' => $item->slug ?? Str::slug($item->value, ''),
+                                        'attribute_name' => $item->attribute->name ?? ''
+                                    ];
+                                })
+                                ->toArray();
                             }
+                            
+                            // Chỉ sử dụng SKU sản phẩm cha (bỏ dấu gạch ngang sau PRD nếu có), kích thước và màu sắc
+                            $baseSku = preg_replace('/^PRD-?/i', 'PRD', $product->sku);
+                            $sizePart = '';
+                            $colorPart = '';
+                            
+                            // Tìm kích thước và màu sắc từ các thuộc tính
+                            foreach ($attributeValues as $attr) {
+                                $value = $attr['value'] ?? '';
+                                $attrName = strtolower($attr['attribute_name'] ?? '');
+                                
+                                // Xử lý kích thước
+                                if (str_contains($attrName, 'size') || str_contains($attrName, 'kích thước') || str_contains($attrName, 'kích cỡ')) {
+                                    $sizePart = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $value));
+                                } 
+                                // Xử lý màu sắc
+                                elseif (str_contains($attrName, 'màu') || str_contains($attrName, 'color')) {
+                                    // Chuẩn hóa giá trị màu trước khi gọi getColorCode
+                                    $colorValue = is_string($value) ? trim(mb_strtolower($value)) : '';
+                                    $colorPart = $this->getColorCode($colorValue);
+                                    
+                                    // Ghi log để debug
+                                    \Log::info('Processing color', [
+                                        'original_value' => $value,
+                                        'normalized_value' => $colorValue,
+                                        'color_part' => $colorPart
+                                    ]);
+                                }
+                            }
+                            
+                            // Tạo SKU hoàn chỉnh: parentSku-size-color
+                            $attrCodes = [];
+                            if ($sizePart) $attrCodes[] = $sizePart;
+                            if ($colorPart) $attrCodes[] = $colorPart;
+                            
+                            $skuSuffix = !empty($attrCodes) ? '-' . implode('-', $attrCodes) : '';
+                            $sku = $baseSku . $skuSuffix;
+                            
+                            // Kiểm tra SKU đã tồn tại trong cùng sản phẩm (trừ chính nó nếu đang cập nhật)
+                            $existingVariant = \App\Models\ProductVariant::where('sku', $sku)
+                                ->where('product_id', $product->id)
+                                ->when(isset($variantData['id']), function($query) use ($variantData) {
+                                    return $query->where('id', '!=', $variantData['id']);
+                                })
+                                ->first();
+                                
+                            if ($existingVariant) {
+                                throw new \Exception("Biến thể với các thuộc tính đã chọn đã tồn tại trong sản phẩm này.");
+                            }
+                            
+                            // Kiểm tra SKU trùng trong cùng request
+                            if (in_array($sku, $usedSkus)) {
+                                throw new \Exception("Có lỗi xảy ra khi tạo SKU. Vui lòng thử lại.");
+                            }
+                            $usedSkus[] = $sku;
 
                             // Tạo biến thể mới
                             $variant = $product->variants()->create([
@@ -499,12 +604,25 @@ class ProductController extends Controller
                             $variant = $product->variants()->find($variantId);
                             if (!$variant) continue;
                             
-                            // Cập nhật thông tin cơ bản
+                            // Cập nhật thông tin cơ bản của biến thể
                             $updateData = [
                                 'regular_price' => $variantData['price'] ?? $variant->regular_price,
                                 'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
                                 'stock' => $variantData['stock'] ?? $variant->stock,
                             ];
+                            
+                            // Kiểm tra nếu giá khuyến mãi lớn hơn hoặc bằng giá gốc thì bỏ qua
+                            if (isset($updateData['sale_price']) && $updateData['sale_price'] >= $updateData['regular_price']) {
+                                $updateData['sale_price'] = null;
+                            }
+                            
+                            $variant->update($updateData);
+                            
+                            // Log thông tin cập nhật
+                            \Log::info('Updated variant:', [
+                                'variant_id' => $variant->id,
+                                'update_data' => $updateData
+                            ]);
                             
                             // Xử lý ảnh nếu có
                             if ($request->hasFile("variants_old.{$variantId}.image")) {
@@ -771,5 +889,80 @@ class ProductController extends Controller
             Log::error('Error deleting gallery image: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi xóa hình ảnh'], 500);
         }
+    }
+    
+    /**
+     * Tạo mã màu từ tên màu
+     * 
+     * @param string $colorName Tên màu
+     * @return string Mã màu
+     */
+    protected function getColorCode($colorName)
+    {
+        $colorName = strtolower(trim($colorName));
+        
+        // Bảng ánh xạ màu sắc
+        $colorMap = [
+            'đỏ' => 'DO',
+            'vàng' => 'VANG',
+            'vàng kim' => 'VK',
+            'vàng đồng' => 'VD',
+            'vàng bạc' => 'VB',
+            'đen' => 'DEN',
+            'trắng' => 'TRANG',
+            'trắng ngà' => 'TN',
+            'trắng sữa' => 'TS',
+            'xanh dương' => 'XD',
+            'xanh da trời' => 'XDT',
+            'xanh lá' => 'XL',
+            'xanh lá cây' => 'XLC',
+            'xanh rêu' => 'XR',
+            'xanh ngọc' => 'XN',
+            'xanh nước biển' => 'XNB',
+            'hồng' => 'HONG',
+            'hồng pastel' => 'HP',
+            'hồng đào' => 'HD',
+            'tím' => 'TIM',
+            'tím than' => 'TT',
+            'tím hoa cà' => 'THC',
+            'cam' => 'CAM',
+            'cam đất' => 'CD',
+            'nâu' => 'NAU',
+            'nâu đỏ' => 'ND',
+            'nâu socola' => 'NS',
+            'xám' => 'XAM',
+            'xám bạc' => 'XB',
+            'xám đen' => 'XD',
+            'xám khói' => 'XK',
+            'kem' => 'KEM',
+            'be' => 'BE',
+            'ghi' => 'GHI',
+            'ghi xám' => 'GX'
+        ];
+        
+        // Nếu tìm thấy trong bảng ánh xạ thì trả về mã tương ứng
+        if (isset($colorMap[$colorName])) {
+            return $colorMap[$colorName];
+        }
+        
+        // Nếu không tìm thấy, tạo mã từ tên màu
+        $words = preg_split('/\s+/', $colorName);
+        $code = '';
+        
+        // Nếu chỉ có 1 từ, lấy 2 ký tự đầu
+        if (count($words) === 1) {
+            $code = strtoupper(substr($words[0], 0, 2));
+        } else {
+            // Nếu có nhiều từ, lấy ký tự đầu của mỗi từ
+            foreach ($words as $word) {
+                $code .= strtoupper(substr($word, 0, 1));
+            }
+        }
+        
+        // Loại bỏ ký tự không phải chữ cái và số
+        $code = preg_replace('/[^A-Z0-9]/', '', $code);
+        
+        // Nếu mã rỗng, trả về mã mặc định
+        return !empty($code) ? $code : 'CL';
     }
 }

@@ -123,32 +123,43 @@
               @enderror
             </div>
           </div>
-          <!-- Card: Giá & tồn kho chung -->
+          <!-- Card: Giá & thông tin chung -->
           <div class="card mb-4" id="priceStockCard">
             <div class="card-header bg-light">
-              <i class="fas fa-tag me-1"></i> Giá & Tồn kho chung
+              <i class="fas fa-tag me-1"></i> Thông tin chung
             </div>
             <div class="card-body">
               <label class="form-label">SKU</label>
-              <input type="text" class="form-control mb-2 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku', $product->sku) }}" readonly>
+              <input type="text" class="form-control mb-3 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku', $product->sku) }}" @if($product->type === 'variant') readonly @endif>
               @error('sku')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <label class="form-label">Giá</label>
-              <input type="number" class="form-control mb-2 @error('price') is-invalid @enderror" name="price" value="{{ old('price', $product->price) }}" min="0" step="1">
-              @error('price')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-              <label class="form-label">Giá khuyến mãi</label>
-              <input type="number" class="form-control mb-2 @error('sale_price') is-invalid @enderror" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" min="0" step="1">
-              @error('sale_price')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-              <label class="form-label">Tồn kho</label>
-              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0">
-              @error('stock')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
+              
+              @if($product->type !== 'variant')
+                <!-- Sản phẩm đơn giản: Hiển thị đầy đủ các trường -->
+                <label class="form-label">Giá</label>
+                <input type="number" class="form-control mb-2 @error('price') is-invalid @enderror" name="price" value="{{ old('price', $product->price) }}" min="0" step="1">
+                @error('price')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <label class="form-label">Giá khuyến mãi</label>
+                <input type="number" class="form-control mb-2 @error('sale_price') is-invalid @enderror" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" min="0" step="1">
+                @error('sale_price')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <label class="form-label">Tồn kho</label>
+                <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0">
+                @error('stock')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              @else
+                <!-- Sản phẩm biến thể: Chỉ hiển thị trường giá -->
+                <label class="form-label">Giá</label>
+                <input type="number" class="form-control @error('price') is-invalid @enderror" name="price" value="{{ old('price', $product->price) }}" min="0" step="1">
+                @error('price')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              @endif
             </div>
           </div>
           <!-- Card: Trạng thái sản phẩm -->
@@ -297,9 +308,8 @@
       
       <div class="mt-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
         <button class="btn btn-primary" type="submit">
-          <i class="fas fa-save me-1"></i> Lưu sản phẩm
+          <i class="fas fa-save me-1"></i> Cập nhật sản phẩm
         </button>
       </div>
     </form>
@@ -381,12 +391,43 @@
     return str;
   }
 
-  // Bảng ánh xạ màu sắc giống bên create
+  // Bảng ánh xạ màu sắc
   const colorMap = {
     'Đỏ': 'DO',
     'Vàng': 'VANG',
+    'Vàng kim': 'VK',
+    'Vàng đồng': 'VD',
+    'Vàng bạc': 'VB',
     'Đen': 'DEN',
     'Trắng': 'TRANG',
+    'Trắng ngà': 'TN',
+    'Trắng sữa': 'TS',
+    'Xanh dương': 'XD',
+    'Xanh da trời': 'XDT',
+    'Xanh lá': 'XL',
+    'Xanh lá cây': 'XLC',
+    'Xanh rêu': 'XR',
+    'Xanh ngọc': 'XN',
+    'Xanh nước biển': 'XNB',
+    'Hồng': 'HONG',
+    'Hồng pastel': 'HP',
+    'Hồng đào': 'HD',
+    'Tím': 'TIM',
+    'Tím than': 'TT',
+    'Tím hoa cà': 'THC',
+    'Cam': 'CAM',
+    'Cam đất': 'CD',
+    'Nâu': 'NAU',
+    'Nâu đỏ': 'ND',
+    'Nâu socola': 'NS',
+    'Xám': 'XAM',
+    'Xám bạc': 'XB',
+    'Xám đen': 'XD',
+    'Xám khói': 'XK',
+    'Kem': 'KEM',
+    'Be': 'BE',
+    'Ghi': 'GHI',
+    'Ghi xám': 'GX',
     'Xám': 'XAM',
     'Xanh': 'XA',
     // ... bổ sung nếu có thêm màu
@@ -460,22 +501,36 @@
     let tbody = '';
     combos.forEach(function(combo, idx) {
       let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${currentRows+idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
-      let sku = productSlug;
-      combo.forEach(c => {
-        let attrLower = c.attr.toLowerCase();
-        if (
-          attrLower.includes('màu') ||
-          attrLower.includes('color')
-        ) {
-          let colorCode = colorMap[c.value] || removeVietnameseTones(c.value).substring(0,2).toUpperCase();
-          sku += '-' + colorCode;
-        } else if (
-          attrLower.includes('size') ||
-          attrLower.includes('kích')
-        ) {
-          sku += '-' + removeVietnameseTones(c.value).toUpperCase();
+      // Lấy SKU sản phẩm cha và loại bỏ dấu gạch ngang sau PRD nếu có
+      let parentSku = '{{ $product->sku }}'.replace(/^PRD-?/i, 'PRD');
+      
+      // Chỉ lấy size và màu sắc cho SKU
+      let sizePart = '';
+      let colorPart = '';
+      
+      // Duyệt qua các thuộc tính để tìm size và màu
+      combo.forEach(function(attr) {
+        let attrName = attr.attr.toLowerCase();
+        let attrValue = attr.value;
+        
+        // Lấy kích thước (size)
+        if (attrName.includes('size') || attrName.includes('kích thước') || attrName.includes('kích cỡ')) {
+          sizePart = attrValue.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        } 
+        // Lấy màu sắc
+        else if (attrName.includes('màu') || attrName.includes('color')) {
+          colorPart = colorMap[attrValue] || 
+                     removeVietnameseTones(attrValue)
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, '')
+                      .substring(0, 3);
         }
       });
+      
+      // Tạo SKU hoàn chỉnh: parentSku-size-color
+      let sku = parentSku;
+      if (sizePart) sku += '-' + sizePart;
+      if (colorPart) sku += '-' + colorPart;
       tbody += `<tr>
         <td>${attrStr}</td>
         <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${sku}\" readonly></td>
@@ -533,14 +588,28 @@
     });
   });
   // Ẩn/hiện card biến thể và giá & tồn kho theo kiểu sản phẩm
-  $('#productTypeSelect').on('change', function() {
-    if ($(this).val() === 'variant') {
+  function updatePriceFieldsVisibility(productType) {
+    if (productType === 'variant') {
       $('#variantSection').show();
-      $('#priceStockCard').hide();
+      $('#simpleProductPriceFields').hide();
+      $('#variantProductPriceFields').show();
+      $('input[name="sale_price"], input[name="stock"]').closest('.mb-2, .form-group').hide();
+      $('#priceStockCard').show(); // Hiển thị card giá chung nhưng chỉ hiển thị trường price
     } else {
       $('#variantSection').hide();
+      $('#simpleProductPriceFields').show();
+      $('#variantProductPriceFields').hide();
+      $('input[name="sale_price"], input[name="stock"]').closest('.mb-2, .form-group').show();
       $('#priceStockCard').show();
     }
+  }
+
+  // Gọi hàm khi trang được tải
+  updatePriceFieldsVisibility($('#productTypeSelect').val());
+
+  // Xử lý khi thay đổi loại sản phẩm
+  $('#productTypeSelect').on('change', function() {
+    updatePriceFieldsVisibility($(this).val());
   });
   $(function() {
     if ($('#productTypeSelect').val() === 'variant') {
