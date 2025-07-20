@@ -294,57 +294,71 @@
                             <i class="fas fa-tag me-2"></i>Giá & Kho hàng
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label fw-medium">Mã sản phẩm (SKU)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">SKU</span>
-                                <input type="text" class="form-control border-start-0" name="sku"
-                                    value="{{ old('sku', $product->sku) }}" readonly>
-                            </div>
-                            <small class="text-muted">SKU không thể thay đổi</small>
-                        </div>
-
-
-                        <div class="mb-3">
-                            <label class="form-label fw-medium">Giá bán <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">VNĐ</span>
-                                <input type="number" class="form-control border-start-0 @error('price') is-invalid @enderror"
-                                    name="price" value="{{ old('price', $product->price) }}"  min="0" step="1000">
-                            </div>
-                            @error('price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-
-                        <div class="mb-3">
-                            <label class="form-label">Giá khuyến mãi</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control @error('sale_price') is-invalid @enderror"
-                                       name="sale_price" value="{{ old('sale_price', $product->sale_price) }}"
-                                       min="0" step="1000">
-                                <span class="input-group-text">đ</span>
-                            </div>
-                            @error('sale_price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-
-                        <!-- Stock field - only show for non-variant products -->
-                        <div class="mb-3" id="stockField">
-                            <label class="form-label fw-medium">Số lượng trong kho</label>
-                            <input type="number" class="form-control @error('stock') is-invalid @enderror"
-                                   name="stock" value="{{ old('stock', $product->stock) }}" min="0">
-                            @error('stock')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
+                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
+                    </button>
+                  </div>
                 </div>
+                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div id="variantTableWrapper" @if($product->variants->count() == 0) style="display:none;" @endif>
+                    <h5 class="mb-3">Danh sách biến thể</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered align-middle" id="variantTable">
+                        <thead class="table-light">
+                          <tr>
+                            <th style="min-width: 200px;">Thuộc tính</th>
+                            <th style="min-width: 120px;">SKU</th>
+                            <th style="min-width: 120px;">Giá gốc</th>
+                            <th style="min-width: 120px;">Giá khuyến mãi</th>
+                            <th style="min-width: 100px;">Tồn kho</th>
+                            <th style="min-width: 150px;">Ảnh</th>
+                            <th style="width: 100px;">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($product->variants as $variant)
+                            <tr>
+                              <td>
+                                @foreach($variant->attributeValues as $attributeValue)
+                                  <input type="hidden" name="variants_old[{{ $variant->id }}][attributes][{{ $attributeValue->attribute_id }}]" value="{{ $attributeValue->id }}">
+                                  <span class="badge bg-secondary me-1">{{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}</span>
+                                @endforeach
+                              </td>
+                              <td><input type="text" class="form-control" name="variants_old[{{ $variant->id }}][sku]" value="{{ $variant->sku }}" readonly></td>
+                              <td>
+                                <input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ $variant->regular_price }}" min="0" placeholder="Giá gốc">
+                              </td>
+                              <td>
+                                <input type="number" class="form-control variant-sale-price" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ $variant->sale_price }}" min="0" placeholder="Giá khuyến mãi">
+                                <small class="text-muted discount-percentage" style="display:none;"></small>
+                              </td>
+                              <td>
+                                <input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ $variant->stock }}" min="0" placeholder="Tồn kho">
+                              </td>
+                              <td>
+                                <input type="file" class="form-control" name="variants_old[{{ $variant->id }}][image]" accept="image/*">
+                                @if($variant->img)
+                                  <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
+                                @endif
+                              </td>
+                              <td>
+                                <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-variant-btn" data-id="{{ $variant->id }}" data-sku="{{ $variant->sku }}"><i class="fas fa-trash"></i></button>
+                              </td>
+                            </tr>
+                          @endforeach
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div id="noVariantsMessage" class="text-center py-4" @if($product->variants->count() > 0) style="display:none;" @endif>
+                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
         <div class="d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-primary">
