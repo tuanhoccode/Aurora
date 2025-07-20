@@ -106,7 +106,7 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th class="border-0 text-end" style="width: 200px">Thao tác</th>
+                                    <th class="border-0 text-end" style="width: 100px">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -140,26 +140,29 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ route('admin.attribute_values.index', $attribute->id) }}"
-                                                    class="btn btn-info btn-sm rounded-pill px-3"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Quản lý giá trị">
-                                                    <i class="bi bi-list-check"></i>
-                                                </a>
-                                                <a href="{{ route('admin.attributes.edit', $attribute->id) }}"
-                                                    class="btn btn-warning btn-sm rounded-pill px-3"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                                <button type="button"
-                                                        class="btn btn-danger btn-sm rounded-pill px-3"
-                                                        onclick="confirmDelete('{{ $attribute->id }}', '{{ $attribute->name }}')"
-                                                        data-bs-toggle="tooltip"
-                                                        title="Xóa">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
+                                            <div class="d-flex justify-content-end">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-secondary btn-sm rounded-pill" type="button" id="dropdownMenuButton{{ $attribute->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="bi bi-three-dots"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $attribute->id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ route('admin.attribute_values.index', $attribute->id) }}">
+                                                                <i class="bi bi-list-check me-2"></i> Quản lý giá trị
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ route('admin.attributes.edit', $attribute->id) }}">
+                                                                <i class="bi bi-pencil-square me-2"></i> Chỉnh sửa
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger" href="#" onclick="confirmDelete('{{ $attribute->id }}', '{{ $attribute->name }}')">
+                                                                <i class="bi bi-trash me-2"></i> Xóa
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -225,17 +228,12 @@
 
     // Xác nhận xóa một thuộc tính
     function confirmDelete(id, name) {
-        if (confirm(`Bạn có chắc chắn muốn xóa thuộc tính "${name}"?`)) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `{{ url('admin/attributes') }}/${id}`;
-            form.innerHTML = `
-                @csrf
-                @method('DELETE')
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        }
+        // Update modal content
+        document.getElementById('deleteAttributeName').textContent = name;
+        document.getElementById('deleteForm').action = `{{ url('admin/attributes') }}/${id}`;
+        // Show modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+ beim. show();
     }
 </script>
 @endpush
