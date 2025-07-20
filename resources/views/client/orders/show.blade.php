@@ -218,31 +218,17 @@
                             
                             <div>
                                 <h5>{{ $item->product->name }}</h5>
-                               
-                                @php
-                                    // Lấy thuộc tính từ cột attributes_variant nếu có
-                                    $variantAttributes = $item->attributes_variant ? json_decode($item->attributes_variant, true) : null;
-                                @endphp
-                                
-                                @if($variantAttributes && count($variantAttributes) > 0)
-                                    <div class="mt-2">
-                                        @foreach($variantAttributes as $attrName => $attrValue)
-                                            <span class="badge bg-secondary me-2 mb-1">
-                                                {{ $attrName }}: {{ $attrValue }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @elseif($item->variant && $item->variant->attributeValues->count() > 0)
-                                    {{-- Fallback: Hiển thị từ quan hệ nếu không có dữ liệu trong attributes_variant --}}
-                                    <div class="mt-2">
-                                        @foreach($item->variant->attributeValues as $attrValue)
-                                            @if($attrValue->attribute)
-                                                <span class="badge bg-secondary me-2 mb-1">
-                                                    {{ $attrValue->attribute->name }}: {{ $attrValue->value }}
+                                <p class="text-muted">SKU: {{ $item->product->sku }}</p>
+                                @if($item->attributes_variant)
+                                    <p class="text-muted">
+                                        @foreach(json_decode($item->attributes_variant, true) as $name => $value)
+                                            @if($value)
+                                                <span class="badge bg-secondary me-2">
+                                                    {{ ucfirst(str_replace('_', ' ', $name)) }}: {{ $value }}
                                                 </span>
                                             @endif
                                         @endforeach
-                                    </div>
+                                    </p>
                                 @endif
                             </div>
                             

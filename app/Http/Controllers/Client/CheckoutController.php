@@ -321,13 +321,7 @@ class CheckoutController extends Controller
             if (!Auth::check()) {
                 return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đặt hàng!');
             }
-    {
-        try {
-            if (!Auth::check()) {
-                return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đặt hàng!');
-            }
 
-            \Log::info('Validating checkout form', $request->all());
             \Log::info('Validating checkout form', $request->all());
 
             $request->validate([
@@ -341,32 +335,9 @@ class CheckoutController extends Controller
                 'shipping_type.required' => 'Vui lòng chọn phương thức vận chuyển.',
                 'shipping_type.in' => 'Phương thức vận chuyển không hợp lệ.',
             ]);
-            $request->validate([
-                'address_id' => 'required|exists:user_addresses,id,user_id,' . Auth::id(),
-                'shipping_type' => 'required|in:thường,nhanh',
-                'payment_method' => 'required|in:cod,vnpay',
-                'note' => 'nullable|string',
-            ], [
-                'address_id.required' => 'Vui lòng chọn hoặc thêm địa chỉ nhận hàng.',
-                'address_id.exists' => 'Địa chỉ không hợp lệ.',
-                'shipping_type.required' => 'Vui lòng chọn phương thức vận chuyển.',
-                'shipping_type.in' => 'Phương thức vận chuyển không hợp lệ.',
-            ]);
 
-            // Load cart items with product and variant data
-            $cart = Cart::where('user_id', Auth::id())
-                ->with(['items' => function($query) {
-                    $query->with([
-                        'product',
-                        'productVariant.attributeValues.attribute'
-                    ]);
-                }])
-                ->first();
+            $cart = Cart::where('user_id', Auth::id())->with('items')->first();
 
-            if (!$cart || $cart->items->isEmpty()) {
-                \Log::warning('Cart is empty or not found', ['user_id' => Auth::id()]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
-            }
             if (!$cart || $cart->items->isEmpty()) {
                 \Log::warning('Cart is empty or not found', ['user_id' => Auth::id()]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
@@ -375,23 +346,9 @@ class CheckoutController extends Controller
             $address = UserAddress::where('id', $request->address_id)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
-            $address = UserAddress::where('id', $request->address_id)
-                ->where('user_id', Auth::id())
-                ->firstOrFail();
 
             \Log::info('Selected address', $address->toArray());
-            \Log::info('Selected address', $address->toArray());
 
-            $subtotal = $cart->items->sum(function ($item) {
-                return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
-            });
-            $shippingFee = $request->shipping_type === 'thường' ? 16500 : 30000;
-            $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
-            $discount = 0;
-            if ($coupon && $this->isValidCoupon($coupon, $subtotal)) {
-                $discount = $this->calculateDiscount($coupon, $subtotal);
-            }
-            $total = $subtotal + $shippingFee - $discount;
             $subtotal = $cart->items->sum(function ($item) {
                 return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
             });
@@ -422,47 +379,13 @@ class CheckoutController extends Controller
                 'check_refunded_canceled' => 0,
                 'img_refunded_money' => null,
             ]);
-            $order = Order::create([
-                'user_id' => Auth::id(),
-                'code' => Str::upper('ORD-' . Str::random(8)),
-                'payment_id' => $request->payment_method === 'cod' ? 1 : 2,
-                'phone_number' => $address->phone_number,
-                'email' => $address->email,
-                'fullname' => $address->fullname,
-                'address' => implode(', ', [$address->street, $address->ward, $address->district, $address->province]),
-                'city' => $address->province, // Sử dụng province thay vì city
-                'note' => $request->note,
-                'total_amount' => $total,
-                'shipping_type' => $request->shipping_type,
-                'is_paid' => 0,
-                'is_refunded' => 0,
-                'coupon_id' => $coupon ? $coupon->id : null,
-                'is_refunded_canceled' => 0,
-                'check_refunded_canceled' => 0,
-                'img_refunded_money' => null,
-            ]);
 
-            \Log::info('Order created', ['order_id' => $order->id, 'code' => $order->code, 'address' => $order->address, 'city' => $order->city]);
             \Log::info('Order created', ['order_id' => $order->id, 'code' => $order->code, 'address' => $order->address, 'city' => $order->city]);
 
             if ($coupon) {
                 $coupon->increment('usage_count');
             }
-            if ($coupon) {
-                $coupon->increment('usage_count');
-            }
 
-            OrderOrderStatus::create([
-                'order_id' => $order->id,
-                'order_status_id' => 1,
-                'modified_by' => Auth::id(),
-                'note' => 'Đơn hàng mới được tạo, đang chờ xác nhận.',
-                'employee_evidence' => null,
-                'customer_confirmation' => null,
-                'is_current' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => 1,
@@ -476,15 +399,6 @@ class CheckoutController extends Controller
             ]);
 
             foreach ($cart->items as $item) {
-                // Log thông tin item
-                \Log::info('Processing cart item', [
-                    'item_id' => $item->id,
-                    'product_id' => $item->product_id,
-                    'variant_id' => $item->product_variant_id,
-                    'has_variant' => !is_null($item->productVariant),
-                    'variant_data' => $item->productVariant ? $item->productVariant->toArray() : null
-                ]);
-
                 $orderItem = new OrderItem();
                 $orderItem->order_id = $order->id;
                 $orderItem->product_id = $item->product_id;
@@ -492,73 +406,13 @@ class CheckoutController extends Controller
                 $orderItem->name = $item->product->name ?? 'Sản phẩm ' . $item->product_id;
                 $orderItem->price = $item->price_at_time ?? $item->product->price ?? 0;
                 $orderItem->quantity = $item->quantity ?? 0;
-                
-                // Lưu thông tin biến thể nếu có
-                if ($item->productVariant) {
-                    $variantAttributes = [];
-                    
-                    // Lấy thông tin thuộc tính từ biến thể
-                    if ($item->productVariant->attributeValues) {
-                        foreach ($item->productVariant->attributeValues as $attrValue) {
-                            if ($attrValue->attribute) {
-                                $variantAttributes[$attrValue->attribute->name] = $attrValue->value;
-                            }
-                        }
-                    }
-                    
-                    // Lưu dưới dạng JSON vào cột attributes_variant
-                    if (!empty($variantAttributes)) {
-                        $orderItem->attributes_variant = json_encode($variantAttributes, JSON_UNESCAPED_UNICODE);
-                        \Log::info('Saving variant attributes:', [
-                            'attributes' => $variantAttributes,
-                            'json' => $orderItem->attributes_variant
-                        ]);
-                    } else {
-                        \Log::warning('No variant attributes to save for variant', [
-                            'variant_id' => $item->productVariant->id
-                        ]);
-                    }
-                    
-                    // Lưu tên và giá biến thể
-                    $orderItem->name_variant = $item->productVariant->name ?? null;
-                    $orderItem->price_variant = $item->price_at_time ?? $item->productVariant->price ?? $item->product->price;
-                } else {
-                    \Log::info('No variant found for item', ['item_id' => $item->id]);
-                }
-                
                 $orderItem->save();
-                \Log::info('Order item saved:', [
-                    'order_item_id' => $orderItem->id,
-                    'attributes_variant' => $orderItem->attributes_variant,
-                    'name_variant' => $orderItem->name_variant,
-                    'price_variant' => $orderItem->price_variant
-                ]);
             }
 
             $cart->items()->delete();
             $cart->delete();
             session()->forget('coupon');
-            $cart->items()->delete();
-            $cart->delete();
-            session()->forget('coupon');
 
-            if ($request->payment_method === 'cod') {
-                return redirect()->route('checkout.success', $order->code)
-                    ->with('success', 'Đơn hàng của bạn đã được đặt thành công!');
-            } else {
-                return $this->vnpayPayment($order);
-            }
-        } catch (\Exception $e) {
-            \Log::error('Checkout process error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->all(),
-                'stack_trace' => $e->getTraceAsString()
-            ]);
-            return redirect()->route('checkout')
-                ->withInput()
-                ->with('error', 'Đã xảy ra lỗi khi xử lý đơn hàng, vui lòng kiểm tra lại thông tin!');
-        }
-    }
             if ($request->payment_method === 'cod') {
                 return redirect()->route('checkout.success', $order->code)
                     ->with('success', 'Đơn hàng của bạn đã được đặt thành công!');
