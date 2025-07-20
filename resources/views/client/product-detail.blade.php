@@ -475,9 +475,6 @@
                                                 'TRANG' => ['name' => 'Trắng', 'hex' => '#FFFFFF'],
                                                 'XAM' => ['name' => 'Xám', 'hex' => '#CBCBCB'],
                                                 'XA' => ['name' => 'Xanh', 'hex' => '#00FF00'],
-                                                'NAU' => ['name' => 'Nâu', 'hex' => '#8B4513'],
-                                                'BE' => ['name' => 'Be', 'hex' => '#F5F5DC'],
-                                                'XN' => ['name' => 'Xanh Ngọc', 'hex' => '#40C4FF']
                                             ];
 
                                             // Tìm tất cả mã màu có thực sự xuất hiện trong SKU
