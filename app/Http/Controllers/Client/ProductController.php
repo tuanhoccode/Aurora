@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -27,7 +26,13 @@ class ProductController extends Controller
 
         $productVariants = $product->variants;
 
+        // Map các biến thể và lấy chất liệu (attribute_id = 3)
         $variantsWithImages = $productVariants->map(function ($variant) {
+            $material = $variant->attributeValues
+                ->where('attribute_id', 3) // 3 là ID của "Chất liệu"
+                ->pluck('value')
+                ->first();
+
             return [
                 'id' => $variant->id,
                 'sku' => $variant->sku,
@@ -35,6 +40,7 @@ class ProductController extends Controller
                 'regular_price' => $variant->regular_price,
                 'sale_price' => $variant->sale_price,
                 'img' => $variant->img,
+                'material' => $material, // ✅ Gán chất liệu lấy từ attribute value
                 'images' => $variant->images->map(function ($image) {
                     return ['url' => $image->url];
                 }),
@@ -50,27 +56,15 @@ class ProductController extends Controller
             ->take(5)
             ->get();
 
-        // Lấy danh sách sản phẩm/biến thể đã có trong giỏ hàng
-        $cartProductIds = [];
-        $cartVariantIds = [];
-        if (Auth::check()) {
-            $cart = \App\Models\Cart::with('items')->where('user_id', Auth::id())->where('status', 'pending')->first();
-            if ($cart) {
-                $cartProductIds = $cart->items->pluck('product_id')->toArray();
-                $cartVariantIds = $cart->items->pluck('product_variant_id')->filter()->toArray();
-            }
-        }
-
-        return view('client.product-detail', compact(
-            'product',
-            'productVariants',
-            'averageRating',
-            'reviewCount',
-            'relatedProducts',
-            'variantsWithImages',
-            'cartProductIds',
-            'cartVariantIds'
-        ));
+        return view('client.product-detail', [
+            'product' => $product,
+            'productVariants' => $productVariants,
+            'averageRating' => $averageRating,
+            'reviewCount' => $reviewCount,
+            'relatedProducts' => $relatedProducts,
+            'variantsWithImages' => $variantsWithImages,
+            'variants' => $productVariants,
+        ]);
     }
 
     public function quickView($id)
