@@ -353,7 +353,7 @@
                 @foreach ($cartItems->groupBy('shop_id') as $shopId => $items)
                     @foreach ($items as $item)
                         <li class="checkout__cart-item">
-                            <img src="{{ $item->product->image ?? asset('assets/img/product/placeholder.jpg') }}"
+                            <img src="{{ $item->product->image_url ?? asset('assets/img/product/placeholder.jpg') }}"
                                 alt="{{ $item->product->name }}">
                             <div>
                                 <p>{{ $item->product->name ?? 'Sản phẩm ' . $item->product_id }}</p>
