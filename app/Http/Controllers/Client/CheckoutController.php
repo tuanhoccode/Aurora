@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\Coupon;
+use App\Models\Product;
 use App\Models\CartItem;
 use App\Models\OrderItem;
 use App\Models\PaymentLog;
 use App\Models\UserAddress;
-use App\Models\Coupon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ProductVariant;
 use App\Models\OrderOrderStatus;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Client\AddressFormRequest;
 use App\Http\Requests\Client\SaveAddressRequest;
@@ -346,10 +348,8 @@ class CheckoutController extends Controller
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
             }
 
-            // Lấy selected_items từ session
             $selectedItems = session('selected_items', []);
 
-            // Lọc cart items
             $cartItems = $cart->items()->when(!empty($selectedItems), function ($query) use ($selectedItems) {
                 return $query->whereIn('id', $selectedItems);
             })->get();
@@ -365,11 +365,11 @@ class CheckoutController extends Controller
 
             \Log::info('Selected address', $address->toArray());
 
-            // Tính toán tổng dựa trên các sản phẩm được chọn
             $subtotal = $cartItems->sum(function ($item) {
                 return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
             });
             $shippingFee = $request->shipping_type === 'thường' ? 16500 : 30000;
+
             $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
             $discount = 0;
             if ($coupon && $this->isValidCoupon($coupon, $subtotal)) {
@@ -415,7 +415,6 @@ class CheckoutController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Chỉ thêm các sản phẩm được chọn vào order_items
             foreach ($cartItems as $item) {
                 $orderItem = new OrderItem();
                 $orderItem->order_id = $order->id;
@@ -425,10 +424,31 @@ class CheckoutController extends Controller
                 $orderItem->price = $item->price_at_time ?? $item->product->price ?? 0;
                 $orderItem->quantity = $item->quantity ?? 0;
                 $orderItem->save();
+
+                // 🔻 Trừ tồn kho biến thể (nếu có)
+                if ($item->product_variant_id) {
+                    $variant = ProductVariant::find($item->product_variant_id);
+                    if ($variant && $variant->stock > 0) {
+                        $variant->stock = max(0, $variant->stock - $item->quantity);
+                        $variant->save();
+                    }
+                }
+
+                // 🔻 Trừ tồn kho sản phẩm gốc
+                $product = Product::find($item->product_id);
+                if ($product && $product->stock > 0) {
+                    $product->stock = max(0, $product->stock - $item->quantity);
+                    $product->save();
+                }
             }
 
-            // Xóa chỉ các sản phẩm được chọn khỏi giỏ hàng
-            $cart->items()->whereIn('id', $selectedItems)->delete();
+            foreach ($cartItems as $item) {
+                $item->delete();
+            }
+
+            if ($cart->items()->count() === 0) {
+                $cart->delete();
+            }
             if ($cart->items()->count() === 0) {
                 $cart->delete();
             }
