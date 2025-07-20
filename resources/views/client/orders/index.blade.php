@@ -40,7 +40,7 @@
                         3 => 'warning',
                         4 => 'success',
                         5 => 'danger',
-                        default => 'primary',
+                        default => 'danger',
                     };
                 @endphp
                 <tr>
