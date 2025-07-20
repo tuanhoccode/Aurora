@@ -234,7 +234,18 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
             
+            // Log toàn bộ request để kiểm tra
+            \Log::info('Update product request data:', [
+                'all' => $request->all(),
+                'variants' => $request->input('variants'),
+                'variants_old' => $request->input('variants_old'),
+                'files' => $request->allFiles()
+            ]);
+            
             $data = $request->validated();
+            
+            // Log dữ liệu đã validate
+            \Log::info('Validated data:', $data);
             
             // Xử lý checkbox is_active
             $data['is_active'] = $request->has('is_active') ? 1 : 0;
@@ -355,15 +366,10 @@ class ProductController extends Controller
             }
 
             DB::commit();
-
-            // Thêm thông báo chi tiết
-            $message = 'Cập nhật sản phẩm thành công!';
-            if (!empty($successImages)) {
-                $message .= ' Đã thêm ' . count($successImages) . ' hình ảnh mới.';
-            }
+            \Log::info('Product updated successfully', ['product_id' => $product->id]);
             
             return redirect()->route('admin.products.index')
-                ->with('success', $message);
+                ->with('success', 'Cập nhật sản phẩm thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -376,7 +382,7 @@ class ProductController extends Controller
             }
             
             return back()->withInput()
-                ->with('error', $message);
+                ->with('error', 'Có lỗi xảy ra khi cập nhật sản phẩm: ' . $e->getMessage());
         }
     }
 

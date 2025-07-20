@@ -228,7 +228,7 @@
                                                 </span>
                                             @endif
                                         @endforeach
-                                    </p>
+                                    </div>
                                 @endif
                             </div>
                             
