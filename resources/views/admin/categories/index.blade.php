@@ -97,7 +97,7 @@
                                             <input type="checkbox" class="form-check-input" id="selectAll">
                                         </div>
                                     </th>
-                                    <th class="border-0" style="width: 60px">
+                                    {{-- <th class="border-0" style="width: 60px">
                                         <a href="{{ route('admin.categories.index', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
                                             ID
@@ -105,7 +105,7 @@
                                                 <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                             @endif
                                         </a>
-                                    </th>
+                                    </th> --}}
                                     <th class="border-0">
                                         <a href="{{ route('admin.categories.index', array_merge(request()->query(), ['sort_by' => 'name', 'sort_dir' => ($sortBy == 'name' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -117,6 +117,7 @@
                                     </th>
                                     <th class="border-0" style="width: 120px">Ảnh</th>
                                     <th class="border-0" style="width: 200px">Danh mục cha</th>
+                                    <th class="border-0" >Sản phẩm</th>
                                     <th class="border-0" style="width: 120px">
                                         <a href="{{ route('admin.categories.index', array_merge(request()->query(), ['sort_by' => 'is_active', 'sort_dir' => ($sortBy == 'is_active' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -149,7 +150,7 @@
                                                        data-name="{{ $category->name }}">
                                             </div>
                                         </td>
-                                        <td class="text-muted">{{ $category->id }}</td>
+                                        {{-- <td class="text-muted">{{ $category->id }}</td> --}}
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <span class="fw-medium">{{ $category->name }}</span>
@@ -192,6 +193,7 @@
                                                 </span>
                                             @endif
                                         </td>
+                                         <td>{{ $category->products_count }}</td>
                                         <td class="text-center">
                                             <span class="badge rounded-pill {{ $category->is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} px-3 py-2">
                                                 <i class="bi bi-circle-fill me-1 small"></i>
@@ -203,29 +205,34 @@
                                                 {{ $category->created_at->format('d/m/Y') }}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ route('admin.categories.show', $category->id) }}"
-                                                    class="btn btn-info btn-sm rounded-pill px-3"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Xem chi tiết">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('admin.categories.edit', $category->id) }}"
-                                                    class="btn btn-warning btn-sm rounded-pill px-3"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                                <button type="button"
-                                                        class="btn btn-danger btn-sm rounded-pill px-3"
-                                                        onclick="confirmDelete('{{ $category->id }}', '{{ $category->name }}')"
-                                                        data-bs-toggle="tooltip"
-                                                        title="Xóa">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <td class="text-end">
+    <div class="dropdown">
+        <button class="btn btn-link p-0 text-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-ellipsis-h"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded">
+            <li>
+                <a class="dropdown-item" href="{{ route('admin.categories.show', $category->id) }}">
+                    <i class="fas fa-eye me-1"></i> Xem
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ route('admin.categories.edit', $category->id) }}">
+                    <i class="fas fa-edit me-1"></i> Sửa
+                </a>
+            </li>
+            <li>
+                <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="dropdown-item text-danger">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -302,9 +309,9 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function () {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -317,7 +324,6 @@
         const selectedCounts = document.querySelectorAll('.selected-count');
         let selectedItems = [];
 
-        // Cập nhật UI khi có checkbox được chọn
         function updateUI() {
             const hasSelected = selectedItems.length > 0;
             bulkDeleteBtn.style.display = hasSelected ? 'inline-block' : 'none';
@@ -329,7 +335,6 @@
             });
         }
 
-        // Xử lý khi checkbox được chọn
         function handleCheckboxChange(checkbox) {
             const categoryId = checkbox.value;
             if (checkbox.checked) {
@@ -343,103 +348,125 @@
             updateUI();
         }
 
-        // Xử lý chọn tất cả
-        selectAllCheckbox?.addEventListener('change', function() {
+        selectAllCheckbox?.addEventListener('change', function () {
             categoryCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
                 handleCheckboxChange(checkbox);
             });
         });
 
-        // Xử lý chọn từng checkbox
         categoryCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
+            checkbox.addEventListener('change', function () {
                 handleCheckboxChange(this);
             });
         });
 
-        // Xử lý xóa hàng loạt
-        bulkDeleteBtn?.addEventListener('click', function() {
+        bulkDeleteBtn?.addEventListener('click', function () {
             if (selectedItems.length === 0) {
-                alert('Vui lòng chọn ít nhất một danh mục');
+                Swal.fire('Thông báo', 'Vui lòng chọn ít nhất một danh mục', 'warning');
                 return;
             }
 
-            if (confirm('Bạn có chắc chắn muốn xóa các danh mục đã chọn?')) {
-                fetch('{{ route('admin.categories.bulk-delete') }}', {
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                text: 'Bạn có chắc chắn muốn xóa các danh mục đã chọn?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route('admin.categories.bulk-delete') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ ids: selectedItems })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Thành công', data.message || 'Đã xóa danh mục', 'success')
+                                .then(() => window.location.reload());
+                        } else {
+                            Swal.fire('Lỗi', data.error || 'Không thể xóa danh mục', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Lỗi', 'Đã có lỗi xảy ra khi xóa danh mục', 'error');
+                    });
+                }
+            });
+        });
+    });
+
+    function bulkToggleStatus(status) {
+        const selectedItems = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+        if (selectedItems.length === 0) {
+            Swal.fire('Thông báo', 'Vui lòng chọn ít nhất một danh mục', 'warning');
+            return;
+        }
+
+        const statusText = status ? 'kích hoạt' : 'vô hiệu hóa';
+
+        Swal.fire({
+            title: 'Xác nhận',
+            text: `Bạn có chắc chắn muốn ${statusText} các danh mục đã chọn?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy',
+        }).then(result => {
+            if (result.isConfirmed) {
+                fetch('{{ route('admin.categories.bulk-toggle') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ ids: selectedItems })
+                    body: JSON.stringify({ ids: selectedItems, status: status })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        Swal.fire('Thành công', data.message || 'Cập nhật trạng thái thành công', 'success')
+                            .then(() => window.location.reload());
                     } else {
-                        alert(data.error);
+                        Swal.fire('Lỗi', data.error || 'Không thể cập nhật trạng thái', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Đã có lỗi xảy ra');
+                    Swal.fire('Lỗi', 'Đã có lỗi xảy ra khi cập nhật', 'error');
                 });
             }
         });
-    });
-
-    // Xử lý thay đổi trạng thái hàng loạt
-    function bulkToggleStatus(status) {
-        const selectedItems = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
-
-        if (selectedItems.length === 0) {
-            alert('Vui lòng chọn ít nhất một danh mục');
-            return;
-        }
-
-        const statusText = status ? 'kích hoạt' : 'vô hiệu hóa';
-        if (confirm(`Bạn có chắc chắn muốn ${statusText} các danh mục đã chọn?`)) {
-            fetch('{{ route('admin.categories.bulk-toggle') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    ids: selectedItems,
-                    status: status
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Đã có lỗi xảy ra');
-            });
-        }
     }
 
-    // Xác nhận xóa một danh mục
     function confirmDelete(id, name) {
-        if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?`)) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `{{ url('admin/categories') }}/${id}`;
-            form.innerHTML = `
-                @csrf
-                @method('DELETE')
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        }
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: `Bạn có chắc chắn muốn xóa danh mục "${name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `{{ url('admin/categories') }}/${id}`;
+                form.innerHTML = `
+                    @csrf
+                    @method('DELETE')
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
     }
 </script>
-@endpush 
+
+@endpush
