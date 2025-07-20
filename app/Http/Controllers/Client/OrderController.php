@@ -17,9 +17,6 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::where('user_id', Auth::id())
-            ->whereHas('currentOrderStatus.status', function ($query) {
-                $query->where('name', '!=', 'Đã hủy');
-            })
             ->with([
                 'items.product',
                 'currentOrderStatus.status',
@@ -38,9 +35,7 @@ class OrderController extends Controller
         }
 
         $order->load([
-            'items.product',
-            'items.variant.attributes.attribute',
-            'items.variant.attributes.value',
+            'items', 
             'payment',
             'currentOrderStatus.status',
         ]);

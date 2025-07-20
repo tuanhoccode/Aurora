@@ -285,7 +285,18 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
             
+            // Log toàn bộ request để kiểm tra
+            \Log::info('Update product request data:', [
+                'all' => $request->all(),
+                'variants' => $request->input('variants'),
+                'variants_old' => $request->input('variants_old'),
+                'files' => $request->allFiles()
+            ]);
+            
             $data = $request->validated();
+            
+            // Log dữ liệu đã validate
+            \Log::info('Validated data:', $data);
             
             // Xử lý checkbox is_active
             $data['is_active'] = $request->has('is_active') ? 1 : 0;
@@ -390,136 +401,139 @@ class ProductController extends Controller
                 $usedSkus = [];
                 $processedVariants = [];
 
-                // 1. Cập nhật các biến thể cũ (nếu có)
-                if ($request->has('variants_old')) {
-                    foreach ($request->input('variants_old') as $variantId => $variantData) {
-                        $variant = $product->variants()->find($variantId);
-                        if (!$variant) continue;
-                        $sku = $variantData['sku'] ?? $variant->sku;
-                        if ($sku) {
-                            if (in_array($sku, $usedSkus)) {
-                                return redirect()->back()->withInput()->withErrors(['variants' => "SKU '{$sku}' bị trùng lặp. Vui lòng kiểm tra lại."]);
-                            }
-                            $usedSkus[] = $sku;
-                        }
-                        $regularPrice = isset($variantData['price']) ? (int) str_replace(['.', ','], '', $variantData['price']) : null;
-                        $salePrice = isset($variantData['sale_price']) && $variantData['sale_price'] !== '' ? (int) str_replace(['.', ','], '', $variantData['sale_price']) : null;
-                        $variant->update([
-                            'regular_price' => $regularPrice,
-                            'sale_price' => $salePrice,
-                            'stock' => $variantData['stock'] ?? 0,
-                        ]);
-                        $processedVariants[] = $variant->id;
-                        if (!empty($variantData['attributes'])) {
-                            $variant->attributeValues()->sync($variantData['attributes']);
-                        }
-                        if ($request->hasFile("variants_old.$variantId.image")) {
-                            $file = $request->file("variants_old.$variantId.image");
-                            $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
-                            $path = $file->storeAs('products/variants', $filename, 'public');
-                            $variant->img = $path;
-                            $variant->save();
-                        }
-                    }
-                }
+                // 1. Log thông tin biến thể hiện tại
+                \Log::info('Current product variants:', [
+                    'count' => $product->variants->count(),
+                    'variants' => $product->variants->toArray()
+                ]);
 
-                // 2. Thêm mới các biến thể mới (nếu có)
-                if ($request->has('variants')) {
-                    $variantsData = $request->input('variants');
-                    \Log::info('Variants data received:', $variantsData);
+                // 2. Xử lý thêm mới biến thể nếu có
+                if ($request->has('variants') && is_array($request->input('variants'))) {
+                    \Log::info('Processing new variants:', $request->input('variants'));
                     
-                    foreach ($variantsData as $idx => $variantData) {
-                        \Log::info("Processing variant {$idx}:", $variantData);
-                        
-                        // Kiểm tra xem có thuộc tính không
-                        if (empty($variantData['attributes'])) {
-                            \Log::info("Skipping variant {$idx} - no attributes or empty attributes");
-                            continue;
-                        }
-                        
-                        // Kiểm tra xem có ít nhất một thuộc tính được chọn không
-                        $hasValidAttributes = false;
-                        foreach ($variantData['attributes'] as $attrId => $valueId) {
-                            if (!empty($valueId)) {
-                                $hasValidAttributes = true;
-                                break;
-                            }
-                        }
-                        
-                        if (!$hasValidAttributes) {
-                            \Log::info("Skipping variant {$idx} - no valid attributes selected");
-                            continue;
-                        }
-                        
-                        // Nếu không nhập SKU thì random SKU
-                        $sku = $variantData['sku'] ?? null;
-                        if (empty($sku)) {
-                            $sku = 'PRD-' . strtoupper(Str::random(5));
-                        }
-                        
-                        \Log::info("Variant {$idx} SKU: {$sku}");
-                        
-                        if ($sku) {
-                            // Kiểm tra SKU trùng lặp trong session hiện tại
-                            if (in_array($sku, $usedSkus)) {
-                                \Log::warning("SKU {$sku} duplicate in session");
-                                return redirect()->back()->withInput()->withErrors(['variants' => "SKU '{$sku}' bị trùng lặp. Vui lòng kiểm tra lại."]);
-                            }
-                            
-                            // Kiểm tra SKU đã tồn tại trong database
-                            $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
-                            if ($existingVariant) {
-                                \Log::warning("SKU {$sku} already exists in database");
-                                return redirect()->back()->withInput()->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong hệ thống. Vui lòng chọn SKU khác."]);
-                            }
-                            
-                            $usedSkus[] = $sku;
-                        }
-                        
-                        $regularPrice = isset($variantData['price']) ? (int) str_replace(['.', ','], '', $variantData['price']) : null;
-                        $salePrice = isset($variantData['sale_price']) && $variantData['sale_price'] !== '' ? (int) str_replace(['.', ','], '', $variantData['sale_price']) : null;
-                        
-                        \Log::info("Creating variant with data:", [
-                            'sku' => $sku,
-                            'regular_price' => $regularPrice,
-                            'sale_price' => $salePrice,
-                            'stock' => $variantData['stock'] ?? 0,
-                            'attributes' => $variantData['attributes']
-                        ]);
-                        
+                    foreach ($request->input('variants') as $index => $variantData) {
                         try {
+                            // Kiểm tra SKU trùng lặp
+                            $sku = $variantData['sku'] ?? null;
+                            if ($sku) {
+                                // Kiểm tra SKU đã tồn tại trong database
+                                $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
+                                if ($existingVariant) {
+                                    throw new \Exception("SKU '{$sku}' đã tồn tại trong hệ thống.");
+                                }
+                                
+                                // Kiểm tra SKU trùng trong cùng request
+                                if (in_array($sku, $usedSkus)) {
+                                    throw new \Exception("SKU '{$sku}' bị trùng lặp trong form.");
+                                }
+                                $usedSkus[] = $sku;
+                            } else {
+                                // Tạo SKU tự động nếu không có
+                                $sku = 'VAR-' . strtoupper(Str::random(8));
+                            }
+
+                            // Tạo biến thể mới
                             $variant = $product->variants()->create([
                                 'sku' => $sku,
-                                'regular_price' => $regularPrice,
-                                'sale_price' => $salePrice,
+                                'regular_price' => $variantData['price'] ?? 0,
+                                'sale_price' => $variantData['sale_price'] ?? null,
                                 'stock' => $variantData['stock'] ?? 0,
                             ]);
-                            
-                            \Log::info("Variant created with ID: {$variant->id}");
-                            $processedVariants[] = $variant->id;
-                            
+
+                            \Log::info('Created new variant:', [
+                                'variant_id' => $variant->id,
+                                'sku' => $sku,
+                                'data' => $variantData
+                            ]);
+
+                            // Lưu thuộc tính cho biến thể
                             if (!empty($variantData['attributes'])) {
                                 $variant->attributeValues()->sync($variantData['attributes']);
-                                \Log::info("Synced attributes for variant {$variant->id}");
+                                \Log::info('Synced attributes for variant ' . $variant->id, [
+                                    'attributes' => $variantData['attributes']
+                                ]);
                             }
-                            
-                            if ($request->hasFile("variants.$idx.image")) {
-                                $file = $request->file("variants.$idx.image");
+
+                            // Xử lý ảnh biến thể nếu có
+                            if ($request->hasFile("variants.{$index}.image")) {
+                                $file = $request->file("variants.{$index}.image");
                                 $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
                                 $path = $file->storeAs('products/variants', $filename, 'public');
                                 $variant->img = $path;
                                 $variant->save();
-                                \Log::info("Saved image for variant {$variant->id}: {$path}");
+                                \Log::info('Uploaded image for variant ' . $variant->id, [
+                                    'path' => $path
+                                ]);
                             }
+
                         } catch (\Exception $e) {
-                            \Log::error("Error creating variant {$idx}: " . $e->getMessage());
-                            throw $e;
+                            \Log::error('Error creating variant:', [
+                                'error' => $e->getMessage(),
+                                'variant_data' => $variantData,
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            
+                            // Nếu có lỗi khi tạo biến thể, rollback và trả về lỗi
+                            DB::rollBack();
+                            return redirect()->back()
+                                ->withInput()
+                                ->with('error', 'Lỗi khi tạo biến thể: ' . $e->getMessage());
                         }
                     }
-                } else {
-                    \Log::info('No variants data in request');
                 }
-                // Không xóa các biến thể cũ không có trong form (nếu muốn xóa thì phải thao tác riêng)
+
+                // 3. Xử lý cập nhật biến thể cũ (nếu có)
+                if ($request->has('variants_old')) {
+                    $variantsOld = $request->input('variants_old');
+                    \Log::info('Updating old variants:', $variantsOld);
+                    
+                    foreach ($variantsOld as $variantId => $variantData) {
+                        try {
+                            $variant = $product->variants()->find($variantId);
+                            if (!$variant) continue;
+                            
+                            // Cập nhật thông tin cơ bản
+                            $updateData = [
+                                'regular_price' => $variantData['price'] ?? $variant->regular_price,
+                                'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
+                                'stock' => $variantData['stock'] ?? $variant->stock,
+                            ];
+                            
+                            // Xử lý ảnh nếu có
+                            if ($request->hasFile("variants_old.{$variantId}.image")) {
+                                $file = $request->file("variants_old.{$variantId}.image");
+                                $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
+                                $path = $file->storeAs('products/variants', $filename, 'public');
+                                
+                                // Xóa ảnh cũ nếu có
+                                if ($variant->img && Storage::disk('public')->exists($variant->img)) {
+                                    Storage::disk('public')->delete($variant->img);
+                                }
+                                
+                                $updateData['img'] = $path;
+                            }
+                            
+                            // Cập nhật biến thể
+                            $variant->update($updateData);
+                            
+                            // Log thông tin cập nhật
+                            \Log::info('Updated variant:', [
+                                'variant_id' => $variant->id,
+                                'data' => $updateData
+                            ]);
+                            
+                        } catch (\Exception $e) {
+                            \Log::error('Error updating variant:', [
+                                'variant_id' => $variantId,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            
+                            // Ghi log lỗi nhưng không dừng quá trình xử lý
+                            continue;
+                        }
+                    }
+                }
             }
 
             // Sync categories
@@ -528,36 +542,20 @@ class ProductController extends Controller
             }
 
             DB::commit();
-
-            // Thêm thông báo chi tiết
-            $message = 'Cập nhật sản phẩm thành công!';
-            if (!empty($successImages)) {
-                $message .= ' Đã thêm ' . count($successImages) . ' hình ảnh mới.';
-            }
+            \Log::info('Product updated successfully', ['product_id' => $product->id]);
             
             return redirect()->route('admin.products.index')
-                ->with('success', $message);
+                ->with('success', 'Cập nhật sản phẩm thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log chi tiết lỗi để debug
-            \Log::error('Error updating product', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request' => request()->all(),
-                'product_id' => $product->id,
+            \Log::error('Error updating product: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
             ]);
-            // Thêm thông báo lỗi chi tiết
-            $message = 'Có lỗi xảy ra khi cập nhật sản phẩm.';
-            if ($e instanceof ValidationException) {
-                $message .= ' Vui lòng kiểm tra lại dữ liệu nhập.';
-            }
-            // Hiển thị lỗi cụ thể nếu là môi trường local hoặc debug
-            if (config('app.debug')) {
-                $message .= ' [' . $e->getMessage() . ']';
-            }
+            
             return back()->withInput()
-                ->with('error', $message);
+                ->with('error', 'Có lỗi xảy ra khi cập nhật sản phẩm: ' . $e->getMessage());
         }
     }
 

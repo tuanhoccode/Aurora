@@ -250,12 +250,7 @@
                         </thead>
                         <tbody>
                           @foreach($product->variants as $variant)
-                            @php
-                              $hasSuccessfulOrder = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
-                                $q->where('order_status_id', 4)->where('is_current', 1);
-                              })->exists();
-                            @endphp
-                            <tr class="variant-old-row">
+                            <tr>
                               <td>
                                 @foreach($variant->attributeValues as $attributeValue)
                                   <input type="hidden" name="variants_old[{{ $variant->id }}][attributes][{{ $attributeValue->attribute_id }}]" value="{{ $attributeValue->id }}">
@@ -263,12 +258,16 @@
                                 @endforeach
                               </td>
                               <td><input type="text" class="form-control" name="variants_old[{{ $variant->id }}][sku]" value="{{ $variant->sku }}" readonly></td>
-                              <td><input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ $variant->regular_price }}" min="0" placeholder="Giá gốc"></td>
+                              <td>
+                                <input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ $variant->regular_price }}" min="0" placeholder="Giá gốc">
+                              </td>
                               <td>
                                 <input type="number" class="form-control variant-sale-price" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ $variant->sale_price }}" min="0" placeholder="Giá khuyến mãi">
                                 <small class="text-muted discount-percentage" style="display:none;"></small>
                               </td>
-                              <td><input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ $variant->stock }}" min="0" placeholder="Tồn kho"></td>
+                              <td>
+                                <input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ $variant->stock }}" min="0" placeholder="Tồn kho">
+                              </td>
                               <td>
                                 <input type="file" class="form-control" name="variants_old[{{ $variant->id }}][image]" accept="image/*">
                                 @if($variant->img)
@@ -277,7 +276,7 @@
                               </td>
                               <td>
                                 <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-variant-btn" data-id="{{ $variant->id }}" data-sku="{{ $variant->sku }}" @if($hasSuccessfulOrder) disabled data-bs-toggle="tooltip" title="Không thể xóa: Biến thể đã có đơn hàng giao thành công" @endif><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-variant-btn" data-id="{{ $variant->id }}" data-sku="{{ $variant->sku }}"><i class="fas fa-trash"></i></button>
                               </td>
                             </tr>
                           @endforeach

@@ -221,17 +221,31 @@
                             
                             <div>
                                 <h5>{{ $item->product->name }}</h5>
-                                <p class="text-muted">
-                                    SKU: {{ $item->variant ? $item->variant->sku : $item->product->sku }}
-                                </p>
-                                @if($item->variant && $item->variant->attributeValues)
-                                    <p class="text-muted">
-                                        @foreach($item->variant->attributeValues as $attrValue)
-                                            <span class="badge bg-secondary me-2">
-                                                {{ $attrValue->attribute->name }}: {{ $attrValue->value }}
+                               
+                                @php
+                                    // Lấy thuộc tính từ cột attributes_variant nếu có
+                                    $variantAttributes = $item->attributes_variant ? json_decode($item->attributes_variant, true) : null;
+                                @endphp
+                                
+                                @if($variantAttributes && count($variantAttributes) > 0)
+                                    <div class="mt-2">
+                                        @foreach($variantAttributes as $attrName => $attrValue)
+                                            <span class="badge bg-secondary me-2 mb-1">
+                                                {{ $attrName }}: {{ $attrValue }}
                                             </span>
                                         @endforeach
-                                    </p>
+                                    </div>
+                                @elseif($item->variant && $item->variant->attributeValues->count() > 0)
+                                    {{-- Fallback: Hiển thị từ quan hệ nếu không có dữ liệu trong attributes_variant --}}
+                                    <div class="mt-2">
+                                        @foreach($item->variant->attributeValues as $attrValue)
+                                            @if($attrValue->attribute)
+                                                <span class="badge bg-secondary me-2 mb-1">
+                                                    {{ $attrValue->attribute->name }}: {{ $attrValue->value }}
+                                                </span>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 @endif
                             </div>
                             

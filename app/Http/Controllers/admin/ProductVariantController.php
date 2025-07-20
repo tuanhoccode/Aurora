@@ -106,6 +106,7 @@ class ProductVariantController extends Controller
      */
     public function update(Request $request, Product $product, ProductVariant $variant)
     {
+        // Đã bỏ kiểm tra isInProcessingOrder để cho phép chỉnh sửa mọi biến thể
         $validated = $request->validate([
             'sku' => 'nullable|string|max:255',
             'stock' => 'required|integer|min:0',
@@ -115,6 +116,11 @@ class ProductVariantController extends Controller
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
         ]);
+
+        // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc
+        if (isset($validated['sale_price']) && $validated['sale_price'] !== null && $validated['sale_price'] > $validated['regular_price']) {
+            return back()->withInput()->withErrors(['sale_price' => 'Giá khuyến mãi không được lớn hơn giá gốc.']);
+        }
 
 
         try {

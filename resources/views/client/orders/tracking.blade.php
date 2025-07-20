@@ -120,9 +120,18 @@
                                 <div class="product-name">{{ $item->product->name }}</div>
                                 @if($item->variant)
                                     <div class="product-variant">
-                                        @foreach($item->variant->attributeValues as $attrValue)
-                                            <span class="badge bg-secondary me-1">{{ $attrValue->attribute->name }}: {{ $attrValue->value }}</span>
-                                        @endforeach
+                                        @php
+                                            $attributes = json_decode($item->attributes_variant, true) ?? [];
+                                        @endphp
+                                        @if(!empty($attributes))
+                                            @foreach($attributes as $attrName => $attrValue)
+                                                <span class="badge bg-secondary me-1">{{ $attrName }}: {{ $attrValue }}</span>
+                                            @endforeach
+                                        @elseif($item->variant)
+                                            @foreach($item->variant->attributeValues as $attrValue)
+                                                <span class="badge bg-secondary me-1">{{ $attrValue->attribute->name }}: {{ $attrValue->value }}</span>
+                                            @endforeach
+                                        @endif
                                     </div>
                                 @endif
                                 <div class="product-price">{{ number_format($item->price, 0, ',', '.') }}đ</div>
@@ -134,7 +143,7 @@
             </div>
         </div>
         <div class="tracking-actions">
-            @if($order->currentStatus && $order->currentStatus->status->name == 'Chờ xác nhận')
+            @if($order->currentOrderStatus && $order->currentOrderStatus->status->name == 'Chờ xác nhận')
                 <form method="POST" action="{{ route('client.orders.cancel', ['order' => $order->id]) }}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng này?');">
                     @csrf
                     @method('PUT')

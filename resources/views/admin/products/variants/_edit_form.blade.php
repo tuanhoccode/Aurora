@@ -36,21 +36,33 @@
                 </div>
             </div>
             <div class="row g-2">
+                @php
+                    $isInProcessingOrder = $variant->isInProcessingOrder();
+                @endphp
                 <div class="col-md-3">
                     <label class="form-label">SKU</label>
                     <input type="text" name="sku" id="modalSkuInput" class="form-control" value="{{ old('sku', $variant->sku) }}" placeholder="Để trống để tự tạo">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Tồn kho</label>
-                    <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}">
+                    <input type="number" name="stock" class="form-control" min="0" value="{{ old('stock', $variant->stock) }}" @if($isInProcessingOrder) disabled @endif>
+                    @if($isInProcessingOrder)
+                        <small class="text-danger">Không thể chỉnh sửa tồn kho khi biến thể đang trong đơn hàng xử lý</small>
+                    @endif
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Giá gốc</label>
-                    <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}">
+                    <input type="number" name="regular_price" class="form-control" min="0" value="{{ old('regular_price', $variant->regular_price) }}" @if($isInProcessingOrder) disabled @endif>
+                    @if($isInProcessingOrder)
+                        <small class="text-danger">Không thể chỉnh sửa giá khi biến thể đang trong đơn hàng xử lý</small>
+                    @endif
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Giá KM</label>
-                    <input type="number" name="sale_price" class="form-control" min="0" value="{{ old('sale_price', $variant->sale_price) }}">
+                    <input type="number" name="sale_price" class="form-control" min="0" value="{{ old('sale_price', $variant->sale_price) }}" @if($isInProcessingOrder) disabled @endif>
+                    @if($isInProcessingOrder)
+                        <small class="text-danger">Không thể chỉnh sửa giá khi biến thể đang trong đơn hàng xử lý</small>
+                    @endif
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Ảnh</label>
