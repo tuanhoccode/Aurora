@@ -35,6 +35,13 @@ class ProductController extends Controller
             $query->where('brand_id', $request->brand);
         }
 
+        // Lọc theo danh mục
+        if ($request->filled('category')) {
+            $query->whereHas('categories', function($q) use ($request) {
+                $q->where('categories.id', $request->category);
+            });
+        }
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('is_active', $request->status == '1');
