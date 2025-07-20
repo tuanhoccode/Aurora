@@ -31,7 +31,10 @@ class OrderController extends Controller
         }
 
         $order->load([
-            'items', 
+            'items.product',
+            'items.variant.attributes.attribute',
+            'items.variant.attributes.value',
+            'status',
             'payment',
             'currentStatus.status'
         ]);

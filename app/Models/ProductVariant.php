@@ -82,29 +82,8 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
-
-    /**
-     * Kiểm tra biến thể có nằm trong đơn hàng đang xử lý không
-     * (order_status_id = 1, 2, 3)
-     */
-    public function isInProcessingOrder()
+    public function orderItems()
     {
-        return $this->orderItems()->whereHas('order.statusHistory', function($q) {
-            $q->where('is_current', 1)
-              ->whereIn('order_status_id', [1, 2, 3]);
-        })->exists();
-    }
-
-    /**
-     * Lấy danh sách mã đơn hàng mà biến thể đang thuộc các trạng thái xử lý (1,2,3)
-     */
-    public function getProcessingOrderCodes()
-    {
-        return $this->orderItems()->whereHas('order.statusHistory', function($q) {
-            $q->where('is_current', 1)
-              ->whereIn('order_status_id', [1, 2, 3]);
-        })->with(['order' => function($q) {
-            $q->select('id', 'code');
-        }])->get()->pluck('order.code')->unique()->toArray();
+        return $this->hasMany(OrderItem::class, 'product_variant_id', 'id');
     }
 }
