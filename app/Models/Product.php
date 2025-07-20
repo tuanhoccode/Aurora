@@ -126,18 +126,6 @@ class Product extends Model
             ->withTimestamps();
     }
 
-    public function orderItems()
-    {
-        return $this->hasManyThrough(
-            \App\Models\OrderItem::class,
-            \App\Models\ProductVariant::class,
-            'product_id', // Foreign key on ProductVariant
-            'product_variant_id', // Foreign key on OrderItem
-            'id', // Local key on Product
-            'id'  // Local key on ProductVariant
-        );
-    }
-
     public function getIsOnSaleAttribute()
     {
         return $this->sale_price && $this->sale_price < $this->price;
@@ -200,12 +188,7 @@ class Product extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductGallery::class);
-    }
-
-    public function comments()
-    {
-        return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
+        return $this->hasMany(ProductGallery::class, 'product_id');
     }
 
 
@@ -218,12 +201,9 @@ class Product extends Model
         }
         return $variant ? $variant->id : null;
     }
-
-    public function getSuccessfulOrderItems()
+    public function comments()
     {
-        return $this->orderItems()->whereHas('order.currentStatus', function($q) {
-            $q->where('order_status_id', 4)->where('is_current', 1);
-        });
+        return $this->hasMany(Comment::class);
     }
 
     public function relatedProducts($limit = 10)

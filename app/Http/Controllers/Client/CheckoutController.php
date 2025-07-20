@@ -20,7 +20,7 @@ use App\Http\Requests\Client\SaveAddressRequest;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             if (!Auth::check()) {
@@ -34,7 +34,18 @@ class CheckoutController extends Controller
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng không tồn tại!');
             }
 
-            $cartItems = $cart->items;
+            // Lấy selected_items từ query string
+            $selectedItems = $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : [];
+
+            // Lọc cart items
+            $cartItems = $cart->items()->when(!empty($selectedItems), function ($query) use ($selectedItems) {
+                return $query->whereIn('id', $selectedItems);
+            })->get();
+
+            if ($cartItems->isEmpty()) {
+                return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+            }
+
             $cartTotal = $cartItems->sum(function ($item) {
                 $price = $item->price_at_time ?? $item->product->price ?? 0;
                 $quantity = $item->quantity ?? 0;
@@ -50,17 +61,14 @@ class CheckoutController extends Controller
             $addresses = UserAddress::where('user_id', Auth::id())->get();
             $defaultAddress = $addresses->where('is_default', 1)->first();
 
-            // Set default address in session if none selected
             if (!session('checkout_address_id') && $defaultAddress) {
                 session(['checkout_address_id' => $defaultAddress->id]);
             }
 
-            // Set default payment method to COD
             if (!session('payment_method')) {
                 session(['payment_method' => 'cod']);
             }
 
-            // Set default shipping type to 'thường'
             if (!session('shipping_type')) {
                 session(['shipping_type' => 'thường']);
             }
@@ -69,7 +77,6 @@ class CheckoutController extends Controller
             $shippingFee = $shippingType === 'nhanh' ? 30000 : 16500;
             session(['shipping_fee' => $shippingFee]);
 
-            // Get coupon from session
             $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
             $discount = 0;
             if ($coupon && $this->isValidCoupon($coupon, $cartTotal)) {
@@ -82,7 +89,7 @@ class CheckoutController extends Controller
                 'shippingType' => $shippingType,
                 'coupon' => $coupon ? $coupon->toArray() : null,
                 'discount' => $discount,
-                'session' => session()->all()
+                'selected_items' => $selectedItems
             ]);
 
             return view('client.checkout', compact('cart', 'cartItems', 'cartTotal', 'addresses', 'defaultAddress', 'shippingFee', 'user', 'coupon', 'discount', 'shippingType'));
@@ -170,9 +177,9 @@ class CheckoutController extends Controller
     protected function isValidCoupon($coupon, $cartTotal)
     {
         $isValid = $coupon->is_active &&
-                   $coupon->start_date <= now() &&
-                   $coupon->end_date >= now() &&
-                   ($coupon->usage_limit === null || $coupon->usage_count < $coupon->usage_limit);
+            $coupon->start_date <= now() &&
+            $coupon->end_date >= now() &&
+            ($coupon->usage_limit === null || $coupon->usage_count < $coupon->usage_limit);
         Log::info('Coupon validation', [
             'code' => $coupon->code,
             'is_active' => $coupon->is_active,
@@ -314,9 +321,26 @@ class CheckoutController extends Controller
             if (!Auth::check()) {
                 return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đặt hàng!');
             }
+    {
+        try {
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đặt hàng!');
+            }
 
             \Log::info('Validating checkout form', $request->all());
+            \Log::info('Validating checkout form', $request->all());
 
+            $request->validate([
+                'address_id' => 'required|exists:user_addresses,id,user_id,' . Auth::id(),
+                'shipping_type' => 'required|in:thường,nhanh',
+                'payment_method' => 'required|in:cod,vnpay',
+                'note' => 'nullable|string',
+            ], [
+                'address_id.required' => 'Vui lòng chọn hoặc thêm địa chỉ nhận hàng.',
+                'address_id.exists' => 'Địa chỉ không hợp lệ.',
+                'shipping_type.required' => 'Vui lòng chọn phương thức vận chuyển.',
+                'shipping_type.in' => 'Phương thức vận chuyển không hợp lệ.',
+            ]);
             $request->validate([
                 'address_id' => 'required|exists:user_addresses,id,user_id,' . Auth::id(),
                 'shipping_type' => 'required|in:thường,nhanh',
@@ -343,13 +367,31 @@ class CheckoutController extends Controller
                 \Log::warning('Cart is empty or not found', ['user_id' => Auth::id()]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
             }
+            if (!$cart || $cart->items->isEmpty()) {
+                \Log::warning('Cart is empty or not found', ['user_id' => Auth::id()]);
+                return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
+            }
 
+            $address = UserAddress::where('id', $request->address_id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
             $address = UserAddress::where('id', $request->address_id)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
 
             \Log::info('Selected address', $address->toArray());
+            \Log::info('Selected address', $address->toArray());
 
+            $subtotal = $cart->items->sum(function ($item) {
+                return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
+            });
+            $shippingFee = $request->shipping_type === 'thường' ? 16500 : 30000;
+            $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
+            $discount = 0;
+            if ($coupon && $this->isValidCoupon($coupon, $subtotal)) {
+                $discount = $this->calculateDiscount($coupon, $subtotal);
+            }
+            $total = $subtotal + $shippingFee - $discount;
             $subtotal = $cart->items->sum(function ($item) {
                 return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
             });
@@ -380,13 +422,47 @@ class CheckoutController extends Controller
                 'check_refunded_canceled' => 0,
                 'img_refunded_money' => null,
             ]);
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'code' => Str::upper('ORD-' . Str::random(8)),
+                'payment_id' => $request->payment_method === 'cod' ? 1 : 2,
+                'phone_number' => $address->phone_number,
+                'email' => $address->email,
+                'fullname' => $address->fullname,
+                'address' => implode(', ', [$address->street, $address->ward, $address->district, $address->province]),
+                'city' => $address->province, // Sử dụng province thay vì city
+                'note' => $request->note,
+                'total_amount' => $total,
+                'shipping_type' => $request->shipping_type,
+                'is_paid' => 0,
+                'is_refunded' => 0,
+                'coupon_id' => $coupon ? $coupon->id : null,
+                'is_refunded_canceled' => 0,
+                'check_refunded_canceled' => 0,
+                'img_refunded_money' => null,
+            ]);
 
+            \Log::info('Order created', ['order_id' => $order->id, 'code' => $order->code, 'address' => $order->address, 'city' => $order->city]);
             \Log::info('Order created', ['order_id' => $order->id, 'code' => $order->code, 'address' => $order->address, 'city' => $order->city]);
 
             if ($coupon) {
                 $coupon->increment('usage_count');
             }
+            if ($coupon) {
+                $coupon->increment('usage_count');
+            }
 
+            OrderOrderStatus::create([
+                'order_id' => $order->id,
+                'order_status_id' => 1,
+                'modified_by' => Auth::id(),
+                'note' => 'Đơn hàng mới được tạo, đang chờ xác nhận.',
+                'employee_evidence' => null,
+                'customer_confirmation' => null,
+                'is_current' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => 1,
@@ -462,7 +538,27 @@ class CheckoutController extends Controller
             $cart->items()->delete();
             $cart->delete();
             session()->forget('coupon');
+            $cart->items()->delete();
+            $cart->delete();
+            session()->forget('coupon');
 
+            if ($request->payment_method === 'cod') {
+                return redirect()->route('checkout.success', $order->code)
+                    ->with('success', 'Đơn hàng của bạn đã được đặt thành công!');
+            } else {
+                return $this->vnpayPayment($order);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Checkout process error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('checkout')
+                ->withInput()
+                ->with('error', 'Đã xảy ra lỗi khi xử lý đơn hàng, vui lòng kiểm tra lại thông tin!');
+        }
+    }
             if ($request->payment_method === 'cod') {
                 return redirect()->route('checkout.success', $order->code)
                     ->with('success', 'Đơn hàng của bạn đã được đặt thành công!');

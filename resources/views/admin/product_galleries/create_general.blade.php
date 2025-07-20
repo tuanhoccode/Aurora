@@ -28,12 +28,12 @@
                             </div>
                         @endif
 
-                        <form method="POST" 
-                              action="{{ route('admin.product-images.store-general') }}" 
+                        <form method="POST"
+                              action="{{ route('admin.product-images.store-general') }}"
                               enctype="multipart/form-data"
                               id="createImageForm">
                             @csrf
-                            
+
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="product_id" class="form-label fw-bold">Chọn sản phẩm</label>
@@ -56,7 +56,7 @@
                                         <option value="">-- Không chọn --</option>
                                         @foreach ($products as $product)
                                             @foreach ($product->variants as $variant)
-                                                <option value="{{ $variant->id }}" data-product="{{ $product->id }}" 
+                                                <option value="{{ $variant->id }}" data-product="{{ $product->id }}"
                                                         {{ old('product_variant_id') == $variant->id ? 'selected' : '' }}>
                                                     {{ $product->name }} - SKU: {{ $variant->sku }}
                                                 </option>
@@ -70,9 +70,9 @@
 
                                 <div class="col-md-12 mb-3">
                                     <label for="image" class="form-label fw-bold">Chọn ảnh <span class="text-danger">*</span></label>
-                                    <input type="file" 
-                                           name="image" 
-                                           id="image" 
+                                    <input type="file"
+                                           name="image"
+                                           id="image"
                                            class="form-control @error('image') is-invalid @enderror"
                                            required>
                                     @error('image')
@@ -99,8 +99,8 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
-        // Image Preview
+    $(function () {
+        // Preview ảnh
         $('#image').change(function() {
             const file = this.files[0];
             if (file) {
@@ -114,26 +114,29 @@
             }
         });
 
-        // Filter variants based on selected product
-        document.addEventListener('DOMContentLoaded', function () {
-            const productSelect = document.getElementById('product_id');
-            const variantSelect = document.getElementById('product_variant_id');
+        // Ẩn/hiện các option biến thể theo sản phẩm
+        const productSelect = $('#product_id');
+        const variantSelect = $('#product_variant_id');
 
-            function filterVariants() {
-                const selectedProductId = productSelect.value;
-                Array.from(variantSelect.options).forEach(option => {
-                    if (!option.value) {
-                        option.hidden = false; // "-- Không chọn --"
-                        return;
-                    }
-                    option.hidden = option.dataset.product !== selectedProductId;
-                });
-                variantSelect.value = ""; // Reset selected variant
-            }
+        function filterVariants() {
+            const selectedProductId = productSelect.val();
+            variantSelect.find('option').each(function () {
+                const option = $(this);
+                const productId = option.data('product');
 
-            productSelect.addEventListener('change', filterVariants);
-            filterVariants(); // Call once on page load
-        });
+                if (!option.val()) {
+                    option.prop('hidden', false); // option "-- Không chọn --"
+                } else {
+                    option.prop('hidden', productId != selectedProductId);
+                }
+            });
+
+            variantSelect.val(''); // reset khi chọn sản phẩm mới
+        }
+
+        productSelect.on('change', filterVariants);
+        filterVariants(); // gọi luôn khi trang tải lần đầu
     });
 </script>
 @endpush
+

@@ -8,7 +8,7 @@ class ProductGallery extends Model
     protected $fillable = [
         'product_id',
         'product_variant_id',
-        'image',
+        'url',
     ];
 
     public function product()
@@ -24,9 +24,10 @@ class ProductGallery extends Model
     // Accessor để lấy URL ảnh
     public function getImageUrlAttribute()
     {
-        if (!$this->image) {
+        if (!$this->url) {
             return asset('assets2/img/product/2/default.png');
         }
-        return asset('storage/' . $this->image);
+        return asset('storage/' . $this->url);
     }
+
 }
