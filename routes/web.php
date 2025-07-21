@@ -126,6 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
+    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole');
     // Brands Routes
     Route::prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
