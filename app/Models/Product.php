@@ -251,4 +251,9 @@ class Product extends Model
         }
         return $related;
     }
+
+    //đổ sao trung bình ra home
+    public function getAverageRatingAttribute(){
+        return round($this->reviews()->where('is_active', 1)->avg('rating'),1) ?? 0;
+    }
 }

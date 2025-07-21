@@ -271,7 +271,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         //Admin phản hồi bình luận
         Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
         Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
+
+        //search comment
+        Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
+
+    
 });
 
 
