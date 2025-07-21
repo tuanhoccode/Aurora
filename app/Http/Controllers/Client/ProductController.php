@@ -40,15 +40,15 @@ class ProductController extends Controller
                 'regular_price' => $variant->regular_price,
                 'sale_price' => $variant->sale_price,
                 'img' => $variant->img,
-                'material' => $material, // ✅ Gán chất liệu lấy từ attribute value
+                'material' => $material, //  Gán chất liệu lấy từ attribute value
                 'images' => $variant->images->map(function ($image) {
                     return ['url' => $image->url];
                 }),
             ];
         });
 
-        $averageRating = $product->reviews()->where('is_active', 1)->avg('rating');
-        $reviewCount = $product->reviews()->where('is_active', 1)->count();
+        $averageRating = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->avg('rating');
+        $reviewCount = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->count();
 
         $relatedProducts = Product::where('id', '!=', $product->id)
             ->where('is_active', 1)

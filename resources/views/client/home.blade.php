@@ -339,11 +339,26 @@
                         <a
                           href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
                       </h3>
-                      <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                        @for ($i = 0; $i < 5; $i++)
-                      <span><i class="fa-solid fa-star"></i></span>
-                     @endfor
-                      </div>
+                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                           @if (
+                               $product->reviews
+                                   ->where('is_active', 1)
+                                   -> count() > 0
+                           )
+                               <div class="review-item pb-3">
+                                   <div class="text-warning mb-1">
+                                       @php 
+                                          $avg = round($product->average_rating);
+                                       @endphp
+                                       {!! str_repeat('★', $avg) !!}{!! str_repeat('☆', 5 - $avg) !!}
+                                   </div>
+                                   
+                               </div>
+                           @else
+                               <p>Chưa có đánh giá.</p>
+                           @endif
+                        </div>
+
                       <div class="tp-product-price-wrapper-2">
                         <span
                           class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }} đ</span>
@@ -534,78 +549,35 @@
                      </div>
                      <div class="tp-testimonial-slider-active swiper-container">
                         <div class="swiper-wrapper">
-                           <div class="tp-testimonial-item text-center mb-20 swiper-slide">
-                              <div class="tp-testimonial-rating">
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                              </div>
-                              <div class="tp-testimonial-content">
-                                 <p>" Cách bạn sử dụng tên thành phố hoặc thị trấn là tùy bạn. Tất cả kết quả có thể sử
-                                    dụng tự do cho bất kỳ công việc nào."</p>
-                              </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                 <div class="tp-testimonial-user d-flex align-items-center">
-                                    <div class="tp-testimonial-avater mr-10">
-                                       <img src="{{asset('assets2/img/users/user-2.jpg')}}" alt="">
-                                    </div>
-                                    <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                       <h3 class="tp-testimonial-user-title">Theodore Handle</h3>
-                                       <span class="tp-testimonial-designation">Đồng sáng lập</span>
+                           @forelse($topReviews as $review)
+                              <div class="tp-testimonial-item text-center mb-20 swiper-slide">
+                                 <div class="tp-testimonial-rating">
+                                    @for($i = 0; $i < 5; $i++)
+                                       <span><i class="fa-solid fa-star text-warning"></i></span>
+                                    @endfor
+                                 </div>
+                                 <div class="tp-testimonial-content">
+                                    <p>"{{$review->review_text}}"</p>
+                                 </div>
+                                 <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                                    <div class="tp-testimonial-user d-flex align-items-center">
+                                       <div class="tp-testimonial-avater mr-10">
+                                          <img src="{{ $review->user->avatar 
+                                          ? asset('storage/' . $review->user->avatar) 
+                                          : asset('assets2/img/users/avatars.png') }}" 
+                                           alt="avatar" width="50">
+                                       </div>
+                                       <div class="tp-testimonial-user-info tp-testimonial-user-translate">
+                                          <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}</h3>
+                                          <span class="tp-testimonial-designation">Khách hàng</span>
+                                       </div>
                                     </div>
                                  </div>
                               </div>
-                           </div>
-                           <div class="tp-testimonial-item text-center mb-20 swiper-slide">
-                              <div class="tp-testimonial-rating">
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                              </div>
-                              <div class="tp-testimonial-content">
-                                 <p>"Rất hài lòng khi đưa con gái đến Brave care. Toàn bộ đội ngũ rất tuyệt vời! Cảm
-                                    ơn!"</p>
-                              </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                 <div class="tp-testimonial-user d-flex align-items-center">
-                                    <div class="tp-testimonial-avater mr-10">
-                                       <img src="{{asset('assets2/img/users/user-3.jpg')}}" alt="">
-                                    </div>
-                                    <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                       <h3 class="tp-testimonial-user-title">Shahnewaz Sakil</h3>
-                                       <span class="tp-testimonial-designation">Thiết kế UI/UX</span>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                           <div class="tp-testimonial-item text-center mb-20 swiper-slide">
-                              <div class="tp-testimonial-rating">
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                                 <span><i class="fa-solid fa-star"></i></span>
-                              </div>
-                              <div class="tp-testimonial-content">
-                                 <p>"Cảm ơn vì tất cả nỗ lực và tinh thần đồng đội trong những tháng vừa qua! Cảm ơn rất
-                                    nhiều"</p>
-                              </div>
-                              <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                 <div class="tp-testimonial-user d-flex align-items-center">
-                                    <div class="tp-testimonial-avater mr-10">
-                                       <img src="{{asset('assets2/img/users/user-4.jpg')}}" alt="">
-                                    </div>
-                                    <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                       <h3 class="tp-testimonial-user-title">James Dopli</h3>
-                                       <span class="tp-testimonial-designation">Lập trình viên</span>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
+                           @empty
+                              <p class="text-center">Chưa có đánh giá 5 sao</p>
+                           @endforelse
+                           
                         </div>
                      </div>
                      <div class="tp-testimonial-arrow d-none d-md-block">
