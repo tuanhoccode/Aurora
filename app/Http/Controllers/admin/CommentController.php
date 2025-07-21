@@ -203,28 +203,4 @@ class CommentController extends Controller
         $reviewCount = $reviews->count();
         return view('product-details', compact('product', 'averageRating', 'reviewCount', 'hasVariant')) ;
     }
-
-    public function searchComment(Request $req){
-        $search = $req->input('search');
-        $comments = Comment::with(['review.product', 'user', 'product'])
-        ->when($search, function($query, $search){
-            $query->where('content', 'like', "%$search%")
-            ->orWhereHas('user', function($q) use ($search){
-                $q->where('fullname', 'like', "%$search%");
-            });
-        })
-        ->orderByDesc('created_at')
-        ->paginate(10);
-        // gán type  cho mỗi comment
-
-        foreach ($comments as $comment){
-            $comment->type = $comment->review_id ? 'review' : 'comment';
-        }
-
-        return view('admin.reviews.index', [
-        'mergedList' => $comments,
-        'trashComments' => Comment::onlyTrashed()->count(),
-        'search' => $search,
-        ]);
-    }
 }

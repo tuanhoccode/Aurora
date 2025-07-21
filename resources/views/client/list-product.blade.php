@@ -185,24 +185,10 @@
                                     <a href="{{ $product->slug ? route('client.product.show', ['slug' => $product->slug]) : '#' }}">{{ $product->name }}</a>
                                 </h3>
                                 <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                                    @if (
-                                        $product->reviews
-                                            ->where('is_active', 1)
-                                            -> count() > 0
-                                    )
-                                        <div class="review-item pb-3">
-                                            <div class="text-warning mb-1">
-                                                @php 
-                                                   $avg = round($product->average_rating);
-                                                @endphp
-                                                {!! str_repeat('★', $avg) !!}{!! str_repeat('☆', 5 - $avg) !!}
-                                            </div>
-
-                                        </div>
-                                    @else
-                                        <p>Chưa có đánh giá.</p>
-                                    @endif
-                                </div>>
+                                    @for ($i = 0; $i < 5; $i++)
+                                        <span><i class="fa-solid fa-star"></i></span>
+                                    @endfor
+                                </div>
                                 <div class="tp-product-price-wrapper-2">
                                     <span class="tp-product-price-2 new-price">${{ number_format($product->price, 2) }}</span>
                                     @if ($product->original_price && $product->original_price > $product->price)

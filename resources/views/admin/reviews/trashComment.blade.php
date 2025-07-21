@@ -42,7 +42,7 @@
                         <tr>
 
                             <td>
-                                <div class="fw-medium text-primary">{{ $comment->user ? $comment->user->fullname : 'N/A'  }}</div>
+                                <div class="fw-medium text-primary">{{ $comment->user->fullname }}</div>
                                 <!-- <small class="text-muted d-block">{{ Str::limit($comment->short_description, 100) }}</small> -->
                             </td>
                             <td>

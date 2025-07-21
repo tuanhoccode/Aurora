@@ -63,8 +63,4 @@ class Order extends Model
             ->with('status')
             ->orderByDesc('created_at');
     }
-    public function orderDetail()
-    {
-    return $this->hasMany(OrderItem::class, 'order_id', 'id');
-    }
 }
