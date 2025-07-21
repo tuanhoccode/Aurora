@@ -20,23 +20,26 @@
                     <span class="badge bg-danger">{{ $trashComments }}</span>
                 @endif
             </a>
-            
+            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Thêm sản phẩm
+            </a>
         </div>
     </div>
 
     {{-- Search --}}
     <div class="card shadow-sm rounded-3 border-0 mb-3">
         <div class="card-body">
-            <form action="{{ route('admin.reviews.searchComment') }}" method="GET" class="row g-3">
+            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
                 <div class="col-12">
                     <div class="input-group">
-                        <input type="text" class="form-control" name="search" value="{{ $search ?? '' }}"
-                            placeholder="Tìm kiếm bình luận...">
+                        <input type="text" class="form-control" name="search" value="{{ request('search') }}"
+                            placeholder="Tìm kiếm sản phẩm...">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i>
                         </button>
-                        @if (!empty($search))
-                            <a href="{{ route('admin.reviews.searchComment') }}" class="btn btn-light">
+                        @if (request('search'))
+                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
@@ -429,7 +432,7 @@
         
         </div>
     <!--  trả lời bình luận -->
-
+        <!-- Modal trả lời -->
             <!-- Modal trả lời -->
                 <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
                     <div class="modal-dialog">

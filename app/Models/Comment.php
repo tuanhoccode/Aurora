@@ -39,8 +39,4 @@ class Comment extends Model
     public function getHasRepliesAttribute(){
         return $this->replies()->exists();
     }
-    public function review()
-    {
-        return $this->belongsTo(Review::class);
-    }
 }
