@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Mail\LoginAlertMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
@@ -20,6 +21,17 @@ class LoginController extends Controller
     public function login(ClientLoginRequest $req){
         $credentials = $req->only('email', 'password');
         
+        //Kiểm tra người dùng tồn tại trước 
+        $user = User::where('email', $credentials['email'])->first();
+        if (!$user) {
+            return back()->with(['error' => 'Tài khoản không tồn tại!'])->withInput();
+        }
+
+        //Kiểm tra trạng thái tk bị khóa
+        if ($user->status === 'inactive') {
+            $reason = $user->reason_lock ? 'Lý do:' . $user->reason_lock : '';
+            return back() -> with(['error' => 'Tài khoản của bạn đã bị khóa.' . $reason])->withInput();
+        }
         //Kiểm tra xem remember có được chọn k
         $remember = $req->filled('remember');
         if (Auth::attempt($credentials, $remember )) {
