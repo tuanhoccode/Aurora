@@ -15,6 +15,7 @@ class Comment extends Model
         'parent_id',
         'reason',
         'is_active',
+        'has_replies',
         'content',
         'deleted_at',
     ];

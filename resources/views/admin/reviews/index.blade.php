@@ -153,9 +153,15 @@
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
+
                                             <!-- Nút mở modal trả lời -->
+                                            @php
+                                                $isReply =  ($comment->type === 'review' &&  !empty($comment->review_id)) ||
+                                                            ($comment->type === 'comment' &&  !empty($comment->parent_id))
+                                            @endphp
                                             <button type="button" 
-                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"                                                style="width: 40px; min-width: 30px; height: 32px;"
+                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"
+                                                style="width: 40px; min-width: 30px; height: 32px;"
                                                 data-id="{{ $comment->id }}" 
                                                 data-type="{{ $comment->type }}"
                                                 data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
@@ -163,8 +169,12 @@
                                                 data-rating="{{ $comment->rating ?? 'Không có' }}"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#replyModal"
-                                                {{ (!$comment->is_active || $comment->has_replies) ? 'disabled' : '' }}
-                                                title="{{ !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : ($comment->has_replies ? 'Bình luận này đã được trả lời' : 'Trả lời bình luận') }}">
+                                                {{ (!$comment->is_active || $comment->has_replies || $isReply) ? 'disabled' : '' }}
+                                                title="{{ 
+                                                    !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : 
+                                                    ($comment->has_replies ? 'Bình luận này đã được trả lời' :
+                                                    ($isReply ? 'Không thể trả lời phản hồi' : 'Trả lời bình luận')) 
+                                                }}">
                                                 <i class="bi bi-reply-fill"></i>
                                                 @if($comment->has_replies)
                                                     <span class="d-flex align-items-center gap-1 text-success small">
@@ -186,7 +196,7 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </div>  
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="text-muted">
@@ -390,7 +400,7 @@
                         replyForm.action = `/admin/reviews/${type}/reply/${id}`;
                         replyUser.textContent = user;
                         replyContent.textContent = content;
-                        replyRating.textContent = rating;
+                        replyRating.textContent = rating !== 'Không có' ? rating: 'N/A';
                     });
                 });
             });
