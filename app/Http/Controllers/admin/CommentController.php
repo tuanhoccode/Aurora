@@ -19,7 +19,7 @@ class CommentController extends Controller
 {
     // Lấy reviews
     $reviews = Review::with(['user', 'product'])
-        ->select('id', 'user_id', 'product_id', 'review_text as content', 'rating', 'is_active', 'reason', 'created_at')
+        ->select('id', 'user_id', 'product_id', 'review_text as content', 'rating', 'is_active', 'has_replies', 'reason', 'created_at')
         ->get()
         ->map(function ($comment) {
             $comment->type = 'review';
@@ -28,7 +28,7 @@ class CommentController extends Controller
 
     // Lấy comments
     $comments = Comment::with(['user', 'product'])
-        ->select('id', 'user_id', 'product_id', 'content', 'is_active', 'reason', 'created_at')
+        ->select('id', 'user_id', 'product_id', 'content', 'is_active', 'has_replies', 'reason', 'created_at')
         ->get()
         ->map(function ($comment) {
             $comment->type = 'comment';
@@ -143,7 +143,7 @@ class CommentController extends Controller
 
     //phản hồi comment
     public function reply(ReplyRequest $req, $type, $id){
-        try {
+        // try {
             
             if ($type === 'review') {
                 $parent = Review::findOrFail($id);
@@ -154,6 +154,9 @@ class CommentController extends Controller
                     //Kiểm tra review đã có phản hồi chx
                     return redirect()->back()->with('error', 'Đánh giá này đã đc trả lời');
                 }
+                if ($parent->review_id !== null) {
+                    return redirect() -> back() ->with('error', 'Không thể phản hồi admin đã trả lời');
+                }
                 Review::create([
                     'user_id' =>Auth::id(),
                     'product_id' => $parent->product_id,
@@ -163,6 +166,8 @@ class CommentController extends Controller
                     'rating' => 0,
                     'is_active' => 1,
                 ]);
+                $parent->has_replies = true;
+                $parent->save();
             } else {
                 $parent = Comment::findOrFail($id);
                 
@@ -173,6 +178,9 @@ class CommentController extends Controller
                     //Kiểm tra review đã có phản hồi chx
                     return redirect()->back()->with('error', 'Bình luận này đã đc trả lời');
                 }
+                if ($parent->parent_id !== null) {
+                    return redirect() -> back() ->with('error', 'Không thể phản hồi admin đã trả lời');
+                }
                 Comment::create([
                     'user_id' => Auth::id(),
                     'product_id' => $parent->product_id,
@@ -181,12 +189,14 @@ class CommentController extends Controller
                     'is_active' => 1,
         
                 ]);
+                $parent->has_replies = true;
+                $parent->save();
             }
             return redirect()->back()->with('success', 'Đã trả lời bình luận của khách hàng.');
-        } catch (\Exception $e) {
-            Log::error('Reply error: Type='. $type . ', ID=' . $id . ',Error=' . $e->getMessage());
-            return redirect()->back()->with('error', 'Đã xảy ra lỗi khi gửi phản hồi.');
-        }
+        // } catch (\Exception $e) {
+        //     Log::error('Reply error: Type='. $type . ', ID=' . $id . ',Error=' . $e->getMessage());
+        //     return redirect()->back()->with('error', 'Đã xảy ra lỗi khi gửi phản hồi.');
+        // }
         
     }
 
