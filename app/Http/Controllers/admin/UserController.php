@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -15,9 +16,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::orderBy('created_at', 'desc')->paginate(10);
         return view('admin.users.index', compact('users'));
     }
+
 
     public function show(User $user)
     {
@@ -84,14 +86,50 @@ class UserController extends Controller
         }
     }
 
+    public function changeRole(Request $request, User $user)
+    {
+        try {
+            $request->validate([
+                'role' => 'required|in:customer,employee,admin',
+            ]);
+
+            $user->role = $request->role;
+            $user->save();
+
+            if ($request->ajax()) {
+                return response()->json(['success' => true]);
+            }
+
+            return redirect()->route('admin.users.index')->with('success', 'Cập nhật vai trò thành công.');
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật vai trò: ' . $e->getMessage());
+        }
+    }
+
+
     public function changeStatus(Request $request, User $user)
     {
         try {
             $request->validate([
                 'status' => 'required|in:active,inactive',
+                'reason_lock' => 'nullable|string|max:255',  // Thêm validate lý do khóa
             ]);
 
             $user->status = $request->status;
+
+            if ($user->status === 'inactive') {
+                // Gán lý do khóa nếu có
+                $user->reason_lock = $request->input('reason_lock', 'Không rõ lý do');
+                // Xóa session để ép logout ngay
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            } else {
+                // Mở khóa thì xoá lý do khóa
+                $user->reason_lock = null;
+            }
+
             $user->save();
 
             if ($request->ajax()) {
@@ -103,6 +141,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái: ' . $e->getMessage());
         }
     }
+
 
     public function edit($id)
     {
