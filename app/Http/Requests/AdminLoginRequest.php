@@ -24,14 +24,12 @@ class AdminLoginRequest extends FormRequest
         return [
             'email' => 'required|email|exists:users,email',
             'password' => 'required|string|min:6'
-        ];  
+        ];
     }
     public function messages(): array
     {
         return
             [
-                
-
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
@@ -39,8 +37,6 @@ class AdminLoginRequest extends FormRequest
                 'password.required' => 'Vui lòng nhập mật khẩu',
                 'password.string' => 'Mật khẩu không hợp lệ',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
-                
-                
             ];
     }
 }
