@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\Rule;
@@ -149,98 +150,46 @@ class UserController extends Controller
         return view('admin.users.edit', compact('user'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
         try {
-            $user = User::with('address')->findOrFail($id);
+            // Lấy thông tin người dùng từ database, kèm theo kiểm tra tồn tại
+            $user = User::findOrFail($id);
 
-            $request->validate([
-                'phone_number' => ['nullable', 'string', Rule::unique('users')->ignore($user->id)],
-                'email' => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
-                'fullname' => 'nullable|string|max:100',
-                'avatar' => 'nullable|image|max:2048',
-                'gender' => 'nullable|in:male,female,other',
-                'birthday' => 'nullable|date',
-                'role' => 'required|in:customer,employee,admin',
-                'status' => 'required|in:active,inactive',
-                'bank_name' => 'nullable|string|max:255',
-                'user_bank_name' => 'nullable|string|max:255',
-                'bank_account' => 'nullable|string|max:255',
-                'reason_lock' => 'nullable|string|max:255',
-                'is_change_password' => 'nullable|boolean',
-                'address' => 'nullable|string|max:255',
-                'address_phone' => 'nullable|string|max:20',
-                'address_name' => 'nullable|string|max:100',
-            ]);
+            $forceLogout = false; // Biến dùng để xác định có cần đăng xuất người dùng hay không
 
-            // Validate password nếu check đổi mật khẩu
-            if ($request->filled('is_change_password')) {
-                $request->validate([
-                    'password' => ['required', 'string', 'min:8', 'confirmed'],
-                ]);
-            }
-
-            // Kiểm tra nếu đổi trạng thái sang khóa hoặc đổi mật khẩu
-            $forceLogout = false;
+            // Nếu trạng thái thay đổi từ "active" sang "inactive", đánh dấu cần đăng xuất
             if ($user->status === 'active' && $request->status === 'inactive') {
                 $forceLogout = true;
             }
+
+            // Nếu có yêu cầu đổi mật khẩu, cũng cần đăng xuất
             if ($request->filled('is_change_password') && $request->filled('password')) {
                 $forceLogout = true;
             }
 
+            // Cập nhật các trường cơ bản
             $user->update([
-                'phone_number' => $request->phone_number,
-                'email' => $request->email,
-                'fullname' => $request->fullname,
-                'gender' => $request->gender,
-                'birthday' => $request->birthday,
                 'role' => $request->role,
                 'status' => $request->status,
-                'bank_name' => $request->bank_name,
-                'user_bank_name' => $request->user_bank_name,
-                'bank_account' => $request->bank_account,
                 'reason_lock' => $request->reason_lock,
                 'is_change_password' => $request->input('is_change_password', false),
             ]);
 
-            // Cập nhật avatar nếu có
-            if ($request->hasFile('avatar')) {
-                if ($user->avatar && Storage::disk('public')->exists(str_replace('storage/', '', $user->avatar))) {
-                    Storage::disk('public')->delete(str_replace('storage/', '', $user->avatar));
-                }
-                $path = $request->file('avatar')->store('avatars', 'public');
-                $user->avatar = $path;
-                $user->save();
-            }
-
-            // Cập nhật mật khẩu nếu có yêu cầu
+            // Nếu có yêu cầu đổi mật khẩu, thực hiện băm và lưu mật khẩu mới
             if ($request->filled('is_change_password') && $request->filled('password')) {
                 $user->password = Hash::make($request->password);
-                $user->save();
+                $user->save(); // Lưu lại mật khẩu mới
             }
 
-            // Cập nhật địa chỉ
-            if ($request->filled('address') || $request->filled('address_phone') || $request->filled('address_name')) {
-                $user->address()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'address' => $request->input('address'),
-                        'phone_number' => $request->input('address_phone'),
-                        'fullname' => $request->input('address_name'),
-                        'is_default' => 1,
-                    ]
-                );
-            }
-
-            // Xoá session nếu cần đăng xuất bắt buộc
+            // Nếu cần đăng xuất, xóa hết session của user này
             if ($forceLogout) {
                 DB::table('sessions')->where('user_id', $user->id)->delete();
             }
 
-
             return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
         } catch (\Exception $e) {
+            // Trả về thông báo lỗi nếu có exception xảy ra
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
         }
     }
