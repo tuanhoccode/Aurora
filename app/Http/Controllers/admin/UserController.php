@@ -173,6 +173,22 @@ class UserController extends Controller
                 'address_name' => 'nullable|string|max:100',
             ]);
 
+            // Validate password nếu check đổi mật khẩu
+            if ($request->filled('is_change_password')) {
+                $request->validate([
+                    'password' => ['required', 'string', 'min:8', 'confirmed'],
+                ]);
+            }
+
+            // Kiểm tra nếu đổi trạng thái sang khóa hoặc đổi mật khẩu
+            $forceLogout = false;
+            if ($user->status === 'active' && $request->status === 'inactive') {
+                $forceLogout = true;
+            }
+            if ($request->filled('is_change_password') && $request->filled('password')) {
+                $forceLogout = true;
+            }
+
             $user->update([
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
@@ -188,6 +204,7 @@ class UserController extends Controller
                 'is_change_password' => $request->input('is_change_password', false),
             ]);
 
+            // Cập nhật avatar nếu có
             if ($request->hasFile('avatar')) {
                 if ($user->avatar && Storage::disk('public')->exists(str_replace('storage/', '', $user->avatar))) {
                     Storage::disk('public')->delete(str_replace('storage/', '', $user->avatar));
@@ -197,7 +214,13 @@ class UserController extends Controller
                 $user->save();
             }
 
-            // Cập nhật hoặc tạo địa chỉ nếu có dữ liệu
+            // Cập nhật mật khẩu nếu có yêu cầu
+            if ($request->filled('is_change_password') && $request->filled('password')) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
+
+            // Cập nhật địa chỉ
             if ($request->filled('address') || $request->filled('address_phone') || $request->filled('address_name')) {
                 $user->address()->updateOrCreate(
                     ['user_id' => $user->id],
@@ -210,11 +233,19 @@ class UserController extends Controller
                 );
             }
 
+            // Xoá session nếu cần đăng xuất bắt buộc
+            if ($forceLogout) {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            }
+
+
             return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
         }
     }
+
+
 
     public function destroy(Request $request, User $user)
     {
