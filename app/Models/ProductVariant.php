@@ -27,8 +27,8 @@ class ProductVariant extends Model
 
     protected $casts = [
         'stock' => 'integer',
-        'regular_price' => 'decimal:2',
-        'sale_price' => 'decimal:2'
+        'regular_price' => 'integer',
+        'sale_price' => 'integer'
     ];
 
     public function product(): BelongsTo
@@ -39,9 +39,9 @@ class ProductVariant extends Model
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'attribute_value_product', 'product_id', 'attribute_value_id')
-                    ->using(AttributeValue::class)
-                    ->withPivot(['attribute_value_id'])
-                    ->withTimestamps();
+            ->using(AttributeValue::class)
+            ->withPivot(['attribute_value_id'])
+            ->withTimestamps();
     }
 
     // Quan hệ giá trị thuộc tính thông qua bảng attribute_value_product_variant (liên kết theo product_variant_id)
@@ -53,6 +53,11 @@ class ProductVariant extends Model
             'product_variant_id',
             'attribute_value_id'
         )->with('attribute');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(\App\Models\OrderItem::class, 'product_variant_id');
     }
 
     public function getIsOnSaleAttribute()
@@ -71,5 +76,40 @@ class ProductVariant extends Model
             return round((($this->regular_price - $this->sale_price) / $this->regular_price) * 100);
         }
         return 0;
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductGallery::class, 'product_variant_id');
+    }
+
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    /**
+     * Kiểm tra biến thể có nằm trong đơn hàng đang xử lý không
+     * (order_status_id = 1, 2, 3)
+     */
+    public function isInProcessingOrder()
+    {
+        return $this->orderItems()->whereHas('order.statusHistory', function($q) {
+            $q->where('is_current', 1)
+              ->whereIn('order_status_id', [1, 2, 3]);
+        })->exists();
+    }
+
+    /**
+     * Lấy danh sách mã đơn hàng mà biến thể đang thuộc các trạng thái xử lý (1,2,3)
+     */
+    public function getProcessingOrderCodes()
+    {
+        return $this->orderItems()->whereHas('order.statusHistory', function($q) {
+            $q->where('is_current', 1)
+              ->whereIn('order_status_id', [1, 2, 3]);
+        })->with(['order' => function($q) {
+            $q->select('id', 'code');
+        }])->get()->pluck('order.code')->unique()->toArray();
     }
 }

@@ -19,11 +19,14 @@ class LoginHistoryController extends Controller
     }
     public function logoutAll(LogoutAllRequest $req){
         $user = Auth::user();
+        $isGoogleUser = !empty($user->google_id);
         //Kiểm tra mk
-        if (!Hash::check($req->password, $user->password)) {
-            return back()->with('error', 'Mật khẩu không chính xác!');
+        if (!$isGoogleUser) {
+            if (!Hash::check($req->password, $user->password)) {
+                return back()->with('error', 'Mật khẩu không chính xác!');
+            }
+            Auth::logoutOtherDevices(request('password'));
         }
-        Auth::logoutOtherDevices(request('password'));
         //Xác định id phiên hiện tại
         // $currentSessionId = session()->getId();
         //Xóa các session khác của user(trừ phiên dăng nhập)

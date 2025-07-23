@@ -1,52 +1,95 @@
 <?php
 
 
-use App\Http\Controllers\Admin\StockController;
+use App\Models\User;
+use Illuminate\Support\Str;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use function Laravel\Prompts\password;
+use Laravel\Socialite\Facades\Socialite;
+
+use Laravel\Socialite\Two\GoogleProvider;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-
-
+use App\Http\Controllers\Client\ContactController;
+use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\AttributeValueController;
-use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Auth\AdminLoginController;
-use App\Http\Controllers\Client\Auth\RegisterController;
+use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\Auth\LoginController;
-use App\Http\Controllers\Client\ErrorController;
-use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\Auth\GoogleController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
-use App\Http\Controllers\Client\Auth\ResetPasswordController;
-use App\Http\Controllers\Client\Auth\VerifyEmailController;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Two\GoogleProvider;
 
-use function Laravel\Prompts\password;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Client\ShoppingCartController;
+use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\admin\CommentController;
+use App\Http\Controllers\Admin\ProductGalleryController;
+use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Client\Auth\RegisterController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Client\ChangePasswordController;
+use App\Http\Controllers\Client\Auth\VerifyEmailController;
+
+
+use App\Http\Controllers\Client\Auth\ResetPasswordController;
+use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\ReviewController;
+use App\Http\Controllers\Client\ShopController;
+use Dom\Comment;
 
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    //Coupon routes
+    Route::prefix('coupons')->name('coupons.')->group(function () {
+        Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::post('/bulk-restore', [CouponController::class, 'bulkRestore'])->name('bulk-restore');
+        Route::post('/bulk-force-delete', [CouponController::class, 'bulkForceDelete'])->name('bulk-force-delete');
 
+        Route::post('/', [CouponController::class, 'store'])->name('store');
 
+        Route::get('/', [CouponController::class, 'index'])->name('index');
+        Route::get('/create', [CouponController::class, 'create'])->name('create');
+        Route::get('/{coupon}/edit', [CouponController::class, 'edit'])->name('edit');
+        Route::put('/{coupon}', [CouponController::class, 'update'])->name('update');
+        Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
+
+        Route::get('/trash', [CouponController::class, 'trash'])->name('trash');
+        Route::put('/{id}/restore', [CouponController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [CouponController::class, 'forceDelete'])->name('force-delete');
+    });
+    /// Orders Routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
+    Route::patch('/orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
         // List và Form routes
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/', [ProductController::class, 'store'])->name('store');
+        // Product Gallery Images
+        // Xóa ảnh gallery của sản phẩm
+        // Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
+        //     ->name('delete-gallery-image');
+        Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryImage'])
+            ->name('delete-gallery-image');
 
 
         // Quản lý thùng rác
@@ -82,6 +125,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
+    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole');
     // Brands Routes
     Route::prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
@@ -108,6 +152,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{brand}/edit', [BrandController::class, 'edit'])->name('edit');
         Route::put('/{brand}', [BrandController::class, 'update'])->name('update');
         Route::delete('/{brand}', [BrandController::class, 'destroy'])->name('destroy');
+        Route::put('/{brand}/toggle-visible', [BrandController::class, 'toggleVisible'])->name('toggle-visible');
+        Route::put('/{brand}/toggle-active', [BrandController::class, 'toggleActive'])->name('toggle-active');
     });
 
 
@@ -186,6 +232,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{id}', [AttributeValueController::class, 'update'])->name('update');
         Route::delete('/{id}', [AttributeValueController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::get('/trashed', [AttributeValueController::class, 'trashed'])->name('trashed');
+        Route::post('/{id}/restore', [AttributeValueController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [AttributeValueController::class, 'forceDelete'])->name('forceDelete');
 
 
         // Bulk Actions
@@ -198,54 +247,174 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/products/{product}/stocks', [StockController::class, 'productStocks'])->name('products.stocks.index');
     Route::resource('stocks', StockController::class)->except(['show']);
     Route::get('/stocks/{stock}', [StockController::class, 'show'])->name('stocks.show');
+
+    // Quản lý ảnh phụ
+    Route::get('/product-images', [ProductGalleryController::class, 'all'])->name('product-images.all');
+    Route::get('/product-images/create', [ProductGalleryController::class, 'createGeneral'])->name('product-images.create');
+    Route::get('/product-images/{id}/edit', [ProductGalleryController::class, 'edit'])->name('product-images.edit');
+    Route::put('/product-images/{id}', [ProductGalleryController::class, 'update'])->name('product-images.update');
+    Route::post('/product-images/store', [ProductGalleryController::class, 'storeGeneral'])->name('product-images.store-general');
+    Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
+
+    //Quản lý bình luận
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])->name('comments');
+        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])->name('showComment');
+        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])->name('approve');
+        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])->name('reject');
+        Route::get('/trash-comment', [CommentController::class, 'trashComments'])->name('trashComments');
+
+        Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])->name('destroyComment');
+        Route::put('/restore/{id}', [CommentController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [CommentController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/bulk-restore', [CommentController::class, 'bulkRestore'])->name('bulkRestore');
+        //Admin phản hồi bình luận
+        Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
+        Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
+
+        //search comment
+        Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
+    });
+
+    
 });
 
 
 
+
 //Client
-Route::get('/', function () {
-    return view('client.home');
-})->name('home');
+
+Route::get('/', [HomeController::class, 'shop'])->name('home');
+
+// Chi tiết sản phẩm
+Route::get('/product/{slug}', [ClientProductController::class, 'show'])
+    ->name('client.product.show');
+
+// Chi tiết danh mục
+
+Route::middleware(['auth'])->prefix('client')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/show', [OrderController::class, 'show'])->name('orders.show');
+});
+// Client Category
+Route::prefix('categories')->name('client.categories.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+    Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+}); 
+
 Route::middleware('web')->group(function () {
-    // ->middleware(['auth', 'verified'])
-    //login & registerregister
+    //login & register
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('showRegister');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
     //404
     Route::fallback([ErrorController::class, 'notFound']);
+
     //reset password nhập email
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendRequestLinkEmail'])->name('password.email');
 
-    //form nhập mk mới
+    //form nhập mật khẩu mới
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
     //Xác thực email khi đăng ký thành công
-    //trang thông báo
     Route::get('/email/verify', function () {
         return view('client.auth.verify-email');
     })->middleware('auth')->name('verification.notice');
-    //Xử lý xác thực từ link
-    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])->middleware(['signed'])
-        ->name('verification.verify');;
-    //Gửi lại link xác thực
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed'])->name('verification.verify');
+
     Route::post('/email/verification-notification', function (Request $req) {
         $req->user()->sendEmailVerificationNotification();
         return back()->with('message', 'Đã gửi lại liên kết xác thực email!');
     })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
     //Trang lịch sử đăng nhập
     Route::get('/login-history', [LoginHistoryController::class, 'loginHistory'])->middleware(['auth', 'verified'])->name('loginHistory');
-    //đăng xuất tất cả hỏi các tb
     Route::post('/logout-all', [LoginHistoryController::class, 'logoutAll'])->middleware(['auth'])->name('logoutAll');
-});
-//điều hướng đến gg
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-})->name('google.login');
+    //điều hướng đến gg
+    Route::get('/auth/google', function () {
+        return Socialite::driver('google')->redirect();
+    })->name('google.login');
 
-//Callback từ gg
-Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+    //Callback từ gg
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+    //Profile
+    Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
+    Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
+    Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
+    //changepassword
+    Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
+
+    // Shopping Cart routes
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    // Route::get('/shopping-cart/checkout', [ShoppingCartController::class, 'checkout'])->name('shopping-cart.checkout');
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
+    Route::get('/shopping-cart/count', [ShoppingCartController::class, 'getCartCount'])->name('shopping-cart.count');
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
+    Route::get('/shopping-cart/mini-cart', [ShoppingCartController::class, 'miniCart'])->name('shopping-cart.mini-cart');
+    Route::match(['put', 'post'], '/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
+    //Checkout
+    Route::put('/shopping-cart/update/{item}', [ShoppingCartController::class, 'update'])->name('shopping-cart.update');
+    // Checkout
+    Route::get('/shopping-cart/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/shopping-cart/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
+    Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
+    Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
+
+    // Address Management
+    Route::get('/address/create', [CheckoutController::class, 'createAddress'])->name('address.create');
+    Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
+    Route::get('/address/edit/{id?}', [CheckoutController::class, 'editAddress'])->name('address.edit');
+    Route::post('/address/save', [CheckoutController::class, 'saveAddress'])->name('address.save');
+    // Trang liên hệ
+    Route::get('/contact', function () {
+        return view('client.contact');
+    })->name('contact');
+    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+
+    // Đơn hàng (Order)
+    Route::middleware(['auth'])->prefix('client')->group(function () {
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    });
+
+    // Client Category
+    Route::prefix('categories')->name('client.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
+    });
+});
+
+Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+ // Tracking đơn hàng
+    Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
+    // Hủy đơn hàng
+    Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+    //Đánh giá sản phẩm
+    Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
+
+   
+});
+
+Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
+
+Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
+
+Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+
+
+

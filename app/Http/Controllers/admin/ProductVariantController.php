@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ProductVariantRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Attribute;
@@ -12,8 +13,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\ProductVariantStoreRequest;
 
-
+/**
+ * Class ProductVariantController
+ * @package App\Http\Controllers\Admin
+ */
 class ProductVariantController extends Controller
 {
     /**
@@ -31,133 +36,43 @@ class ProductVariantController extends Controller
     /**
      * Store new variants for a product.
      */
-    public function store(Request $request, Product $product)
+    public function store(ProductVariantRequest $request, Product $product)
     {
-        // Debug: Log raw request data
-        Log::info('Raw request data:', [
-            'all_data' => $request->all(),
-            'variants_data' => $request->input('variants'),
-        ]);
-
-
-        $validated = $request->validate([
-            'variants' => 'required|array|min:1',
-            'variants.*.sku' => [
-                'nullable',
-                'string',
-                'max:255',
-                'distinct'
-            ],
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.regular_price' => 'required|numeric|min:0',
-            'variants.*.sale_price' => 'nullable|numeric|min:0',
-            'variants.*.img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'variants.*.attribute_values' => 'required|array|min:1',
-            'variants.*.attribute_values.*' => 'required|exists:attribute_values,id',
-        ]);
-
-
         try {
-            DB::beginTransaction();
-
-
-            Log::info('Attempting to create variants for product:', [
-                'product_id' => $product->id,
-                'validated_data' => $validated,
-            ]);
-
-
-            // Check for duplicate attribute combinations
-            $existingCombinations = $product->variants->map(function ($variant) {
-                return $variant->attributeValues->pluck('id')->sort()->values()->toArray();
-            })->toArray();
-
-
-            foreach ($validated['variants'] as $index => $variantData) {
-                // Debug: Log each variant data
-                Log::info('Processing variant:', [
-                    'index' => $index,
-                    'variant_data' => $variantData,
-                    'attribute_values' => $variantData['attribute_values'] ?? 'not set'
-                ]);
-
-
-                $attributeValueIds = array_values($variantData['attribute_values']);
-                sort($attributeValueIds);
-
-
-                // Skip if combination exists
-                if (in_array($attributeValueIds, $existingCombinations)) {
-                    throw new \Exception("Tổ hợp thuộc tính cho biến thể thứ " . ($index + 1) . " đã tồn tại.");
-                }
-
-
-                // Handle image upload
-                $imgPath = null;
-                if (isset($variantData['img']) && $variantData['img']) {
-                    $imgPath = $variantData['img']->store('products/variants', 'public');
-                }
-
-
-                // Generate unique SKU if needed
-                $sku = strtoupper(trim($variantData['sku']));
-                if (empty($sku) || ProductVariant::where('sku', $sku)->exists()) {
-                    $baseSku = $product->sku . '-VAR';
-                    $counter = 1;
-                    do {
-                        $sku = $baseSku . '-' . $counter;
-                        $counter++;
-                    } while (ProductVariant::where('sku', $sku)->exists());
-                }
-
-
-                // Create variant
-                $variant = $product->variants()->create([
-                    'sku' => $sku,
+            $validatedData = $request->validated();
+            
+            foreach ($validatedData['variants'] as $variantData) {
+                $variant = new ProductVariant([
+                    'sku' => $variantData['sku'],
                     'stock' => $variantData['stock'],
                     'regular_price' => $variantData['regular_price'],
                     'sale_price' => $variantData['sale_price'] ?? null,
-                    'img' => $imgPath,
                 ]);
 
+                if (isset($variantData['img'])) {
+                    $path = $variantData['img']->store('products/variants', 'public');
+                    $variant->img = $path;
+                }
 
-                Log::info('Variant created:', ['variant_id' => $variant->id]);
-
-
-                // Attach attribute values
-                if (!empty($variantData['attribute_values'])) {
-                    Log::info('Attaching attribute values:', [
-                        'variant_id' => $variant->id,
-                        'attribute_values' => $attributeValueIds
-                    ]);
-                   
-                    foreach ($attributeValueIds as $valueId) {
-                        DB::table('attribute_value_product_variant')->insert([
-                            'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $valueId,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                } else {
-                    Log::warning('No attribute values found for variant:', ['variant_id' => $variant->id]);
+                $product->variants()->save($variant);
+                
+                if (isset($variantData['attribute_values'])) {
+                    $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
             }
 
-
-            DB::commit();
-
-
             return redirect()->route('admin.products.edit', $product)
-                ->with('success', 'Các biến thể đã được tạo thành công.');
+                ->with('success', 'Đã tạo biến thể thành công');
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error creating variants:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'data' => $request->all()
             ]);
-            return back()->withInput()
-                ->with('error', 'Có lỗi xảy ra khi tạo biến thể: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Đã xảy ra lỗi khi tạo biến thể']);
         }
     }
 
@@ -176,6 +91,12 @@ class ProductVariantController extends Controller
         $selectedValues = $variant->attributeValues->pluck('id')->toArray();
 
 
+        if (request()->has('modal')) {
+            // Trả về partial form cho modal
+            return view('admin.products.variants._edit_form', compact('product', 'variant', 'attributes', 'selectedValues'));
+        }
+
+
         return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
     }
 
@@ -185,6 +106,7 @@ class ProductVariantController extends Controller
      */
     public function update(Request $request, Product $product, ProductVariant $variant)
     {
+        // Đã bỏ kiểm tra isInProcessingOrder để cho phép chỉnh sửa mọi biến thể
         $validated = $request->validate([
             'sku' => 'nullable|string|max:255',
             'stock' => 'required|integer|min:0',
@@ -194,6 +116,11 @@ class ProductVariantController extends Controller
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
         ]);
+
+        // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc
+        if (isset($validated['sale_price']) && $validated['sale_price'] !== null && $validated['sale_price'] > $validated['regular_price']) {
+            return back()->withInput()->withErrors(['sale_price' => 'Giá khuyến mãi không được lớn hơn giá gốc.']);
+        }
 
 
         try {
@@ -282,34 +209,34 @@ class ProductVariantController extends Controller
      */
     public function destroy(Product $product, ProductVariant $variant)
     {
+        // Kiểm tra nếu biến thể đã từng được mua trong đơn hàng hoặc đang có trong giỏ hàng thì không cho xóa
+        $hasOrder = $variant->orderItems()->exists();
+        $hasCart = \App\Models\CartItem::where('product_variant_id', $variant->id)->exists();
+        if ($hasOrder || $hasCart) {
+            return redirect()->route('admin.products.edit', $product)
+                ->with('error', 'Không thể xoá biến thể đã có đơn hàng hoặc giỏ hàng');
+        }
         try {
             DB::beginTransaction();
 
-
             Log::info('Attempting to delete variant:', ['variant_id' => $variant->id]);
-
 
             // Delete image if exists
             if ($variant->img && Storage::disk('public')->exists($variant->img)) {
                 Storage::disk('public')->delete($variant->img);
             }
 
-
             // Delete attribute value associations
             DB::table('attribute_value_product_variant')
                 ->where('product_variant_id', $variant->id)
                 ->delete();
 
-
             // Delete variant
             $variant->delete();
 
-
             Log::info('Variant deleted:', ['variant_id' => $variant->id]);
 
-
             DB::commit();
-
 
             return redirect()->route('admin.products.edit', $product)
                 ->with('success', 'Biến thể đã được xóa thành công.');
@@ -333,4 +260,3 @@ class ProductVariantController extends Controller
         return view('admin.products.show', compact('product'));
     }
 }
-

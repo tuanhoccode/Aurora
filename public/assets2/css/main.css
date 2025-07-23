@@ -21896,5 +21896,124 @@ product all slider
 [dir=rtl] .tp-product-details-wishlist.mb-15 {
   margin-right: 15px;
 }
-
+.tp-header-account-toggle {
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+.tp-header-action-item.has-dropdown {
+  min-width: unset;
+}
+.tp-header-action-item {
+  margin-left: 16px;
+}
+.tp-header-action-item.has-dropdown > .tp-submenu li a:hover {
+  background: #f5f5f5;
+  color: #c0392b;
+  border-radius: 4px;
+}
+.cartmini__area {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 370px;
+  max-width: 100vw;
+  height: 100vh;
+  background: #fff;
+  z-index: 9999;
+  box-shadow: -2px 0 16px rgba(0,0,0,0.08);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  /* Ẩn mặc định */
+  opacity: 0;
+  pointer-events: none;
+}
+.cartmini__area.active {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.body-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.body-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cartmini__overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.cartmini__area.active ~ .cartmini__overlay,
+.cartmini__overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cartmini__area {
+  /* Đảm bảo z-index cao hơn overlay */
+  z-index: 9999;
+}
+.product-thumb-img {
+  width: 100%;           
+  height: 220px;         
+  object-fit: cover;     
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: block;
+}
+.tp-product-thumb-2 {
+  height: 220px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 /*# sourceMappingURL=main.css.map */
+
+.custom-banner-flex {
+  display: flex;
+  align-items: center;
+  min-height: 220px;
+  padding: 0 24px;
+  position: relative;
+  overflow: hidden;
+}
+.custom-banner-text {
+  flex: 1 1 0;
+  z-index: 2;
+  padding: 32px 0 32px 8px;
+}
+.custom-banner-img {
+  flex: 0 0 48%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  z-index: 1;
+}
+.custom-banner-img img {
+  max-width: 105%;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
+}
+@media (max-width: 991px) {
+  .custom-banner-flex { flex-direction: column; }
+  .custom-banner-img { justify-content: center; margin-top: 16px; }
+  .custom-banner-img img { max-width: 70vw; }
+}
+.custom-banner-img:hover img {
+  transform: scale(1.20) rotate(-2deg);
+  z-index: 2;
+}

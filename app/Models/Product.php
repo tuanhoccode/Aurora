@@ -28,7 +28,6 @@ class Product extends Model
         'is_sale',
         'views',
         'stock',
-        'gallery',
         'digital_file',
     ];
 
@@ -39,8 +38,12 @@ class Product extends Model
         'is_active' => 'boolean',
         'views' => 'integer',
         'stock' => 'integer',
-        'gallery' => 'array',
     ];
+
+    public function galleries()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
 
     protected static function boot()
     {
@@ -64,14 +67,14 @@ class Product extends Model
             if ($product->isDirty('name')) {
                 $originalSlug = $product->getOriginal('slug');
                 $newSlug = Str::slug($product->name);
-                
+
                 // Kiểm tra xem slug đã tồn tại chưa
                 $count = 1;
                 while (Product::where('slug', $newSlug)->where('id', '!=', $product->id)->exists()) {
                     $newSlug = Str::slug($product->name) . '-' . $count;
                     $count++;
                 }
-                
+
                 $product->slug = $newSlug;
             }
         });
@@ -106,11 +109,6 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function galleries()
-    {
-        return $this->hasMany(ProductGallery::class);
-    }
-
     public function stocks()
     {
         return $this->hasMany(Stock::class);
@@ -126,6 +124,18 @@ class Product extends Model
         return $this->belongsToMany(Attribute::class, 'product_attribute')
             ->withPivot('values')
             ->withTimestamps();
+    }
+
+    public function orderItems()
+    {
+        return $this->hasManyThrough(
+            \App\Models\OrderItem::class,
+            \App\Models\ProductVariant::class,
+            'product_id', // Foreign key on ProductVariant
+            'product_variant_id', // Foreign key on OrderItem
+            'id', // Local key on Product
+            'id'  // Local key on ProductVariant
+        );
     }
 
     public function getIsOnSaleAttribute()
@@ -175,17 +185,21 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->thumbnail) {
-            return null;
+            return asset('assets2/img/product/2/default.png');
         }
-
-        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
-            return $this->thumbnail;
-        }
-
-        if (Storage::disk('public')->exists($this->thumbnail)) {
+        if (strpos($this->thumbnail, 'products/') === 0) {
             return asset('storage/' . $this->thumbnail);
         }
+        return asset('storage/products/' . $this->thumbnail);
+    }
 
-        return null;
+    public function reviews()
+    {
+        return $this->hasMany(Review::class)->where('is_active', 1);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductGallery::class);
     }
 }

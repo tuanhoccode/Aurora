@@ -265,15 +265,13 @@
 
 	////////////////////////////////////////////////////
 	// 07. cartmini Js
-	$(".cartmini-open-btn").on("click", function () {
-		$(".cartmini__area").addClass("cartmini-opened");
-		$(".body-overlay").addClass("opened");
+	$('.cartmini-open-btn').on('click', function () {
+		$('.cartmini__area').addClass('active');
+		$('.cartmini__overlay').addClass('active');
 	});
-
-
-	$(".cartmini-close-btn").on("click", function () {
-		$(".cartmini__area").removeClass("cartmini-opened");
-		$(".body-overlay").removeClass("opened");
+	$('.cartmini-close-btn, .cartmini__overlay').on('click', function () {
+		$('.cartmini__area').removeClass('active');
+		$('.cartmini__overlay').removeClass('active');
 	});
 
 	////////////////////////////////////////////////////
@@ -1649,32 +1647,9 @@
 
 	////////////////////////////////////////////////////
 	// 15. Masonary Js
-	$('.grid').imagesLoaded(function () {
-		// init Isotope
-		var $grid = $('.grid').isotope({
-			itemSelector: '.grid-item',
-			percentPosition: true,
-			masonry: {
-				// use outer width of grid-sizer for columnWidth
-				columnWidth: '.grid-item',
-			}
-		});
-
-
-		// filter items on button click
-		$('.masonary-menu').on('click', 'button', function () {
-			var filterValue = $(this).attr('data-filter');
-			$grid.isotope({ filter: filterValue });
-		});
-
-		//for menu active class
-		$('.masonary-menu button').on('click', function (event) {
-			$(this).siblings('.active').removeClass('active');
-			$(this).addClass('active');
-			event.preventDefault();
-		});
-
-	});
+	// $('.grid').imagesLoaded(function () {
+	//     // ... code bên trong nếu có ...
+	// });
 
 	/* magnificPopup img view */
 	$('.popup-image').magnificPopup({
@@ -1703,6 +1678,9 @@
 
 	function tp_ecommerce() {
 		$('.tp-cart-minus').on('click', function () {
+			// Bỏ qua nếu là nút trên trang chi tiết
+			if (this.id === 'detail-cart-minus') return;
+
 			var $input = $(this).parent().find('input');
 			var count = parseInt($input.val()) - 1;
 			count = count < 1 ? 1 : count;
@@ -1712,6 +1690,9 @@
 		});
 	
 		$('.tp-cart-plus').on('click', function () {
+			// Bỏ qua nếu là nút trên trang chi tiết
+			if (this.id === 'detail-cart-plus') return;
+
 			var $input = $(this).parent().find('input');
 			$input.val(parseInt($input.val()) + 1);
 			$input.change();
@@ -2017,4 +1998,134 @@
 		});
 	}
 
+	document.addEventListener('DOMContentLoaded', function() {
+		const openBtn = document.querySelector('.cartmini-open-btn');
+		const minicart = document.querySelector('.cartmini__area');
+		const overlay = document.querySelector('.body-overlay');
+		const closeBtn = document.querySelector('.cartmini__close-btn');
+
+		if (openBtn && minicart && overlay && closeBtn) {
+			openBtn.addEventListener('click', function(e) {
+				e.preventDefault();
+				minicart.classList.add('active');
+				overlay.classList.add('active');
+			});
+			closeBtn.addEventListener('click', function() {
+				minicart.classList.remove('active');
+				overlay.classList.remove('active');
+			});
+			overlay.addEventListener('click', function() {
+				minicart.classList.remove('active');
+				overlay.classList.remove('active');
+			});
+		}
+	});
+
+	document.querySelectorAll('.delete-btn').forEach(btn => {
+		btn.addEventListener('click', function(e) {
+			e.preventDefault();
+			Swal.fire({
+				title: 'Bạn chắc chắn muốn xóa?',
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Xóa',
+				cancelButtonText: 'Hủy'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					btn.closest('form').submit();
+				}
+			});
+		});
+	});
+
+	// Khởi tạo Swiper cho banner danh mục trang chủ
+	if (document.querySelector('.tp-banner-swiper')) {
+		new Swiper('.tp-banner-swiper', {
+		  slidesPerView: 1,
+		  spaceBetween: 24,
+		  loop: true,
+		  navigation: {
+			nextEl: '.tp-banner-swiper-next',
+			prevEl: '.tp-banner-swiper-prev',
+		  },
+		  pagination: {
+			el: '.swiper-pagination',
+			clickable: true,
+		  },
+		  autoplay: {
+			delay: 4000,
+			disableOnInteraction: false,
+		  },
+		  breakpoints: {
+			0: { slidesPerView: 1 },
+			576: { slidesPerView: 1 },
+			768: { slidesPerView: 2 },
+			1200: { slidesPerView: 3 }
+		  }
+		});
+	  }
+
 })(jQuery);
+
+/**
+ * Shopping Cart Management
+ */
+class ShoppingCart {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.updateCartCount();
+        this.updateMiniCart();
+    }
+
+    bindEvents() {
+        // Lắng nghe sự kiện tùy chỉnh để cập nhật giỏ hàng
+        $(document).on('cart:updated', () => {
+            this.updateCartCount();
+            this.updateMiniCart();
+        });
+    }
+
+    updateCartCount() {
+        $.ajax({
+            url: '/shopping-cart/count',
+            method: 'GET',
+            success: (response) => {
+                if (response.count !== undefined) {
+                    $('.cart-count').text(response.count);
+                }
+            }
+        });
+    }
+
+    updateMiniCart() {
+        // Reload mini cart content
+        $.ajax({
+            url: '/shopping-cart/mini-cart',
+            method: 'GET',
+            success: (response) => {
+                $('.cartmini__widget').html($(response).find('.cartmini__widget').html());
+            }
+        });
+    }
+
+    updateMiniCartSubtotal() {
+        var subtotal = 0;
+        $('.cartmini__widget-item').each(function() {
+            var priceText = $(this).find('.cartmini__item-price').text();
+            var quantity = parseInt($(this).find('.cartmini__item-qty').text().match(/\d+/)[0]);
+            var price = parseInt(priceText.replace(/[^\d]/g, '')) / quantity;
+            subtotal += price * quantity;
+        });
+        
+        $('#cartmini-subtotal').text(subtotal.toLocaleString('vi-VN') + ' ₫');
+    }
+}
+
+// Khởi tạo shopping cart khi document ready
+$(document).ready(function() {
+    window.shoppingCart = new ShoppingCart();
+}); 

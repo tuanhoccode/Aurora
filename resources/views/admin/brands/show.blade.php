@@ -51,6 +51,23 @@
                             <dt class="col-sm-3">Tên thương hiệu:</dt>
                             <dd class="col-sm-9">{{ $brand->name }}</dd>
 
+                            <dt class="col-sm-3">Slug:</dt>
+                            <dd class="col-sm-9">{{ $brand->slug }}</dd>
+                            @if ($brand->description)
+                                <dt class="col-sm-3">Mô tả:</dt>
+                                <dd class="col-sm-9">{{ $brand->description }}</dd>
+                            @endif
+
+                            <dt class="col-sm-3">Số sản phẩm:</dt>
+                            <dd class="col-sm-9">
+                                <span class="fw-bold">{{ $brand->products()->count() }}</span> sản phẩm
+                                @if($brand->products()->count() > 0)
+                                    <a href="{{ route('admin.products.index', ['brand' => $brand->id]) }}" class="btn btn-link btn-sm ms-2 px-1 py-0" style="font-size:13px;" title="Xem sản phẩm liên kết">
+                                        <i class="bi bi-box-seam"></i> Xem sản phẩm
+                                    </a>
+                                @endif
+                            </dd>
+
                             <dt class="col-sm-3">Trạng thái:</dt>
                             <dd class="col-sm-9">
                                 <span class="badge {{ $brand->is_active ? 'bg-success' : 'bg-danger' }}">
@@ -69,6 +86,40 @@
                                 <dd class="col-sm-9 text-danger">{{ $brand->deleted_at->format('d/m/Y H:i') }}</dd>
                             @endif
                         </dl>
+
+                        {{-- Hiển thị bảng sản phẩm liên kết --}}
+                        @if($brand->products()->count() > 0)
+                            <h5 class="mt-4">Sản phẩm liên kết</h5>
+                            <table class="table table-sm align-middle mb-2">
+                                <thead>
+                                    <tr>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Trạng thái</th>
+                                        <th>Giá</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($brand->products()->latest()->limit(5)->get() as $product)
+                                        <tr>
+                                            <td>{{ $product->name }}</td>
+                                            <td>
+                                                <span class="badge {{ $product->is_active ? 'bg-success' : 'bg-secondary' }}">
+                                                    {{ $product->is_active ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }}
+                                                </span>
+                                            </td>
+                                            <td>{{ number_format($product->price) }}đ</td>
+                                            <td>
+                                                <a href="{{ route('admin.products.show', $product->id) }}" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            @if($brand->products()->count() > 5)
+                                <a href="{{ route('admin.products.index', ['brand' => $brand->id]) }}" class="btn btn-link btn-sm px-0"><i class="bi bi-box-seam"></i> Xem tất cả sản phẩm</a>
+                            @endif
+                        @endif
 
                         <div class="mt-4">
                             <a href="{{ route('admin.brands.edit', $brand->id) }}" class="btn btn-warning shadow-sm rounded me-2">

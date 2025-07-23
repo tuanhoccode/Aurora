@@ -11,35 +11,34 @@ use Illuminate\Support\Facades\Storage;
 class CategoryController extends Controller
 {
     public function index(Request $request)
-    {
-        // Lấy tham số sắp xếp từ request
-        $sortBy = $request->input('sort_by', 'created_at'); // Mặc định sắp xếp theo ngày tạo
-        $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
+{
+    $sortBy = $request->input('sort_by', 'created_at');
+    $sortDir = $request->input('sort_dir', 'desc');
 
-        $categories = Category::query()
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $query->where('name', 'like', "%{$request->search}%");
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('is_active', $request->status);
-            })
-            ->orderBy($sortBy, $sortDir)
-            ->with('parent') // Eager load quan hệ parent
-            ->latest()
-            ->paginate(10);
+    $categories = Category::query()
+        ->when($request->filled('search'), function ($query) use ($request) {
+            $query->where('name', 'like', "%{$request->search}%");
+        })
+        ->when($request->filled('status'), function ($query) use ($request) {
+            $query->where('is_active', $request->status);
+        })
+        ->with(['parent']) // Load quan hệ
+        ->withCount('products') // 👈 Thêm dòng này
+        ->orderBy($sortBy, $sortDir)
+        ->paginate(10);
 
-        return view('admin.category.index', compact('categories', 'sortBy', 'sortDir'));
-    }
+    return view('admin.categories.index', compact('categories', 'sortBy', 'sortDir'));
+}
 
     public function create()
     {
         $categories = Category::active()->get();
-        return view('admin.category.create', compact('categories'));
+        return view('admin.categories.create', compact('categories'));
     }
 
     public function show(Category $category)
     {
-        return view('admin.category.show', compact('category'));
+        return view('admin.categories.show', compact('category'));
     }
 
     public function store(CategoryRequest $request)
@@ -70,7 +69,7 @@ class CategoryController extends Controller
         $categories = Category::active()
             ->where('id', '!=', $category->id)
             ->get();
-        return view('admin.category.edit', compact('category', 'categories'));
+        return view('admin.categories.edit', compact('category', 'categories'));
     }
 
     public function update(CategoryRequest $request, Category $category)
@@ -101,18 +100,27 @@ class CategoryController extends Controller
     }
 
     public function destroy(Category $category)
-    {
-        try {
-            $category->delete();
-            return redirect()
-                ->route('admin.categories.index')
-                ->with('success', 'Đã chuyển danh mục vào thùng rác');
-        } catch (\Exception $e) {
+{
+    try {
+        // 👇 Không cho xóa nếu có sản phẩm
+        if ($category->products()->count() > 0) {
             return redirect()
                 ->back()
-                ->with('error', 'Đã có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Không thể xóa vì danh mục đang chứa sản phẩm.');
         }
+
+        $category->delete();
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Đã chuyển danh mục vào thùng rác');
+    } catch (\Exception $e) {
+        return redirect()
+            ->back()
+            ->with('error', 'Đã có lỗi xảy ra: ' . $e->getMessage());
     }
+}
+
 
     public function trash(Request $request)
     {
@@ -130,7 +138,7 @@ class CategoryController extends Controller
             ->orderBy($sortBy, $sortDir)
             ->paginate(10);
 
-        return view('admin.category.trash', compact('trashedCategories', 'sortBy', 'sortDir'));
+        return view('admin.categories.trash', compact('trashedCategories', 'sortBy', 'sortDir'));
     }
 
     public function restore($id)
@@ -153,12 +161,12 @@ class CategoryController extends Controller
     {
         try {
             $category = Category::onlyTrashed()->findOrFail($id);
-            
+
             // Xóa ảnh nếu có
             if ($category->icon) {
                 Storage::disk('public')->delete($category->icon);
             }
-            
+
             $category->forceDelete();
 
             return redirect()
@@ -172,26 +180,47 @@ class CategoryController extends Controller
     }
 
     public function bulkDelete(Request $request)
-    {
-        try {
-            $ids = $request->input('ids', []);
-            if (empty($ids)) {
-                return response()->json([
-                    'error' => 'Vui lòng chọn ít nhất một thương hiệu'
-                ], 400);
-            }
-
-            Category::whereIn('id', $ids)->delete();
-
+{
+    try {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
             return response()->json([
-                'success' => 'Đã chuyển các thương hiệu đã chọn vào thùng rác'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Đã có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
+                'error' => 'Vui lòng chọn ít nhất một danh mục'
+            ], 400);
         }
+
+        // Lấy danh mục có đếm số sản phẩm
+        $categories = Category::withCount('products')
+            ->whereIn('id', $ids)
+            ->get();
+
+        // Danh mục có thể xóa (không có sản phẩm)
+        $deletable = $categories->filter(fn($cat) => $cat->products_count == 0);
+
+        // Danh mục không thể xóa (có sản phẩm)
+        $nonDeletable = $categories->filter(fn($cat) => $cat->products_count > 0);
+
+        // Xóa các danh mục không có sản phẩm
+        foreach ($deletable as $category) {
+            $category->delete();
+        }
+
+        return response()->json([
+            'success' => $deletable->isNotEmpty()
+                ? 'Đã chuyển các danh mục không chứa sản phẩm vào thùng rác.'
+                : null,
+            'warning' => $nonDeletable->isNotEmpty()
+                ? 'Một số danh mục không thể xóa vì đang chứa sản phẩm: ' . $nonDeletable->pluck('name')->join(', ')
+                : null,
+            'deleted_ids' => $deletable->pluck('id'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Đã có lỗi xảy ra: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     public function bulkForceDelete(Request $request)
     {
@@ -204,7 +233,7 @@ class CategoryController extends Controller
             }
 
             $categories = Category::onlyTrashed()->whereIn('id', $ids)->get();
-            
+
             foreach ($categories as $category) {
                 if ($category->icon) {
                     Storage::disk('public')->delete($category->icon);
@@ -294,4 +323,4 @@ class CategoryController extends Controller
             ], 500);
         }
     }
-} 
+}

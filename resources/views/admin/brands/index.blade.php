@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('title', 'Quản lý thương hiệu')
+
 @section('content')
     <div class="container-fluid py-4">
         {{-- Header Section --}}
@@ -36,6 +38,11 @@
         {{-- Main Card --}}
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body p-4">
+                {{-- Chú thích cảnh báo không thể xóa thương hiệu có sản phẩm liên kết --}}
+                <div class="alert alert-warning py-2 small mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Những thương hiệu có <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i></span> không thể xóa vì còn sản phẩm liên kết.
+                </div>
                 {{-- Search and Filter Form --}}
                 <div class="row mb-4">
                     <div class="col-md-6">
@@ -55,6 +62,7 @@
                         </form>
                     </div>
                     <div class="col-md-6 text-end">
+                        <!-- Các nút bulk action giữ nguyên -->
                         <button type="button" 
                                 class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2" 
                                 style="display: none;"
@@ -97,15 +105,6 @@
                                             <input type="checkbox" class="form-check-input" id="selectAll">
                                         </div>
                                     </th>
-                                    <th class="border-0" style="width: 60px">
-                                        <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'id', 'sort_dir' => ($sortBy == 'id' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
-                                           class="text-decoration-none text-dark d-flex align-items-center">
-                                            ID
-                                            @if ($sortBy == 'id')
-                                                <i class="bi bi-arrow-{{ $sortDir == 'asc' ? 'up' : 'down' }} ms-1"></i>
-                                            @endif
-                                        </a>
-                                    </th>
                                     <th class="border-0">
                                         <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'name', 'sort_dir' => ($sortBy == 'name' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -125,6 +124,7 @@
                                             @endif
                                         </a>
                                     </th>
+                                    <th class="border-0" style="width: 100px">Hiển thị</th>
                                     <th class="border-0" style="width: 120px">
                                         <a href="{{ route('admin.brands.index', array_merge(request()->query(), ['sort_by' => 'created_at', 'sort_dir' => ($sortBy == 'created_at' && $sortDir == 'asc') ? 'desc' : 'asc'])) }}"
                                            class="text-decoration-none text-dark d-flex align-items-center">
@@ -134,7 +134,7 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th class="border-0 text-end" style="width: 200px">Thao tác</th>
+                                    <th class="border-0 text-end" style="width: 60px">&nbsp;</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,10 +149,17 @@
                                                        data-status="{{ $brand->is_active }}">
                                             </div>
                                         </td>
-                                        <td class="text-muted">{{ $brand->id }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <span class="fw-medium">{{ $brand->name }}</span>
+                                                @if($brand->products()->count() > 0)
+                                                    <span class="ms-1" data-bs-toggle="tooltip" title="Không thể xóa vì còn sản phẩm liên kết">
+                                                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                                    </span>
+                                                    <a href="{{ route('admin.products.index', ['brand' => $brand->id]) }}" class="btn btn-link btn-sm ms-2 px-1 py-0" style="font-size:13px;" title="Xem sản phẩm liên kết">
+                                                        <i class="bi bi-box-seam"></i> Sản phẩm ({{ $brand->products()->count() }})
+                                                    </a>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="text-center">
@@ -182,37 +189,59 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge rounded-pill {{ $brand->is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} px-3 py-2">
+                                            <button type="button"
+                                                class="badge rounded-pill toggle-active-btn {{ $brand->is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} px-3 py-2 border-0"
+                                                data-id="{{ $brand->id }}"
+                                                style="cursor:pointer;">
                                                 <i class="bi bi-circle-fill me-1 small"></i>
                                                 {{ $brand->is_active ? 'Đang hoạt động' : 'Không hoạt động' }}
-                                            </span>
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($brand->is_active)
+                                                <button type="button"
+                                                    class="badge rounded-pill toggle-visible-btn {{ $brand->is_visible ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} px-3 py-2 border-0"
+                                                    data-id="{{ $brand->id }}"
+                                                    style="cursor:pointer;">
+                                                    {{ $brand->is_visible ? 'Hiển thị' : 'Ẩn' }}
+                                                </button>
+                                            @else
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary px-3 py-2 border-0 opacity-50" style="cursor:not-allowed;">Ẩn</span>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             <span class="text-muted" data-bs-toggle="tooltip" title="{{ $brand->created_at->format('H:i:s d/m/Y') }}">
                                                 {{ $brand->created_at->format('d/m/Y') }}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ route('admin.brands.show', $brand->id) }}"
-                                                    class="btn btn-info btn-sm rounded-pill px-3" 
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Xem chi tiết">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('admin.brands.edit', $brand->id) }}"
-                                                    class="btn btn-warning btn-sm rounded-pill px-3" 
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                                <button type="button" 
-                                                        class="btn btn-danger btn-sm rounded-pill px-3" 
-                                                        onclick="confirmDelete('{{ $brand->id }}', '{{ $brand->name }}')"
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Xóa">
-                                                    <i class="bi bi-trash"></i>
+                                        <td class="text-end">
+                                            <div class="dropdown">
+                                                <button class="btn btn-link text-dark p-0 m-0" type="button" id="dropdownMenu{{ $brand->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-three-dots fs-4"></i>
                                                 </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 py-2" aria-labelledby="dropdownMenu{{ $brand->id }}" style="min-width: 180px;">
+                                                    <li>
+                                                        <a href="{{ route('admin.brands.show', $brand->id) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                                            <i class="bi bi-eye text-primary"></i> <span>Xem chi tiết</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('admin.brands.edit', $brand->id) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                                            <i class="bi bi-pencil-square text-warning"></i> <span>Chỉnh sửa</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        @if($brand->products()->count() > 0)
+                                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-muted" disabled>
+                                                                <i class="bi bi-trash"></i> <span>Xóa</span>
+                                                            </button>
+                                                        @else
+                                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-danger" onclick="confirmDelete('{{ $brand->id }}', '{{ $brand->name }}')">
+                                                                <i class="bi bi-trash"></i> <span>Xóa</span>
+                                                            </button>
+                                                        @endif
+                                                    </li>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>
@@ -417,10 +446,19 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert(data.error || 'Đã có lỗi xảy ra');
+                    // Nếu có thương hiệu không xóa được
+                    if (data.error) {
+                        alert(data.error);
+                    }
+                    // Nếu có thương hiệu đã xóa thành công, xóa khỏi DOM
+                    if (data.deleted_ids && Array.isArray(data.deleted_ids)) {
+                        data.deleted_ids.forEach(function(id) {
+                            // Tìm dòng chứa checkbox có value = id
+                            const row = document.querySelector('input.brand-checkbox[value="' + id + '"]')?.closest('tr');
+                            if (row) row.remove();
+                            selectedBrands.delete(id);
+                        });
+                        updateBulkButtons();
                     }
                 })
                 .catch(error => {
@@ -436,6 +474,89 @@
                 form.action = `{{ url('admin/brands') }}/${id}`;
                 new bootstrap.Modal(document.getElementById('deleteModal')).show();
             };
+
+            document.querySelectorAll('.toggle-visible-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const brandId = this.getAttribute('data-id');
+                    const button = this;
+                    fetch(`/admin/brands/${brandId}/toggle-visible`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ _method: 'PUT' })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.is_visible) {
+                                button.classList.remove('bg-secondary-subtle', 'text-secondary');
+                                button.classList.add('bg-success-subtle', 'text-success');
+                                button.textContent = 'Hiển thị';
+                            } else {
+                                button.classList.remove('bg-success-subtle', 'text-success');
+                                button.classList.add('bg-secondary-subtle', 'text-secondary');
+                                button.textContent = 'Ẩn';
+                            }
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('.toggle-active-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const brandId = this.getAttribute('data-id');
+                    const button = this;
+                    fetch(`/admin/brands/${brandId}/toggle-active`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ _method: 'PUT' })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Cập nhật badge trạng thái
+                            if (data.is_active) {
+                                button.classList.remove('bg-danger-subtle', 'text-danger');
+                                button.classList.add('bg-success-subtle', 'text-success');
+                                button.textContent = '';
+                                button.innerHTML = '<i class="bi bi-circle-fill me-1 small"></i>Đang hoạt động';
+                            } else {
+                                button.classList.remove('bg-success-subtle', 'text-success');
+                                button.classList.add('bg-danger-subtle', 'text-danger');
+                                button.textContent = '';
+                                button.innerHTML = '<i class="bi bi-circle-fill me-1 small"></i>Không hoạt động';
+                            }
+                            // Cập nhật badge hiển thị nếu có
+                            const row = button.closest('tr');
+                            const visibleBtn = row.querySelector('.toggle-visible-btn');
+                            const visibleSpan = row.querySelector('.badge.bg-secondary-subtle');
+                            if (data.is_active) {
+                                if (visibleBtn) {
+                                    visibleBtn.disabled = false;
+                                    visibleBtn.removeAttribute('disabled');
+                                    visibleBtn.style.cursor = 'pointer';
+                                }
+                            } else {
+                                if (visibleBtn) {
+                                    visibleBtn.disabled = true;
+                                    visibleBtn.setAttribute('disabled', 'disabled');
+                                    visibleBtn.style.cursor = 'not-allowed';
+                                    visibleBtn.classList.remove('bg-success-subtle', 'text-success');
+                                    visibleBtn.classList.add('bg-secondary-subtle', 'text-secondary');
+                                    visibleBtn.textContent = 'Ẩn';
+                                }
+                            }
+                        }
+                    });
+                });
+            });
         });
     </script>
     @endpush
