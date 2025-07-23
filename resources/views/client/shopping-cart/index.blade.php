@@ -1023,6 +1023,18 @@
                                                     $color = $getAttrValue($variant, ['color', 'màu']);
                                                     // Lấy sản phẩm liên quan thực tế nếu có, demo nếu không
                                                     $relatedProducts = $stock < 1 ? $item->relatedProducts ?? [] : [];
+                                                    // Lấy ảnh đúng cho biến thể hoặc sản phẩm
+                                                    if ($variant) {
+                                                        if (!empty($variant->img)) {
+                                                            $img = asset('storage/' . $variant->img);
+                                                        } elseif ($variant->images && $variant->images->count() > 0) {
+                                                            $img = asset('storage/' . $variant->images->first()->url);
+                                                        } else {
+                                                            $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                                        }
+                                                    } else {
+                                                        $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                                    }
                                                 @endphp
                                                 <tr class="cart-table-row btn-reveal-trigger @if ($stock < 1) cart-item-out-of-stock @endif"
                                                     data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}"
@@ -1038,13 +1050,13 @@
                                                                 <a class="d-block border border-translucent rounded-2"
                                                                     href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
                                                                     <img class="cart-item-card__image"
-                                                                        src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                                                                        src="{{ $img }}"
                                                                         alt="{{ $product->name }}" />
                                                                 </a>
                                                             @else
                                                                 <span>
                                                                     <img class="cart-item-card__image"
-                                                                        src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                                                                        src="{{ $img }}"
                                                                         alt="{{ $product->name }}" />
                                                                 </span>
                                                             @endif
@@ -1099,18 +1111,10 @@
                                                         style="font-size:1.08rem;">
                                                         {{ number_format($unitPrice, 0, ',', '.') }}₫</td>
                                                     <td class="quantity align-middle text-center">
-                                                        <div class="tp-product-quantity mb-15 mr-15 d-flex justify-content-center align-items-center"
-                                                            style="gap:8px;">
-                                                            <button type="button" class="qty-btn-custom minus"
-                                                                @if ($stock < 1) disabled @endif
-                                                                @if ($item->quantity <= 1)  @endif>-</button>
-                                                            <input type="text" class="qty-input"
-                                                                value="{{ $stock < 1 ? 0 : $item->quantity }}"
-                                                                style="min-width:38px;max-width:54px;text-align:center;font-weight:600;"
-                                                                @if ($stock < 1) disabled @endif />
-                                                            <button type="button" class="qty-btn-custom plus"
-                                                                @if ($stock < 1) disabled @endif
-                                                                @if ($item->quantity >= $stock)  @endif>+</button>
+                                                        <div class="tp-product-quantity mb-15 mr-15 d-flex justify-content-center align-items-center" style="gap:8px;">
+                                                            <button type="button" class="qty-btn minus" @if ($stock < 1) disabled @endif>-</button>
+                                                            <input type="text" class="qty-input" value="{{ $stock < 1 ? 0 : $item->quantity }}" style="min-width:38px;max-width:54px;text-align:center;font-weight:600;" @if ($stock < 1) disabled @endif />
+                                                            <button type="button" class="qty-btn plus" @if ($stock < 1) disabled @endif>+</button>
                                                         </div>
                                                     </td>
                                                     <td class="total align-middle fw-bold text-body-highlight text-end"
@@ -1401,8 +1405,8 @@
             }
 
             function toggleQtyButtons(row, qty, stock) {
-                const plusBtn = row.querySelector('.qty-btn-custom.plus');
-                const minusBtn = row.querySelector('.qty-btn-custom.minus');
+                const plusBtn = row.querySelector('.qty-btn.plus');
+                const minusBtn = row.querySelector('.qty-btn.minus');
                 if (plusBtn) plusBtn.disabled = qty >= stock;
                 if (minusBtn) minusBtn.disabled = qty <= 1;
             }
@@ -1410,7 +1414,7 @@
             let debounceTimers = {};
 
             cartTableBody.addEventListener('click', function(e) {
-                const btn = e.target.closest('.qty-btn-custom');
+                const btn = e.target.closest('.qty-btn');
                 if (!btn) return;
                 const row = btn.closest('tr[data-item-id]');
                 if (!row) return;
