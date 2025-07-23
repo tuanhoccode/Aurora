@@ -38,15 +38,27 @@
                             $stock = $variant ? $variant->stock : $product->stock ?? 0;
                             $size = $getAttrValue($variant, ['size', 'kích']);
                             $color = $getAttrValue($variant, ['color', 'màu']);
+                            // Lấy ảnh đúng cho biến thể hoặc sản phẩm
+                            if ($variant) {
+                                if (!empty($variant->img)) {
+                                    $img = asset('storage/' . $variant->img);
+                                } elseif ($variant->images && $variant->images->count() > 0) {
+                                    $img = asset('storage/' . $variant->images->first()->url);
+                                } else {
+                                    $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                }
+                            } else {
+                                $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                            }
                         @endphp
                         <div class="cartmini__widget-item d-flex align-items-center @if($stock < 1) cartmini-item-out-of-stock @endif" style="gap:1rem;" data-product-id="{{ $item->product_id }}" data-variant-id="{{ $item->product_variant_id }}">
                             @if(!empty($product->slug))
                             <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}" class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
-                                <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                                <img src="{{ $img }}" alt="{{ $product->name }}" class="cart-item-card__image" />
                             </a>
                             @else
                                 <span class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
-                                    <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                                    <img src="{{ $img }}" alt="{{ $product->name }}" class="cart-item-card__image" />
                                 </span>
                             @endif
                             <div class="cart-product-info flex-grow-1" style="min-width:0;">
