@@ -80,7 +80,7 @@ class ProductVariant extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductImage::class, 'product_variant_id');
+        return $this->hasMany(ProductGallery::class, 'product_variant_id');
     }
 
     public function productVariant()
