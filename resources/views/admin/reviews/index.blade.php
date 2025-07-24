@@ -11,25 +11,23 @@
       margin-top: 5px;
    }
 </style>
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Quản lý bình luận</h1>
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-gray-800">Quản lý bình luận</h1>
+            <p class="text-muted mt-1">Quản lý các bình luận, đánh giá sản phẩm trong hệ thống</p>
+        </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-trash"></i>
-                Thùng rác @if ($trashComments > 0)
-                    <span class="badge bg-danger">{{ $trashComments }}</span>
+            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
+                <i class="bi bi-trash"></i> Thùng rác
+                @if ($trashComments > 0)
+                    <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
                 @endif
-            </a>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                Thêm sản phẩm
             </a>
         </div>
     </div>
-
-    {{-- Search --}}
-    <div class="card shadow-sm rounded-3 border-0 mb-3">
-        <div class="card-body">
+    <div class="card shadow-sm rounded-3 border-0 mb-4">
+        <div class="card-body p-4">
             <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
                 <div class="col-12">
                     <div class="input-group">
@@ -48,13 +46,11 @@
             </form>
         </div>
     </div>
-
-    {{-- Products Table --}}
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
                             <tr>
                             
                                 
@@ -193,8 +189,7 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="text-muted">
-                        Hiển thị {{ $mergedList->firstItem() }} đến {{ $mergedList->lastItem() }} trong tổng số {{ $mergedList->total() }}
-                        sản phẩm
+                        Hiển thị {{ $mergedList->firstItem() }} đến {{ $mergedList->lastItem() }} trong tổng số {{ $mergedList->total() }} bình luận
                     </div>
                     <div>
                         {{ $mergedList->appends(request()->except('page'))->links('pagination::bootstrap-5') }}

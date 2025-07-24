@@ -1191,48 +1191,19 @@ function getMaxQty() {
 }
 
 function checkAndToggleAddToCartBtn() {
+  // Đã bỏ logic chặn thêm sản phẩm đã có trong giỏ hàng, luôn cho phép thêm
   const addToCartForm = document.querySelector('#detail-add-to-cart-form');
   const addToCartBtn = addToCartForm?.querySelector('button[type="submit"]');
   const qtyInput = document.getElementById('quantity');
   const minusBtn = document.getElementById('detail-cart-minus');
   const plusBtn = document.getElementById('detail-cart-plus');
-  const hasVariants = variants.length > 0;
-  const productId = {{ $product->id }};
-
-  function setInCartUI() {
-    if (!addToCartBtn) return;
-    addToCartBtn.disabled = true;
-    addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-    addToCartBtn.classList.add('in-cart');
-    if (qtyInput) qtyInput.disabled = true;
-    if (minusBtn) minusBtn.classList.add('disabled');
-    if (plusBtn) plusBtn.classList.add('disabled');
-    addToCartBtn.classList.add('already-toast');
-  }
-  function setNormalUI() {
-    if (!addToCartBtn) return;
-    addToCartBtn.disabled = false;
-    addToCartBtn.textContent = 'Thêm vào giỏ hàng';
-    addToCartBtn.classList.remove('in-cart', 'already-toast');
-    if (qtyInput) qtyInput.disabled = false;
-    if (minusBtn) minusBtn.classList.remove('disabled');
-    if (plusBtn) plusBtn.classList.remove('disabled');
-  }
-
-  if (hasVariants) {
-    const variantId = document.getElementById('product_variant_id')?.value;
-    if (variantId && cartVariantIds.map(String).includes(String(variantId))) {
-      setInCartUI();
-    } else {
-      setNormalUI();
-    }
-  } else {
-    if (cartProductIds.includes(Number(productId))) {
-      setInCartUI();
-    } else {
-      setNormalUI();
-    }
-  }
+  if (!addToCartBtn) return;
+  addToCartBtn.disabled = false;
+  addToCartBtn.textContent = 'Thêm vào giỏ hàng';
+  addToCartBtn.classList.remove('in-cart', 'already-toast');
+  if (qtyInput) qtyInput.disabled = false;
+  if (minusBtn) minusBtn.classList.remove('disabled');
+  if (plusBtn) plusBtn.classList.remove('disabled');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1346,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (hasVariants) {
         const variantId = document.getElementById('product_variant_id').value;
         if (!variantId) {
-          if (window.toastr) toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
+          if (window.toastr) toastr.error('Vui lòng phân loại hàng!');
           return;
         }
         const variant = variants.find(v => v.id == variantId);
@@ -1357,30 +1328,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
         qtyInput.value = maxQty;
         return;
-      }
-
-      // Kiểm tra đã có trong giỏ
-      if (hasVariants) {
-        const variantId = document.getElementById('product_variant_id').value;
-        if (cartVariantIds.map(String).includes(String(variantId))) {
-          if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-          const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-          if (addToCartBtn) {
-            addToCartBtn.disabled = true;
-            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-          }
-          return;
-        }
-      } else {
-        if (cartProductIds.includes(Number(productId))) {
-          if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-          const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-          if (addToCartBtn) {
-            addToCartBtn.disabled = true;
-            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-          }
-          return;
-        }
       }
 
       // Gửi request thêm vào giỏ hàng
@@ -1403,21 +1350,85 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.success) {
           if (window.toastr) toastr.success(data.message || 'Đã thêm sản phẩm vào giỏ hàng!');
           document.dispatchEvent(new CustomEvent('cart:updated'));
-          // Cập nhật cart IDs
-          if (hasVariants) {
-            const variantId = document.getElementById('product_variant_id').value;
-            cartVariantIds.push(String(variantId));
-          } else {
-            cartProductIds.push(Number(productId));
+          // Sau khi thêm thành công, reset lại giao diện:
+          // 1. Reset số lượng về 1
+          if (qtyInput) {
+            qtyInput.value = 1;
+            updateTotal();
           }
-          checkAndToggleAddToCartBtn();
+          // 2. Bỏ chọn các nút màu/size (nếu có)
+          document.querySelectorAll('.tp-color-variation-btn.active').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tp-size-variation-btn.active').forEach(btn => btn.classList.remove('active'));
+          selectedColorCode = null;
+          selectedSize = null;
+          // 3. Ẩn lại phần chất liệu nếu có
+          const materialSection = document.getElementById('materialSection');
+          const materialText = document.getElementById('materialText');
+          if (materialSection && materialText) {
+            materialText.textContent = '';
+            materialSection.classList.add('d-none');
+          }
+          // 4. Cập nhật lại giá/tổng tiền về giá gốc sản phẩm
+          const unitPriceEl = document.getElementById('unit-price');
+          const productPrice = Number(unitPriceEl?.dataset.unit || unitPriceEl?.textContent || 0);
+          updateTotal();
+          // 5. Đặt lại ảnh chính về ảnh mặc định nếu có biến thể
+          if (variants.length > 0) {
+            const mainImageEl = document.getElementById('mainProductImage');
+            if (mainImageEl && defaultImages.length > 0) {
+              mainImageEl.src = '/storage/' + defaultImages[0].url;
+            }
+            // 6. Reset sub images về ảnh mặc định
+            const subImageGallery = document.getElementById('subImageGallery');
+            if (subImageGallery) {
+              subImageGallery.innerHTML = '';
+              defaultImages.forEach(img => {
+                const imgEl = document.createElement('img');
+                imgEl.src = '/storage/' + img.url;
+                imgEl.className = 'img-thumbnail thumbnail-preview mb-2';
+                imgEl.style.width = '100%';
+                imgEl.style.height = '80px';
+                imgEl.style.objectFit = 'cover';
+                imgEl.style.cursor = 'pointer';
+                imgEl.addEventListener('click', () => {
+                  if (mainImageEl) mainImageEl.src = imgEl.src;
+                });
+                subImageGallery.appendChild(imgEl);
+              });
+            }
+          }
         } else {
           if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
         }
       })
-      .catch(err => {
-        console.error('Lỗi khi thêm vào giỏ hàng:', err);
-        if (window.toastr) toastr.error('Không thể thêm sản phẩm. Vui lòng thử lại sau.');
+      .catch(async err => {
+        console.error('Lỗi khi thêm vào giỏ hàng:', err, typeof err);
+        let msg = 'Không thể thêm sản phẩm. Vui lòng thử lại sau.';
+        // Nếu err là Response object (fetch trả về)
+        if (err && typeof err.text === 'function') {
+          try {
+            const text = await err.text();
+            const parsed = JSON.parse(text);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {}
+        }
+        // Nếu err là Error object với .message là JSON string
+        else if (err && typeof err.message === 'string') {
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {
+            msg = err.message;
+          }
+        }
+        // Nếu err là string JSON
+        else if (typeof err === 'string') {
+          try {
+            const parsed = JSON.parse(err);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {}
+        }
+        if (window.toastr) toastr.error(msg);
       });
     });
   }
