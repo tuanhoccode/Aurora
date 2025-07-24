@@ -38,15 +38,27 @@
                             $stock = $variant ? $variant->stock : $product->stock ?? 0;
                             $size = $getAttrValue($variant, ['size', 'kích']);
                             $color = $getAttrValue($variant, ['color', 'màu']);
+                            // Lấy ảnh đúng cho biến thể hoặc sản phẩm
+                            if ($variant) {
+                                if (!empty($variant->img)) {
+                                    $img = asset('storage/' . $variant->img);
+                                } elseif ($variant->images && $variant->images->count() > 0) {
+                                    $img = asset('storage/' . $variant->images->first()->url);
+                                } else {
+                                    $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                }
+                            } else {
+                                $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                            }
                         @endphp
                         <div class="cartmini__widget-item d-flex align-items-center @if($stock < 1) cartmini-item-out-of-stock @endif" style="gap:1rem;" data-product-id="{{ $item->product_id }}" data-variant-id="{{ $item->product_variant_id }}">
                             @if(!empty($product->slug))
                             <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}" class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
-                                <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                                <img src="{{ $img }}" alt="{{ $product->name }}" class="cart-item-card__image" />
                             </a>
                             @else
                                 <span class="d-block border border-translucent rounded-2 cart-item-card__image-wrapper">
-                                    <img src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}" alt="{{ $product->name }}" class="cart-item-card__image" />
+                                    <img src="{{ $img }}" alt="{{ $product->name }}" class="cart-item-card__image" />
                                 </span>
                             @endif
                             <div class="cart-product-info flex-grow-1" style="min-width:0;">
@@ -84,12 +96,9 @@
                                         <span class="text-danger small">Sản phẩm này đã hết hàng</span>
                                     @endif
                                 </div>
-                                <div class="cartmini__item-qty">
-                                    Số lượng: <b>{{ $item->quantity > $stock ? $stock : $item->quantity }}</b>
-                                </div>
                             </div>
                             <div class="cartmini__item-actions">
-                                <div class="cartmini__item-price" data-unit-price="{{ $item->price_at_time }}">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
+                                <div class="cartmini__item-price" data-unit-price="{{ $item->price_at_time }}">{{ number_format($item->price_at_time, 0, ',', '.') }}₫</div>
                                 <button class="cartmini__remove-btn" title="Xóa sản phẩm" data-id="{{ $item->id }}"><i class="fa-regular fa-trash-can"></i></button>
                             </div>
                         </div>
@@ -171,20 +180,12 @@
     display: grid;
     grid-template-columns: 70px 1.8fr 1fr;
     align-items: center;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
-    border: 1px solid #e9ecef;
     padding: 1.1rem 1.2rem;
     margin-bottom: 1rem;
     gap: 1.1rem;
     min-height: 80px;
 }
 
-.cartmini__widget-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
 
 .cartmini__widget-item img {
     width: 70px;
@@ -194,9 +195,13 @@
     border: 1px solid #f0f2f5;
     flex-shrink: 0;
 }
-
+.cartmini__widget-item img:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    transition: all 0.2s;
+}
 .cartmini__item-info {
-    min-width: 0; /* Important for flexbox ellipsis */
+    min-width: 0;
     flex-grow: 1;
     padding-top: 2px;
 }
