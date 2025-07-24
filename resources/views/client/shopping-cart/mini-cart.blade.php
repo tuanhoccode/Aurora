@@ -96,9 +96,12 @@
                                         <span class="text-danger small">Sản phẩm này đã hết hàng</span>
                                     @endif
                                 </div>
+                                <div class="cartmini__item-qty">
+                                    Số lượng: <b>{{ $item->quantity > $stock ? $stock : $item->quantity }}</b>
+                                </div>
                             </div>
                             <div class="cartmini__item-actions">
-                                <div class="cartmini__item-price" data-unit-price="{{ $item->price_at_time }}">{{ number_format($item->price_at_time, 0, ',', '.') }}₫</div>
+                                <div class="cartmini__item-price" data-unit-price="{{ $item->price_at_time }}">{{ number_format($item->price_at_time * $item->quantity, 0, ',', '.') }}₫</div>
                                 <button class="cartmini__remove-btn" title="Xóa sản phẩm" data-id="{{ $item->id }}"><i class="fa-regular fa-trash-can"></i></button>
                             </div>
                         </div>
@@ -180,12 +183,20 @@
     display: grid;
     grid-template-columns: 70px 1.8fr 1fr;
     align-items: center;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+    border: 1px solid #e9ecef;
     padding: 1.1rem 1.2rem;
     margin-bottom: 1rem;
     gap: 1.1rem;
     min-height: 80px;
 }
 
+.cartmini__widget-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
 
 .cartmini__widget-item img {
     width: 70px;
@@ -195,13 +206,9 @@
     border: 1px solid #f0f2f5;
     flex-shrink: 0;
 }
-.cartmini__widget-item img:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-    transition: all 0.2s;
-}
+
 .cartmini__item-info {
-    min-width: 0;
+    min-width: 0; /* Important for flexbox ellipsis */
     flex-grow: 1;
     padding-top: 2px;
 }

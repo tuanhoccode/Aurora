@@ -122,6 +122,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{product}/variants/{variant}/edit', [ProductVariantController::class, 'edit'])->name('variants.edit');
         Route::put('/{product}/variants/{variant}', [ProductVariantController::class, 'update'])->name('variants.update');
         Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
+        Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
+        Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
