@@ -17,6 +17,7 @@ class Review extends Model
         'review_id',
         'reason',
         'is_active',
+        'has_replies',
     ];
 
     public function product()

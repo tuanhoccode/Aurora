@@ -148,7 +148,7 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="fw-bold mb-3">Mô tả ngắn:</h6>
-                        <p class="text-muted">{{ $product->short_description ?: 'Không có mô tả ngắn' }}</p>
+                        <p class="text-muted">{!! $product->short_description ?: 'Không có mô tả ngắn' !!}</p>
                     </div>
                     <div>
                         <h6 class="fw-bold mb-3">Mô tả chi tiết:</h6>
@@ -169,14 +169,27 @@
                         <tr>
                             <th width="150">Giá:</th>
                             <td>
-                                @if($product->is_sale && $product->sale_price < $product->price)
-                                    <div class="d-flex flex-column">
-                                        <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
-                                        <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
-                                        <span class="badge bg-danger discount-badge">Giảm {{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
-                                    </div>
+                                @if($product->type === 'variant' && $product->variants->count() > 0)
+                                    @php $variant = $product->variants->first(); @endphp
+                                    @if($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                        <div class="d-flex flex-column">
+                                            <span class="price-original">Giá gốc: {{ number_format($variant->regular_price) }}đ</span>
+                                            <span class="price-sale">Giá khuyến mãi: {{ number_format($variant->sale_price) }}đ</span>
+                                            <span class="badge bg-danger discount-badge">Giảm {{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                        </div>
+                                    @else
+                                        <span class="fw-bold">{{ number_format($variant->regular_price) }}đ</span>
+                                    @endif
                                 @else
-                                    <span class="fw-bold">{{ number_format($product->price) }}đ</span>
+                                    @if($product->is_sale && $product->sale_price < $product->price)
+                                        <div class="d-flex flex-column">
+                                            <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
+                                            <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
+                                            <span class="badge bg-danger discount-badge">Giảm {{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                        </div>
+                                    @else
+                                        <span class="fw-bold">{{ number_format($product->price) }}đ</span>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -293,11 +306,11 @@
                          alt="{{ $product->name }}">
                     @endif
 
-                    @if($product->gallery)
+                    @if($product->type === 'simple' && $product->images && $product->images->count())
                     <div class="row g-2">
-                        @foreach(json_decode($product->gallery) as $image)
+                        @foreach($product->images as $image)
                         <div class="col-4">
-                            <img src="{{ asset('storage/' . $image) }}"
+                            <img src="{{ asset('storage/' . $image->url) }}"
                                  class="img-fluid rounded"
                                  alt="Gallery image">
                         </div>
@@ -305,7 +318,7 @@
                     </div>
                     @endif
 
-                    @if(!$product->thumbnail && !$product->gallery)
+                    @if(!$product->thumbnail && (!$product->images || $product->images->count() === 0))
                     <div class="text-center py-4">
                         <div class="text-muted mb-2">
                             <i class="bi bi-image fa-2x"></i>

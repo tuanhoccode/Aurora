@@ -200,7 +200,7 @@ class Product extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductGallery::class);
+        return $this->hasMany(ProductImage::class);
     }
 
     public function comments()
@@ -250,5 +250,10 @@ class Product extends Model
             $related = $related->concat($more);
         }
         return $related;
+    }
+
+    //đổ sao trung bình ra home
+    public function getAverageRatingAttribute(){
+        return round($this->reviews()->where('is_active', 1)->avg('rating'),1) ?? 0;
     }
 }

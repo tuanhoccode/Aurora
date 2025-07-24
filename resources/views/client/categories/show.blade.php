@@ -166,16 +166,39 @@
                                 <h3 class="tp-product-title-2">
                                     <a href="{{ $product->slug ? route('client.product.show', ['slug' => $product->slug]) : '#' }}">{{ $product->name }}</a>
                                 </h3>
+                                @php
+                                   $validReviews = $product->reviews
+                                       ->where('is_active', 1)
+                                       ->where('review_id', null)
+                                       ->where('rating', '>', 0);
+
+                                   $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
+                                @endphp
+
                                 <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                                    @for ($i = 0; $i < 5; $i++)
-                                        <span><i class="fa-solid fa-star"></i></span>
-                                    @endfor
+                                    @if ($validReviews->count() > 0)
+                                        <div class="review-item pb-3">
+                                            <div class="text-warning mb-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($i <= $avg)
+                                                        ★
+                                                    @else
+                                                        ☆
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p>Chưa có đánh giá.</p>
+                                    @endif
                                 </div>
                                 <div class="tp-product-price-wrapper-2">
-                                    <span class="tp-product-price-2 new-price">${{ number_format($product->price, 2) }}</span>
-                                    @if ($product->original_price && $product->original_price > $product->price)
-                                        <span class="tp-product-price-2 old-price">${{ number_format($product->original_price, 2) }}</span>
-                                    @endif
+                                    <span
+                                        class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
+                                      @if ($product->original_price && $product->original_price > $product->price)
+                                    <span
+                                        class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
+                                      @endif
                                 </div>
                             </div>
                         </div>
