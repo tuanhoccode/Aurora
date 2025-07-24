@@ -14,6 +14,14 @@
     <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
       @csrf
       @method('PUT')
+      <!-- Nút lưu bình thường, căn phải, đặt trên cùng form, thêm mb-4 để cách xa phần dưới -->
+      <div class="text-end mt-4 mb-4">
+        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
+        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-save me-1"></i> Lưu sản phẩm
+        </button>
+      </div>
       @if ($errors->any())
         <div class="alert alert-danger">
           <ul class="mb-0">
@@ -53,7 +61,7 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
               <label class="form-label fw-medium">Mô tả ngắn</label>
-              <textarea class="form-control mb-3" name="short_description" rows="2" placeholder="Nhập mô tả ngắn...">{{ old('short_description', $product->short_description) }}</textarea>
+              <textarea class="form-control mb-3" id="ckeditor-short-description" name="short_description" rows="2" placeholder="Nhập mô tả ngắn...">{{ old('short_description', $product->short_description) }}</textarea>
               <!-- Mô tả chi tiết -->
               <label class="form-label fw-medium">Mô tả chi tiết</label>
               <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả...">{{ old('description', $product->description) }}</textarea>
@@ -75,8 +83,22 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              
-             
+              <div id="gallery-upload-wrapper" style="display: block;">
+                <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                @error('gallery_images')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                @if(isset($product) && $product->images && $product->images->count())
+                  <div class="row mt-2">
+                    @foreach($product->images as $img)
+                      <div class="col-3 mb-2">
+                        <img src="{{ asset('storage/' . $img->url) }}" class="img-thumbnail" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                      </div>
+                    @endforeach
+                  </div>
+                @endif
+              </div>
               
             </div>
           </div>
@@ -167,22 +189,10 @@
               @enderror
             </div>
           </div>
-          <!-- Card: Tồn kho theo kho hàng -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <i class="fas fa-warehouse me-1"></i> Tồn kho theo kho hàng
-            </div>
-            <div class="card-body">
-              @foreach($stocks as $stock)
-                <div class="border rounded p-3 mb-2">
-                  <div><strong>Kho:</strong> {{ $stock->warehouse_name ?? 'N/A' }}</div>
-                  <div><strong>Số lượng:</strong> {{ $stock->stock }}</div>
-                </div>
-              @endforeach
-            </div>
-          </div>
         </div>
       </div>
+
+      
       
       <!-- Biến thể sản phẩm - Khối riêng biệt với chiều ngang đầy đủ -->
       <div class="row" id="variantSection" @if($product->type !== 'variant') style="display: none;" @endif>
@@ -233,6 +243,14 @@
                   </div>
                 </div>
                 <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div class="card-body">
+                    @if ($errors->has('variants_old'))
+                      <div class="alert alert-danger mt-2">
+                        @foreach ($errors->get('variants_old') as $msg)
+                          <div>{{ $msg }}</div>
+                        @endforeach
+                      </div>
+                    @endif
                   <div id="variantTableWrapper" @if($product->variants->count() == 0) style="display:none;" @endif>
                     <h5 class="mb-3">Danh sách biến thể</h5>
                     <div class="table-responsive">
@@ -294,14 +312,6 @@
           </div>
         </div>
       </div>
-      
-      <div class="mt-4 text-end">
-        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
-        <button class="btn btn-primary" type="submit">
-          <i class="fas fa-save me-1"></i> Lưu sản phẩm
-        </button>
-      </div>
     </form>
   </div>
 </div>
@@ -324,6 +334,7 @@
 .variant-sale-price:focus + .discount-percentage {
   color: #198754;
 }
+/* Không còn sticky-save-bar, chỉ căn phải và margin-top */
 </style>
 @endpush
 @push('scripts')
@@ -683,7 +694,25 @@ $('form').on('submit', function(e) {
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
-ClassicEditor.create(document.querySelector('#ckeditor-description'));
+  ClassicEditor.create(document.querySelector('#ckeditor-description'));
+  ClassicEditor.create(document.querySelector('#ckeditor-short-description'));
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('productTypeSelect');
+    const variantSection = document.getElementById('variantSection');
+    function toggleVariantSection() {
+      if (typeSelect.value === 'variant') {
+        variantSection.style.display = 'flex';
+      } else {
+        variantSection.style.display = 'none';
+      }
+    }
+    if (typeSelect && variantSection) {
+      typeSelect.addEventListener('change', toggleVariantSection);
+      toggleVariantSection();
+    }
+  });
 </script>
 @endpush
 
