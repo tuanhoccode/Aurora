@@ -1280,7 +1280,7 @@
                     </div>
                 @else
                     <div class="col-12">
-                        <div class="cart-empty text-center p-5 bg-white rounded-3">
+                        <div class="cart-empty text-center p-5 bg-white rounded-3 d-flex flex-column align-items-center justify-content-center" style="min-height:340px; box-shadow:0 4px 24px rgba(44,62,80,0.07); border:1.5px solid #e9ecef; margin-bottom: 80px;">
                             <i class="fa-light fa-cart-shopping" style="font-size: 5rem; color: #dee2e6;"></i>
                             <h4 class="mt-4">Giỏ hàng của bạn còn trống</h4>
                             <p class="text-muted">Cùng khám phá hàng ngàn sản phẩm tuyệt vời tại Aurora nhé!</p>
