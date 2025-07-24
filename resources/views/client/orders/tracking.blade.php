@@ -85,6 +85,15 @@
                         ];
                         $currentKey = $statusMap[$currentStatusName] ?? 'cho_xac_nhan';
                         $currentIndex = collect($timeline)->search(fn($item) => $item['key'] === $currentKey);
+                        $isCancelled = $currentStatusName === 'Đã hủy';
+                        // Tạo mảng mapping key => updated_at
+                        $statusTimeMap = [];
+                        foreach($orderStatusSteps as $step) {
+                            $key = $statusMap[$step->status->name] ?? null;
+                            if ($key) {
+                                $statusTimeMap[$key] = $step->updated_at;
+                            }
+                        }
                     @endphp
                     @foreach($timeline as $i => $step)
                         @php
@@ -94,19 +103,41 @@
                             } elseif ($i == $currentIndex) {
                                 $stepStatus = 'active';
                             }
+                            // Nếu đã hủy, các bước từ 0 đến currentIndex đều là cancel
+                            $isCancelStep = $isCancelled && $i <= $currentIndex;
+                            $stepData = $orderStatusSteps->first(fn($s) => ($statusMap[$s->status->name] ?? null) === $step['key']);
+                            $stepTime = $stepData?->created_at;
+                            $stepNote = $stepData?->note;
+                            $stepModifier = $stepData?->modifier?->name ?? ($stepData ? 'Hệ thống' : null);
                         @endphp
                         <div class="tracking-step {{ $stepStatus }}" style="min-height: 90px;">
-                            <div class="tracking-step-icon">
-                                @if($stepStatus === 'completed')
-                                    <i class="fas fa-check"></i>
-                                @elseif($stepStatus === 'active')
-                                    <i class="fas fa-truck"></i>
+                            <div class="tracking-step-icon" style="@if($isCancelStep) background: #dc3545; color: #fff; border-color: #dc3545; @endif">
+                                @if($isCancelStep)
+                                    <i class="fas fa-times"></i>
                                 @else
-                                    <i class="fas fa-clock"></i>
+                                    @if($stepStatus === 'completed')
+                                        <i class="fas fa-check"></i>
+                                    @elseif($stepStatus === 'active')
+                                        <i class="fas fa-truck"></i>
+                                    @else
+                                        <i class="fas fa-clock"></i>
+                                    @endif
                                 @endif
                             </div>
                             <div class="tracking-step-title">{{ $step['title'] }}</div>
-                            <div class="tracking-step-desc">{{ $step['desc'] }}</div>
+                            @if($stepTime)
+                                <div class="tracking-step-date">
+                                    <i class="fas fa-clock me-1"></i>{{ \Carbon\Carbon::parse($stepTime)->format('d/m/Y H:i') }}
+                                    @if($stepModifier)
+                                        <span class="ms-2"><i class="fas fa-user me-1"></i>{{ $stepModifier }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                            @if($stepNote)
+                                <div class="tracking-step-desc">{{ $stepNote }}</div>
+                            @else
+                                <div class="tracking-step-desc">{{ $step['desc'] }}</div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -142,17 +173,7 @@
                 </div>
             </div>
         </div>
-        <div class="tracking-actions">
-            @if($order->currentOrderStatus && $order->currentOrderStatus->status->name == 'Chờ xác nhận')
-                <form method="POST" action="{{ route('client.orders.cancel', ['order' => $order->id]) }}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng này?');">
-                    @csrf
-                    @method('PUT')
-                    <button type="submit" class="btn-cancel-order">
-                        <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
-                    </button>
-                </form>
-            @endif
-        </div>
+       
     </div>
 </div>
 @endsection 

@@ -122,16 +122,27 @@
                                         {{ $product->name }}
                                     @endif
                                 </div>
-                                <div class="text-muted small">{{ Str::limit($product->short_description, 40) }}</div>
+                                <div class="text-muted small">{!! Str::limit($product->short_description, 40) !!}</div>
                             </td>
                             <td><span class="badge bg-light text-dark border">{{ $product->sku }}</span></td>
                             <td>
-                                @if ($product->is_sale && $product->sale_price < $product->price)
-                                    <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
-                                    <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
-                                    <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                @if ($product->type === 'variant' && $product->variants->count() > 0)
+                                    @php $variant = $product->variants->first(); @endphp
+                                    @if ($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                        <span class="text-decoration-line-through text-muted">{{ number_format($variant->regular_price) }}đ</span>
+                                        <span class="text-danger fw-bold ms-1">{{ number_format($variant->sale_price) }}đ</span>
+                                        <span class="badge bg-danger ms-1">-{{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                    @else
+                                        <span>{{ number_format($variant->regular_price) }}đ</span>
+                                    @endif
                                 @else
-                                    <span>{{ number_format($product->price) }}đ</span>
+                                    @if ($product->is_sale && $product->sale_price < $product->price)
+                                        <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
+                                        <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
+                                        <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                    @else
+                                        <span>{{ number_format($product->price) }}đ</span>
+                                    @endif
                                 @endif
                             </td>
                             <td>

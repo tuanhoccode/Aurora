@@ -438,20 +438,20 @@
                                         <span id="unit-price" data-unit="{{ $unit }}"
                                             style="display: none;"></span>
                                     </div>
-{{-- Nếu không có biến thể thì hiển thị luôn --}}
-@if ($product->variants->isEmpty())
-    <div class="mt-3">
-        <strong>Chất liệu:</strong> {{ $product->material }}
-    </div>
-@endif
-
-{{-- Nếu có biến thể thì khối ẩn, hiện khi chọn biến thể --}}
-@if ($product->variants->isNotEmpty())
-    <div id="materialSection" class="mt-3 d-none">
-        <strong>Chất liệu:</strong>
-        <span id="materialText"></span>
-    </div>
-@endif
+                                    {{-- Nếu không có biến thể thì hiển thị luôn --}}
+                                    @if ($product->variants->isEmpty())
+                                        <div class="mt-3">
+                                            <strong>Chất liệu:</strong> {{ $product->material }}
+                                        </div>
+                                    @endif
+                                                                                
+                                    {{-- Nếu có biến thể thì khối ẩn, hiện khi chọn biến thể --}}
+                                    @if ($product->variants->isNotEmpty())
+                                        <div id="materialSection" class="mt-3 d-none">
+                                            <strong>Chất liệu:</strong>
+                                            <span id="materialText"></span>
+                                        </div>
+                                    @endif
                                     {{-- Tổng tiền --}}
                                     <div class="mt-2">
                                         <strong>Tổng tiền: </strong>
@@ -773,7 +773,10 @@
                                                     <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-thumb me-3">
                                                                 <a href="#">
-                                                                    <img src="{{ $review->user->avatar ?? asset('assets2/img/users/avatars.png') }}" alt="Avatar" width="50">
+                                                                    <img src="{{ $review->user->avatar 
+                                                                        ? asset('storage/' . $review->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                 </a>
                                                             </div>
                                                             <div class="tp-product-details-review-avater-content">
@@ -808,7 +811,10 @@
                                                             <div class="tp-product-details-review-avater-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $comment->user->avatar ?? asset('assets2/img/users/avatars.png') }}" alt="Avatar" width="50">
+                                                                        <img src="{{ $comment->user->avatar 
+                                                                        ? asset('storage/' . $comment->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                             </div>
@@ -839,7 +845,10 @@
                                                             <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $review->user->avatar ?? asset('assets2/img/users/avatars.png') }}" width="50">
+                                                                        <img src="{{ $review->user->avatar 
+                                                                        ? asset('storage/' . $review->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                                 <div class="tp-product-details-review-avater-content">
@@ -872,7 +881,10 @@
                                                             <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $comment->user->avatar ?? asset('assets2/img/users/avatars.png') }}" width="50">
+                                                                        <img src="{{ $comment->user->avatar 
+                                                                        ? asset('storage/' . $comment->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                                 <div class="tp-product-details-review-avater-content">

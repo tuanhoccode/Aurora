@@ -126,6 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
+    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole');
     // Brands Routes
     Route::prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
@@ -271,7 +272,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         //Admin phản hồi bình luận
         Route::post('/reply', [ReviewController::class, 'reply'])->name('reply');
         Route::post('/{type}/reply/{id}', [CommentController::class, 'reply'])->name('replies');
+
+        //search comment
+        Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
+
+    
 });
 
 

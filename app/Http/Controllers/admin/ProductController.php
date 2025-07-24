@@ -128,6 +128,32 @@ class ProductController extends Controller
                 foreach ($request->input('variants') as $idx => $variantData) {
                     // Kiểm tra SKU trùng lặp
                     $sku = $variantData['sku'] ?? null;
+                    // Tự động sinh SKU nếu không có hoặc rỗng
+                    if (empty($sku)) {
+                        $parentSku = preg_replace('/[^A-Za-z0-9]/', '', $product->sku); // loại bỏ ký tự đặc biệt
+                        $size = '';
+                        $color = '';
+                        if (!empty($variantData['attributes'])) {
+                            foreach ($variantData['attributes'] as $attrId => $attrValueId) {
+                                $attribute = \App\Models\Attribute::find($attrId);
+                                $value = \App\Models\AttributeValue::find($attrValueId);
+                                if ($attribute && $value) {
+                                    if (stripos($attribute->name, 'size') !== false || stripos($attribute->name, 'kích') !== false) {
+                                        $size = strtoupper($value->value);
+                                    }
+                                    if (stripos($attribute->name, 'màu') !== false || stripos($attribute->name, 'color') !== false) {
+                                        // Lấy 2 ký tự đầu không dấu, in hoa
+                                        $color = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $value->value));
+                                        $color = substr($color, 0, 2);
+                                    }
+                                }
+                            }
+                        }
+                        $sku = $parentSku;
+                        if ($size) $sku .= '-' . $size;
+                        if ($color) $sku .= '-' . $color;
+                    }
+                    
                     if ($sku) {
                         // Kiểm tra SKU đã tồn tại trong session này
                         if (in_array($sku, $usedSkus)) {
@@ -143,21 +169,18 @@ class ProductController extends Controller
                         }
                         
                         // Kiểm tra SKU đã tồn tại trong database
-                        $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
+                        $existingVariant = $product->variants()->where('sku', $sku)->first();
                         if ($existingVariant) {
-                            // Lấy câu SQL cuối cùng
-                            $sql = optional(DB::getQueryLog())[count(DB::getQueryLog())-1]['query'] ?? null;
-                            \Log::warning('SKU duplicate in database', [
+                            \Log::warning('SKU duplicate in product', [
                                 'sku' => $sku,
                                 'request' => $request->all(),
                                 'product_id' => $product->id ?? null,
                                 'variant_data' => $variantData ?? null,
                                 'existing_variant_id' => $existingVariant->id,
-                                'sql' => $sql,
                             ]);
                             return redirect()->back()
                                 ->withInput()
-                                ->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong hệ thống. Vui lòng chọn SKU khác."]);
+                                ->withErrors(['variants' => "SKU '{$sku}' đã tồn tại trong các biến thể của sản phẩm này. Vui lòng chọn SKU khác."]);
                         }
                         
                         $usedSkus[] = $sku;
@@ -165,7 +188,7 @@ class ProductController extends Controller
                     
                     $variant = $product->variants()->create([
                         'sku' => $sku,
-                        'regular_price' => $variantData['price'] ?? null,
+                        'regular_price' => $variantData['regular_price'] ?? $variantData['price'] ?? 0,
                         'sale_price' => $variantData['sale_price'] ?? null,
                         'stock' => $variantData['stock'] ?? 0,
                     ]);
@@ -186,36 +209,17 @@ class ProductController extends Controller
                 }
             }
 
-            // Xử lý gallery images
-            if ($request->hasFile('gallery_images')) {
-                Log::info('Processing gallery images upload');
-                
+            // Xử lý gallery images (chỉ cho sản phẩm đơn giản)
+            if ($data['type'] === 'simple' && $request->hasFile('gallery_images')) {
                 $galleryImages = $request->file('gallery_images');
-                Log::info('Number of images: ' . (is_array($galleryImages) ? count($galleryImages) : 0));
-                
                 if (is_array($galleryImages)) {
                     foreach ($galleryImages as $image) {
-                        try {
-                            Log::info('Processing image: ' . $image->getClientOriginalName());
-                            
-                            // Kiểm tra xem file có phải là hình ảnh không
-                            if (!$image->isValid()) {
-                                Log::error('Invalid image: ' . $image->getClientOriginalName());
-                                continue;
-                            }
-                            
-                            // Lưu file vào storage
+                        if ($image->isValid()) {
                             $path = $image->store('products/gallery', 'public');
-                            Log::info('Stored image at: ' . $path);
-                            
-                            // Tạo record trong bảng product_galleries
-                            $gallery = $product->galleries()->create([
-                                'image' => $path
+                            \App\Models\ProductImage::create([
+                                'product_id' => $product->id,
+                                'url' => $path,
                             ]);
-                            Log::info('Created gallery record with ID: ' . $gallery->id);
-                        } catch (\Exception $e) {
-                            Log::error('Error storing gallery image: ' . $e->getMessage());
-                            continue; // Skip this image and continue with others
                         }
                     }
                 }
@@ -356,46 +360,18 @@ class ProductController extends Controller
                 $data['thumbnail'] = $file->storeAs('products', $filename, 'public');
             }
 
-            // Xử lý gallery images update
-            if ($request->hasFile('gallery_images')) {
+            // Xử lý gallery images update (chỉ cho sản phẩm đơn giản)
+            if ($data['type'] === 'simple' && $request->hasFile('gallery_images')) {
                 $galleryImages = $request->file('gallery_images');
-                
                 if (is_array($galleryImages)) {
-                    $successImages = [];
-                    $failedImages = [];
-                    
                     foreach ($galleryImages as $image) {
-                        try {
-                            // Kiểm tra xem file có phải là hình ảnh không
-                            if (!$image->isValid()) {
-                                $failedImages[] = $image->getClientOriginalName();
-                                continue;
-                            }
-                            
-                            // Lưu file vào storage
+                        if ($image->isValid()) {
                             $path = $image->store('products/gallery', 'public');
-                            
-                            // Tạo record trong bảng product_galleries
-                            $gallery = new ProductGallery([
+                            \App\Models\ProductImage::create([
                                 'product_id' => $product->id,
-                                'image' => $path
+                                'url' => $path,
                             ]);
-                            $gallery->save();
-                            
-                            $successImages[] = $image->getClientOriginalName();
-                        } catch (\Exception $e) {
-                            $failedImages[] = $image->getClientOriginalName();
-                            Log::error('Error storing gallery image: ' . $e->getMessage());
-                            continue;
                         }
-                    }
-                    
-                    // Thêm thông báo về kết quả upload
-                    if (!empty($successImages)) {
-                        session()->flash('success', 'Đã thêm ' . count($successImages) . ' hình ảnh thành công');
-                    }
-                    if (!empty($failedImages)) {
-                        session()->flash('warning', 'Có ' . count($failedImages) . ' hình ảnh không thể thêm: ' . implode(', ', $failedImages));
                     }
                 }
             }
@@ -423,10 +399,10 @@ class ProductController extends Controller
                             // Kiểm tra SKU trùng lặp
                             $sku = $variantData['sku'] ?? null;
                             if ($sku) {
-                                // Kiểm tra SKU đã tồn tại trong database
-                                $existingVariant = \App\Models\ProductVariant::where('sku', $sku)->first();
+                                // Kiểm tra SKU đã tồn tại trong các biến thể của sản phẩm hiện tại, loại trừ chính biến thể đang cập nhật
+                                $existingVariant = $product->variants()->where('sku', $sku)->where('id', '!=', $variantData['id'] ?? 0)->first();
                                 if ($existingVariant) {
-                                    throw new \Exception("SKU '{$sku}' đã tồn tại trong hệ thống.");
+                                    throw new \Exception("SKU '{$sku}' đã tồn tại trong các biến thể của sản phẩm này.");
                                 }
                                 
                                 // Kiểm tra SKU trùng trong cùng request
@@ -498,12 +474,35 @@ class ProductController extends Controller
                         try {
                             $variant = $product->variants()->find($variantId);
                             if (!$variant) continue;
-                            
+
+                            // Validate dữ liệu không được để trống
+                            $price = $variantData['price'] ?? null;
+                            $stock = $variantData['stock'] ?? null;
+                            $sku = $variantData['sku'] ?? null;
+                            $errors = [];
+                            if ($price === null || $price === '' || $price < 0) {
+                                $errors[] = "Giá gốc của biến thể (ID: $variantId) không được để trống hoặc nhỏ hơn 0.";
+                            }
+                            if ($stock === null || $stock === '' || $stock < 0) {
+                                $errors[] = "Tồn kho của biến thể (ID: $variantId) không được để trống hoặc nhỏ hơn 0.";
+                            }
+                            if ($sku === null || $sku === '') {
+                                $errors[] = "SKU của biến thể (ID: $variantId) không được để trống.";
+                            }
+                            $salePrice = $variantData['sale_price'] ?? null;
+                            if ($salePrice !== null && $salePrice !== '' && $price !== null && $price !== '' && $salePrice >= $price) {
+                                $errors[] = "Giá khuyến mãi của biến thể (ID: $variantId) phải nhỏ hơn giá gốc.";
+                            }
+                            if (!empty($errors)) {
+                                DB::rollBack();
+                                return redirect()->back()->withInput()->withErrors(['variants_old' => $errors]);
+                            }
+
                             // Cập nhật thông tin cơ bản
                             $updateData = [
-                                'regular_price' => $variantData['price'] ?? $variant->regular_price,
+                                'regular_price' => $price,
                                 'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
-                                'stock' => $variantData['stock'] ?? $variant->stock,
+                                'stock' => $stock,
                             ];
                             
                             // Xử lý ảnh nếu có

@@ -81,7 +81,7 @@
                                         <td>{{ number_format((float) $order->total_amount, 0, ',', '.') }} ₫</td>
                                         <td>{!! $order->payment_status_badge !!}</td>
                                         <td>{!! $order->fulfilment_status_badge !!}</td>
-                                        <td>{{ $order->delivery_type }}</td>
+                                        <td>{{ $order->delivery_type_full_info }}</td>
                                         <td>{{ $order->created_at->format('d/m H:i') }}</td>
                                     </tr>
                                 @endforeach
@@ -118,7 +118,13 @@
                                             @endfor
                                         </td>
                                         <td>{{ $review->content }}</td>
-                                        <td><span class="badge bg-success">Đã duyệt</span></td>
+                                        <td>
+                                            @if ($review->is_active)
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                            @else
+                                                <span class="badge bg-secondary">Chưa duyệt</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $review->created_at->format('d/m/Y') }}</td>
                                     </tr>
                                 @endforeach

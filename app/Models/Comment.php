@@ -15,6 +15,7 @@ class Comment extends Model
         'parent_id',
         'reason',
         'is_active',
+        'has_replies',
         'content',
         'deleted_at',
     ];
@@ -38,5 +39,9 @@ class Comment extends Model
     }
     public function getHasRepliesAttribute(){
         return $this->replies()->exists();
+    }
+    public function review()
+    {
+        return $this->belongsTo(Review::class);
     }
 }
