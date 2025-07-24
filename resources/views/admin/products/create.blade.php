@@ -3,266 +3,261 @@
 @section('title', 'Thêm sản phẩm mới')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 fw-bold text-gray-800">Thêm sản phẩm mới</h1>
-            <p class="text-muted mt-1">Tạo mới sản phẩm cho hệ thống</p>
-        </div>
-        <div>
-            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary rounded-pill px-4">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
-            </a>
-        </div>
-    </div>
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if ($errors->has('variants'))
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->get('variants') as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+<div class="content">
+  <nav class="mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="#">Sản phẩm</a></li>
+      <li class="breadcrumb-item active">Tạo mới</li>
+    </ol>
+  </nav>
+  <div class="container-fluid">
     <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-info-circle me-1"></i> Thông tin cơ bản
-                    </div>
-                    <div class="card-body">
-                        <label class="form-label fw-medium">Tên sản phẩm</label>
-                        <input class="form-control mb-3 @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}" placeholder="Nhập tên sản phẩm..."/>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <label class="form-label fw-medium">Mô tả ngắn</label>
-                        <textarea class="form-control mb-3" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
-                        <label class="form-label fw-medium">Mô tả chi tiết</label>
-                        <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả..."></textarea>
-                    </div>
-                </div>
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-image me-1"></i> Ảnh đại diện
-                    </div>
-                    <div class="card-body">
-                        <label class="form-label">Ảnh đại diện</label>
-                        <input type="file" class="form-control mb-3 @error('thumbnail') is-invalid @enderror" name="thumbnail" accept="image/*">
-                        @error('thumbnail')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-cube me-1"></i> Kiểu sản phẩm
-                    </div>
-                    <div class="card-body">
-                        <select class="form-select" id="productTypeSelect" name="type">
-                            <option value="simple" selected>Sản phẩm đơn giản</option>
-                            <option value="variant">Sản phẩm biến thể</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-list me-1"></i> Danh mục & Thương hiệu
-                    </div>
-                    <div class="card-body">
-                        <label class="form-label fw-medium">Danh mục</label>
-                        <select class="form-select select2 @error('categories') is-invalid @enderror" name="categories[]">
-                            <option value="">Chọn danh mục</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ in_array($category->id, old('categories', [])) ? 'selected' : '' }}>{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('categories')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <label class="form-label fw-medium mt-3">Thương hiệu</label>
-                        <select class="form-select @error('brand_id') is-invalid @enderror" name="brand_id">
-                            <option value="">Chọn thương hiệu</option>
-                            @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('brand_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="card mb-4 shadow-sm rounded-3" id="priceStockCard">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-tag me-1"></i> Giá & Tồn kho chung
-                    </div>
-                    <div class="card-body">
-                        <label class="form-label">SKU</label>
-                        <input type="text" class="form-control mb-2 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku') }}">
-                        @error('sku')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <label class="form-label">Giá</label>
-                        <input type="number" class="form-control mb-2 @error('price') is-invalid @enderror" name="price" value="{{ old('price', 0) }}" min="0" step="1">
-                        @error('price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <label class="form-label">Giá khuyến mãi</label>
-                        <input type="number" class="form-control mb-2 @error('sale_price') is-invalid @enderror" name="sale_price" value="{{ old('sale_price') }}" min="0" step="1">
-                        @error('sale_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <label class="form-label">Tồn kho</label>
-                        <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0">
-                        @error('stock')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-toggle-on me-1"></i> Trạng thái
-                    </div>
-                    <div class="card-body">
-                        <label class="form-label">Trạng thái sản phẩm</label>
-                        <select class="form-select @error('is_active') is-invalid @enderror" name="is_active">
-                            <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Đang kinh doanh</option>
-                            <option value="0" {{ old('is_active', 1) == 0 ? 'selected' : '' }}>Ngừng kinh doanh</option>
-                        </select>
-                        @error('is_active')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="card mb-4 shadow-sm rounded-3">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-warehouse me-1"></i> Tồn kho theo kho hàng
-                    </div>
-                    <div class="card-body">
-                        @foreach($stocks as $stock)
-                            <div class="border rounded p-3 mb-2">
-                                <div><strong>Kho:</strong> {{ $stock->warehouse_name ?? 'N/A' }}</div>
-                                <div><strong>Số lượng:</strong> {{ $stock->stock }}</div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+      @csrf
+      @if ($errors->any())
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
         </div>
-        <!-- Biến thể sản phẩm - Khối riêng biệt với chiều ngang đầy đủ -->
-        <div class="row" id="variantSection" style="display: none;">
-            <div class="col-12">
-                <div class="card mb-4 shadow-sm rounded-3" id="variantCard">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-cubes me-1"></i> <strong>Biến thể sản phẩm</strong>
-                    </div>
-                    <div class="card-body">
-                        <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
-                                    <i class="fas fa-plus"></i> Tạo biến thể
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
-                                    <i class="fas fa-list"></i> Danh sách biến thể
-                                </button>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="variantTabContent">
-                            <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
-                                    <div class="row">
-                                        @foreach($attributes as $attribute)
-                                            <div class="col-md-6 mb-2">
-                                                <label class="form-label">{{ $attribute->name }}</label>
-                                                <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}][]" multiple>
-                                                    <option value="">Chọn thuộc tính</option>
-                                                    @foreach($attribute->values as $value)
-                                                        <option value="{{ $value->id }}">{{ $value->value }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="alert alert-info" id="variantPreview" style="display:none;">
-                                        <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
-                                    </div>
-                                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
-                                        <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
-                                <div id="variantTableWrapper" style="display:none;">
-                                    <h5 class="mb-3">Danh sách biến thể</h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered align-middle" id="variantTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Thuộc tính</th>
-                                                    <th>SKU</th>
-                                                    <th>Giá gốc</th>
-                                                    <th>Giá khuyến mãi</th>
-                                                    <th>Tồn kho</th>
-                                                    <th>Ảnh</th>
-                                                    <th style="width: 40px;"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Dòng biến thể sẽ được JS sinh ra -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div id="noVariantsMessage" class="text-center py-4">
-                                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
-                                </div>
-                            </div>
+      @endif
+      @if ($errors->has('variants'))
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            @foreach ($errors->get('variants') as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+      @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+      @endif
+      @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+      @endif
+      <div class="row">
+        <!-- Cột trái: Nội dung chính -->
+        <div class="col-lg-8">
+          <!-- Card: Thông tin cơ bản -->
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <i class="fas fa-info-circle me-1"></i> Thông tin cơ bản
+            </div>
+            <div class="card-body">
+              <label class="form-label fw-medium">Tên sản phẩm</label>
+              <input class="form-control mb-3 @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}" placeholder="Nhập tên sản phẩm..."/>
+              @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <label class="form-label fw-medium">Mô tả ngắn</label>
+              <textarea class="form-control mb-3" id="ckeditor-short-description" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
+              <!-- Mô tả chi tiết -->
+              <label class="form-label fw-medium">Mô tả chi tiết</label>
+              <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả..."></textarea>
+            </div>
+          </div>
+          <!-- Card: Ảnh đại diện (ngay sau thông tin cơ bản, trước chọn kiểu sản phẩm) -->
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <i class="fas fa-image me-1"></i> Ảnh đại diện
+            </div>
+            <div class="card-body">
+              <label class="form-label">Ảnh đại diện</label>
+              <input type="file" class="form-control mb-3 @error('thumbnail') is-invalid @enderror" name="thumbnail" accept="image/*">
+              @error('thumbnail')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <div id="gallery-upload-wrapper" style="display: block;">
+                <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                @error('gallery_images')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
+          </div>
+          <!-- Card: Kiểu sản phẩm -->
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <i class="fas fa-cube me-1"></i> Kiểu sản phẩm
+            </div>
+            <div class="card-body">
+              <select class="form-select" id="productTypeSelect" name="type">
+                <option value="simple" selected>Sản phẩm đơn giản</option>
+                <option value="variant">Sản phẩm biến thể</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Cột phải: Sidebar/card nhỏ -->
+        <div class="col-lg-4">
+          <!-- Card: Danh mục & Thương hiệu -->
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <i class="fas fa-list me-1"></i> Danh mục & Thương hiệu
+            </div>
+            <div class="card-body">
+              <label class="form-label fw-medium">Danh mục</label>
+              <select class="form-select select2 @error('categories') is-invalid @enderror" name="categories[]">
+                <option value="">Chọn danh mục</option>
+                @foreach($categories as $category)
+                  <option value="{{ $category->id }}" {{ in_array($category->id, old('categories', [])) ? 'selected' : '' }}>{{ $category->name }}</option>
+                @endforeach
+              </select>
+              @error('categories')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <label class="form-label fw-medium mt-3">Thương hiệu</label>
+              <select class="form-select @error('brand_id') is-invalid @enderror" name="brand_id">
+                <option value="">Chọn thương hiệu</option>
+                @foreach($brands as $brand)
+                  <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+                @endforeach
+              </select>
+              @error('brand_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+          <!-- Card: Giá & tồn kho chung -->
+          <div class="card mb-4" id="priceStockCard">
+            <div class="card-header bg-light">
+              <i class="fas fa-tag me-1"></i> Giá & Tồn kho chung
+            </div>
+            <div class="card-body">
+              <label class="form-label">SKU</label>
+              <input type="text" class="form-control mb-2 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku') }}">
+              @error('sku')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <label class="form-label">Giá</label>
+              <input type="number" class="form-control mb-2 @error('price') is-invalid @enderror" name="price" value="{{ old('price', 0) }}" min="0" step="1">
+              @error('price')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <label class="form-label">Giá khuyến mãi</label>
+              <input type="number" class="form-control mb-2 @error('sale_price') is-invalid @enderror" name="sale_price" value="{{ old('sale_price') }}" min="0" step="1">
+              @error('sale_price')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <label class="form-label">Tồn kho</label>
+              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0">
+              @error('stock')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+          <!-- Card: Trạng thái sản phẩm -->
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <i class="fas fa-toggle-on me-1"></i> Trạng thái
+            </div>
+            <div class="card-body">
+              <label class="form-label">Trạng thái sản phẩm</label>
+              <select class="form-select @error('is_active') is-invalid @enderror" name="is_active">
+                <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Đang kinh doanh</option>
+                <option value="0" {{ old('is_active', 1) == 0 ? 'selected' : '' }}>Ngừng kinh doanh</option>
+              </select>
+              @error('is_active')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Biến thể sản phẩm - Khối riêng biệt với chiều ngang đầy đủ -->
+      <div class="row" id="variantSection" style="display: none;">
+        <div class="col-12">
+          <div class="card mb-4" id="variantCard">
+            <div class="card-header bg-light">
+              <i class="fas fa-cubes me-1"></i> <strong>Biến thể sản phẩm</strong>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs mb-3" id="variantTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">
+                    <i class="fas fa-plus"></i> Tạo biến thể
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
+                    <i class="fas fa-list"></i> Danh sách biến thể
+                  </button>
+                </li>
+              </ul>
+              <div class="tab-content" id="variantTabContent">
+                <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
+                  <!-- Chọn thuộc tính để tạo biến thể -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Chọn thuộc tính để tạo biến thể</label>
+                    <div class="row">
+                      @foreach($attributes as $attribute)
+                        <div class="col-md-6 mb-2">
+                          <label class="form-label">{{ $attribute->name }}</label>
+                          <select class="form-select variant-attribute-select" name="variant_attributes[{{ $attribute->id }}][]" multiple>
+                            <option value="">Chọn thuộc tính</option>
+                            @foreach($attribute->values as $value)
+                              <option value="{{ $value->id }}">{{ $value->value }}</option>
+                            @endforeach
+                          </select>
                         </div>
+                      @endforeach
                     </div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="alert alert-info" id="variantPreview" style="display:none;">
+                      <i class="fas fa-info-circle"></i> Sẽ tạo <strong id="variantCount">0</strong> biến thể từ các thuộc tính đã chọn
+                    </div>
+                    <button type="button" class="btn btn-primary" id="generateVariantsBtn">
+                      <i class="fas fa-plus"></i> Tạo biến thể từ thuộc tính
+                    </button>
+                  </div>
                 </div>
+                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div id="variantTableWrapper" style="display:none;">
+                    <h5 class="mb-3">Danh sách biến thể</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered align-middle" id="variantTable">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Thuộc tính</th>
+                            <th>SKU</th>
+                            <th>Giá gốc</th>
+                            <th>Giá khuyến mãi</th>
+                            <th>Tồn kho</th>
+                            <th>Ảnh</th>
+                            <th style="width: 40px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- Dòng biến thể sẽ được JS sinh ra -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div id="noVariantsMessage" class="text-center py-4">
+                    <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và nhấn "Tạo biến thể từ thuộc tính".</p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-        <div class="mt-4 text-end">
-            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-            <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
-            <button class="btn btn-primary" type="submit">
-                <i class="fas fa-save me-1"></i> Lưu sản phẩm
-            </button>
-        </div>
+      </div>
+      
+      <div class="mt-4 text-end">
+        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
+        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-save me-1"></i> Lưu sản phẩm
+        </button>
+      </div>
     </form>
+  </div>
 </div>
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -571,10 +566,26 @@
     }
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('productTypeSelect');
+    const galleryWrapper = document.getElementById('gallery-upload-wrapper');
+    function toggleGalleryField() {
+      if (typeSelect.value === 'simple') {
+        galleryWrapper.style.display = 'block';
+      } else {
+        galleryWrapper.style.display = 'none';
+      }
+    }
+    typeSelect.addEventListener('change', toggleGalleryField);
+    toggleGalleryField(); // init on load
+  });
+</script>
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
 ClassicEditor.create(document.querySelector('#ckeditor-description'));
+ClassicEditor.create(document.querySelector('#ckeditor-short-description'));
 </script>
 @endpush
 
