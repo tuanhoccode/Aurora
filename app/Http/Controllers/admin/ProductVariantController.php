@@ -49,15 +49,25 @@ class ProductVariantController extends Controller
                     'sale_price' => $variantData['sale_price'] ?? null,
                 ]);
 
-                if (isset($variantData['img'])) {
-                    $path = $variantData['img']->store('products/variants', 'public');
-                    $variant->img = $path;
-                }
-
+                // Không lưu ảnh chính vào trường img nữa, chỉ lưu vào bảng product_images
                 $product->variants()->save($variant);
                 
                 if (isset($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
+                }
+
+                // Lưu nhiều ảnh vào bảng product_images
+                if (isset($variantData['images']) && is_array($variantData['images'])) {
+                    foreach ($variantData['images'] as $imageFile) {
+                        if ($imageFile && $imageFile->isValid()) {
+                            $path = $imageFile->store('products/variants', 'public');
+                            \App\Models\ProductImage::create([
+                                'product_id' => $product->id,
+                                'product_variant_id' => $variant->id,
+                                'url' => $path,
+                            ]);
+                        }
+                    }
                 }
             }
 

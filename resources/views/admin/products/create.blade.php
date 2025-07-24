@@ -52,7 +52,7 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
               <label class="form-label fw-medium">Mô tả ngắn</label>
-              <textarea class="form-control mb-3" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
+              <textarea class="form-control mb-3" id="ckeditor-short-description" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
               <!-- Mô tả chi tiết -->
               <label class="form-label fw-medium">Mô tả chi tiết</label>
               <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả..."></textarea>
@@ -69,11 +69,13 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <!-- <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-              <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
-              @error('gallery_images')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror -->
+              <div id="gallery-upload-wrapper" style="display: block;">
+                <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                @error('gallery_images')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
             </div>
           </div>
           <!-- Card: Kiểu sản phẩm -->
@@ -161,20 +163,6 @@
               @error('is_active')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-            </div>
-          </div>
-          <!-- Card: Tồn kho theo kho hàng -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <i class="fas fa-warehouse me-1"></i> Tồn kho theo kho hàng
-            </div>
-            <div class="card-body">
-              @foreach($stocks as $stock)
-                <div class="border rounded p-3 mb-2">
-                  <div><strong>Kho:</strong> {{ $stock->warehouse_name ?? 'N/A' }}</div>
-                  <div><strong>Số lượng:</strong> {{ $stock->stock }}</div>
-                </div>
-              @endforeach
             </div>
           </div>
         </div>
@@ -578,10 +566,26 @@
     }
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('productTypeSelect');
+    const galleryWrapper = document.getElementById('gallery-upload-wrapper');
+    function toggleGalleryField() {
+      if (typeSelect.value === 'simple') {
+        galleryWrapper.style.display = 'block';
+      } else {
+        galleryWrapper.style.display = 'none';
+      }
+    }
+    typeSelect.addEventListener('change', toggleGalleryField);
+    toggleGalleryField(); // init on load
+  });
+</script>
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
 ClassicEditor.create(document.querySelector('#ckeditor-description'));
+ClassicEditor.create(document.querySelector('#ckeditor-short-description'));
 </script>
 @endpush
 
