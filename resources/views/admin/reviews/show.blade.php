@@ -3,31 +3,23 @@
 @section('title', 'Chi tiết sản phẩm')
 
 @section('content') 
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">Chi tiết bình luận</h1>
+            <h1 class="h3 mb-0 fw-bold text-gray-800">Chi tiết bình luận</h1>
+            <p class="text-muted mt-1">Thông tin chi tiết bình luận/đánh giá sản phẩm</p>
         </div>
         <div>
-            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại
-            </a>
+            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-light rounded-pill shadow-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
         </div>
     </div>
-
     <div class="row">
-        <!-- Thông tin cơ bản -->
-         
-        <div class="col-lg-12">
-            <div class="card shadow-sm mb-12">
-                <div class="card-header py-3 d-flex align-items-center">
-                    <h5 class="card-title mb-0">Thông tin bình luận</h5>  
-                </div>
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm rounded mb-4">
+                <div class="card-header bg-light fw-bold">Thông tin bình luận</div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
+                    <table class="table table-borderless mb-0">
+                        <tr>
                                     <th width="150">Khách hàng:</th>
                                     <td><strong>{{ $comment->user->fullname }}</strong></td>
                                 </tr>
@@ -74,15 +66,9 @@
                                     <td>{{$comment->reason}}</td>
                                 </tr>
                             </table>
-                        </div>
-                        
-                    </div>
                 </div>
             </div>
-  
         </div>
-
-        
     </div>
 </div>
 

@@ -200,6 +200,6 @@ class Product extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductGallery::class);
+        return $this->hasMany(ProductImage::class);
     }
 }

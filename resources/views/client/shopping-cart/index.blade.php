@@ -977,8 +977,8 @@
                         <form id="cart-checkout-form" method="POST" action="{{ route('checkout') }}"
                             style="position:relative;">
                             @csrf
-                            <button type="button" id="bulk-delete-btn" class="btn btn-danger bulk-delete-floating-btn">
-                                <i class="fa fa-trash"></i> Xóa sản phẩm đã chọn
+                            <button type="button" id="bulk-delete-btn" class="btn btn-danger bulk-delete-floating-btn" disabled>
+                                <i class="fa fa-trash"></i> Xóa
                             </button>
                             <div id="cartTable">
                                 <div class="table-responsive scrollbar mx-n1 px-1">
@@ -1023,6 +1023,18 @@
                                                     $color = $getAttrValue($variant, ['color', 'màu']);
                                                     // Lấy sản phẩm liên quan thực tế nếu có, demo nếu không
                                                     $relatedProducts = $stock < 1 ? $item->relatedProducts ?? [] : [];
+                                                    // Lấy ảnh đúng cho biến thể hoặc sản phẩm
+                                                    if ($variant) {
+                                                        if (!empty($variant->img)) {
+                                                            $img = asset('storage/' . $variant->img);
+                                                        } elseif ($variant->images && $variant->images->count() > 0) {
+                                                            $img = asset('storage/' . $variant->images->first()->url);
+                                                        } else {
+                                                            $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                                        }
+                                                    } else {
+                                                        $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
+                                                    }
                                                 @endphp
                                                 <tr class="cart-table-row btn-reveal-trigger @if ($stock < 1) cart-item-out-of-stock @endif"
                                                     data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}"
@@ -1038,13 +1050,13 @@
                                                                 <a class="d-block border border-translucent rounded-2"
                                                                     href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
                                                                     <img class="cart-item-card__image"
-                                                                        src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                                                                        src="{{ $img }}"
                                                                         alt="{{ $product->name }}" />
                                                                 </a>
                                                             @else
                                                                 <span>
                                                                     <img class="cart-item-card__image"
-                                                                        src="{{ $product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                                                                        src="{{ $img }}"
                                                                         alt="{{ $product->name }}" />
                                                                 </span>
                                                             @endif
@@ -1107,10 +1119,9 @@
                                                             <input type="text" class="qty-input"
                                                                 value="{{ $stock < 1 ? 0 : $item->quantity }}"
                                                                 style="min-width:38px;max-width:54px;text-align:center;font-weight:600;"
-                                                                @if ($stock < 1) disabled @endif />
+                                                                @if ($stock < 1) disabled @endif readonly />
                                                             <button type="button" class="qty-btn-custom plus"
-                                                                @if ($stock < 1) disabled @endif
-                                                                @if ($item->quantity >= $stock)  @endif>+</button>
+                                                                @if ($stock < 1) disabled @endif>+</button>
                                                         </div>
                                                     </td>
                                                     <td class="total align-middle fw-bold text-body-highlight text-end"
@@ -1120,12 +1131,12 @@
                                                     <td class="align-middle white-space-nowrap text-end pe-0 ps-3">
                                                         <form action="{{ url('/shopping-cart/remove/' . $item->id) }}"
                                                             method="POST"
-                                                            onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');"
-                                                            style="display:inline;">
+                                                            class="single-delete-form"
+                                                            data-item-id="{{ $item->id }}">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-sm" style="color:#b0b3b8;"
-                                                                title="Xóa sản phẩm"
+                                                                title="Xóa"
                                                                 onmouseover="this.style.color='#ef5350'"
                                                                 onmouseout="this.style.color='#b0b3b8'">
                                                                 <span class="fa-regular fa-trash-can"></span>
@@ -1280,6 +1291,42 @@
             </div>
         </div>
     </section>
+    <!-- Modal xác nhận xóa hàng loạt -->
+    <div class="modal fade" id="confirmBulkDeleteModal" tabindex="-1" aria-labelledby="confirmBulkDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmBulkDeleteLabel">Xác nhận xóa sản phẩm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <span id="bulk-delete-modal-message">Bạn có chắc muốn xóa các sản phẩm đã chọn khỏi giỏ hàng?</span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal xác nhận xóa từng sản phẩm -->
+    <div class="modal fade" id="confirmSingleDeleteModal" tabindex="-1" aria-labelledby="confirmSingleDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmSingleDeleteLabel">Xác nhận xóa sản phẩm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <span id="single-delete-modal-message">Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirm-single-delete-btn">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -1403,7 +1450,8 @@
             function toggleQtyButtons(row, qty, stock) {
                 const plusBtn = row.querySelector('.qty-btn-custom.plus');
                 const minusBtn = row.querySelector('.qty-btn-custom.minus');
-                if (plusBtn) plusBtn.disabled = qty >= stock;
+                // Không disable plusBtn khi đạt tối đa, chỉ disable nếu hết hàng
+                if (plusBtn) plusBtn.disabled = stock < 1;
                 if (minusBtn) minusBtn.disabled = qty <= 1;
             }
 
@@ -1434,6 +1482,10 @@
                         return;
                     }
                     qty++;
+                    if (qty > stock) {
+                        qty = stock;
+                        if (window.toastr) toastr.error('Chỉ còn ' + stock + ' sản phẩm trong kho!');
+                    }
                 } else if (btn.classList.contains('minus')) {
                     if (qty <= 1) return;
                     qty--;
@@ -1455,56 +1507,6 @@
                     });
                 }, 500);
             });
-
-            cartTableBody.addEventListener('input', function(e) {
-                const input = e.target;
-                if (!input.classList.contains('qty-input')) return;
-                const row = input.closest('tr[data-item-id]');
-                const itemId = row.getAttribute('data-item-id');
-                if (!itemId || itemId === 'null' || itemId === 'undefined') {
-                    console.error('Thiếu hoặc sai itemId khi cập nhật số lượng giỏ hàng!', itemId, row);
-                    return;
-                }
-                let qty = parseInt(input.value, 10);
-                if (isNaN(qty) || qty < 1) qty = 1;
-                const stock = parseInt(row.getAttribute('data-stock'), 10) || 9999;
-                if (qty > stock) {
-                    qty = stock;
-                    if (window.toastr) toastr.error('Chỉ còn ' + stock + ' sản phẩm trong kho!');
-                }
-                input.value = qty;
-                updateLineTotal(row, qty);
-                updateCartSummary();
-                toggleQtyButtons(row, qty, stock);
-                if (debounceTimers[itemId]) clearTimeout(debounceTimers[itemId]);
-                debounceTimers[itemId] = setTimeout(() => {
-                    updateServerQty(itemId, qty, function(success, data) {
-                        if (!success) {
-                            if (data && data.message && data.message.includes('Chỉ còn')) {
-                                input.value = stock;
-                                updateLineTotal(row, stock);
-                                updateCartSummary();
-                                toggleQtyButtons(row, stock, stock);
-                            } else {
-                                console.error('Lỗi cập nhật giỏ hàng:', data && data
-                                    .message, 'itemId:', itemId, 'qty:', qty);
-                            }
-                        }
-                        if (debounceTimers[itemId]) clearTimeout(debounceTimers[itemId]);
-                    });
-                }, 500);
-            });
-
-            cartTableBody.addEventListener('blur', function(e) {
-                if (!e.target.classList.contains('qty-input')) return;
-                const input = e.target;
-                const row = input.closest('tr[data-item-id]');
-                const stock = parseInt(row.getAttribute('data-stock'), 10) || 9999;
-                const qty = parseInt(input.value, 10) || 1;
-                if (qty === stock && window.toastr) toastr.error('Chỉ còn ' + stock +
-                    ' sản phẩm trong kho!');
-                toggleQtyButtons(row, qty, stock);
-            }, true);
 
             cartTableBody.addEventListener('change', function(e) {
                 if (e.target.classList.contains('cart-item-checkbox')) {
@@ -1576,13 +1578,14 @@
             function updateBulkDeleteBtn() {
                 const checked = getAllItemCheckboxes().filter(cb => cb.checked);
                 if (checked.length > 0) {
-                    bulkDeleteBtn.style.display = 'inline-block';
+                    bulkDeleteBtn.disabled = false;
                     bulkDeleteBtn.innerHTML =
-                        `<i class="fa fa-trash"></i> Xóa ${checked.length > 1 ? checked.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'}`;
+                        `<i class="fa fa-trash"></i> Xóa`;
                 } else {
-                    bulkDeleteBtn.style.display = 'none';
-                    bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa sản phẩm đã chọn`;
+                    bulkDeleteBtn.disabled = true;
+                    bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa`;
                 }
+                bulkDeleteBtn.style.display = 'inline-block';
             }
 
             cartTableBody.addEventListener('change', function(e) {
@@ -1597,46 +1600,60 @@
 
             updateBulkDeleteBtn();
 
-            if (bulkDeleteBtn) {
-                bulkDeleteBtn.addEventListener('click', function() {
-                    const checked = getAllItemCheckboxes().filter(cb => cb.checked);
-                    if (checked.length === 0) return;
-                    const ids = checked.map(cb => cb.value);
-                    if (!confirm(
-                            `Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`
-                            )) return;
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
-                        'content');
+            // Thay thế sự kiện click nút bulkDeleteBtn:
+            bulkDeleteBtn.addEventListener('click', function() {
+                const checked = getAllItemCheckboxes().filter(cb => cb.checked);
+                if (checked.length === 0) return;
+                const ids = checked.map(cb => cb.value);
+                // Cập nhật nội dung modal
+                const msg = `Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`;
+                document.getElementById('bulk-delete-modal-message').textContent = msg;
+                // Lưu ids vào modal để dùng khi xác nhận
+                document.getElementById('confirm-bulk-delete-btn').dataset.ids = JSON.stringify(ids);
+                // Hiện modal (Bootstrap 5)
+                const modal = new bootstrap.Modal(document.getElementById('confirmBulkDeleteModal'));
+                modal.show();
+            });
+            // Xử lý xác nhận xóa trong modal
+            if (document.getElementById('confirm-bulk-delete-btn')) {
+                document.getElementById('confirm-bulk-delete-btn').addEventListener('click', function() {
+                    const ids = JSON.parse(this.dataset.ids || '[]');
+                    if (!ids.length) return;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     fetch('/shopping-cart/bulk-delete', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken
-                            },
-                            body: JSON.stringify({
-                                ids
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                ids.forEach(id => {
-                                    const row = document.querySelector(
-                                        `tr[data-item-id="${id}"]`);
-                                    if (row) row.remove();
-                                });
-                                updateCartSummary();
-                                updateBulkDeleteBtn();
-                                updateSelectAllState();
-                                if (window.toastr) toastr.success('Đã xóattet các sản phẩm đã chọn!');
-                            } else {
-                                if (window.toastr) toastr.error(data.message ||
-                                    'Có lỗi khi xóa hàng loạt!');
-                            }
-                        })
-                        .catch(() => {
-                            if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
-                        });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ ids })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            ids.forEach(id => {
+                                const row = document.querySelector(`tr[data-item-id="${id}"]`);
+                                if (row) row.remove();
+                            });
+                            updateCartSummary();
+                            updateBulkDeleteBtn();
+                            updateSelectAllState();
+                            if (window.toastr) toastr.success('Đã xóa các sản phẩm đã chọn!');
+                        } else {
+                            if (window.toastr) toastr.error(data.message || 'Có lỗi khi xóa hàng loạt!');
+                        }
+                        // Ẩn modal
+                        const modalEl = document.getElementById('confirmBulkDeleteModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    })
+                    .catch(() => {
+                        if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
+                        // Ẩn modal
+                        const modalEl = document.getElementById('confirmBulkDeleteModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    });
                 });
             }
 
@@ -1728,6 +1745,25 @@
                     }
                 });
             });
+        });
+
+        // JS: Modal confirm cho xóa từng sản phẩm
+        document.querySelectorAll('.single-delete-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                window._pendingSingleDeleteForm = this;
+                const modal = new bootstrap.Modal(document.getElementById('confirmSingleDeleteModal'));
+                modal.show();
+            });
+        });
+        document.getElementById('confirm-single-delete-btn').addEventListener('click', function() {
+            if (window._pendingSingleDeleteForm) {
+                window._pendingSingleDeleteForm.submit();
+                const modalEl = document.getElementById('confirmSingleDeleteModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                window._pendingSingleDeleteForm = null;
+            }
         });
     </script>
 @endsection
