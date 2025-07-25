@@ -112,4 +112,15 @@ class ProductVariant extends Model
             $q->select('id', 'code');
         }])->get()->pluck('order.code')->unique()->toArray();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($variant) {
+            // Xóa toàn bộ ảnh phụ của biến thể này
+            $variant->images()->delete();
+        });
+    }
 }
+

@@ -100,26 +100,33 @@ class CategoryController extends Controller
     }
 
     public function destroy(Category $category)
-{
-    try {
-        // 👇 Không cho xóa nếu có sản phẩm
-        if ($category->products()->count() > 0) {
+    {
+        try {
+            // ❌ Không cho xóa nếu có sản phẩm
+            if ($category->products()->count() > 0) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Không thể xóa vì danh mục đang chứa sản phẩm.');
+            }
+
+            // ❌ Không cho xóa nếu có danh mục con
+            if ($category->children()->count() > 0) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Không thể xóa vì danh mục này đang có danh mục con.');
+            }
+
+            $category->delete();
+
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('success', 'Đã chuyển danh mục vào thùng rác');
+        } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Không thể xóa vì danh mục đang chứa sản phẩm.');
+                ->with('error', 'Đã có lỗi xảy ra: ' . $e->getMessage());
         }
-
-        $category->delete();
-
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Đã chuyển danh mục vào thùng rác');
-    } catch (\Exception $e) {
-        return redirect()
-            ->back()
-            ->with('error', 'Đã có lỗi xảy ra: ' . $e->getMessage());
     }
-}
 
 
     public function trash(Request $request)
