@@ -123,8 +123,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{product}/variants/{variant}/edit', [ProductVariantController::class, 'edit'])->name('variants.edit');
         Route::put('/{product}/variants/{variant}', [ProductVariantController::class, 'update'])->name('variants.update');
         Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
-        Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
+        // Xóa ảnh gallery của biến thể
+        Route::delete('/{product}/variants/delete-gallery-image/{image}', [ProductVariantController::class, 'deleteGalleryImage'])->name('variants.delete-gallery-image');
+        
+        // Xử lý ảnh gallery cho biến thể
+        Route::post('/variants/upload-gallery', [ProductVariantController::class, 'uploadGallery'])->name('variants.upload-gallery');
+        Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteVariantImage'])->name('variants.delete-image');
         Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
+        
+        // Lấy danh sách ảnh của biến thể
+        Route::get('/{product}/variants/{variant}/images', [ProductVariantController::class, 'getImages'])->name('variants.images');
+        
+        // Xóa ảnh biến thể
+        Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
