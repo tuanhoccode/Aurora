@@ -87,6 +87,11 @@
          display: block;
          margin: 0 auto;
       }
+
+      .tp-banner-swiper {
+         width: 100%;
+         overflow: hidden;
+      }
    </style>
 
 </head>
@@ -318,68 +323,69 @@
             </div>
             <div class="row justify-content-center">
                @foreach ($products as $product)
-                  @php
-                  $isOutOfStock = $product->type === 'variant'
-                   ? ($product->variants->sum('stock') <= 0)
-                   : (($product->stock ?? 0) <= 0);
-              @endphp
-                  @if(!$isOutOfStock)
-                  <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-                   <div class="tp-product-item-2 mb-40">
-                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                      <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
-                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
-                      </a>
-                     </div>
-                     <div class="tp-product-content-2 pt-15">
-                      <div class="tp-product-tag-2">
-                        <a href="#">{{ $product->brand->name ?? 'Không có thương hiệu' }}</a>
-                      </div>
-                      <h3 class="tp-product-title-2">
-                        <a
-                          href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
-                      </h3>
-                        @php
-                           $validReviews = $product->reviews
-                               ->where('is_active', 1)
-                               ->where('review_id', null)
-                               ->where('rating', '>', 0);
+               @php
+               $isOutOfStock = $product->type === 'variant'
+                ? ($product->variants->sum('stock') <= 0)
+                : (($product->stock ?? 0) <= 0);
+            @endphp
+               @if(!$isOutOfStock)
+               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <div class="tp-product-item-2 mb-40">
+                  <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                   <a href="{{ route('client.product.show', ['slug' => $product->slug]) }}">
+                     <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
+                   </a>
+                  </div>
+                  <div class="tp-product-content-2 pt-15">
+                   <div class="tp-product-tag-2">
+                     <a href="#">{{ $product->brand->name ?? 'Không có thương hiệu' }}</a>
+                   </div>
+                   <h3 class="tp-product-title-2">
+                     <a
+                       href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
+                   </h3>
+                   @php
+                   $validReviews = $product->reviews
+                    ->where('is_active', 1)
+                    ->where('review_id', null)
+                    ->where('rating', '>', 0);
 
-                           $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
-                        @endphp
+                   $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
+                  @endphp
 
-                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                            @if ($validReviews->count() > 0)
-                                <div class="review-item pb-3">
-                                    <div class="text-warning mb-1">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            @if ($i <= $avg)
-                                                ★
-                                            @else
-                                                ☆
-                                            @endif
-                                        @endfor
-                                    </div>
-                                </div>
-                            @else
-                                <p>Chưa có đánh giá.</p>
-                            @endif
-                        </div>
-
-                        
-                      <div class="tp-product-price-wrapper-2">
-                        <span
-                          class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
-                        @if ($product->original_price && $product->original_price > $product->price)
-                      <span
-                        class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
-                     @endif
-                      </div>
-
+                   <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                     @if ($validReviews->count() > 0)
+                   <div class="review-item pb-3">
+                     <div class="text-warning mb-1">
+                     @for ($i = 1; $i <= 5; $i++)
+                      @if ($i <= $avg)
+                     ★
+                   @else
+                     ☆
+                   @endif
+                  @endfor
                      </div>
                    </div>
+                  @else
+                   <p>Chưa có đánh giá.</p>
+                  @endif
+                   </div>
+
+
+                   <div class="tp-product-price-wrapper-2">
+                     <span class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }}
+                       <span style="color: red;">đ</span></span>
+                     @if ($product->original_price && $product->original_price > $product->price)
+                   <span
+                     class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }}
+                     <span style="color: red;">đ</span></span>
+                  @endif
+                   </div>
+
                   </div>
-               @endif
+                </div>
+               </div>
+            @endif
             @endforeach
             </div>
          </div>
@@ -404,123 +410,36 @@
                </div>
             </div>
             <div class="row">
+               @foreach($featuredThisWeek as $prod)
                <div class="col-xl-3 col-lg-4 col-sm-6">
-                  <div class="tp-product-item-2 mb-40">
-                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                        <a href="product-details.html">
-                           <img src="{{asset('assets2/img/product/2/prodcut-9.jpg')}}" alt="">
+                 <div class="tp-product-item-2 mb-40">
+                   <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                     <a href="{{ route('client.product.show', $prod->slug) }}">
+                        <img src="{{ asset('storage/' . $prod->thumbnail) }}" alt="{{ $prod->name }}">
+                     </a>
+                   </div>
+                   <div class="tp-product-content-2 pt-15">
+                     <h3 class="tp-product-title-2">
+                        <a href="{{ route('client.product.show', $prod->slug) }}">
+                          {{ Str::limit($prod->name, 30) }}
                         </a>
+                     </h3>
+                     <div class="tp-product-price-wrapper-2">
+                        <span class="tp-product-price-2 new-price">
+                          {{ number_format($prod->sale_price ?: $prod->price, 0, ',', '.') }}₫
+                        </span>
+                        @if($prod->sale_price)
+                     <span class="tp-product-price-2 old-price">
+                       {{ number_format($prod->price, 0, ',', '.') }}₫
+                     </span>
+                   @endif
                      </div>
-                     <div class="tp-product-content-2 pt-15">
-                        <div class="tp-product-tag-2">
-                           <a href="#">Giày, </a>
-                           <a href="#">Đồ lót</a>
-                        </div>
-                        <h3 class="tp-product-title-2">
-                           <a href="product-details.html">Govicta Men's Shoes Leather</a>
-                        </h3>
-                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                        </div>
-                        <div class="tp-product-price-wrapper-2">
-                           <span class="tp-product-price-2 new-price">$76.00</span>
-                           <span class="tp-product-price-2 old-price">$120.00</span>
-                        </div>
-                     </div>
-                  </div>
+                   </div>
+                 </div>
                </div>
-               <div class="col-xl-3 col-lg-4 col-sm-6">
-                  <div class="tp-product-item-2 mb-40">
-                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                        <a href="product-details.html">
-                           <img src="{{asset('assets2/img/product/2/prodcut-10.jpg')}}" alt="">
-                        </a>
-                     </div>
-                     <div class="tp-product-content-2 pt-15">
-                        <div class="tp-product-tag-2">
-                           <a href="#">Backpack, </a>
-                           <a href="#">School Bag</a>
-                        </div>
-                        <h3 class="tp-product-title-2">
-                           <a href="product-details.html">Backpack, School, Travel</a>
-                        </h3>
-                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                        </div>
-                        <div class="tp-product-price-wrapper-2">
-                           <span class="tp-product-price-2 new-price">$82.00</span>
-                           <span class="tp-product-price-2 old-price">$99.00</span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="col-xl-3 col-lg-4 col-sm-6">
-                  <div class="tp-product-item-2 mb-40">
-                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                        <a href="product-details.html">
-                           <img src="{{asset('assets2/img/product/2/prodcut-11.jpg')}}" alt="">
-                        </a>
-                     </div>
-                     <div class="tp-product-content-2 pt-15">
-                        <div class="tp-product-tag-2">
-                           <a href="#">Giày, </a>
-                           <a href="#">Nam</a>
-                        </div>
-                        <h3 class="tp-product-title-2">
-                           <a href="product-details.html">Legendary Whitetails Men's.</a>
-                        </h3>
-                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                        </div>
-                        <div class="tp-product-price-wrapper-2">
-                           <span class="tp-product-price-2 new-price">$36.00</span>
-                           <span class="tp-product-price-2 old-price">$72.00</span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="col-xl-3 col-lg-4 col-sm-6">
-                  <div class="tp-product-item-2 mb-40">
-                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
-                        <a href="product-details.html">
-                           <img src="{{asset('assets2/img/product/2/prodcut-12.jpg')}}" alt="">
-                        </a>
-                     </div>
-                     <div class="tp-product-content-2 pt-15">
-                        <div class="tp-product-tag-2">
-                           <a href="#">Túi, </a>
-                           <a href="#">Wonder</a>
-                        </div>
-                        <h3 class="tp-product-title-2">
-                           <a href="product-details.html">Tommy Hilfiger Women's Jaden</a>
-                        </h3>
-                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                           <span><i class="fa-solid fa-star"></i></span>
-                        </div>
-                        <div class="tp-product-price-wrapper-2">
-                           <span class="tp-product-price-2 new-price">$44.00</span>
-                           <span class="tp-product-price-2 old-price">$66.00</span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+            @endforeach
             </div>
+
             <div class="row">
                <div class="col-xl-12">
                   <div class="tp-seller-more text-center mt-10">
@@ -558,34 +477,34 @@
                      <div class="tp-testimonial-slider-active swiper-container">
                         <div class="swiper-wrapper">
                            @forelse($topReviews as $review)
-                              <div class="tp-testimonial-item text-center mb-20 swiper-slide">
-                                 <div class="tp-testimonial-rating">
-                                    @for($i = 0; $i < 5; $i++)
+                                       <div class="tp-testimonial-item text-center mb-20 swiper-slide">
+                                         <div class="tp-testimonial-rating">
+                                           @for($i = 0; $i < 5; $i++)
                                        <span><i class="fa-solid fa-star text-warning"></i></span>
-                                    @endfor
-                                 </div>
-                                 <div class="tp-testimonial-content">
-                                    <p>"{{$review->review_text}}"</p>
-                                 </div>
-                                 <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                    <div class="tp-testimonial-user d-flex align-items-center">
-                                       <div class="tp-testimonial-avater mr-10">
-                                          <img src="{{ $review->user->avatar 
-                                          ? asset('storage/' . $review->user->avatar) 
-                                          : asset('assets2/img/users/avatars.png') }}" 
-                                           alt="avatar" width="50">
+                                     @endfor
+                                         </div>
+                                         <div class="tp-testimonial-content">
+                                           <p>"{{$review->review_text}}"</p>
+                                         </div>
+                                         <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                                           <div class="tp-testimonial-user d-flex align-items-center">
+                                             <div class="tp-testimonial-avater mr-10">
+                                                <img src="{{ $review->user->avatar
+                       ? asset('storage/' . $review->user->avatar)
+                       : asset('assets2/img/users/avatars.png') }}" alt="avatar" width="50">
+                                             </div>
+                                             <div class="tp-testimonial-user-info tp-testimonial-user-translate">
+                                                <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}
+                                                </h3>
+                                                <span class="tp-testimonial-designation">Khách hàng</span>
+                                             </div>
+                                           </div>
+                                         </div>
                                        </div>
-                                       <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                          <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}</h3>
-                                          <span class="tp-testimonial-designation">Khách hàng</span>
-                                       </div>
-                                    </div>
-                                 </div>
-                              </div>
-                           @empty
-                              <p class="text-center">Chưa có đánh giá 5 sao</p>
-                           @endforelse
-                           
+                     @empty
+                        <p class="text-center">Chưa có đánh giá 5 sao</p>
+                     @endforelse
+
                         </div>
                      </div>
                      <div class="tp-testimonial-arrow d-none d-md-block">

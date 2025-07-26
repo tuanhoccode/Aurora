@@ -24,6 +24,9 @@ class ProductController extends Controller
             'categories',
             'variants.attributeValues.attribute',
         ])->where('slug', $slug)->firstOrFail();
+        
+        //Tăng lượt xem lên 1
+        $product->increment('views');
 
         $productVariants = $product->variants;
 
