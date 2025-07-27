@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Review;
-
+use Carbon\Carbon;
 class HomeController extends Controller
 {
     public function shop()
@@ -43,6 +43,13 @@ class HomeController extends Controller
         ->where('rating', 5)
         ->latest()->take(8)->get();
         
-        return view('client.home', compact('products', 'categories', 'topReviews'));
+        // Lấy 4 sản phẩm có views cao nhất trong 7 ngày qua
+    $featuredThisWeek = Product::where('is_active', 1)
+        ->where('created_at', '>=', Carbon::now()->subWeek())
+        ->orderBy('views', 'desc')
+        ->take(4)
+        ->get();
+
+        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek'));
     }
 }
