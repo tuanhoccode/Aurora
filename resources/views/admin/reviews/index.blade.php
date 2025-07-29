@@ -31,7 +31,7 @@
                 <div class="col-12">
                     <div class="input-group">
                         <input type="text" class="form-control" name="search" value="{{ $search ?? '' }}"
-                            placeholder="Tìm kiếm bình luận...">
+                            placeholder="Tìm kiếm bình luận và ngày tháng năm">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i>
                         </button>

@@ -22,8 +22,8 @@ class ClientLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string|min:6'
+            'email' => 'required|email|max:255|regex:/^[^@]+@[^@]+\.[^@]+$/|exists:users,email',
+            'password' => 'required|string|min:6|max:255'
         ];
     }
     public function messages(): array
@@ -35,10 +35,13 @@ class ClientLoginRequest extends FormRequest
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
+                'email.max' => 'Email không được quá 255 ký tự',
+                'email.regex' => 'Email phải chứa ký tự @ và "."',
 
                 'password.required' => 'Vui lòng nhập mật khẩu',
                 'password.string' => 'Mật khẩu không hợp lệ',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+                'password.max' => 'Mật khẩu không được quá 255 ký tự',
                 
                 
             ];

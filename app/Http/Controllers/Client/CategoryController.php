@@ -28,7 +28,7 @@ class CategoryController extends Controller
         $query->where('name', 'like', '%' . $request->q . '%');
     }
 
-    // ✅ Lọc theo nhiều khoảng giá (checkbox)
+    //Lọc theo nhiều khoảng giá (checkbox)
     if ($request->filled('price_ranges')) {
         $query->where(function ($q) use ($request) {
             foreach ($request->price_ranges as $range) {
