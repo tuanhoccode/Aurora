@@ -16,6 +16,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
+
         $product = Product::with([
             'variants.images',
             'images',
@@ -23,6 +24,9 @@ class ProductController extends Controller
             'categories',
             'variants.attributeValues.attribute',
         ])->where('slug', $slug)->firstOrFail();
+        
+        //Tăng lượt xem lên 1
+        $product->increment('views');
 
         $productVariants = $product->variants;
 
@@ -40,12 +44,37 @@ class ProductController extends Controller
                 'regular_price' => $variant->regular_price,
                 'sale_price' => $variant->sale_price,
                 'img' => $variant->img,
-                'material' => $material, //  Gán chất liệu lấy từ attribute value
+                'material' => $material,
                 'images' => $variant->images->map(function ($image) {
                     return ['url' => $image->url];
                 }),
             ];
         });
+
+        // ✅ Lấy tất cả ảnh mặc định và loại trùng
+        $allImages = [];
+
+        // 1. Ảnh phụ của sản phẩm chính
+        foreach ($product->images as $image) {
+            $allImages[] = $image->url;
+        }
+
+        // 2. Ảnh chính của các biến thể (nếu có)
+        foreach ($productVariants as $variant) {
+            if ($variant->img) {
+                $allImages[] = $variant->img;
+            }
+
+            // 3. Ảnh phụ của biến thể
+            foreach ($variant->images as $image) {
+                $allImages[] = $image->url;
+            }
+        }
+
+        // 4. Loại trùng và chuẩn hóa về dạng ['url' => ...]
+        $defaultImages = collect(array_unique($allImages))
+            ->map(fn($url) => ['url' => $url])
+            ->values();
 
         $averageRating = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->avg('rating');
         $reviewCount = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->count();
@@ -64,6 +93,7 @@ class ProductController extends Controller
             'relatedProducts' => $relatedProducts,
             'variantsWithImages' => $variantsWithImages,
             'variants' => $productVariants,
+            'defaultImages' => $defaultImages,
         ]);
     }
 

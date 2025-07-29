@@ -47,9 +47,10 @@
         </div>
     </div>
 
+    <!-- Hàng đầu tiên: Thông tin sản phẩm và hình ảnh -->
     <div class="row">
         <!-- Thông tin cơ bản -->
-        <div class="col-lg-8">
+        <div class="col-12 col-lg-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex align-items-center">
                     <h5 class="card-title mb-0">Thông tin cơ bản</h5>
@@ -148,7 +149,7 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="fw-bold mb-3">Mô tả ngắn:</h6>
-                        <p class="text-muted">{{ $product->short_description ?: 'Không có mô tả ngắn' }}</p>
+                        <p class="text-muted">{!! $product->short_description ?: 'Không có mô tả ngắn' !!}</p>
                     </div>
                     <div>
                         <h6 class="fw-bold mb-3">Mô tả chi tiết:</h6>
@@ -169,14 +170,27 @@
                         <tr>
                             <th width="150">Giá:</th>
                             <td>
-                                @if($product->is_sale && $product->sale_price < $product->price)
-                                    <div class="d-flex flex-column">
-                                        <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
-                                        <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
-                                        <span class="badge bg-danger discount-badge">Giảm {{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
-                                    </div>
+                                @if($product->type === 'variant' && $product->variants->count() > 0)
+                                    @php $variant = $product->variants->first(); @endphp
+                                    @if($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                        <div class="d-flex flex-column">
+                                            <span class="price-original">Giá gốc: {{ number_format($variant->regular_price) }}đ</span>
+                                            <span class="price-sale">Giá khuyến mãi: {{ number_format($variant->sale_price) }}đ</span>
+                                            <span class="badge bg-danger discount-badge">Giảm {{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                        </div>
+                                    @else
+                                        <span class="fw-bold">{{ number_format($variant->regular_price) }}đ</span>
+                                    @endif
                                 @else
-                                    <span class="fw-bold">{{ number_format($product->price) }}đ</span>
+                                    @if($product->is_sale && $product->sale_price < $product->price)
+                                        <div class="d-flex flex-column">
+                                            <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
+                                            <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
+                                            <span class="badge bg-danger discount-badge">Giảm {{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                        </div>
+                                    @else
+                                        <span class="fw-bold">{{ number_format($product->price) }}đ</span>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -196,91 +210,11 @@
                 </div>
             </div>
 
-            @if($product->type === 'variant')
-            <!-- Biến thể sản phẩm - Khối riêng biệt -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header py-3 d-flex align-items-center justify-content-between">
-                            <h5 class="card-title mb-0">Danh sách biến thể</h5>
-                            <span class="badge bg-primary">{{ $product->variants->count() }} biến thể</span>
-                        </div>
-                        <div class="card-body">
-                            @if($product->variants->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered align-middle" id="variantTable">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Thuộc tính</th>
-                                            <th>SKU</th>
-                                            <th>Giá gốc</th>
-                                            <th>Giá khuyến mãi</th>
-                                            <th>% giảm</th>
-                                            <th>Tồn kho</th>
-                                            <th>Ảnh</th>
-                                            <th>Lượt mua</th>
-                                            <th style="width: 40px;"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($product->variants as $variant)
-                                        @php
-                                            $purchaseCount = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
-                                                $q->where('order_status_id', 4)->where('is_current', 1);
-                                            })->sum('quantity');
-                                            $hasDiscount = $variant->sale_price > 0 && $variant->sale_price < $variant->regular_price;
-                                            $discountPercent = $hasDiscount ? round((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) : 0;
-                                        @endphp
-                                        <tr>
-                                            <td>
-                                                @foreach($variant->attributeValues as $attributeValue)
-                                                    <span class="badge bg-secondary me-1">{{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}</span>
-                                                @endforeach
-                                            </td>
-                                            <td>{{ $variant->sku }}</td>
-                                            <td>{{ number_format($variant->regular_price) }}đ</td>
-                                            <td>{{ $variant->sale_price ? number_format($variant->sale_price) . 'đ' : '' }}</td>
-                                            <td>
-                                                @if($hasDiscount)
-                                                    <span class="badge bg-danger">-{{ $discountPercent }}%</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $variant->stock }}</td>
-                                            <td>
-                                                @if($variant->img)
-                                                    <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px; max-height: 60px; object-fit: cover;">
-                                                @else
-                                                    <span class="text-muted">No image</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">
-                                                    <i class="fas fa-shopping-cart me-1"></i>{{ number_format($purchaseCount) }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
-                                <p class="text-muted mt-2">Chưa có biến thể nào được tạo.</p>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
+          
         </div>
 
         <!-- Sidebar -->
-        <div class="col-lg-4">
+        <div class="col-12 col-lg-4">
             <!-- Hình ảnh -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3">
@@ -293,11 +227,11 @@
                          alt="{{ $product->name }}">
                     @endif
 
-                    @if($product->gallery)
+                    @if($product->type === 'simple' && $product->images && $product->images->count())
                     <div class="row g-2">
-                        @foreach(json_decode($product->gallery) as $image)
+                        @foreach($product->images as $image)
                         <div class="col-4">
-                            <img src="{{ asset('storage/' . $image) }}"
+                            <img src="{{ asset('storage/' . $image->url) }}"
                                  class="img-fluid rounded"
                                  alt="Gallery image">
                         </div>
@@ -305,7 +239,7 @@
                     </div>
                     @endif
 
-                    @if(!$product->thumbnail && !$product->gallery)
+                    @if(!$product->thumbnail && (!$product->images || $product->images->count() === 0))
                     <div class="text-center py-4">
                         <div class="text-muted mb-2">
                             <i class="bi bi-image fa-2x"></i>
@@ -344,7 +278,185 @@
             </div>
         </div>
     </div>
+
+    <!-- Hàng thứ hai: Danh sách biến thể full width -->
+    <div class="row mt-4">
+        <div class="col-12">
+            @if($product->type === 'variant')
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0">Danh sách biến thể</h5>
+                    <span class="badge bg-primary">{{ $product->variants->count() }} biến thể</span>
+                </div>
+                <div class="card-body">
+                    @if($product->variants->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle" id="variantTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Thuộc tính</th>
+                                    <th>SKU</th>
+                                    <th>Giá gốc</th>
+                                    <th>Giá khuyến mãi</th>
+                                    <th>% giảm</th>
+                                    <th>Tồn kho</th>
+                                    <th>Ảnh chính</th>
+                                    <th>Thư viện ảnh</th>
+                                    <th>Lượt mua</th>
+                                    <th style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($product->variants as $variant)
+                                @php
+                                    $purchaseCount = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
+                                        $q->where('order_status_id', 4)->where('is_current', 1);
+                                    })->sum('quantity');
+                                    $hasDiscount = $variant->sale_price > 0 && $variant->sale_price < $variant->regular_price;
+                                    $discountPercent = $hasDiscount ? round((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) : 0;
+                                @endphp
+                                <tr>
+                                    <td>
+                                        @foreach($variant->attributeValues as $attributeValue)
+                                            <span class="badge bg-secondary me-1">{{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}</span>
+                                        @endforeach
+                                    </td>
+                                    <td>{{ $variant->sku }}</td>
+                                    <td>{{ number_format($variant->regular_price) }}đ</td>
+                                    <td>{{ $variant->sale_price ? number_format($variant->sale_price) . 'đ' : '' }}</td>
+                                    <td>
+                                        @if($hasDiscount)
+                                            <span class="badge bg-danger">-{{ $discountPercent }}%</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $variant->stock }}</td>
+                                    <td>
+                                        @if($variant->img)
+                                            <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px; max-height: 60px; object-fit: cover;">
+                                        @else
+                                            <span class="text-muted">No image</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @forelse($variant->images as $image)
+                                                <div class="position-relative" style="width: 60px; height: 60px;">
+                                                    <img src="{{ asset('storage/' . $image->url) }}" 
+                                                         class="img-thumbnail h-100 w-100" 
+                                                         style="object-fit: cover;"
+                                                         alt="Variant image">
+                                                </div>
+                                            @empty
+                                                <span class="text-muted">Chưa có ảnh</span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-shopping-cart me-1"></i>{{ number_format($purchaseCount) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">Chưa có biến thể nào được tạo.</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
 </div>
+
+<!-- Modal hiển thị ảnh biến thể -->
+<div class="modal fade" id="variantImagesModal" tabindex="-1" aria-labelledby="variantImagesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="variantImagesModalLabel">Thư viện ảnh biến thể</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="variantImagesContainer" class="row g-3">
+                    <!-- Ảnh sẽ được tải ở đây bằng JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+// Hàm xóa ảnh biến thể
+function deleteVariantImage(productId, variantId, imageId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+        return false;
+    }
+
+    // Tìm phần tử ảnh tương ứng
+    const imageElement = document.querySelector(`img[src*="${imageId}"]`);
+    const imageContainer = imageElement ? imageElement.closest('.position-relative') : null;
+    
+    // Nếu không tìm thấy phần tử ảnh, thoát
+    (!imageContainer) return;
+    
+    // Thêm lớp loading
+    const deleteButton = imageContainer.querySelector('button');
+    const originalContent = deleteButton.innerHTML;
+    deleteButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+    deleteButton.disabled = true;
+    
+    // Gọi API xóa ảnh
+    fetch(`/admin/products/${productId}/variants/${variantId}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Xóa phần tử ảnh
+            imageContainer.remove();
+            // Hiển thị thông báo thành công
+            toastr.success(data.message || 'Đã xóa ảnh thành công');
+        } else {
+            throw new Error(data.message || 'Có lỗi xảy ra khi xóa ảnh');
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi khi xóa ảnh:', error);
+        toastr.error(error.message || 'Có lỗi xảy ra khi xóa ảnh');
+        // Khôi phục lại nút xóa
+        if (deleteButton) {
+            deleteButton.innerHTML = originalContent;
+            deleteButton.disabled = false;
+        }
+    });
+}
+
+// Khởi tạo tooltip
+$(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+</script>
+@endpush
 
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">

@@ -58,7 +58,25 @@ class OrderController extends Controller
             'statusHistory.status',
         ]);
 
-        return view('client.orders.tracking', compact('order'));
+        // Các trạng thái cần cho timeline
+        $timelineKeys = [
+            'Chờ xác nhận',
+            'Chờ lấy hàng',
+            'Đang giao',
+            'Giao hàng thành công',
+            'Đã hủy',
+        ];
+
+        // Lấy lịch sử trạng thái từ bảng order_order_status (theo thứ tự thời gian, chỉ lấy các trạng thái thuộc timeline)
+        $orderStatusSteps = OrderOrderStatus::where('order_id', $order->id)
+            ->whereHas('status', function($q) use ($timelineKeys) {
+                $q->whereIn('name', $timelineKeys);
+            })
+            ->with('status')
+            ->orderBy('created_at')
+            ->get();
+
+        return view('client.orders.tracking', compact('order', 'orderStatusSteps'));
     }
 
     public function cancel(Order $order)
@@ -101,6 +119,24 @@ class OrderController extends Controller
         }
 
         DB::transaction(function () use ($order, $cancelStatusId, $currentStatusRecord) {
+            // Hoàn trả kho cho từng sản phẩm trong đơn hàng
+            foreach ($order->items as $item) {
+                // Hoàn trả kho cho biến thể nếu có
+                if ($item->product_variant_id) {
+                    $variant = $item->variant;
+                    if ($variant) {
+                        $variant->stock += $item->quantity;
+                        $variant->save();
+                    }
+                }
+                // Hoàn trả kho cho sản phẩm gốc
+                $product = $item->product;
+                if ($product) {
+                    $product->stock += $item->quantity;
+                    $product->save();
+                }
+            }
+
             DB::table('order_order_status')
                 ->where('order_id', $currentStatusRecord->order_id)
                 ->where('order_status_id', $currentStatusRecord->order_status_id)

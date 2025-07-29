@@ -52,7 +52,7 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
               <label class="form-label fw-medium">Mô tả ngắn</label>
-              <textarea class="form-control mb-3" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
+              <textarea class="form-control mb-3" id="ckeditor-short-description" name="short_description" rows="2" placeholder="Nhập mô tả ngắn..."></textarea>
               <!-- Mô tả chi tiết -->
               <label class="form-label fw-medium">Mô tả chi tiết</label>
               <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả..."></textarea>
@@ -69,11 +69,13 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <!-- <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-              <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
-              @error('gallery_images')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror -->
+              <div id="gallery-upload-wrapper" style="display: block;">
+                <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                @error('gallery_images')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
             </div>
           </div>
           <!-- Card: Kiểu sản phẩm -->
@@ -161,20 +163,6 @@
               @error('is_active')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-            </div>
-          </div>
-          <!-- Card: Tồn kho theo kho hàng -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <i class="fas fa-warehouse me-1"></i> Tồn kho theo kho hàng
-            </div>
-            <div class="card-body">
-              @foreach($stocks as $stock)
-                <div class="border rounded p-3 mb-2">
-                  <div><strong>Kho:</strong> {{ $stock->warehouse_name ?? 'N/A' }}</div>
-                  <div><strong>Số lượng:</strong> {{ $stock->stock }}</div>
-                </div>
-              @endforeach
             </div>
           </div>
         </div>
@@ -486,7 +474,23 @@
         <td><input type="number" class="form-control variant-price" name="variants[${idx}][price]" min="0" placeholder="Giá gốc"></td>
         <td><input type="number" class="form-control variant-sale-price" name="variants[${idx}][sale_price]" min="0" placeholder="Giá khuyến mãi"></td>
         <td><input type="number" class="form-control" name="variants[${idx}][stock]" min="0" placeholder="Tồn kho"></td>
-        <td><input type="file" class="form-control" name="variants[${idx}][image]" accept="image/*"></td>
+        <td>
+          <!-- Ảnh đại diện -->
+          <input type="file" class="form-control mb-2" name="variants[${idx}][image]" accept="image/*">
+          
+          <!-- Gallery ảnh cho biến thể -->
+          <div class="variant-gallery-upload">
+            <label class="form-label small text-muted mb-1 d-block">Thư viện ảnh</label>
+            <input type="file" class="form-control variant-gallery-input" 
+                   data-variant-index="${idx}" 
+                   name="variants[${idx}][gallery][]" 
+                   multiple 
+                   accept="image/*">
+            <div class="variant-gallery-preview mt-2 d-flex flex-wrap gap-2" id="variant-gallery-${idx}">
+              <!-- Ảnh sẽ được hiển thị ở đây -->
+            </div>
+          </div>
+        </td>
         <td class="text-center"><button type="button" class="btn btn-sm btn-danger remove-variant-row"><i class="fas fa-trash"></i></button></td>
       </tr>`;
     });
@@ -557,6 +561,77 @@
     });
   });
 
+  // Xử lý khi chọn ảnh gallery cho biến thể (tạo mới)
+  $(document).on('change', '.variant-gallery-input', function() {
+    const variantIndex = $(this).data('variant-index');
+    const files = this.files;
+    const galleryContainer = $(`#variant-gallery-${variantIndex}`);
+    const token = $('meta[name="csrf-token"]').attr('content');
+    
+    // Tạo form data để gửi file
+    const formData = new FormData();
+    formData.append('_token', token);
+    formData.append('variant_index', variantIndex);
+    
+    // Thêm từng file vào form data
+    for (let i = 0; i < files.length; i++) {
+      formData.append('gallery[]', files[i]);
+    }
+    
+    // Hiển thị loading
+    const loadingHtml = `
+      <div class="position-relative d-inline-block me-2 mb-2">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Đang tải lên...</span>
+      </div>`;
+    
+    const $loading = $(loadingHtml);
+    galleryContainer.append($loading);
+    
+    // Gửi yêu cầu upload ảnh lên server
+    $.ajax({
+      url: '{{ route("admin.products.variants.upload-gallery") }}',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        // Xóa thông báo loading
+        $loading.remove();
+        
+        if (response.success && response.images && response.images.length > 0) {
+          // Xử lý từng ảnh đã upload thành công
+          response.images.forEach(function(image) {
+            const imgPreview = `
+              <div class="position-relative d-inline-block me-2 mb-2">
+                <img src="${image.url}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                        style="width: 20px; height: 20px; line-height: 18px;"
+                        onclick="$(this).closest('.position-relative').remove();">
+                  <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="variants[${variantIndex}][gallery_images][]" value="${image.id}">
+              </div>`;
+            
+            galleryContainer.append(imgPreview);
+          });
+          
+          toastr.success('Tải lên ảnh thành công');
+        } else {
+          toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        }
+      },
+      error: function(xhr) {
+        $loading.remove();
+        const response = xhr.responseJSON || {};
+        toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        console.error('Error uploading images:', xhr.responseText);
+      }
+    });
+  });
+
   // Ẩn/hiện card biến thể theo kiểu sản phẩm
   $('#productTypeSelect').on('change', function() {
     if ($(this).val() === 'variant') {
@@ -578,10 +653,26 @@
     }
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('productTypeSelect');
+    const galleryWrapper = document.getElementById('gallery-upload-wrapper');
+    function toggleGalleryField() {
+      if (typeSelect.value === 'simple') {
+        galleryWrapper.style.display = 'block';
+      } else {
+        galleryWrapper.style.display = 'none';
+      }
+    }
+    typeSelect.addEventListener('change', toggleGalleryField);
+    toggleGalleryField(); // init on load
+  });
+</script>
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
 ClassicEditor.create(document.querySelector('#ckeditor-description'));
+ClassicEditor.create(document.querySelector('#ckeditor-short-description'));
 </script>
 @endpush
 

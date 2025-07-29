@@ -38,6 +38,14 @@
       @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
       @endif
+      <div class="mt-4 mb-4 text-end">
+        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
+        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-save me-1"></i> Lưu sản phẩm
+        </button>
+      </div>
+
       <div class="row">
         <!-- Cột trái: Nội dung chính -->
         <div class="col-lg-8">
@@ -53,7 +61,7 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
               <label class="form-label fw-medium">Mô tả ngắn</label>
-              <textarea class="form-control mb-3" name="short_description" rows="2" placeholder="Nhập mô tả ngắn...">{{ old('short_description', $product->short_description) }}</textarea>
+              <textarea class="form-control mb-3" id="ckeditor-short-description" name="short_description" rows="2" placeholder="Nhập mô tả ngắn...">{{ old('short_description', $product->short_description) }}</textarea>
               <!-- Mô tả chi tiết -->
               <label class="form-label fw-medium">Mô tả chi tiết</label>
               <textarea class="form-control" id="ckeditor-description" name="description" rows="5" placeholder="Nhập mô tả...">{{ old('description', $product->description) }}</textarea>
@@ -75,6 +83,25 @@
               @error('thumbnail')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
+              <div id="gallery-upload-wrapper" @if($product->type === 'variant') style="display: none;" @endif>
+                <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                @error('gallery_images')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                @if(isset($product) && $product->images && $product->images->count())
+                  <div class="row mt-2" id="product-gallery-images">
+                    @foreach($product->images->where('product_variant_id', null) as $img)
+                      <div class="col-3 mb-2 position-relative">
+                        <img src="{{ asset('storage/' . $img->url) }}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1" onclick="deleteGalleryImage({{ $img->id }})" style="width: 20px; height: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-times" style="font-size: 10px;"></i>
+                        </button>
+                      </div>
+                    @endforeach
+                  </div>
+                @endif
+              </div>
               
              
               
@@ -167,20 +194,6 @@
               @enderror
             </div>
           </div>
-          <!-- Card: Tồn kho theo kho hàng -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <i class="fas fa-warehouse me-1"></i> Tồn kho theo kho hàng
-            </div>
-            <div class="card-body">
-              @foreach($stocks as $stock)
-                <div class="border rounded p-3 mb-2">
-                  <div><strong>Kho:</strong> {{ $stock->warehouse_name ?? 'N/A' }}</div>
-                  <div><strong>Số lượng:</strong> {{ $stock->stock }}</div>
-                </div>
-              @endforeach
-            </div>
-          </div>
         </div>
       </div>
       
@@ -233,6 +246,14 @@
                   </div>
                 </div>
                 <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+                  <div class="card-body">
+                    @if ($errors->has('variants_old'))
+                      <div class="alert alert-danger mt-2">
+                        @foreach ($errors->get('variants_old') as $msg)
+                          <div>{{ $msg }}</div>
+                        @endforeach
+                      </div>
+                    @endif
                   <div id="variantTableWrapper" @if($product->variants->count() == 0) style="display:none;" @endif>
                     <h5 class="mb-3">Danh sách biến thể</h5>
                     <div class="table-responsive">
@@ -269,10 +290,24 @@
                                 <input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ $variant->stock }}" min="0" placeholder="Tồn kho">
                               </td>
                               <td>
-                                <input type="file" class="form-control" name="variants_old[{{ $variant->id }}][image]" accept="image/*">
+                                <input type="file" class="form-control variant-image-upload" name="variants_old[{{ $variant->id }}][image]" accept="image/*" data-variant-id="{{ $variant->id }}">
                                 @if($variant->img)
-                                  <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
+                                  <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
+                                  </div>
                                 @endif
+                                <!-- Gallery images for this variant -->
+                                <div class="variant-gallery mt-2" id="variant-gallery-{{ $variant->id }}">
+                                  @foreach($variant->images as $image)
+                                    <div class="position-relative d-inline-block me-2 mb-2">
+                                      <img src="{{ asset('storage/' . $image->url) }}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                      <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 p-0" style="width: 20px; height: 20px; line-height: 1;" onclick="deleteVariantImage({{ $image->id }}); return false;">
+                                        <i class="fas fa-times"></i>
+                                      </button>
+                                    </div>
+                                  @endforeach
+                                </div>
+                                <input type="file" class="form-control mt-2" name="variant_gallery[{{ $variant->id }}][]" multiple accept="image/*" data-variant-id="{{ $variant->id }}">
                               </td>
                               <td>
                                 <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
@@ -295,13 +330,8 @@
         </div>
       </div>
       
-      <div class="mt-4 text-end">
-        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
-        <button class="btn btn-primary" type="submit">
-          <i class="fas fa-save me-1"></i> Lưu sản phẩm
-        </button>
-      </div>
+      <!-- Đảm bảo nút lưu luôn hiển thị ở cuối form -->
+     
     </form>
   </div>
 </div>
@@ -532,16 +562,36 @@
       }
     });
   });
-  // Ẩn/hiện card biến thể và giá & tồn kho theo kiểu sản phẩm
-  $('#productTypeSelect').on('change', function() {
-    if ($(this).val() === 'variant') {
+  // Ẩn/hiện card biến thể, thư viện ảnh và giá & tồn kho theo kiểu sản phẩm
+  function toggleProductTypeDependentElements() {
+    const isVariant = $('#productTypeSelect').val() === 'variant';
+    const productId = '{{ $product->id }}';
+    
+    if (isVariant) {
       $('#variantSection').show();
+      $('#gallery-upload-wrapper').hide();
       $('#priceStockCard').hide();
+      
+      // Ẩn tất cả ảnh gallery của sản phẩm chính
+      $('#product-gallery-images').find('.gallery-image-item').hide();
     } else {
       $('#variantSection').hide();
+      $('#gallery-upload-wrapper').show();
       $('#priceStockCard').show();
+      
+      // Chỉ hiển thị ảnh gallery của sản phẩm chính (không phải của biến thể)
+      $('#product-gallery-images').find('.gallery-image-item').show();
     }
+  }
+  
+  // Gọi lần đầu khi tải trang
+  toggleProductTypeDependentElements();
+  
+  // Bắt sự kiện thay đổi kiểu sản phẩm
+  $('#productTypeSelect').on('change', function() {
+    toggleProductTypeDependentElements();
   });
+  
   $(function() {
     if ($('#productTypeSelect').val() === 'variant') {
       $('#variantSection').show();
@@ -683,7 +733,129 @@ $('form').on('submit', function(e) {
 <!-- CKEditor cho mô tả chi tiết -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
-ClassicEditor.create(document.querySelector('#ckeditor-description'));
+  ClassicEditor.create(document.querySelector('#ckeditor-description'));
+  ClassicEditor.create(document.querySelector('#ckeditor-short-description'));
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('productTypeSelect');
+    const variantSection = document.getElementById('variantSection');
+    function toggleVariantSection() {
+      if (typeSelect.value === 'variant') {
+        variantSection.style.display = 'flex';
+      } else {
+        variantSection.style.display = 'none';
+      }
+    }
+    if (typeSelect && variantSection) {
+      typeSelect.addEventListener('change', toggleVariantSection);
+      toggleVariantSection();
+    }
+  });
+
+  // Xử lý xóa ảnh gallery của biến thể
+  function deleteVariantImage(imageId) {
+    if (confirm('Bạn có chắc chắn muốn xóa ảnh này không?')) {
+      const token = $('meta[name="csrf-token"]').attr('content');
+      const productId = '{{ $product->id }}';
+      
+      $.ajax({
+        url: '{{ route("admin.products.variants.delete-gallery-image", ["__PRODUCT__", "__IMAGE__"]) }}'
+          .replace('__PRODUCT__', productId)
+          .replace('__IMAGE__', imageId),
+        type: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': token
+        },
+        success: function(response) {
+          if (response.success) {
+            toastr.success(response.message || 'Đã xóa ảnh thành công');
+            // Tìm và xóa phần tử ảnh đã xóa
+            $(`[onclick*="${imageId}"]`).closest('.position-relative').remove();
+          } else {
+            toastr.error(response.message || 'Có lỗi xảy ra khi xóa ảnh');
+          }
+        },
+        error: function(xhr) {
+          const response = xhr.responseJSON || {};
+          toastr.error(response.message || 'Có lỗi xảy ra khi xóa ảnh');
+          console.error('Error deleting image:', xhr.responseText);
+        }
+      });
+    }
+  }
+
+  // Xử lý khi chọn ảnh gallery cho biến thể
+  $('input[name^="variant_gallery["]').on('change', function() {
+    const variantId = $(this).data('variant-id');
+    const files = this.files;
+    const galleryContainer = $(`#variant-gallery-${variantId}`);
+    const token = $('meta[name="csrf-token"]').attr('content');
+    const productId = '{{ $product->id }}';
+    
+    // Tạo form data để gửi file
+    const formData = new FormData();
+    formData.append('_token', token);
+    formData.append('variant_id', variantId);
+    
+    // Thêm từng file vào form data
+    for (let i = 0; i < files.length; i++) {
+      formData.append('gallery[]', files[i]);
+    }
+    
+    // Hiển thị loading
+    const loadingHtml = `
+      <div class="position-relative d-inline-block me-2 mb-2">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Đang tải lên...</span>
+      </div>`;
+    
+    const $loading = $(loadingHtml);
+    galleryContainer.append($loading);
+    
+    // Gửi yêu cầu upload ảnh lên server
+    $.ajax({
+      url: '{{ route("admin.products.variants.upload-gallery") }}',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        // Xóa thông báo loading
+        $loading.remove();
+        
+        if (response.success && response.images && response.images.length > 0) {
+          // Xử lý từng ảnh đã upload thành công
+          response.images.forEach(function(image) {
+            const imgPreview = `
+              <div class="position-relative d-inline-block me-2 mb-2">
+                <img src="${image.url}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                        style="width: 20px; height: 20px; line-height: 18px;"
+                        onclick="deleteVariantImage(${image.id})">
+                  <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="variant_images[${variantId}][]" value="${image.id}">
+              </div>`;
+            
+            galleryContainer.append(imgPreview);
+          });
+          
+          toastr.success('Tải lên ảnh thành công');
+        } else {
+          toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        }
+      },
+      error: function(xhr) {
+        $loading.remove();
+        const response = xhr.responseJSON || {};
+        toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        console.error('Error uploading images:', xhr.responseText);
+      }
+    });
+  });
 </script>
 @endpush
 

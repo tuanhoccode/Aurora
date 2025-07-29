@@ -423,6 +423,37 @@ class CheckoutController extends Controller
                 $orderItem->name = $item->product->name ?? 'Sản phẩm ' . $item->product_id;
                 $orderItem->price = $item->price_at_time ?? $item->product->price ?? 0;
                 $orderItem->quantity = $item->quantity ?? 0;
+
+                // Lưu thông tin biến thể nếu có
+                if ($item->productVariant) {
+                    $variantAttributes = [];
+                    // Lấy thông tin thuộc tính từ biến thể
+                    if ($item->productVariant->attributeValues) {
+                        foreach ($item->productVariant->attributeValues as $attrValue) {
+                            if ($attrValue->attribute) {
+                                $variantAttributes[$attrValue->attribute->name] = $attrValue->value;
+                            }
+                        }
+                    }
+                    // Lưu dưới dạng JSON vào cột attributes_variant
+                    if (!empty($variantAttributes)) {
+                        $orderItem->attributes_variant = json_encode($variantAttributes, JSON_UNESCAPED_UNICODE);
+                        \Log::info('Saving variant attributes:', [
+                            'attributes' => $variantAttributes,
+                            'json' => $orderItem->attributes_variant
+                        ]);
+                    } else {
+                        \Log::warning('No variant attributes to save for variant', [
+                            'variant_id' => $item->productVariant->id
+                        ]);
+                    }
+                    // Lưu tên và giá biến thể
+                    $orderItem->name_variant = $item->productVariant->name ?? null;
+                    $orderItem->price_variant = $item->price_at_time ?? $item->productVariant->price ?? $item->product->price;
+                } else {
+                    \Log::info('No variant found for item', ['item_id' => $item->id]);
+                }
+
                 $orderItem->save();
 
                 // 🔻 Trừ tồn kho biến thể (nếu có)

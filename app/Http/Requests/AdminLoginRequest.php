@@ -30,8 +30,6 @@ class AdminLoginRequest extends FormRequest
     {
         return
             [
-                
-
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
