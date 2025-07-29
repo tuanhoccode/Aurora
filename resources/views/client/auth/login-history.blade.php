@@ -55,10 +55,18 @@
                     </td>
                 </tr>
                 @endforeach
-            </tbody>
+            </tbody>         
         </table>
     </div>
     @endif
+    @foreach ($logs as $log)
+    <!-- Hiển thị thông tin log ở đây -->
+    @endforeach
+   
+    <!-- Thêm dòng này để hiển thị phân trang -->
+    <div class="d-flex justify-content-end mt-4">
+        {{ $logs->links() }}
+    </div>
 
     <div class="text-center mt-4">
         <button type="submit" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmLogoutAllModal">

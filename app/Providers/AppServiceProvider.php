@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Models\Cart;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
         // View Composer cho header
         View::composer('*', function ($view) {
             $view->with('headerCategories', Category::where('is_active', 1)->get());
@@ -60,5 +62,6 @@ class AppServiceProvider extends ServiceProvider
         View::composer('client.layouts.partials.header', function ($view) {
             $view->with('categories', \App\Models\Category::where('is_active', 1)->get());
         });
+        Paginator::useBootstrap();
     }
 }
