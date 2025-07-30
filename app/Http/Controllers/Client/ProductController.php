@@ -51,7 +51,7 @@ class ProductController extends Controller
             ];
         });
 
-        // ✅ Lấy tất cả ảnh mặc định và loại trùng
+        //Lấy tất cả ảnh mặc định và loại trùng
         $allImages = [];
 
         // 1. Ảnh phụ của sản phẩm chính
