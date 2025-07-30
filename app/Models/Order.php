@@ -19,7 +19,6 @@ class Order extends Model
         'shipping_type',
         'is_paid',
         'is_refunded',
-        'coupon_id',
         'is_refunded_canceled',
         'check_refunded_canceled',
         'img_refunded_money',
