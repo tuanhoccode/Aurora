@@ -88,6 +88,8 @@ class CheckoutController extends Controller
                 $discount = $this->calculateDiscount($coupon, $cartTotal);
             }
 
+            $availableCoupons = $this->getAvailableCoupons($cartTotal);
+
             Log::info('Checkout Summary', [
                 'cartTotal' => $cartTotal,
                 'shippingFee' => $shippingFee,
@@ -97,7 +99,7 @@ class CheckoutController extends Controller
                 'selected_items' => $selectedItems
             ]);
 
-            return view('client.checkout', compact('cart', 'cartItems', 'cartTotal', 'addresses', 'defaultAddress', 'shippingFee', 'user', 'coupon', 'discount', 'shippingType'));
+            return view('client.checkout', compact('cart', 'cartItems', 'cartTotal', 'addresses', 'defaultAddress', 'shippingFee', 'user', 'coupon', 'discount', 'shippingType', 'availableCoupons'));
         } catch (\Exception $e) {
             Log::error('Checkout error: ' . $e->getMessage());
             return redirect()->route('shopping-cart.index')->with('error', 'Đã xảy ra lỗi, vui lòng thử lại!');
@@ -167,6 +169,34 @@ class CheckoutController extends Controller
         }
     }
 
+    public function applyCouponById(Request $request)
+    {
+        try {
+            $request->validate([
+                'coupon_id' => 'required|exists:coupons,id',
+            ]);
+
+            $coupon = Coupon::findOrFail($request->coupon_id);
+
+            $cart = Cart::where('user_id', Auth::id())->first();
+            $cartTotal = $cart->items->sum(function ($item) {
+                return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
+            });
+
+            if (!$this->isValidCoupon($coupon, $cartTotal)) {
+                session()->forget('coupon');
+                return redirect()->route('checkout')->with('error', 'Mã giảm giá không áp dụng được cho đơn hàng này!');
+            }
+
+            session(['coupon' => $coupon]);
+            Log::info('Coupon applied by ID', ['code' => $coupon->code, 'discount_value' => $coupon->discount_value, 'discount_type' => $coupon->discount_type]);
+            return redirect()->route('checkout')->with('success', 'Áp dụng mã giảm giá thành công!');
+        } catch (\Exception $e) {
+            Log::error('Apply coupon by ID error: ' . $e->getMessage());
+            return redirect()->route('checkout')->with('error', 'Lỗi khi áp dụng mã giảm giá, vui lòng thử lại!');
+        }
+    }
+
     public function removeCoupon(Request $request)
     {
         try {
@@ -215,6 +245,22 @@ class CheckoutController extends Controller
             Log::info('Calculated Discount (fix_amount)', ['discount' => $discount]);
             return $discount;
         }
+    }
+
+    protected function getAvailableCoupons($cartTotal)
+    {
+        return Coupon::where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->whereNull('usage_limit')
+                      ->orWhereRaw('usage_count < usage_limit');
+            })
+            ->orderBy('discount_value', 'desc')
+            ->get()
+            ->filter(function ($coupon) use ($cartTotal) {
+                return $this->isValidCoupon($coupon, $cartTotal);
+            });
     }
 
     public function createAddress()
