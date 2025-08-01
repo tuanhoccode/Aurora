@@ -202,4 +202,58 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
+    }
+
+
+    public function getDefaultVariantIdAttribute()
+    {
+        // Lấy biến thể đầu tiên còn hàng, hoặc biến thể đầu tiên nếu không còn hàng
+        $variant = $this->variants()->orderBy('id')->where('stock', '>', 0)->first();
+        if (!$variant) {
+            $variant = $this->variants()->orderBy('id')->first();
+        }
+        return $variant ? $variant->id : null;
+    }
+
+    public function getSuccessfulOrderItems()
+    {
+        return $this->orderItems()->whereHas('order.currentStatus', function($q) {
+            $q->where('order_status_id', 4)->where('is_current', 1);
+        });
+    }
+
+    public function relatedProducts($limit = 10)
+    {
+        $categoryIds = $this->categories()->pluck('categories.id');
+        $related = Product::where('id', '!=', $this->id)
+            ->where('is_active', 1)
+            ->where('stock', '>', 0)
+            ->whereHas('categories', function($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            })
+            ->inRandomOrder()
+            ->take($limit)
+            ->get();
+
+        if ($related->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->whereNotIn('id', $related->pluck('id')->push($this->id))
+                ->inRandomOrder()
+                ->take($limit - $related->count())
+                ->get();
+            $related = $related->concat($more);
+        }
+        return $related;
+    }
+
+    //đổ sao trung bình ra home
+    public function getAverageRatingAttribute(){
+        return round($this->reviews()->where('is_active', 1)->avg('rating'),1) ?? 0;
+    }
 }
