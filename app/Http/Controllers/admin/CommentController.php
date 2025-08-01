@@ -223,10 +223,14 @@ class CommentController extends Controller
         $search = $req->input('search');
         $comments = Comment::with(['review.product', 'user', 'product'])
             ->when($search, function ($query, $search) {
-                $query->where('content', 'like', "%$search%")
-                    ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('fullname', 'like', "%$search%");
-                    });
+                $query->where(function ($q) use ($search){
+                    $q->where('content', 'like', "%$search%")
+                    ->orWhereHas('user', function ($q2) use ($search) {
+                        $q2->where('fullname', 'like', "%$search%");
+                    })
+                    ->orWhereRaw("DATE_FORMAT(created_at, '%d-%m-%Y') LIKE ? 
+                    OR DATE_FORMAT(created_at, '%d/%m/%Y') LIKE ? ", ["%$search%", "%$search%"]);
+                });
             })
             ->orderByDesc('created_at')
             ->paginate(10);

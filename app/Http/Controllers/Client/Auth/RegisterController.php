@@ -27,7 +27,7 @@ class RegisterController extends Controller
 
         ]);
         Auth::login($user); //login user sau khi đăng ký
-          Log::info('📧 Đang gửi email xác thực cho: ' . $user->email);
+          Log::info('Đang gửi email xác thực cho: ' . $user->email);
         event(new Registered($user)); //gửi email xác thực
         return redirect()->route('verification.notice')->with('success', 'Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản');
     }

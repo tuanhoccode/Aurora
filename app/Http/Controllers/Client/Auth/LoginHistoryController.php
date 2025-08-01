@@ -14,7 +14,7 @@ class LoginHistoryController extends Controller
 {
     public function loginHistory(){
         $logs = LoginLog::where('user_id', Auth::id())
-        ->orderByDesc('logged_in_at')->get();
+        ->orderByDesc('logged_in_at')->paginate(15);
         return view('client.auth.login-history', compact('logs'));
     }
     public function logoutAll(LogoutAllRequest $req){

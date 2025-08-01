@@ -23,8 +23,8 @@ class ClientRegisterRequest extends FormRequest
     {
         return [
             'fullname' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6'
+            'email' => 'required|email|max:255|regex:/^[^@]+@[^@]+\.[^@]+$/|unique:users,email',
+            'password' => 'required|string|min:6|max:255|regex:/[A-Z]/'
         ];
     }
     public function messages(): array
@@ -39,10 +39,14 @@ class ClientRegisterRequest extends FormRequest
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
                 'email.unique' => 'Email đã được sử dụng',
+                'email.max' => 'Email không được quá 255 ký tự',
+                'email.regex' => 'Email phải chứa ký tự @ và "."',
 
                 'password.required' => 'Vui lòng nhập mật khẩu',
                 'password.string' => 'Mật khẩu không hợp lệ',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+                'password.max' => 'Mật khẩu không được quá 255 ký tự',
+                'password.regex' => 'Mật khẩu phải có ít nhất 1 chữ cái in hoa',
 
 
             ];

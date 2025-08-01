@@ -198,13 +198,55 @@ class ProductController extends Controller
                         $variant->attributeValues()->sync($variantData['attributes']);
                     }
                     
-                    // Lưu ảnh cho biến thể nếu có
+                    // Lưu ảnh đại diện cho biến thể nếu có
                     if ($request->hasFile("variants.$idx.image")) {
                         $file = $request->file("variants.$idx.image");
                         $filename = 'variant-' . $variant->id . '-' . time() . '.' . $file->getClientOriginalExtension();
                         $path = $file->storeAs('products/variants', $filename, 'public');
                         $variant->img = $path;
                         $variant->save();
+                        
+                        // Tạo bản ghi ảnh đại diện trong bảng product_images
+                        \App\Models\ProductImage::create([
+                            'product_id' => $product->id,
+                            'product_variant_id' => $variant->id,
+                            'url' => $path,
+                            'is_default' => true
+                        ]);
+                    }
+                    
+                    // Xử lý ảnh gallery cho biến thể nếu có
+                    if (!empty($variantData['gallery_images'])) {
+                        foreach ($variantData['gallery_images'] as $imageId) {
+                            // Kiểm tra xem có phải là ảnh tạm không (bắt đầu bằng 'temp_')
+                            if (strpos($imageId, 'temp_') === 0) {
+                                // Đây là ảnh tạm, cần di chuyển từ thư mục temp
+                                $tempPath = 'products/variants/temp/' . $imageId;
+                                if (Storage::disk('public')->exists($tempPath)) {
+                                    // Tạo tên file mới
+                                    $newFilename = 'variant-' . $variant->id . '-' . time() . '_' . uniqid() . '.' . pathinfo($tempPath, PATHINFO_EXTENSION);
+                                    $newPath = 'products/variants/' . $newFilename;
+                                    
+                                    // Di chuyển file từ thư mục temp sang thư mục chính
+                                    Storage::disk('public')->move($tempPath, $newPath);
+                                    
+                                    // Tạo bản ghi ảnh
+                                    \App\Models\ProductImage::create([
+                                        'product_id' => $product->id,
+                                        'product_variant_id' => $variant->id,
+                                        'url' => $newPath,
+                                        'is_default' => false
+                                    ]);
+                                }
+                            } else {
+                                // Đây là ảnh đã có ID (trường hợp hiếm khi tạo mới)
+                                // Cập nhật lại product_variant_id cho ảnh
+                                $image = \App\Models\ProductImage::find($imageId);
+                                if ($image) {
+                                    $image->update(['product_variant_id' => $variant->id]);
+                                }
+                            }
+                        }
                     }
                 }
             }
