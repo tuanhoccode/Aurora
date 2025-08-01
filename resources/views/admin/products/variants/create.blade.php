@@ -55,9 +55,9 @@
                                                 <h6>{{ $attribute->name }}</h6>
                                                 @foreach($attribute->values as $value)
                                                     <div class="form-check">
-                                                        <input type="checkbox" 
-                                                               class="form-check-input attribute-checkbox" 
-                                                               value="{{ $value->id }}" 
+                                                        <input type="checkbox"
+                                                               class="form-check-input attribute-checkbox"
+                                                               value="{{ $value->id }}"
                                                                data-value="{{ $value->value }}"
                                                                data-attribute-id="{{ $attribute->id }}"
                                                                data-attribute-name="{{ strtolower($attribute->name) }}"
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Chỉ lấy size và màu sắc cho SKU
             let colorValue = null;
             let sizeValue = null;
-            
+
             // Tìm size và color trong combination
             combination.forEach(attr => {
                 if (attr.name === 'màu sắc' || attr.name === 'color') {
@@ -235,20 +235,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label class="form-label fw-medium">Mã SKU <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">SKU</span>
-                                <input type="text" 
-                                       class="form-control" 
-                                       name="variants[${variantCount}][sku]" 
-                                       id="sku-${variantCount}" 
-                                       value="${sku}"  
+                                <input type="text"
+                                       class="form-control"
+                                       name="variants[${variantCount}][sku]"
+                                       id="sku-${variantCount}"
+                                       value="${sku}"
                                        readonly>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-medium">Số lượng trong kho <span class="text-danger">*</span></label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   name="variants[${variantCount}][stock]" 
-                                   value="0" 
+                            <input type="number"
+                                   class="form-control"
+                                   name="variants[${variantCount}][stock]"
+                                   value="0"
                                    min="0">
                         </div>
                     </div>
@@ -257,10 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label class="form-label fw-medium">Giá gốc <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">VNĐ</span>
-                                <input type="number" 
-                                       class="form-control" 
-                                       name="variants[${variantCount}][regular_price]" 
-                                       min="0" 
+                                <input type="number"
+                                       class="form-control"
+                                       name="variants[${variantCount}][regular_price]"
+                                       min="0"
                                        step="0.01" >
                             </div>
                         </div>
@@ -268,24 +268,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label class="form-label fw-medium">Giá khuyến mãi</label>
                             <div class="input-group">
                                 <span class="input-group-text">VNĐ</span>
-                                <input type="number" 
-                                       class="form-control" 
-                                       name="variants[${variantCount}][sale_price]" 
-                                       min="0" 
+                                <input type="number"
+                                       class="form-control"
+                                       name="variants[${variantCount}][sale_price]"
+                                       min="0"
                                        step="0.01">
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-medium">Hình ảnh biến thể</label>
-                        <input type="file" 
-                               class="form-control" 
-                               name="variants[${variantCount}][img]" 
+                        <input type="file"
+                               class="form-control"
+                               name="variants[${variantCount}][img]"
                                accept="image/*">
                     </div>
                     ${combination.map(attr => `
-                        <input type="hidden" 
-                               name="variants[${variantCount}][attribute_values][]" 
+                        <input type="hidden"
+                               name="variants[${variantCount}][attribute_values][]"
                                value="${attr.id}">
                     `).join('')}
                     <button type="button" class="btn btn-danger btn-sm remove-variant">Xóa biến thể</button>
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form validation before submit
     document.getElementById('create-variants-form').addEventListener('submit', function(e) {
         const variantItems = document.querySelectorAll('.variant-item');
-        
+
         if (variantItems.length === 0) {
             e.preventDefault();
             alert('Vui lòng tạo ít nhất một biến thể trước khi lưu.');
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const regularPrice = item.querySelector('input[name*="[regular_price]"]').value;
                 const salePrice = item.querySelector('input[name*="[sale_price]"]').value;
                 const attributeValues = Array.from(item.querySelectorAll('input[name*="[attribute_values][]"]')).map(input => input.value);
-                
+
                 return {
                     sku,
                     stock,
