@@ -11,33 +11,32 @@
       margin-top: 5px;
    }
 </style>
-<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 fw-bold text-gray-800">Quản lý bình luận</h1>
-            <p class="text-muted mt-1">Quản lý các bình luận, đánh giá sản phẩm trong hệ thống</p>
-        </div>
+        <h1 class="h3 mb-0">Quản lý bình luận</h1>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
-                <i class="bi bi-trash"></i> Thùng rác
-                @if ($trashComments > 0)
-                    <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
+            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-trash"></i>
+                Thùng rác @if ($trashComments > 0)
+                    <span class="badge bg-danger">{{ $trashComments }}</span>
                 @endif
             </a>
+            
         </div>
     </div>
-    <div class="card shadow-sm rounded-3 border-0 mb-4">
-        <div class="card-body p-4">
-            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
+
+    {{-- Search --}}
+    <div class="card shadow-sm rounded-3 border-0 mb-3">
+        <div class="card-body">
+            <form action="{{ route('admin.reviews.searchComment') }}" method="GET" class="row g-3">
                 <div class="col-12">
                     <div class="input-group">
-                        <input type="text" class="form-control" name="search" value="{{ request('search') }}"
-                            placeholder="Tìm kiếm sản phẩm...">
+                        <input type="text" class="form-control" name="search" value="{{ $search ?? '' }}"
+                            placeholder="Tìm kiếm bình luận và ngày tháng năm">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i>
                         </button>
-                        @if (request('search'))
-                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
+                        @if (!empty($search))
+                            <a href="{{ route('admin.reviews.searchComment') }}" class="btn btn-light">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
@@ -46,11 +45,13 @@
             </form>
         </div>
     </div>
+
+    {{-- Products Table --}}
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                             <tr>
                             
                                 
@@ -152,9 +153,15 @@
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
+
                                             <!-- Nút mở modal trả lời -->
+                                            @php
+                                                $isReply =  ($comment->type === 'review' &&  !empty($comment->review_id)) ||
+                                                            ($comment->type === 'comment' &&  !empty($comment->parent_id))
+                                            @endphp
                                             <button type="button" 
-                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"                                                style="width: 40px; min-width: 30px; height: 32px;"
+                                                class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"
+                                                style="width: 40px; min-width: 30px; height: 32px;"
                                                 data-id="{{ $comment->id }}" 
                                                 data-type="{{ $comment->type }}"
                                                 data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
@@ -162,8 +169,12 @@
                                                 data-rating="{{ $comment->rating ?? 'Không có' }}"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#replyModal"
-                                                {{ (!$comment->is_active || $comment->has_replies) ? 'disabled' : '' }}
-                                                title="{{ !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : ($comment->has_replies ? 'Bình luận này đã được trả lời' : 'Trả lời bình luận') }}">
+                                                {{ (!$comment->is_active || $comment->has_replies || $isReply) ? 'disabled' : '' }}
+                                                title="{{ 
+                                                    !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : 
+                                                    ($comment->has_replies ? 'Bình luận này đã được trả lời' :
+                                                    ($isReply ? 'Không thể trả lời phản hồi' : 'Trả lời bình luận')) 
+                                                }}">
                                                 <i class="bi bi-reply-fill"></i>
                                                 @if($comment->has_replies)
                                                     <span class="d-flex align-items-center gap-1 text-success small">
@@ -185,11 +196,12 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </div>  
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="text-muted">
-                        Hiển thị {{ $mergedList->firstItem() }} đến {{ $mergedList->lastItem() }} trong tổng số {{ $mergedList->total() }} bình luận
+                        Hiển thị {{ $mergedList->firstItem() }} đến {{ $mergedList->lastItem() }} trong tổng số {{ $mergedList->total() }}
+                        sản phẩm
                     </div>
                     <div>
                         {{ $mergedList->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
@@ -388,7 +400,7 @@
                         replyForm.action = `/admin/reviews/${type}/reply/${id}`;
                         replyUser.textContent = user;
                         replyContent.textContent = content;
-                        replyRating.textContent = rating;
+                        replyRating.textContent = rating !== 'Không có' ? rating: 'N/A';
                     });
                 });
             });
@@ -427,7 +439,7 @@
         
         </div>
     <!--  trả lời bình luận -->
-        <!-- Modal trả lời -->
+
             <!-- Modal trả lời -->
                 <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
