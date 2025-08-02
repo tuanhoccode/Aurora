@@ -27,7 +27,6 @@ class BannerRequest extends FormRequest
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
-            'position' => 'required|in:slider,banner',
             'sort_order' => [
                 'nullable',
                 'integer',
@@ -65,8 +64,6 @@ class BannerRequest extends FormRequest
             'image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp',
             'image.max' => 'Kích thước ảnh không được vượt quá 2MB',
             'link.url' => 'Link không đúng định dạng URL',
-            'position.required' => 'Vị trí hiển thị là bắt buộc',
-            'position.in' => 'Vị trí hiển thị không hợp lệ',
             'sort_order.integer' => 'Thứ tự phải là số nguyên',
             'sort_order.min' => 'Thứ tự phải lớn hơn hoặc bằng 0',
             'sort_order.unique' => 'Thứ tự này đã được sử dụng bởi banner khác. Vui lòng chọn thứ tự khác.',

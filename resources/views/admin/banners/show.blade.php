@@ -56,14 +56,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Vị trí:</th>
-                                    <td>
-                                        <span class="badge bg-{{ $banner->position == 'slider' ? 'primary' : ($banner->position == 'banner' ? 'success' : 'warning') }}">
-                                            {{ ucfirst($banner->position) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <th>Thứ tự:</th>
                                     <td>{{ $banner->sort_order }}</td>
                                 </tr>

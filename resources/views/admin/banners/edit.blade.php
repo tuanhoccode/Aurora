@@ -47,8 +47,6 @@
                                    
                                 </div>
 
-
-
                                 <div class="mb-3">
                                     <label for="link" class="form-label">Link</label>
                                     <input type="url" class="form-control @error('link') is-invalid @enderror" 
@@ -59,36 +57,18 @@
                                     @enderror
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="position" class="form-label">Vị trí <span class="text-danger">*</span></label>
-                                            <select class="form-select @error('position') is-invalid @enderror" 
-                                                    id="position" name="position" required>
-                                                <option value="">Chọn vị trí</option>
-                                                <option value="slider" {{ old('position', $banner->position) == 'slider' ? 'selected' : '' }}>Slider</option>
-                                                <option value="banner" {{ old('position', $banner->position) == 'banner' ? 'selected' : '' }}>Banner</option>
-                                            </select>
-                                            @error('position')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="sort_order" class="form-label">Thứ tự</label>
-                                            <input type="number" class="form-control @error('sort_order') is-invalid @enderror" 
-                                                   id="sort_order" name="sort_order" value="{{ old('sort_order', $banner->sort_order) }}" min="0">
-                                            @error('sort_order')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                            <div class="form-text">
-                                                <small class="text-muted">
-                                                    Thứ tự hiện tại: {{ $banner->sort_order }} | 
-                                                    Thứ tự cao nhất: {{ \App\Models\Banner::max('sort_order') }}
-                                                </small>
-                                            </div>
-                                        </div>
+                                <div class="mb-3">
+                                    <label for="sort_order" class="form-label">Thứ tự</label>
+                                    <input type="number" class="form-control @error('sort_order') is-invalid @enderror" 
+                                           id="sort_order" name="sort_order" value="{{ old('sort_order', $banner->sort_order) }}" min="0">
+                                    @error('sort_order')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        <small class="text-muted">
+                                            Thứ tự hiện tại: {{ $banner->sort_order }} | 
+                                            Thứ tự cao nhất: {{ \App\Models\Banner::max('sort_order') }}
+                                        </small>
                                     </div>
                                 </div>
 

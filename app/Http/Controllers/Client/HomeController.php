@@ -1,6 +1,8 @@
 <?php
 
+
 namespace App\Http\Controllers\Client;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -9,6 +11,7 @@ use App\Models\Review;
 use App\Models\Banner;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+
 
 class HomeController extends Controller
 {
@@ -21,6 +24,12 @@ class HomeController extends Controller
                 'reviews' => function($q) {
                     $q->select('id', 'product_id', 'rating', 'is_active')
                       ->where('is_active', 1);
+                },
+                'variants' => function($q) {
+                    $q->select('id', 'product_id', 'regular_price', 'sale_price')
+                      ->where('stock', '>', 0)
+                      ->inRandomOrder()
+                      ->limit(1);
                 }
             ])
             ->where(function($q) {
@@ -38,6 +47,18 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
+        // Xử lý giá cho sản phẩm có biến thể
+        $products->each(function ($product) {
+            if ($product->type === 'variant' && $product->variants->isNotEmpty()) {
+                $randomVariant = $product->variants->first();
+                $product->display_price = $randomVariant->sale_price ?: $randomVariant->regular_price;
+                $product->display_original_price = $randomVariant->regular_price;
+            } else {
+                $product->display_price = $product->sale_price ?: $product->price;
+                $product->display_original_price = $product->price;
+            }
+        });
+
         // Tối ưu query categories - chỉ lấy 4 sản phẩm đầu tiên cho mỗi category
         $categories = Category::select('id', 'name', 'icon', 'is_active')
             ->with(['products' => function ($q) {
@@ -49,6 +70,17 @@ class HomeController extends Controller
             ->where('is_active', 1)
             ->get();
 
+
+        // Lấy danh mục cho banner area (thay thế banner)
+        $categoryBanners = Category::select('id', 'name', 'icon', 'is_active')
+            ->where('is_active', 1)
+            ->whereNotNull('icon')
+            ->where('icon', '!=', '')
+            ->orderBy('id')
+            ->take(6)
+            ->get();
+
+
         // Tối ưu query reviews
         $topReviews = Review::select('id', 'user_id', 'product_id', 'rating', 'review_text', 'created_at', 'is_active')
             ->with(['user:id,fullname,avatar'])
@@ -58,26 +90,43 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
+
         // Tối ưu query featured products
-        $featuredThisWeek = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'views', 'is_active')
+        $featuredThisWeek = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'views', 'is_active', 'type')
+            ->with(['variants' => function($q) {
+                $q->select('id', 'product_id', 'regular_price', 'sale_price')
+                  ->where('stock', '>', 0)
+                  ->inRandomOrder()
+                  ->limit(1);
+            }])
             ->where('is_active', 1)
             ->where('created_at', '>=', Carbon::now()->subWeek())
             ->orderBy('views', 'desc')
             ->take(4)
             ->get();
 
+        // Xử lý giá cho featured products có biến thể
+        $featuredThisWeek->each(function ($product) {
+            if ($product->type === 'variant' && $product->variants->isNotEmpty()) {
+                $randomVariant = $product->variants->first();
+                $product->display_price = $randomVariant->sale_price ?: $randomVariant->regular_price;
+                $product->display_original_price = $randomVariant->regular_price;
+            } else {
+                $product->display_price = $product->sale_price ?: $product->price;
+                $product->display_original_price = $product->price;
+            }
+        });
+
+
         // Lấy banner cho slider chính
         $mainSliders = Banner::where('is_active', 1)
-            ->where('position', 'slider')
             ->orderBy('sort_order')
             ->get();
 
-        // Lấy banner cho banner area
-        $bannerArea = Banner::where('is_active', 1)
-            ->where('position', 'banner')
-            ->orderBy('sort_order')
-            ->get();
 
-        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'mainSliders', 'bannerArea'));
+        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'mainSliders', 'categoryBanners'));
     }
 }
+
+
+
