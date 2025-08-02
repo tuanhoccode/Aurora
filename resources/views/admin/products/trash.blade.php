@@ -1,19 +1,21 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Thùng rác sản phẩm')
+@section('title', 'Thùng rác - Sản phẩm')
 
 @section('content')
 <div class="container-fluid py-4">
+    {{-- Header Section --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0 fw-bold text-gray-800">Thùng rác sản phẩm</h1>
-            <p class="text-muted mt-1">Danh sách sản phẩm đã xóa tạm thời</p>
+            <h1 class="h3 mb-0 text-gray-800">Thùng rác sản phẩm</h1>
+            <p class="mb-0 text-muted">Quản lý các sản phẩm đã xóa tạm thởi</p>
         </div>
         <div>
-            <a href="{{ route('admin.products.index') }}" class="btn btn-light rounded-pill shadow-sm"><i class="fas fa-arrow-left me-1"></i> Quay lại danh sách</a>
+            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
+            </a>
         </div>
     </div>
-    {{-- Alert, table, badge, modal xác nhận xóa, ... --}}
 
     {{-- Alert Messages --}}
     @if(session('success'))
