@@ -303,7 +303,8 @@ class ProductController extends Controller
             'variants.attributeValues.attribute',
             'variants.attributeValues' => function($query) {
                 $query->with('attribute');
-            }
+            },
+            'variants.images'
         ]);
 
         return view('admin.products.show', compact('product'));
@@ -447,10 +448,18 @@ class ProductController extends Controller
                             // Kiểm tra SKU trùng lặp
                             $sku = $variantData['sku'] ?? null;
                             if ($sku) {
-                                // Kiểm tra SKU đã tồn tại trong các biến thể của sản phẩm hiện tại, loại trừ chính biến thể đang cập nhật
-                                $existingVariant = $product->variants()->where('sku', $sku)->where('id', '!=', $variantData['id'] ?? 0)->first();
+                                // Kiểm tra SKU đã tồn tại trong các biến thể của sản phẩm hiện tại
+                                $existingVariant = $product->variants()->where('sku', $sku)->first();
                                 if ($existingVariant) {
                                     throw new \Exception("SKU '{$sku}' đã tồn tại trong các biến thể của sản phẩm này.");
+                                }
+                                
+                                // Kiểm tra SKU trùng trong variants_old (nếu có)
+                                if ($request->has('variants_old')) {
+                                    $variantsOldSkus = collect($request->input('variants_old'))->pluck('sku')->filter()->toArray();
+                                    if (in_array($sku, $variantsOldSkus)) {
+                                        throw new \Exception("SKU '{$sku}' đã tồn tại trong các biến thể hiện tại của sản phẩm.");
+                                    }
                                 }
                                 
                                 // Kiểm tra SKU trùng trong cùng request
@@ -541,6 +550,18 @@ class ProductController extends Controller
                             if ($salePrice !== null && $salePrice !== '' && $price !== null && $price !== '' && $salePrice >= $price) {
                                 $errors[] = "Giá khuyến mãi của biến thể (ID: $variantId) phải nhỏ hơn giá gốc.";
                             }
+                            
+                            // Kiểm tra SKU trùng lặp trong phạm vi sản phẩm hiện tại
+                            if ($sku) {
+                                $existingVariant = $product->variants()
+                                    ->where('sku', $sku)
+                                    ->where('id', '!=', $variantId)
+                                    ->first();
+                                if ($existingVariant) {
+                                    $errors[] = "SKU '{$sku}' đã tồn tại trong biến thể khác của sản phẩm này.";
+                                }
+                            }
+                            
                             if (!empty($errors)) {
                                 DB::rollBack();
                                 return redirect()->back()->withInput()->withErrors(['variants_old' => $errors]);
@@ -548,6 +569,7 @@ class ProductController extends Controller
 
                             // Cập nhật thông tin cơ bản
                             $updateData = [
+                                'sku' => $sku,
                                 'regular_price' => $price,
                                 'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
                                 'stock' => $stock,

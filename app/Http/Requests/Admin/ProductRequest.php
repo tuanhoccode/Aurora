@@ -43,8 +43,7 @@ class ProductRequest extends FormRequest
                     $rules["variants_old.$variantId.sku"] = [
                         'nullable',
                         'string',
-                        'max:50',
-                        Rule::unique('product_variants', 'sku')->ignore($variantId)
+                        'max:50'
                     ];
                 }
             }
@@ -59,6 +58,7 @@ class ProductRequest extends FormRequest
             $rules['variants.*.attributes'] = 'required|array|min:1';
             $rules['variants.*.attributes.*'] = 'exists:attribute_values,id';
             $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048';
+            $rules['variants.*.gallery_images.*'] = 'nullable|string';
         }
 
         return $rules;
@@ -83,6 +83,44 @@ class ProductRequest extends FormRequest
                             $validator->errors()->add("variants.{$index}.sale_price", 'Giá khuyến mãi phải nhỏ hơn giá gốc');
                         }
                     }
+                }
+            }
+            
+            // Kiểm tra SKU trùng lặp cho variants_old (khi cập nhật sản phẩm)
+            if ($this->isMethod('PUT') && $this->input('type') === 'variant' && $this->has('variants_old')) {
+                $allSkus = [];
+                $duplicateSkus = [];
+                
+                // Thu thập tất cả SKU từ variants_old
+                foreach ($this->input('variants_old') as $variantId => $variantData) {
+                    $sku = $variantData['sku'] ?? null;
+                    if ($sku) {
+                        if (in_array($sku, $allSkus)) {
+                            $duplicateSkus[] = $sku;
+                        } else {
+                            $allSkus[] = $sku;
+                        }
+                    }
+                }
+                
+                // Thu thập SKU từ variants mới (nếu có)
+                if ($this->has('variants') && !empty($this->input('variants'))) {
+                    foreach ($this->input('variants') as $variantData) {
+                        $sku = $variantData['sku'] ?? null;
+                        if ($sku) {
+                            if (in_array($sku, $allSkus)) {
+                                $duplicateSkus[] = $sku;
+                            } else {
+                                $allSkus[] = $sku;
+                            }
+                        }
+                    }
+                }
+                
+                // Báo lỗi nếu có SKU trùng lặp
+                if (!empty($duplicateSkus)) {
+                    $uniqueDuplicates = array_unique($duplicateSkus);
+                    $validator->errors()->add('variants_old', 'Có SKU trùng lặp trong danh sách biến thể: ' . implode(', ', $uniqueDuplicates));
                 }
             }
         });

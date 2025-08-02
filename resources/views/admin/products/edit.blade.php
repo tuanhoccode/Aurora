@@ -524,7 +524,23 @@
           <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
         </td>
                                     <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\"></td>
-        <td><input type=\"file\" class=\"form-control\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\"></td>
+        <td>
+          <!-- Ảnh đại diện -->
+          <input type=\"file\" class=\"form-control mb-2\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\">
+          
+          <!-- Gallery ảnh cho biến thể -->
+          <div class=\"variant-gallery-upload\">
+            <label class=\"form-label small text-muted mb-1 d-block\">Thư viện ảnh</label>
+            <input type=\"file\" class=\"form-control variant-gallery-input\" 
+                   data-variant-index=\"${currentRows+idx}\" 
+                   name=\"variants[${currentRows+idx}][gallery][]\" 
+                   multiple 
+                   accept=\"image/*\">
+            <div class=\"variant-gallery-preview mt-2 d-flex flex-wrap gap-2\" id=\"variant-gallery-${currentRows+idx}\">
+              <!-- Ảnh sẽ được hiển thị ở đây -->
+            </div>
+          </div>
+        </td>
         <td class=\"text-center\"><button type=\"button\" class=\"btn btn-sm btn-danger remove-variant-row\"><i class=\"fas fa-trash\"></i></button></td>
       </tr>`;
     });
@@ -807,7 +823,7 @@ $('form').on('submit', function(e) {
     }
   }
 
-  // Xử lý khi chọn ảnh gallery cho biến thể
+  // Xử lý khi chọn ảnh gallery cho biến thể cũ
   $('input[name^="variant_gallery["]').on('change', function() {
     const variantId = $(this).data('variant-id');
     const files = this.files;
@@ -879,6 +895,77 @@ $('form').on('submit', function(e) {
     });
   });
   
+  // Xử lý khi chọn ảnh gallery cho biến thể mới
+  $(document).on('change', '.variant-gallery-input', function() {
+    const variantIndex = $(this).data('variant-index');
+    const files = this.files;
+    const galleryContainer = $(`#variant-gallery-${variantIndex}`);
+    const token = $('meta[name="csrf-token"]').attr('content');
+    
+    // Tạo form data để gửi file
+    const formData = new FormData();
+    formData.append('_token', token);
+    formData.append('variant_index', variantIndex);
+    
+    // Thêm từng file vào form data
+    for (let i = 0; i < files.length; i++) {
+      formData.append('gallery[]', files[i]);
+    }
+    
+    // Hiển thị loading
+    const loadingHtml = `
+      <div class="position-relative d-inline-block me-2 mb-2">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Đang tải lên...</span>
+      </div>`;
+    
+    const $loading = $(loadingHtml);
+    galleryContainer.append($loading);
+    
+    // Gửi yêu cầu upload ảnh lên server
+    $.ajax({
+      url: '{{ route("admin.products.variants.upload-gallery") }}',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        // Xóa thông báo loading
+        $loading.remove();
+        
+        if (response.success && response.images && response.images.length > 0) {
+          // Xử lý từng ảnh đã upload thành công
+          response.images.forEach(function(image) {
+            const imgPreview = `
+              <div class="position-relative d-inline-block me-2 mb-2">
+                <img src="${image.url}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                        style="width: 20px; height: 20px; line-height: 18px;"
+                        onclick="$(this).closest('.position-relative').remove();">
+                  <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="variants[${variantIndex}][gallery_images][]" value="${image.temp_path || image.id}">
+              </div>`;
+            
+            galleryContainer.append(imgPreview);
+          });
+          
+          toastr.success('Tải lên ảnh thành công');
+        } else {
+          toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        }
+      },
+      error: function(xhr) {
+        $loading.remove();
+        const response = xhr.responseJSON || {};
+        toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        console.error('Error uploading images:', xhr.responseText);
+      }
+    });
+  });
+  
   // Khôi phục dữ liệu variants mới nếu có lỗi validation
   @if(old('variants') && count(old('variants')) > 0)
     const oldVariants = @json(old('variants'));
@@ -903,7 +990,23 @@ $('form').on('submit', function(e) {
             <td><input type="number" class="form-control variant-price" name="variants[${currentRows+index}][price]" value="${variant.price || ''}" min="0" placeholder="Giá gốc"></td>
             <td><input type="number" class="form-control variant-sale-price" name="variants[${currentRows+index}][sale_price]" value="${variant.sale_price || ''}" min="0" placeholder="Giá khuyến mãi"></td>
             <td><input type="number" class="form-control" name="variants[${currentRows+index}][stock]" value="${variant.stock || ''}" min="0" max="100" placeholder="Tồn kho (tối đa 100)"></td>
-            <td><input type="file" class="form-control" name="variants[${currentRows+index}][image]" accept="image/*"></td>
+            <td>
+              <!-- Ảnh đại diện -->
+              <input type="file" class="form-control mb-2" name="variants[${currentRows+index}][image]" accept="image/*">
+              
+              <!-- Gallery ảnh cho biến thể -->
+              <div class="variant-gallery-upload">
+                <label class="form-label small text-muted mb-1 d-block">Thư viện ảnh</label>
+                <input type="file" class="form-control variant-gallery-input" 
+                       data-variant-index="${currentRows+index}" 
+                       name="variants[${currentRows+index}][gallery][]" 
+                       multiple 
+                       accept="image/*">
+                <div class="variant-gallery-preview mt-2 d-flex flex-wrap gap-2" id="variant-gallery-${currentRows+index}">
+                  <!-- Ảnh sẽ được hiển thị ở đây -->
+                </div>
+              </div>
+            </td>
             <td class="text-center"><button type="button" class="btn btn-sm btn-danger remove-variant-row"><i class="fas fa-trash"></i></button></td>
           </tr>`;
         $('#variantTable tbody').append(variantRow);

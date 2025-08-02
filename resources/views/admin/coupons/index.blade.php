@@ -39,6 +39,7 @@
                                     <th>Giảm</th>
                                     <th>Hạn sử dụng</th>
                                     <th>Trạng thái</th>
+                                    <th>Đã sử dụng</th>
                                     <th class="text-end">Thao tác</th>
                                 </tr>
                             </thead>
@@ -47,7 +48,8 @@
                                     <tr>
                                         {{-- <td>{{ $coupon->id }}</td> --}}
                                         <td>{{ $coupon->code }}</td>
-                                        <td>{{ $coupon->discount_type === 'percent' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}</td>
+                                        <td>{{ $coupon->discount_type === 'percent' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}
+                                        </td>
                                         <td>{{ $coupon->end_date ? $coupon->end_date->format('d/m/Y') : 'Không có' }}</td>
                                         <td>
                                             @if($coupon->is_active)
@@ -56,11 +58,17 @@
                                                 <span class="badge bg-secondary">Tắt</span>
                                             @endif
                                         </td>
+                                        <td>
+                                            {{ $coupon->usage_count }}{{ $coupon->usage_limit ? ' / ' . $coupon->usage_limit : '' }}
+                                        </td>
+
                                         <td class="text-end">
-                                            <a href="{{ route('admin.coupons.edit', $coupon->id) }}" class="btn btn-warning btn-sm rounded-pill px-3">
+                                            <a href="{{ route('admin.coupons.edit', $coupon->id) }}"
+                                                class="btn btn-warning btn-sm rounded-pill px-3">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <form action="{{ route('admin.coupons.destroy', $coupon->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa mã này?')">
+                                            <form action="{{ route('admin.coupons.destroy', $coupon->id) }}" method="POST"
+                                                class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa mã này?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger btn-sm rounded-pill px-3">

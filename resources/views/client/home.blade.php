@@ -1,7 +1,9 @@
 <!doctype html>
 <html class="no-js" lang="zxx">
 
+
 <!-- Mirrored from html.storebuild.shop/shofy-prv/shofy/index-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 18 May 2025 07:19:23 GMT -->
+
 
 <head>
    <meta charset="utf-8">
@@ -10,11 +12,14 @@
    <meta name="description" content="">
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
+
    <!-- CSRF Token -->
    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+
    <!-- Place favicon.ico in the root directory -->
    <link rel="shortcut icon" type="image/x-icon" href="{{asset('assets2/img/logo/favicon.png')}}">
+
 
    <!-- CSS here -->
    <link rel="stylesheet" href="{{asset('assets2/css/bootstrap.css')}}">
@@ -27,12 +32,15 @@
    <link rel="stylesheet" href="{{asset('assets2/css/spacing.css')}}">
    <link rel="stylesheet" href="{{asset('assets2/css/main.css')}}">
 
+
    <!-- Toastr CSS -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
 
    <!-- jQuery + Toastr JS (trước </body>) -->
    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 
    <style>
       .product-badge-outofstock {
@@ -48,6 +56,7 @@
          z-index: 20;
          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
+
 
       .product-out-of-stock-overlay {
          position: absolute;
@@ -68,18 +77,22 @@
          gap: 8px;
       }
 
+
       .tp-product-thumb-2.out-of-stock img {
          filter: grayscale(1) brightness(0.85);
          opacity: 0.7;
       }
 
+
       .tp-product-thumb-2.out-of-stock {
          pointer-events: none;
       }
 
+
       .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
          display: none;
       }
+
 
       .tp-product-thumb-2 img {
          max-width: 100%;
@@ -88,10 +101,12 @@
          margin: 0 auto;
       }
 
+
       .tp-banner-swiper {
          width: 100%;
          overflow: hidden;
       }
+
 
       /* Banner styling để đảm bảo kích thước đồng đều */
       .tp-banner-item-2 {
@@ -99,6 +114,7 @@
          overflow: hidden;
          border-radius: 8px;
       }
+
 
       .tp-banner-item-2 .custom-banner-flex {
          height: 100%;
@@ -108,11 +124,13 @@
          padding: 30px;
       }
 
+
       .tp-banner-item-2 .custom-banner-text {
          flex: 1;
          max-width: 50%;
          z-index: 2;
       }
+
 
       .tp-banner-item-2 .custom-banner-img {
          flex: 1;
@@ -123,6 +141,7 @@
          justify-content: center;
          position: relative;
       }
+
 
       .tp-banner-item-2 .custom-banner-img img {
          width: 100%;
@@ -135,31 +154,65 @@
 
 
 
+
+
+
       /* Đảm bảo slider banner có cùng kích thước */
       .tp-banner-swiper .swiper-slide {
          height: 300px;
       }
+
 
                .tp-banner-swiper .tp-banner-item-2 {
             height: 100% !important;
             margin-bottom: 0 !important;
          }
 
+
+         /* Category specific styling */
+         .tp-category-area .tp-banner-item-2 {
+            transition: transform 0.3s ease;
+         }
+
+
+         .tp-category-area .tp-banner-item-2:hover {
+            transform: translateY(-5px);
+         }
+
+
+         .tp-category-area .tp-banner-title-2 a {
+            color: #333;
+            text-decoration: none;
+            transition: color 0.3s ease;
+         }
+
+
+         .tp-category-area .tp-banner-title-2 a:hover {
+            color: #ff6b6b;
+         }
+
+
          /* Grid layout banner styling */
-         .tp-banner-area .row .tp-banner-item-2 {
+         .tp-banner-area .row .tp-banner-item-2,
+         .tp-category-area .row .tp-banner-item-2 {
             height: 300px !important;
             margin-bottom: 20px !important;
          }
 
-         .tp-banner-area .row .tp-banner-item-2 .custom-banner-flex {
+
+         .tp-banner-area .row .tp-banner-item-2 .custom-banner-flex,
+         .tp-category-area .row .tp-banner-item-2 .custom-banner-flex {
             height: 100%;
          }
 
-         .tp-banner-area .row .tp-banner-item-2 .custom-banner-img img {
+
+         .tp-banner-area .row .tp-banner-item-2 .custom-banner-img img,
+         .tp-category-area .row .tp-banner-item-2 .custom-banner-img img {
             object-fit: cover;
             width: 100%;
             height: 100%;
          }
+
 
       /* Responsive cho mobile */
       @media (max-width: 768px) {
@@ -186,24 +239,32 @@
             height: 200px;
          }
          
-         .tp-banner-area .row .tp-banner-item-2 {
+         .tp-banner-area .row .tp-banner-item-2,
+         .tp-category-area .row .tp-banner-item-2 {
             height: 200px !important;
          }
       }
    </style>
 
+
 </head>
 
+
 <body>
+
+
 
 
    <!-- header area start -->
    @include('client.layouts.partials.header')
    <!-- header area end -->
 
+
    @yield('content')
 
+
    <main>
+
 
       <!-- slider area start -->
       <section class="tp-slider-area p-relative z-index-1">
@@ -291,54 +352,38 @@
       </section>
       <!-- slider area end -->
 
-      <!-- banner area start -->
+
+      <!-- category area start -->
       @php use Illuminate\Support\Str; @endphp
-      @if($bannerArea->count() > 0)
-      <section class="tp-banner-area mt-20">
+      @if($categoryBanners->count() > 0)
+      <section class="tp-category-area mt-20">
          <div class="container-fluid tp-gx-40">
-            @php $isSlider = $bannerArea->count() > 3; @endphp
+            @php $isSlider = $categoryBanners->count() > 3; @endphp
             @if($isSlider)
             <div class="swiper tp-banner-swiper">
                <div class="swiper-wrapper">
-                 @foreach($bannerArea as $banner)
+                 @foreach($categoryBanners as $category)
                 <div class="swiper-slide">
                   <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
                    <div class="custom-banner-text">
                      <h3 class="tp-banner-title-2">
-                       @if($banner->link)
-                         <a href="{{ $banner->link }}">{{ $banner->title }}</a>
-                       @else
-                         {{ $banner->title }}
-                       @endif
+                       <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
                      </h3>
                      <div class="tp-banner-btn-2">
-                       @if($banner->link)
-                         <a href="{{ $banner->link }}"
-                          class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                          <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                              stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                          </svg>
-                         </a>
-                       @else
-                         <a href="{{ route('shop') }}"
-                          class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                          <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                              stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                          </svg>
-                         </a>
-                       @endif
+                       <a href="{{ route('client.categories.show', $category->id) }}"
+                        class="tp-btn tp-btn-border tp-btn-border-sm">Xem danh mục
+                        <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                       </a>
                      </div>
                    </div>
                    <div class="custom-banner-img">
-                     <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}">
+                     <img src="{{ $category->icon ? asset('storage/' . $category->icon) : asset('assets2/img/product/product-1.jpg') }}" alt="{{ $category->name }}">
                    </div>
                   </div>
                 </div>
@@ -348,45 +393,28 @@
             </div>
          @else
             <div class="row tp-gx-20">
-               @foreach($bannerArea->take(3) as $banner)
+               @foreach($categoryBanners->take(3) as $category)
                <div class="col-xxl-4 col-lg-6">
                 <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
                   <div class="custom-banner-text">
                    <h3 class="tp-banner-title-2">
-                     @if($banner->link)
-                       <a href="{{ $banner->link }}">{{ $banner->title }}</a>
-                     @else
-                       {{ $banner->title }}
-                     @endif
+                     <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
                    </h3>
                    <div class="tp-banner-btn-2">
-                     @if($banner->link)
-                       <a href="{{ $banner->link }}"
-                         class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                         <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                         </svg>
-                       </a>
-                     @else
-                       <a href="{{ route('shop') }}"
-                         class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                         <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                         </svg>
-                       </a>
-                     @endif
+                     <a href="{{ route('client.categories.show', $category->id) }}"
+                       class="tp-btn tp-btn-border tp-btn-border-sm">Xem danh mục
+                       <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                       </svg>
+                     </a>
                    </div>
                   </div>
                   <div class="custom-banner-img">
-                   <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}">
+                   <img src="{{ $category->icon ? asset('storage/' . $category->icon) : asset('assets2/img/product/product-1.jpg') }}" alt="{{ $category->name }}">
                   </div>
                 </div>
                </div>
@@ -396,6 +424,7 @@
          </div>
       </section>
       @endif
+
 
       <!-- product area start -->
       <section class="tp-product-area pb-90">
@@ -418,7 +447,7 @@
                @foreach ($products as $product)
                @php
                $isOutOfStock = $product->type === 'variant'
-                ? ($product->variants->sum('stock') <= 0)
+                ? ($product->variants->isEmpty())
                 : (($product->stock ?? 0) <= 0);
             @endphp
                @if(!$isOutOfStock)
@@ -443,8 +472,10 @@
                     ->where('review_id', null)
                     ->where('rating', '>', 0);
 
+
                    $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
                   @endphp
+
 
                    <div class="tp-product-rating-icon tp-product-rating-icon-2">
                      @if ($validReviews->count() > 0)
@@ -465,15 +496,18 @@
                    </div>
 
 
+
+
                    <div class="tp-product-price-wrapper-2">
-                     <span class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }}
+                     <span class="tp-product-price-2 new-price">{{ number_format($product->display_price, 0, ',', '.') }}
                        <span style="color: red;">đ</span></span>
-                     @if ($product->original_price && $product->original_price > $product->price)
+                     @if ($product->display_original_price && $product->display_original_price > $product->display_price)
                    <span
-                     class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }}
+                     class="tp-product-price-2 old-price">{{ number_format($product->display_original_price, 0, ',', '.') }}
                      <span style="color: red;">đ</span></span>
                   @endif
                    </div>
+
 
                   </div>
                 </div>
@@ -485,6 +519,7 @@
       </section>
       <!-- product area end -->
 
+
       <!-- best seller area start -->
       <section class="tp-seller-area pb-140">
          <div class="container">
@@ -492,13 +527,13 @@
                <div class="col-xl-12">
                   <div class="tp-section-title-wrapper-2 mb-50">
                      <span class="tp-section-title-pre-2">
-                        Bán chạy tuần này
+                        {{-- Bán chạy tuần này --}}
                         <svg width="82" height="22" viewBox="0 0 82 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                            <path d="M81 14.5798C0.890564 -8.05914 -5.81154 0.0503902 5.00322 21" stroke="currentColor"
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />
                         </svg>
                      </span>
-                     <h3 class="tp-section-title-2">Nổi bật tuần này</h3>
+                     <h3 class="tp-section-title-2">Sản phẩm nổi bật</h3>
                   </div>
                </div>
             </div>
@@ -519,11 +554,11 @@
                      </h3>
                      <div class="tp-product-price-wrapper-2">
                         <span class="tp-product-price-2 new-price">
-                          {{ number_format($prod->sale_price ?: $prod->price, 0, ',', '.') }}₫
+                          {{ number_format($prod->display_price, 0, ',', '.') }}₫
                         </span>
-                        @if($prod->sale_price)
+                        @if($prod->display_original_price && $prod->display_original_price > $prod->display_price)
                      <span class="tp-product-price-2 old-price">
-                       {{ number_format($prod->price, 0, ',', '.') }}₫
+                       {{ number_format($prod->display_original_price, 0, ',', '.') }}₫
                      </span>
                    @endif
                      </div>
@@ -532,6 +567,7 @@
                </div>
             @endforeach
             </div>
+
 
             <div class="row">
                <div class="col-xl-12">
@@ -543,6 +579,7 @@
          </div>
       </section>
       <!-- best seller area end -->
+
 
       <!-- testimonial area start -->
       <section class="tp-testimonial-area grey-bg-7 pt-130 pb-135">
@@ -598,6 +635,7 @@
                         <p class="text-center">Chưa có đánh giá 5 sao</p>
                      @endforelse
 
+
                         </div>
                      </div>
                      <div class="tp-testimonial-arrow d-none d-md-block">
@@ -629,6 +667,7 @@
          </div>
       </section>
       <!-- testimonial area end -->
+
 
       <!-- feature area start -->
       <section class="tp-feature-area tp-feature-border-2 pb-80">
@@ -749,6 +788,8 @@
    </main>
 
 
+
+
    <!-- footer area start -->
    @include('client.layouts.partials.footer')
    <!-- footer area end -->
@@ -762,6 +803,7 @@
       </script>
    @endif
 
+
    @if (session('error'))
       <script>
         toastr.options = {
@@ -771,6 +813,8 @@
         toastr.error(@json(session('error')));
       </script>
    @endif
+
+
 
 
    <!-- JS here -->
@@ -792,4 +836,8 @@
    <script src="{{asset('assets2/js/main.js')}}"></script>
 </body>
 
+
 </html>
+
+
+

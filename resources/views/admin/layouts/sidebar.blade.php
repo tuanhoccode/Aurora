@@ -43,8 +43,7 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}"
-                href="{{ route('admin.attributes.index') }}">
+            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
                 <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
             </a>
         </li>
