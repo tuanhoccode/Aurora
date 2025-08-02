@@ -42,7 +42,7 @@ class Product extends Model
 
     public function galleries()
     {
-        return $this->hasMany(ProductGallery::class);
+        return $this->hasMany(ProductImage::class);
     }
 
     protected static function boot()
@@ -128,14 +128,7 @@ class Product extends Model
 
     public function orderItems()
     {
-        return $this->hasManyThrough(
-            \App\Models\OrderItem::class,
-            \App\Models\ProductVariant::class,
-            'product_id', // Foreign key on ProductVariant
-            'product_variant_id', // Foreign key on OrderItem
-            'id', // Local key on Product
-            'id'  // Local key on ProductVariant
-        );
+        return $this->hasMany(\App\Models\OrderItem::class, 'product_id');
     }
 
     public function getIsOnSaleAttribute()
@@ -185,8 +178,13 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->thumbnail) {
-            return asset('assets2/img/product/2/default.png');
+            return asset('assets2/img/product/2/prodcut-1.jpg');
         }
+        // Kiểm tra xem file có tồn tại không
+        if (Storage::disk('public')->exists($this->thumbnail)) {
+            return asset('storage/' . $this->thumbnail);
+        }
+        // Nếu không tồn tại, thử với đường dẫn khác
         if (strpos($this->thumbnail, 'products/') === 0) {
             return asset('storage/' . $this->thumbnail);
         }
@@ -221,7 +219,7 @@ class Product extends Model
 
     public function getSuccessfulOrderItems()
     {
-        return $this->orderItems()->whereHas('order.currentStatus', function($q) {
+        return $this->orderItems()->whereHas('order.currentOrderStatus', function($q) {
             $q->where('order_status_id', 4)->where('is_current', 1);
         });
     }
@@ -250,6 +248,105 @@ class Product extends Model
             $related = $related->concat($more);
         }
         return $related;
+    }
+
+    /**
+     * Lấy sản phẩm thay thế cho sản phẩm ngừng kinh doanh
+     * Ưu tiên sản phẩm cùng thương hiệu, cùng danh mục, có giá tương đương
+     */
+    public function getReplacementProducts($limit = 10)
+    {
+        $categoryIds = $this->categories()->pluck('categories.id');
+        $brandId = $this->brand_id;
+        $priceRange = [
+            'min' => $this->price * 0.7, // 70% giá gốc
+            'max' => $this->price * 1.3  // 130% giá gốc
+        ];
+
+        // Ưu tiên 1: Cùng thương hiệu, cùng danh mục, giá tương đương
+        $replacement = Product::where('id', '!=', $this->id)
+            ->where('is_active', 1)
+            ->where('stock', '>', 0)
+            ->where('brand_id', $brandId)
+            ->whereHas('categories', function($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            })
+            ->whereBetween('price', [$priceRange['min'], $priceRange['max']])
+            ->orderBy('price', 'asc')
+            ->take($limit)
+            ->get();
+
+        // Nếu chưa đủ, ưu tiên 2: Cùng thương hiệu, giá tương đương
+        if ($replacement->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->where('brand_id', $brandId)
+                ->whereBetween('price', [$priceRange['min'], $priceRange['max']])
+                ->whereNotIn('id', $replacement->pluck('id')->push($this->id))
+                ->orderBy('price', 'asc')
+                ->take($limit - $replacement->count())
+                ->get();
+            $replacement = $replacement->concat($more);
+        }
+
+        // Nếu chưa đủ, ưu tiên 3: Cùng danh mục, giá tương đương
+        if ($replacement->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->whereHas('categories', function($q) use ($categoryIds) {
+                    $q->whereIn('categories.id', $categoryIds);
+                })
+                ->whereBetween('price', [$priceRange['min'], $priceRange['max']])
+                ->whereNotIn('id', $replacement->pluck('id')->push($this->id))
+                ->orderBy('price', 'asc')
+                ->take($limit - $replacement->count())
+                ->get();
+            $replacement = $replacement->concat($more);
+        }
+
+        // Nếu chưa đủ, ưu tiên 4: Cùng thương hiệu
+        if ($replacement->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->where('brand_id', $brandId)
+                ->whereNotIn('id', $replacement->pluck('id')->push($this->id))
+                ->orderBy('price', 'asc')
+                ->take($limit - $replacement->count())
+                ->get();
+            $replacement = $replacement->concat($more);
+        }
+
+        // Nếu chưa đủ, ưu tiên 5: Cùng danh mục
+        if ($replacement->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->whereHas('categories', function($q) use ($categoryIds) {
+                    $q->whereIn('categories.id', $categoryIds);
+                })
+                ->whereNotIn('id', $replacement->pluck('id')->push($this->id))
+                ->orderBy('price', 'asc')
+                ->take($limit - $replacement->count())
+                ->get();
+            $replacement = $replacement->concat($more);
+        }
+
+        // Cuối cùng, lấy bất kỳ sản phẩm nào còn hoạt động và có hàng
+        if ($replacement->count() < $limit) {
+            $more = Product::where('id', '!=', $this->id)
+                ->where('is_active', 1)
+                ->where('stock', '>', 0)
+                ->whereNotIn('id', $replacement->pluck('id')->push($this->id))
+                ->inRandomOrder()
+                ->take($limit - $replacement->count())
+                ->get();
+            $replacement = $replacement->concat($more);
+        }
+
+        return $replacement;
     }
 
     //đổ sao trung bình ra home
