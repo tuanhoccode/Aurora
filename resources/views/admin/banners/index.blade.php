@@ -11,9 +11,23 @@
                 <i class="bi bi-plus-lg"></i>
                 Thêm Banner
             </a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Quản lý Banner</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.banners.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Thêm Banner
+            </a>
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
@@ -110,6 +124,11 @@
                     {{ $banners->links() }}
                 </div>
             @endif
+            @if($banners->hasPages())
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $banners->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -123,9 +142,15 @@
                     <i class="bi bi-exclamation-triangle text-danger me-2"></i>
                     Xác nhận xóa
                 </h5>
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                    Xác nhận xóa
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa banner "<strong id="banner-title"></strong>"?</p>
+                <p class="text-muted small mb-0">Hành động này không thể hoàn tác.</p>
                 <p>Bạn có chắc chắn muốn xóa banner "<strong id="banner-title"></strong>"?</p>
                 <p class="text-muted small mb-0">Hành động này không thể hoàn tác.</p>
             </div>
@@ -133,9 +158,15 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-lg"></i> Hủy
                 </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Hủy
+                </button>
                 <form id="delete-form" method="POST" style="display: inline;">
                     @csrf
                     @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Xóa
                     </button>
