@@ -92,6 +92,104 @@
          width: 100%;
          overflow: hidden;
       }
+
+      /* Banner styling để đảm bảo kích thước đồng đều */
+      .tp-banner-item-2 {
+         height: 300px !important;
+         overflow: hidden;
+         border-radius: 8px;
+      }
+
+      .tp-banner-item-2 .custom-banner-flex {
+         height: 100%;
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 30px;
+      }
+
+      .tp-banner-item-2 .custom-banner-text {
+         flex: 1;
+         max-width: 50%;
+         z-index: 2;
+      }
+
+      .tp-banner-item-2 .custom-banner-img {
+         flex: 1;
+         max-width: 50%;
+         height: 100%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         position: relative;
+      }
+
+      .tp-banner-item-2 .custom-banner-img img {
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+         border-radius: 8px;
+         max-width: 100%;
+         max-height: 100%;
+      }
+
+
+
+      /* Đảm bảo slider banner có cùng kích thước */
+      .tp-banner-swiper .swiper-slide {
+         height: 300px;
+      }
+
+               .tp-banner-swiper .tp-banner-item-2 {
+            height: 100% !important;
+            margin-bottom: 0 !important;
+         }
+
+         /* Grid layout banner styling */
+         .tp-banner-area .row .tp-banner-item-2 {
+            height: 300px !important;
+            margin-bottom: 20px !important;
+         }
+
+         .tp-banner-area .row .tp-banner-item-2 .custom-banner-flex {
+            height: 100%;
+         }
+
+         .tp-banner-area .row .tp-banner-item-2 .custom-banner-img img {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+         }
+
+      /* Responsive cho mobile */
+      @media (max-width: 768px) {
+         .tp-banner-item-2 {
+            height: 200px !important;
+         }
+         
+         .tp-banner-item-2 .custom-banner-flex {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+         }
+         
+         .tp-banner-item-2 .custom-banner-text,
+         .tp-banner-item-2 .custom-banner-img {
+            max-width: 100%;
+         }
+         
+         .tp-banner-item-2 .custom-banner-img {
+            height: 60%;
+         }
+         
+         .tp-banner-swiper .swiper-slide {
+            height: 200px;
+         }
+         
+         .tp-banner-area .row .tp-banner-item-2 {
+            height: 200px !important;
+         }
+      }
    </style>
 
 </head>
@@ -111,8 +209,50 @@
       <section class="tp-slider-area p-relative z-index-1">
          <div class="tp-slider-active-2 swiper-container">
             <div class="swiper-wrapper">
-               <div
-                  class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
+               @forelse($mainSliders as $slider)
+               <div class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
+                  <div class="tp-slider-2-shape">
+                     <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">
+                  </div>
+                  <div class="container">
+                     <div class="row align-items-center">
+                        <div class="col-xl-6 col-lg-6 col-md-6">
+                           <div class="tp-slider-content-2">
+                              @if($slider->subtitle)
+                                 <span>{{ $slider->subtitle }}</span>
+                              @else
+                                 <span>{{ $slider->title }}</span>
+                              @endif
+                              <h3 class="tp-slider-title-2">{{ $slider->title }}</h3>
+                              <div class="tp-slider-btn-2">
+                                 @if($slider->link)
+                                    <a href="{{ $slider->link }}" class="tp-btn tp-btn-border">Xem chi tiết</a>
+                                 @else
+                                    <a href="{{ route('shop') }}" class="tp-btn tp-btn-border">Xem bộ sưu tập</a>
+                                 @endif
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6">
+                           <div class="tp-slider-thumb-2-wrapper p-relative">
+                              <div class="tp-slider-thumb-2-shape">
+                                 <img class="tp-slider-thumb-2-shape-1"
+                                    src="{{asset('assets2/img/slider/2/shape/shape-2.png')}}" alt="">
+                                 <img class="tp-slider-thumb-2-shape-2"
+                                    src="{{asset('assets2/img/slider/2/shape/shape-3.png')}}" alt="">
+                              </div>
+                              <div class="tp-slider-thumb-2 text-end">
+                                 <span class="tp-slider-thumb-2-gradient"></span>
+                                 <img src="{{ $slider->image_url }}" alt="{{ $slider->title }}">
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               @empty
+               <!-- Fallback slider nếu không có banner -->
+               <div class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
                   <div class="tp-slider-2-shape">
                      <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">
                   </div>
@@ -123,7 +263,7 @@
                               <span>Hàng mới về 2023</span>
                               <h3 class="tp-slider-title-2">Bộ sưu tập thời trang</h3>
                               <div class="tp-slider-btn-2">
-                                 <a href="shop.html" class="tp-btn tp-btn-border">Xem bộ sưu tập</a>
+                                 <a href="{{ route('shop') }}" class="tp-btn tp-btn-border">Xem bộ sưu tập</a>
                               </div>
                            </div>
                         </div>
@@ -144,72 +284,7 @@
                      </div>
                   </div>
                </div>
-               <div
-                  class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
-                  <div class="tp-slider-2-shape">
-                     <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">
-                  </div>
-                  <div class="container">
-                     <div class="row align-items-center">
-                        <div class="col-xl-6 col-lg-6 col-md-6">
-                           <div class="tp-slider-content-2">
-                              <span>Bán chạy nhất 2023</span>
-                              <h3 class="tp-slider-title-2">Bộ sưu tập mùa hè</h3>
-                              <div class="tp-slider-btn-2">
-                                 <a href="shop.html" class="tp-btn tp-btn-border">Xem bộ sưu tập</a>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-xl-6 col-lg-6 col-md-6">
-                           <div class="tp-slider-thumb-2-wrapper p-relative">
-                              <div class="tp-slider-thumb-2-shape">
-                                 <img class="tp-slider-thumb-2-shape-1"
-                                    src="{{asset('assets2/img/slider/2/shape/shape-2.png')}}" alt="">
-                                 <img class="tp-slider-thumb-2-shape-2"
-                                    src="{{asset('assets2/img/slider/2/shape/shape-3.png')}}" alt="">
-                              </div>
-                              <div class="tp-slider-thumb-2 text-end">
-                                 <span class="tp-slider-thumb-2-gradient"></span>
-                                 <img src="{{asset('assets2/img/slider/2/slider-2.png')}}" alt="">
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div
-                  class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
-                  <div class="tp-slider-2-shape">
-                     <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">
-                  </div>
-                  <div class="container">
-                     <div class="row align-items-center">
-                        <div class="col-xl-6 col-lg-6 col-md-6">
-                           <div class="tp-slider-content-2">
-                              <span>Mùa đông đã đến</span>
-                              <h3 class="tp-slider-title-2">Thiết kế mới tuyệt vời</h3>
-                              <div class="tp-slider-btn-2">
-                                 <a href="shop.html" class="tp-btn tp-btn-border">Xem bộ sưu tập</a>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-xl-6 col-lg-6 col-md-6">
-                           <div class="tp-slider-thumb-2-wrapper p-relative">
-                              <div class="tp-slider-thumb-2-shape">
-                                 <img class="tp-slider-thumb-2-shape-1"
-                                    src="{{asset('assets2/img/slider/2/shape/shape-2.png')}}" alt="">
-                                 <img class="tp-slider-thumb-2-shape-2"
-                                    src="{{asset('assets2/img/slider/2/shape/shape-3.png')}}" alt="">
-                              </div>
-                              <div class="tp-slider-thumb-2 text-end">
-                                 <span class="tp-slider-thumb-2-gradient"></span>
-                                 <img src="{{asset('assets2/img/slider/2/slider-3.png')}}" alt="">
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+               @endforelse
             </div>
             <div class="tp-swiper-dot tp-slider-2-dot"></div>
          </div>
@@ -218,43 +293,52 @@
 
       <!-- banner area start -->
       @php use Illuminate\Support\Str; @endphp
-      @php $isSlider = $categories->count() > 3; @endphp
+      @if($bannerArea->count() > 0)
       <section class="tp-banner-area mt-20">
          <div class="container-fluid tp-gx-40">
+            @php $isSlider = $bannerArea->count() > 3; @endphp
             @if($isSlider)
             <div class="swiper tp-banner-swiper">
                <div class="swiper-wrapper">
-                 @foreach($categories as $i => $category)
+                 @foreach($bannerArea as $banner)
                 <div class="swiper-slide">
                   <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
                    <div class="custom-banner-text">
                      <h3 class="tp-banner-title-2">
-                       <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                       @if($banner->link)
+                         <a href="{{ $banner->link }}">{{ $banner->title }}</a>
+                       @else
+                         {{ $banner->title }}
+                       @endif
                      </h3>
                      <div class="tp-banner-btn-2">
-                       <a href="{{ route('client.categories.show', $category->id) }}"
-                        class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                        <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                       </a>
+                       @if($banner->link)
+                         <a href="{{ $banner->link }}"
+                          class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                          <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                              stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                         </a>
+                       @else
+                         <a href="{{ route('shop') }}"
+                          class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                          <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                              stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                         </a>
+                       @endif
                      </div>
                    </div>
                    <div class="custom-banner-img">
-                     @if($category->icon)
-                     @if(Str::startsWith($category->icon, ['http://', 'https://']))
-                   <img src="{{ $category->icon }}" alt="{{ $category->name }}">
-                  @else
-                   <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
-                  @endif
-                  @else
-                   <img src="{{ asset('assets2/img/banner/2/banner-' . ($i + 1) . '.jpg') }}"
-                     alt="{{ $category->name }}">
-                  @endif
+                     <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}">
                    </div>
                   </div>
                 </div>
@@ -264,37 +348,45 @@
             </div>
          @else
             <div class="row tp-gx-20">
-               @foreach($categories->take(3) as $i => $category)
+               @foreach($bannerArea->take(3) as $banner)
                <div class="col-xxl-4 col-lg-6">
                 <div class="tp-banner-item-2 custom-banner-flex p-relative z-index-1 grey-bg-2 mb-20 fix">
                   <div class="custom-banner-text">
                    <h3 class="tp-banner-title-2">
-                     <a href="{{ route('client.categories.show', $category->id) }}">{{ $category->name }}</a>
+                     @if($banner->link)
+                       <a href="{{ $banner->link }}">{{ $banner->title }}</a>
+                     @else
+                       {{ $banner->title }}
+                     @endif
                    </h3>
                    <div class="tp-banner-btn-2">
-                     <a href="{{ route('client.categories.show', $category->id) }}"
-                       class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
-                       <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
-                          stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
-                          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                       </svg>
-                     </a>
+                     @if($banner->link)
+                       <a href="{{ $banner->link }}"
+                         class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                         <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                         </svg>
+                       </a>
+                     @else
+                       <a href="{{ route('shop') }}"
+                         class="tp-btn tp-btn-border tp-btn-border-sm">Xem ngay
+                         <svg width="17" height="15" viewBox="0 0 17 15" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M16 7.49988L1 7.49988" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M9.9502 1.47554L16.0002 7.49954L9.9502 13.5245" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                         </svg>
+                       </a>
+                     @endif
                    </div>
                   </div>
                   <div class="custom-banner-img">
-                   @if($category->icon)
-                     @if(Str::startsWith($category->icon, ['http://', 'https://']))
-                    <img src="{{ $category->icon }}" alt="{{ $category->name }}">
-                   @else
-                    <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
-                   @endif
-                @else
-                  <img src="{{ asset('assets2/img/banner/2/banner-' . ($i + 1) . '.jpg') }}"
-                   alt="{{ $category->name }}">
-                @endif
+                   <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}">
                   </div>
                 </div>
                </div>
@@ -303,6 +395,7 @@
          @endif
          </div>
       </section>
+      @endif
 
       <!-- product area start -->
       <section class="tp-product-area pb-90">

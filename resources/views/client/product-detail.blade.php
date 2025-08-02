@@ -386,9 +386,10 @@
                                         <div class="position-relative overflow-hidden rounded-4"
                                             style="width: 100%; height: 500px; display: flex; align-items: center; justify-content: center; background-color: #f9f9f9;">
                                             <img id="mainProductImage"
-                                                src="{{ asset('storage/' . $product->thumbnail) }}"
+                                                src="{{ $mainImage ? asset('storage/' . $mainImage) : asset('assets2/img/product/2/prodcut-1.jpg') }}"
                                                 alt="{{ $product->name }}" class="img-fluid"
-                                                style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease;">
+                                                style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease;"
+                                                onerror="this.src='{{ asset('assets2/img/product/2/prodcut-1.jpg') }}'">
                                         </div>
                                     </div>
                                 </div>
@@ -591,16 +592,24 @@
                                     </div>
                                 @endif
 
+                                {{-- Thông báo sản phẩm ngừng kinh doanh --}}
+                                @if(!$product->is_active)
+                                    <div class="alert alert-warning mb-3" role="alert">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>
+                                        <strong>Sản phẩm đã ngừng kinh doanh!</strong> Sản phẩm này hiện không còn được bán.
+                                    </div>
+                                @endif
+
                                 {{-- Số lượng + Thêm giỏ hàng --}}
                                 <div class="tp-product-details-action-wrapper">
                                     <h3 class="tp-product-details-action-title">Số lượng</h3>
                                     <div class="tp-product-details-action-item-wrapper d-flex align-items-center">
                                         <div class="tp-product-details-quantity">
                                             <div class="tp-product-quantity mb-15 mr-15">
-                                                <span id="detail-cart-minus" class="tp-cart-minus">–</span>
+                                                <span id="detail-cart-minus" class="tp-cart-minus" @if(!$product->is_active) style="opacity: 0.5; pointer-events: none;" @endif>–</span>
                                                 <input id="quantity" name="quantity" class="tp-cart-input"
-                                                    type="text" value="1">
-                                                <span id="detail-cart-plus" class="tp-cart-plus">+</span>
+                                                    type="text" value="1" @if(!$product->is_active) disabled @endif>
+                                                <span id="detail-cart-plus" class="tp-cart-plus" @if(!$product->is_active) style="opacity: 0.5; pointer-events: none;" @endif>+</span>
                                             </div>
                                         </div>
                                         <div class="tp-product-details-add-to-cart mb-15 w-100">
@@ -615,8 +624,14 @@
                                                 <input type="hidden" name="price" id="variant_price"
                                                     value="{{ !$hasVariants ? $product->sale_price ?? $product->price : '' }}">
                                                 <button type="submit"
-                                                    class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ
-                                                    hàng</button>
+                                                    class="tp-product-details-add-to-cart-btn w-100"
+                                                    @if(!$product->is_active) disabled title="Sản phẩm này đã ngừng kinh doanh" @endif>
+                                                    @if(!$product->is_active)
+                                                        Sản phẩm đã ngừng kinh doanh
+                                                    @else
+                                                        Thêm vào giỏ hàng
+                                                    @endif
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -807,7 +822,7 @@
                                                 @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
                                                     <div class="review-item border-bottom pb-3 mb-3">
                                                         <div class="d-flex justify-content-between">
-                                                            <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
+                                                            <strong>{{ $review->user->fullname ?? 'Khách hàng' }}</strong>
                                                             <small
                                                                 class="text-muted">{{ $review->created_at->format('d/m/Y') }}</small>
                                                         </div>
@@ -1174,6 +1189,11 @@
 
     let selectedColorCode = null;
     let selectedSize = null;
+
+    // Khởi tạo gallery khi trang load
+    document.addEventListener('DOMContentLoaded', function() {
+        showUniqueImagesFromAllVariants();
+    });
 
     const formatCurrency = num => num.toLocaleString('vi-VN') + '₫';
 
@@ -1566,32 +1586,8 @@
             checkAndToggleAddToCartBtn();
         });
     });
-    // Hiển thị ảnh phụ mặc định từ defaultImages khi chưa chọn biến thể
-    const subImageGallery = document.getElementById('subImageGallery');
-    const mainImageEl = document.getElementById('mainProductImage');
-
-    if (defaultImages.length) {
-        subImageGallery.innerHTML = '';
-        defaultImages.forEach(img => {
-            const imgEl = document.createElement('img');
-            imgEl.src = '/storage/' + img.url;
-            imgEl.className = 'img-thumbnail thumbnail-preview';
-            imgEl.style.width = '100%';
-            imgEl.style.height = '80px';
-            imgEl.style.objectFit = 'cover';
-            imgEl.style.cursor = 'pointer';
-            imgEl.addEventListener('click', () => {
-                if (mainImageEl) {
-                    mainImageEl.style.opacity = 0;
-                    setTimeout(() => {
-                        mainImageEl.src = imgEl.src;
-                        mainImageEl.onload = () => mainImageEl.style.opacity = 1;
-                    }, 150);
-                }
-            });
-            subImageGallery.appendChild(imgEl);
-        });
-    }
+    // Hiển thị ảnh phụ mặc định
+    showUniqueImagesFromAllVariants();
 
     function showUniqueImagesFromAllVariants() {
         const subImageGallery = document.getElementById('subImageGallery');
@@ -1631,21 +1627,23 @@
             subImageGallery.appendChild(imgEl);
         };
 
-        // Ảnh gốc
-        defaultImages.forEach(img => {
-            if (img.url) addSubImage(img.url);
-        });
+        // Chỉ hiển thị ảnh từ variants nếu có
+        if (variants && variants.length > 0) {
+            variants.forEach(variant => {
+                if (variant.img) addSubImage(variant.img);
 
-        // Ảnh chính + phụ từ các biến thể
-        variants.forEach(variant => {
-            if (variant.img) addSubImage(variant.img);
-
-            if (Array.isArray(variant.images)) {
-                variant.images.forEach(img => {
-                    if (img.url) addSubImage(img.url);
-                });
-            }
-        });
+                if (Array.isArray(variant.images)) {
+                    variant.images.forEach(img => {
+                        if (img.url) addSubImage(img.url);
+                    });
+                }
+            });
+        } else {
+            // Nếu không có variants, hiển thị ảnh gốc
+            defaultImages.forEach(img => {
+                if (img.url) addSubImage(img.url);
+            });
+        }
     }
 </script>
 

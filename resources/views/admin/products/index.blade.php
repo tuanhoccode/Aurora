@@ -137,13 +137,6 @@
                     </thead>
                     <tbody>
                         @forelse($products as $product)
-                        @php
-                          $hasLockedVariant = $product->variants->contains(function($variant) {
-                            return $variant->orderItems()->whereHas('order.currentStatus', function($q) {
-                              $q->where('order_status_id', 4)->where('is_current', 1);
-                            })->exists();
-                          });
-                        @endphp
                         <tr>
                             <td>
                                 <div class="form-check">
@@ -234,7 +227,7 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" href="{{ route('admin.products.show', $product->id) }}"><i class="bi bi-eye me-2"></i>Xem</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.products.edit', $product->id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item text-danger delete-product @if($hasLockedVariant) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($hasLockedVariant) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
+                                        <li><a class="dropdown-item text-danger delete-product @if($product->hasOrders) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($product->hasOrders) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
                                     </ul>
                                 </div>
                             </td>
@@ -362,7 +355,12 @@
                         }
                     },
                     error: function(xhr) {
-                        alert('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+                        const response = xhr.responseJSON;
+                        if (response && response.error) {
+                            alert(response.error);
+                        } else {
+                            alert('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+                        }
                     }
                 });
             });
@@ -393,7 +391,7 @@
             // Delete confirmation
             $('.delete-product').click(function(e) {
                 if ($(this).data('locked')) {
-                    alert('Sản phẩm đang có trong đơn hàng giao thành công và không thể xóa.');
+                    alert('Không thể xóa sản phẩm đã có trong đơn hàng');
                     e.preventDefault();
                     return false;
                 }

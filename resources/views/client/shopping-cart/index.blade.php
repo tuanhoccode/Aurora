@@ -821,6 +821,42 @@
             pointer-events: none;
         }
 
+        /* Sản phẩm hết hàng hoặc ngừng kinh doanh */
+        .cart-item-out-of-stock {
+            opacity: 0.6;
+            background-color: #f8f9fa;
+        }
+
+        .cart-item-out-of-stock .cart-item-card__image {
+            filter: grayscale(100%);
+        }
+
+        /* Sản phẩm ngừng kinh doanh */
+        .cart-item-out-of-stock[data-discontinued="true"] {
+            opacity: 0.7;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+
+        .cart-item-out-of-stock[data-discontinued="true"] .cart-item-card__image {
+            filter: grayscale(50%) sepia(20%);
+        }
+
+        .cart-item-out-of-stock[data-discontinued="true"] .product-name a,
+        .cart-item-out-of-stock[data-discontinued="true"] .product-name span {
+            color: #856404 !important;
+        }
+
+        /* Sản phẩm có giá thay đổi */
+        .cart-item-price-changed {
+            background-color: #e3f2fd !important;
+            border: 1px solid #2196f3 !important;
+        }
+
+        .cart-item-price-changed .cart-item-card__image {
+            filter: brightness(1.05);
+        }
+
         /* Mini-cart đẹp hơn */
         .cartmini__widget-item {
             background: #fff;
@@ -1003,7 +1039,7 @@
                                                 @php
                                                     $product = $item->product;
                                                     $variant = $item->productVariant;
-                                                    $unitPrice = $item->price_at_time;
+                                                    $unitPrice = $item->current_price ?? ($item->productVariant ? $item->productVariant->current_price : $item->product->current_price);
                                                     $stock = (int) ($variant ? $variant->stock : $product->stock ?? 0);
                                                     $getAttrValue = function ($entity, $keywords) {
                                                         if (!$entity || !isset($entity->attributeValues)) {
@@ -1021,8 +1057,6 @@
                                                     };
                                                     $size = $getAttrValue($variant, ['size', 'kích']);
                                                     $color = $getAttrValue($variant, ['color', 'màu']);
-                                                    // Lấy sản phẩm liên quan thực tế nếu có, demo nếu không
-                                                    $relatedProducts = $stock < 1 ? $item->relatedProducts ?? [] : [];
                                                     // Lấy ảnh đúng cho biến thể hoặc sản phẩm
                                                     if ($variant) {
                                                         if (!empty($variant->img)) {
@@ -1036,13 +1070,15 @@
                                                         $img = $product->image_url ?? asset('assets2/img/product/2/default.png');
                                                     }
                                                 @endphp
-                                                <tr class="cart-table-row btn-reveal-trigger @if ($stock < 1) cart-item-out-of-stock @endif"
+                                                <tr class="cart-table-row btn-reveal-trigger @if ($stock < 1 || $item->is_discontinued) cart-item-out-of-stock @endif @if (isset($item->price_changed) && $item->price_changed) cart-item-price-changed @endif"
                                                     data-item-id="{{ $item->id }}" data-unit-price="{{ $unitPrice }}"
-                                                    data-stock="{{ $stock }}">
+                                                    data-stock="{{ $stock }}" data-discontinued="{{ $item->is_discontinued ? 'true' : 'false' }}"
+                                                    @if (isset($item->price_changed) && $item->price_changed) data-old-price="{{ $item->old_price }}" @endif>
                                                     <td class="align-middle text-center">
                                                         <input type="checkbox" class="cart-item-checkbox"
                                                             name="selected_items[]" value="{{ $item->id }}"
-                                                            @if ($stock < 1) disabled title="Sản phẩm này đã hết hàng, không thể thanh toán" @endif />
+                                                            @if ($stock < 1 || $item->is_discontinued) disabled 
+                                                                title="@if($item->is_discontinued) Sản phẩm này đã ngừng kinh doanh, không thể thanh toán @else Sản phẩm này đã hết hàng, không thể thanh toán @endif" @endif />
                                                     </td>
                                                     <td class="align-middle product-info-cell" style="min-width:250px;">
                                                         <div style="display:flex;align-items:center;gap:16px;">
@@ -1098,10 +1134,21 @@
                                                                             @endif
                                                                         @endforeach
                                                                     @endif
-                                                                    @if ($stock < 1)
+                                                                    @if ($item->is_discontinued)
+                                                                        <span class="badge bg-warning mt-1">Ngừng kinh doanh</span>
+                                                                        <span class="text-warning small">Sản phẩm này đã ngừng kinh doanh, không thể thanh toán.</span>
+                                                                    @elseif ($stock < 1)
                                                                         <span class="badge bg-danger mt-1">Hết hàng</span>
                                                                         <span class="text-danger small">Sản phẩm này đã hết
                                                                             hàng, vui lòng quay lại sau.</span>
+                                                                    @elseif (isset($item->price_changed) && $item->price_changed)
+                                                                        <span class="badge bg-info mt-1">Giá đã thay đổi</span>
+                                                                        <span class="text-info small">Giá sản phẩm đã được cập nhật.</span>
+                                                                        <button type="button" class="btn btn-sm btn-outline-info mt-1" 
+                                                                            onclick="dismissPriceChange({{ $item->id }})"
+                                                                            style="font-size:0.8rem;padding:2px 6px;">
+                                                                            <i class="fa fa-check me-1"></i>Đã xem
+                                                                        </button>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -1109,17 +1156,50 @@
                                                     </td>
                                                     <td class="price align-middle text-body fs-9 fw-semibold text-end"
                                                         style="font-size:1.08rem;">
-                                                        {{ number_format($unitPrice, 0, ',', '.') }}₫</td>
+                                                        @if($item->is_discontinued)
+                                                            <span class="text-muted">--</span>
+                                                        @else
+                                                            @if (isset($item->price_changed) && $item->price_changed)
+                                                                <div>
+                                                                    <span class="text-decoration-line-through text-muted" style="font-size:0.9rem;">
+                                                                        {{ number_format($item->old_price, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                    <br>
+                                                                    <span class="text-success fw-bold">
+                                                                        {{ number_format($unitPrice, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                </div>
+                                                            @else
+                                                                {{ number_format($unitPrice, 0, ',', '.') }}₫
+                                                            @endif
+                                                        @endif
+                                                    </td>
                                                     <td class="quantity align-middle text-center">
                                                         <div class="tp-product-quantity mb-15 mr-15 d-flex justify-content-center align-items-center" style="gap:8px;">
-                                                            <button type="button" class="qty-btn minus" @if ($stock < 1) disabled @endif>-</button>
-                                                            <input type="text" class="qty-input" value="{{ $stock < 1 ? 0 : $item->quantity }}" style="min-width:38px;max-width:54px;text-align:center;font-weight:600;" @if ($stock < 1) disabled @endif />
-                                                            <button type="button" class="qty-btn plus" @if ($stock < 1) disabled @endif>+</button>
+                                                            <button type="button" class="qty-btn minus" @if ($stock < 1 || $item->is_discontinued) disabled @endif>-</button>
+                                                            <input type="text" class="qty-input" value="{{ ($stock < 1 || $item->is_discontinued) ? 0 : $item->quantity }}" style="min-width:38px;max-width:54px;text-align:center;font-weight:600;" @if ($stock < 1 || $item->is_discontinued) disabled @endif />
+                                                            <button type="button" class="qty-btn plus" @if ($stock < 1 || $item->is_discontinued) disabled @endif>+</button>
                                                         </div>
                                                     </td>
                                                     <td class="total align-middle fw-bold text-body-highlight text-end"
                                                         style="font-size:1.08rem;">
-                                                        {{ number_format($unitPrice * $item->quantity, 0, ',', '.') }}₫
+                                                        @if($item->is_discontinued)
+                                                            <span class="text-muted">--</span>
+                                                        @else
+                                                            @if (isset($item->price_changed) && $item->price_changed)
+                                                                <div>
+                                                                    <span class="text-decoration-line-through text-muted" style="font-size:0.9rem;">
+                                                                        {{ number_format($item->old_price * $item->quantity, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                    <br>
+                                                                    <span class="text-success fw-bold">
+                                                                        {{ number_format($unitPrice * $item->quantity, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                </div>
+                                                            @else
+                                                                {{ number_format($unitPrice * $item->quantity, 0, ',', '.') }}₫
+                                                            @endif
+                                                        @endif
                                                     </td>
                                                     <td class="align-middle white-space-nowrap text-end pe-0 ps-3">
                                                         <form action="{{ url('/shopping-cart/remove/' . $item->id) }}"
@@ -1137,95 +1217,7 @@
                                                         </form>
                                                     </td>
                                                 </tr>
-                                                @if ($stock < 1)
-                                                    <tr class="related-products-row">
-                                                        <td colspan="6" style="padding:0;border:none;">
-                                                            <div class="related-products-trigger"
-                                                                style="position:relative;cursor:pointer;width:100%;padding:10px 0 10px 60px;background:#f8f9fa;border-top:1px dashed #e3e6ea;">
-                                                                <span class="text-primary fw-semibold"
-                                                                    style="font-size:1.01rem;">
-                                                                    <i class="fa fa-light fa-lightbulb me-1"></i> Gợi ý sản
-                                                                    phẩm liên quan <i class="fa fa-chevron-down"></i>
-                                                                </span>
-                                                                <div class="related-products-dropdown"
-                                                                    style="display:none;position:absolute;left:0;top:100%;z-index:20;background:#fff;border:1px solid #e3e6ea;border-radius:10px;box-shadow:0 4px 16px rgba(44,62,80,0.10);padding:28px 32px;min-width:520px;max-width:900px;">
-                                                                    <div class="related-products-slider-container position-relative"
-                                                                        style="max-width:700px;margin:0 auto;padding-top:18px;padding-bottom:18px;">
-                                                                        <div class="swiper related-products-swiper">
-                                                                            <div class="swiper-wrapper">
-                                                                                @foreach ($relatedProducts as $rel)
-                                                                                    <div class="swiper-slide">
-                                                                                        <div class="related-product-simple"
-                                                                                            style="padding: 0 16px; min-width:0; max-width:100%; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start;">
-                                                                                            <a href="{{ route('client.product.show', ['slug' => $rel->slug]) }}"
-                                                                                                style="width:100%;display:block;"
-                                                                                                tabindex="-1">
-                                                                                                <div class="related-product-thumb-simple"
-                                                                                                    style="width:100%;height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;background:#fafbfc;border-radius:10px;cursor:pointer;transition:box-shadow 0.18s,transform 0.18s;">
-                                                                                                    <img src="{{ $rel->image_url }}"
-                                                                                                        alt="{{ $rel->name }}"
-                                                                                                        style="max-height:90px;max-width:100%;object-fit:contain;transition:transform 0.18s,filter 0.18s;">
-                                                                                                </div>
-                                                                                            </a>
-                                                                                            <div class="related-product-brand"
-                                                                                                style="color:#888;font-size:13px;">
-                                                                                                {{ $rel->brand->name ?? '' }}
-                                                                                            </div>
-                                                                                            <a href="{{ route('client.product.show', ['slug' => $rel->slug]) }}"
-                                                                                                style="color:#222;text-decoration:none;font-size:15px;font-weight:500;margin-bottom:2px;cursor:pointer;display:block;"
-                                                                                                title="{{ $rel->name }}">
-                                                                                                <div class="related-product-title-simple"
-                                                                                                    style="font-size:15px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                                                                                    {{ $rel->name }}
-                                                                                                </div>
-                                                                                            </a>
-                                                                                            <div class="related-product-rating"
-                                                                                                style="color:#ffb400;font-size:13px;margin-bottom:1px;">
-                                                                                                @for ($i = 0; $i < 5; $i++)
-                                                                                                    <span
-                                                                                                        class="fa fa-star"></span>
-                                                                                                @endfor
-                                                                                            </div>
-                                                                                            <div class="related-product-price-simple"
-                                                                                                style="font-size:15px;font-weight:700;color:#e53935;">
-                                                                                                {{ number_format($rel->price, 0, ',', '.') }}₫
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                            <!-- Swiper navigation -->
-                                                                            <div class="swiper-button-prev"
-                                                                                style="left:-8px;width:32px;height:32px;">
-                                                                                <svg viewBox="0 0 32 32" width="22"
-                                                                                    height="22">
-                                                                                    <polyline points="20 8 12 16 20 24"
-                                                                                        fill="none"
-                                                                                        stroke="currentColor"
-                                                                                        stroke-width="3"
-                                                                                        stroke-linecap="round"
-                                                                                        stroke-linejoin="round" />
-                                                                                </svg>
-                                                                            </div>
-                                                                            <div class="swiper-button-next"
-                                                                                style="right:-8px;width:32px;height:32px;">
-                                                                                <svg viewBox="0 0 32 32" width="22"
-                                                                                    height="22">
-                                                                                    <polyline points="12 8 20 16 12 24"
-                                                                                        fill="none"
-                                                                                        stroke="currentColor"
-                                                                                        stroke-width="3"
-                                                                                        stroke-linecap="round"
-                                                                                        stroke-linejoin="round" />
-                                                                                </svg>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endif
+
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -1288,9 +1280,6 @@
 
 @section('scripts')
     @parent
-    <!-- SwiperJS CDN nếu chưa có -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const cartTableBody = document.getElementById('cart-table-body');
@@ -1303,7 +1292,29 @@
             function updateLineTotal(row, qty) {
                 const unitPrice = parseInt(row.getAttribute('data-unit-price'), 10) || 0;
                 const totalCell = row.querySelector('.total');
-                if (totalCell) totalCell.textContent = formatCurrency(unitPrice * qty);
+                if (totalCell) {
+                    // Kiểm tra nếu có giá thay đổi
+                    const priceChanged = row.classList.contains('cart-item-price-changed');
+                    if (priceChanged) {
+                        // Hiển thị giá cũ và mới
+                        const oldPrice = parseInt(row.getAttribute('data-old-price'), 10) || unitPrice;
+                        const oldTotal = oldPrice * qty;
+                        const newTotal = unitPrice * qty;
+                        totalCell.innerHTML = `
+                            <div>
+                                <span class="text-decoration-line-through text-muted" style="font-size:0.9rem;">
+                                    ${formatCurrency(oldTotal)}
+                                </span>
+                                <br>
+                                <span class="text-success fw-bold">
+                                    ${formatCurrency(newTotal)}
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        totalCell.textContent = formatCurrency(unitPrice * qty);
+                    }
+                }
             }
 
             function updateCartSummary() {
@@ -1312,6 +1323,11 @@
                 document.querySelectorAll('tr[data-item-id]').forEach(row => {
                     const checkbox = row.querySelector('.cart-item-checkbox');
                     if (!checkbox || !checkbox.checked) return;
+                    
+                    // Kiểm tra sản phẩm ngừng kinh doanh
+                    const isDiscontinued = row.getAttribute('data-discontinued') === 'true';
+                    if (isDiscontinued) return; // Bỏ qua sản phẩm ngừng kinh doanh
+                    
                     const unitPrice = parseInt(row.getAttribute('data-unit-price'), 10) || 0;
                     const qty = parseInt(row.querySelector('.qty-input').value, 10) || 1;
                     subtotal += unitPrice * qty;
@@ -1552,6 +1568,57 @@
 
             updateSelectAllState();
 
+            // Function để ẩn thông báo giá thay đổi
+            window.dismissPriceChange = function(itemId) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch(`/shopping-cart/dismiss-price-change/${itemId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+                        if (row) {
+                            row.classList.remove('cart-item-price-changed');
+                            const priceChangeElements = row.querySelectorAll('.badge.bg-info, .text-info.small, .btn-outline-info');
+                            priceChangeElements.forEach(el => el.remove());
+                            
+                            // Cập nhật lại tổng tiền
+                            updateCartSummary();
+                        }
+                        
+                        if (window.toastr && typeof toastr.success === 'function') {
+                            toastr.success(data.message || 'Đã ẩn thông báo giá thay đổi.');
+                        }
+                    } else {
+                        if (window.toastr && typeof toastr.error === 'function') {
+                            toastr.error(data.message || 'Có lỗi xảy ra.');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi ẩn thông báo giá thay đổi:', error);
+                    if (window.toastr && typeof toastr.error === 'function') {
+                        toastr.error('Không thể ẩn thông báo. Vui lòng thử lại sau.');
+                    }
+                });
+            };
+
+            // Kiểm tra và hiển thị thông báo giá thay đổi
+            const priceChangedItems = document.querySelectorAll('.cart-item-price-changed');
+            if (priceChangedItems.length > 0) {
+                if (window.toastr && typeof toastr.info === 'function') {
+                    toastr.info(`Có ${priceChangedItems.length} sản phẩm có giá đã thay đổi và đã được cập nhật tự động.`);
+                } else {
+                    alert(`Có ${priceChangedItems.length} sản phẩm có giá đã thay đổi và đã được cập nhật tự động.`);
+                }
+            }
+
             // Xử lý nút thanh toán
             const btnCheckout = document.getElementById('btn-checkout');
             if (btnCheckout) {
@@ -1562,6 +1629,27 @@
                             toastr.error('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!');
                         } else {
                             alert('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!');
+                        }
+                        return;
+                    }
+
+                    // Kiểm tra sản phẩm ngừng kinh doanh
+                    const discontinuedItems = [];
+                    checked.forEach(checkbox => {
+                        const row = checkbox.closest('tr');
+                        const isDiscontinued = row.getAttribute('data-discontinued') === 'true';
+                        if (isDiscontinued) {
+                            const productName = row.querySelector('.product-name a, .product-name span').textContent.trim();
+                            discontinuedItems.push(productName);
+                        }
+                    });
+
+                    if (discontinuedItems.length > 0) {
+                        const message = 'Không thể thanh toán vì các sản phẩm sau đã ngừng kinh doanh: ' + discontinuedItems.join(', ');
+                        if (window.toastr && typeof toastr.error === 'function') {
+                            toastr.error(message);
+                        } else {
+                            alert(message);
                         }
                         return;
                     }
@@ -1644,192 +1732,11 @@
                 });
             }
 
-            // Xử lý slider sản phẩm liên quan
-            document.querySelectorAll('.related-products-swiper').forEach(function(swiperEl) {
-                new Swiper(swiperEl, {
-                    slidesPerView: 3,
-                    spaceBetween: 12,
-                    loop: false,
-                    navigation: {
-                        nextEl: swiperEl.querySelector('.swiper-button-next'),
-                        prevEl: swiperEl.querySelector('.swiper-button-prev'),
-                    },
-                    breakpoints: {
-                        1200: {
-                            slidesPerView: 3
-                        },
-                        992: {
-                            slidesPerView: 2
-                        },
-                        0: {
-                            slidesPerView: 1
-                        }
-                    }
-                });
-            });
+
         });
 
-        // Xử lý dropdown sản phẩm liên quan
-        $(document).on('click', '.related-products-trigger', function(e) {
-            e.stopPropagation();
-            var $dropdown = $(this).find('.related-products-dropdown');
-            $('.related-products-dropdown').not($dropdown).fadeOut(120);
-            $dropdown.stop(true, true).fadeToggle(150);
-        });
 
-        $(document).on('click', function(e) {
-            if (
-                !$(e.target).closest('.related-products-trigger').length &&
-                !$(e.target).closest('.related-products-dropdown').length
-            ) {
-                $('.related-products-dropdown').fadeOut(120);
-            }
-        });
-
-        $(document).on('click', '.related-products-dropdown', function(e) {
-            e.stopPropagation();
-        });
-
-        $(document).on('click', '.related-products-trigger', function(e) {
-            e.stopPropagation();
-            var $dropdown = $(this).find('.related-products-dropdown');
-            $('.related-products-dropdown').not($dropdown).fadeOut(120); // Ẩn các dropdown khác
-            $dropdown.stop(true, true).fadeToggle(150);
-        });
-        $(document).on('click', function(e) {
-            // Chỉ đóng dropdown nếu click ngoài cả trigger và dropdown
-            if (
-                !$(e.target).closest('.related-products-trigger').length &&
-                !$(e.target).closest('.related-products-dropdown').length
-            ) {
-                $('.related-products-dropdown').fadeOut(120);
-            }
-        });
-        $(document).on('click', '.related-products-dropdown', function(e) {
-            e.stopPropagation();
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.related-products-swiper').forEach(function(swiperEl) {
-                new Swiper(swiperEl, {
-                    slidesPerView: 3,
-                    spaceBetween: 12,
-                    loop: false,
-                    navigation: {
-                        nextEl: swiperEl.querySelector('.swiper-button-next'),
-                        prevEl: swiperEl.querySelector('.swiper-button-prev'),
-                    },
-                    breakpoints: {
-                        1200: {
-                            slidesPerView: 3
-                        },
-                        992: {
-                            slidesPerView: 2
-                        },
-                        0: {
-                            slidesPerView: 1
-                        }
-                    }
-                });
-            });
-        });
     </script>
 @endsection
 
-<style>
-    .related-products-slider-container {
-        max-width: 700px;
-        margin: 0 auto;
-        padding-top: 18px;
-        padding-bottom: 18px;
-    }
 
-    .related-products-swiper {
-        padding: 0 28px;
-    }
-
-    .swiper-wrapper {
-        gap: 0 !important;
-    }
-
-    .related-product-simple {
-        min-width: 0;
-        max-width: 100%;
-        padding: 0 16px;
-    }
-
-    .related-product-thumb-simple:hover img {
-        filter: brightness(0.95);
-        transform: scale(1.04);
-        box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
-    }
-
-    .related-product-title-simple:hover {
-        text-decoration: underline;
-        cursor: pointer;
-    }
-
-    .swiper-button-prev,
-    .swiper-button-next {
-        background: #fff;
-        border-radius: 50%;
-        box-shadow: 0 2px 8px rgba(44, 62, 80, 0.13);
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 0.92;
-        transition: box-shadow 0.18s, background 0.18s;
-    }
-
-    .swiper-button-prev:hover,
-    .swiper-button-next:hover {
-        background: #e3f0fc;
-        box-shadow: 0 4px 16px rgba(44, 62, 80, 0.18);
-    }
-
-    .swiper-button-prev {
-        left: -8px;
-    }
-
-    .swiper-button-next {
-        right: -8px;
-    }
-
-    .swiper-button-prev:after,
-    .swiper-button-next:after {
-        display: none;
-    }
-
-    @media (max-width: 900px) {
-        .related-products-slider-container {
-            max-width: 98vw;
-        }
-
-        .related-products-swiper {
-            padding: 0 8px;
-        }
-
-        .related-product-simple {
-            padding: 0 6px;
-        }
-    }
-
-    @media (max-width: 600px) {
-        .related-products-slider-container {
-            padding-top: 8px;
-            padding-bottom: 8px;
-        }
-
-        .related-product-thumb-simple {
-            height: 70px;
-        }
-
-        .related-product-simple {
-            padding: 0 2px;
-        }
-    }
-</style>

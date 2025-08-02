@@ -309,7 +309,7 @@
                             <tbody>
                                 @foreach($product->variants as $variant)
                                 @php
-                                    $purchaseCount = $variant->orderItems()->whereHas('order.currentStatus', function($q) {
+                                    $purchaseCount = $variant->orderItems()->whereHas('order.currentOrderStatus', function($q) {
                                         $q->where('order_status_id', 4)->where('is_current', 1);
                                     })->sum('quantity');
                                     $hasDiscount = $variant->sale_price > 0 && $variant->sale_price < $variant->regular_price;

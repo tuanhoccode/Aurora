@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\admin\BannerController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
@@ -170,6 +171,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{brand}/toggle-active', [BrandController::class, 'toggleActive'])->name('toggle-active');
     });
 
+
+    // Banners Routes
+    Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('index');
+        Route::get('/create', [BannerController::class, 'create'])->name('create');
+        Route::post('/', [BannerController::class, 'store'])->name('store');
+        Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
+        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('edit');
+        Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
+        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
+        Route::post('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
+    });
 
     // Categories Routes
     Route::prefix('categories')->name('categories.')->group(function () {
@@ -429,6 +442,7 @@ Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'ind
 Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+Route::post('/shopping-cart/dismiss-price-change/{itemId}', [App\Http\Controllers\Client\ShoppingCartController::class, 'dismissPriceChange'])->name('shopping-cart.dismiss-price-change');
 
 
 
