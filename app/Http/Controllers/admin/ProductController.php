@@ -49,6 +49,12 @@ class ProductController extends Controller
 
         $products = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
+        // Kiểm tra sản phẩm nào có trong đơn hàng
+        $products->getCollection()->transform(function ($product) {
+            $product->hasOrders = $product->orderItems()->exists();
+            return $product;
+        });
+
         $brands = Brand::where('is_active', 1)->get(); // admin vẫn lấy tất cả brand đang hoạt động, không lọc is_visible
         $categories = Category::where('is_active', 1)->get();
         $totalProducts = Product::count();
@@ -297,7 +303,8 @@ class ProductController extends Controller
             'variants.attributeValues.attribute',
             'variants.attributeValues' => function($query) {
                 $query->with('attribute');
-            }
+            },
+            'variants.images'
         ]);
 
         return view('admin.products.show', compact('product'));
@@ -611,11 +618,11 @@ class ProductController extends Controller
     {
         // Kiểm tra sản phẩm có trong đơn hàng
         $hasOrder = $product->orderItems()->exists();
-        // Kiểm tra sản phẩm có trong giỏ hàng
-        $hasCart = \App\Models\CartItem::where('product_id', $product->id)->exists();
-        if ($hasOrder || $hasCart) {
-            return redirect()->back()->with('error', 'Không thể xoá sản phẩm đã có đơn hàng hoặc giỏ hàng');
+        
+        if ($hasOrder) {
+            return redirect()->back()->with('error', 'Không thể xóa sản phẩm đã có trong đơn hàng');
         }
+        
         try {
             $product->delete();
             return redirect()
@@ -661,7 +668,28 @@ class ProductController extends Controller
                 'ids.*' => 'exists:products,id'
             ]);
 
-            Product::whereIn('id', $validated['ids'])->delete();
+            $products = Product::whereIn('id', $validated['ids'])->get();
+            $productsWithOrders = [];
+            $productsToDelete = [];
+
+            foreach ($products as $product) {
+                if ($product->orderItems()->exists()) {
+                    $productsWithOrders[] = $product->name;
+                } else {
+                    $productsToDelete[] = $product->id;
+                }
+            }
+
+            if (!empty($productsWithOrders)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Không thể xóa các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
+                ], 400);
+            }
+
+            if (!empty($productsToDelete)) {
+                Product::whereIn('id', $productsToDelete)->delete();
+            }
 
             return response()->json([
                 'success' => true,
@@ -705,6 +733,13 @@ class ProductController extends Controller
     {
         try {
             $product = Product::onlyTrashed()->findOrFail($id);
+
+            // Kiểm tra sản phẩm có trong đơn hàng
+            $hasOrder = $product->orderItems()->exists();
+            
+            if ($hasOrder) {
+                return redirect()->back()->with('error', 'Không thể xóa vĩnh viễn sản phẩm đã có trong đơn hàng');
+            }
 
             // Xóa ảnh sản phẩm
             if ($product->thumbnail) {
@@ -760,8 +795,25 @@ class ProductController extends Controller
             ]);
 
             $products = Product::onlyTrashed()->whereIn('id', $validated['ids'])->get();
+            $productsWithOrders = [];
+            $productsToDelete = [];
 
             foreach ($products as $product) {
+                if ($product->orderItems()->exists()) {
+                    $productsWithOrders[] = $product->name;
+                } else {
+                    $productsToDelete[] = $product;
+                }
+            }
+
+            if (!empty($productsWithOrders)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Không thể xóa vĩnh viễn các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
+                ], 400);
+            }
+
+            foreach ($productsToDelete as $product) {
                 // Xóa ảnh sản phẩm
                 if ($product->thumbnail) {
                     Storage::disk('public')->delete($product->thumbnail);

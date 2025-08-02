@@ -17,6 +17,7 @@ class Order extends Model
         'note',
         'total_amount',
         'shipping_type',
+        'shipping_fee',
         'is_paid',
         'is_refunded',
         'is_refunded_canceled',
@@ -100,5 +101,15 @@ class Order extends Model
             'nhanh'  => 'Giao hàng nhanh',
             default  => 'Không rõ hình thức',
         };
+    }
+
+    public function getShippingFeeFormattedAttribute()
+    {
+        return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
+    }
+
+    public function getSubtotalAttribute()
+    {
+        return $this->total_amount - ($this->shipping_fee ?? 0);
     }
 }

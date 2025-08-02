@@ -31,7 +31,7 @@
         <tbody>
             @foreach($orders as $order)
                 @php
-                    $currentStatus = $order->currentStatus;
+                    $currentStatus = $order->currentOrderStatus;
                     $statusId = $currentStatus ? $currentStatus->order_status_id : 1; // fallback về 1 (Chờ xác nhận)
                     $statusName = $currentStatus && $currentStatus->status ? $currentStatus->status->name : 'Chờ xác nhận';
                     $badgeClass = match ($statusId) {
