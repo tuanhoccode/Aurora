@@ -303,7 +303,8 @@ class ProductController extends Controller
             'variants.attributeValues.attribute',
             'variants.attributeValues' => function($query) {
                 $query->with('attribute');
-            }
+            },
+            'variants.images'
         ]);
 
         return view('admin.products.show', compact('product'));

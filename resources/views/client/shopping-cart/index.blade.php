@@ -1013,8 +1013,8 @@
                         <form id="cart-checkout-form" method="POST" action="{{ route('checkout') }}"
                             style="position:relative;">
                             @csrf
-                            <button type="button" id="bulk-delete-btn" class="btn btn-danger bulk-delete-floating-btn">
-                                <i class="fa fa-trash"></i> Xóa sản phẩm đã chọn
+                            <button type="button" id="bulk-delete-btn" class="btn btn-danger bulk-delete-floating-btn" disabled>
+                                <i class="fa fa-trash"></i> Xóa
                             </button>
                             <div id="cartTable">
                                 <div class="table-responsive scrollbar mx-n1 px-1">
@@ -1204,12 +1204,12 @@
                                                     <td class="align-middle white-space-nowrap text-end pe-0 ps-3">
                                                         <form action="{{ url('/shopping-cart/remove/' . $item->id) }}"
                                                             method="POST"
-                                                            onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');"
-                                                            style="display:inline;">
+                                                            class="single-delete-form"
+                                                            data-item-id="{{ $item->id }}">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-sm" style="color:#b0b3b8;"
-                                                                title="Xóa sản phẩm"
+                                                                title="Xóa"
                                                                 onmouseover="this.style.color='#ef5350'"
                                                                 onmouseout="this.style.color='#b0b3b8'">
                                                                 <span class="fa-regular fa-trash-can"></span>
@@ -1276,6 +1276,42 @@
             </div>
         </div>
     </section>
+    <!-- Modal xác nhận xóa hàng loạt -->
+    <div class="modal fade" id="confirmBulkDeleteModal" tabindex="-1" aria-labelledby="confirmBulkDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmBulkDeleteLabel">Xác nhận xóa sản phẩm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <span id="bulk-delete-modal-message">Bạn có chắc muốn xóa các sản phẩm đã chọn khỏi giỏ hàng?</span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal xác nhận xóa từng sản phẩm -->
+    <div class="modal fade" id="confirmSingleDeleteModal" tabindex="-1" aria-labelledby="confirmSingleDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmSingleDeleteLabel">Xác nhận xóa sản phẩm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <span id="single-delete-modal-message">Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirm-single-delete-btn">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -1421,16 +1457,17 @@
             }
 
             function toggleQtyButtons(row, qty, stock) {
-                const plusBtn = row.querySelector('.qty-btn.plus');
-                const minusBtn = row.querySelector('.qty-btn.minus');
-                if (plusBtn) plusBtn.disabled = qty >= stock;
+                const plusBtn = row.querySelector('.qty-btn-custom.plus');
+                const minusBtn = row.querySelector('.qty-btn-custom.minus');
+                // Không disable plusBtn khi đạt tối đa, chỉ disable nếu hết hàng
+                if (plusBtn) plusBtn.disabled = stock < 1;
                 if (minusBtn) minusBtn.disabled = qty <= 1;
             }
 
             let debounceTimers = {};
 
             cartTableBody.addEventListener('click', function(e) {
-                const btn = e.target.closest('.qty-btn');
+                const btn = e.target.closest('.qty-btn-custom');
                 if (!btn) return;
                 const row = btn.closest('tr[data-item-id]');
                 if (!row) return;
@@ -1454,6 +1491,10 @@
                         return;
                     }
                     qty++;
+                    if (qty > stock) {
+                        qty = stock;
+                        if (window.toastr) toastr.error('Chỉ còn ' + stock + ' sản phẩm trong kho!');
+                    }
                 } else if (btn.classList.contains('minus')) {
                     if (qty <= 1) return;
                     qty--;
@@ -1668,13 +1709,14 @@
             function updateBulkDeleteBtn() {
                 const checked = getAllItemCheckboxes().filter(cb => cb.checked);
                 if (checked.length > 0) {
-                    bulkDeleteBtn.style.display = 'inline-block';
+                    bulkDeleteBtn.disabled = false;
                     bulkDeleteBtn.innerHTML =
-                        `<i class="fa fa-trash"></i> Xóa ${checked.length > 1 ? checked.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'}`;
+                        `<i class="fa fa-trash"></i> Xóa`;
                 } else {
-                    bulkDeleteBtn.style.display = 'none';
-                    bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa sản phẩm đã chọn`;
+                    bulkDeleteBtn.disabled = true;
+                    bulkDeleteBtn.innerHTML = `<i class="fa fa-trash"></i> Xóa`;
                 }
+                bulkDeleteBtn.style.display = 'inline-block';
             }
 
             cartTableBody.addEventListener('change', function(e) {
@@ -1689,45 +1731,59 @@
 
             updateBulkDeleteBtn();
 
-            if (bulkDeleteBtn) {
+            // Thay thế sự kiện click nút bulkDeleteBtn:
                 bulkDeleteBtn.addEventListener('click', function() {
                     const checked = getAllItemCheckboxes().filter(cb => cb.checked);
                     if (checked.length === 0) return;
                     const ids = checked.map(cb => cb.value);
-                    if (!confirm(
-                            `Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`
-                            )) return;
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
-                        'content');
+                // Cập nhật nội dung modal
+                const msg = `Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`;
+                document.getElementById('bulk-delete-modal-message').textContent = msg;
+                // Lưu ids vào modal để dùng khi xác nhận
+                document.getElementById('confirm-bulk-delete-btn').dataset.ids = JSON.stringify(ids);
+                // Hiện modal (Bootstrap 5)
+                const modal = new bootstrap.Modal(document.getElementById('confirmBulkDeleteModal'));
+                modal.show();
+            });
+            // Xử lý xác nhận xóa trong modal
+            if (document.getElementById('confirm-bulk-delete-btn')) {
+                document.getElementById('confirm-bulk-delete-btn').addEventListener('click', function() {
+                    const ids = JSON.parse(this.dataset.ids || '[]');
+                    if (!ids.length) return;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     fetch('/shopping-cart/bulk-delete', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify({
-                                ids
-                            })
+                        body: JSON.stringify({ ids })
                         })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
                                 ids.forEach(id => {
-                                    const row = document.querySelector(
-                                        `tr[data-item-id="${id}"]`);
+                                const row = document.querySelector(`tr[data-item-id="${id}"]`);
                                     if (row) row.remove();
                                 });
                                 updateCartSummary();
                                 updateBulkDeleteBtn();
                                 updateSelectAllState();
-                                if (window.toastr) toastr.success('Đã xóattet các sản phẩm đã chọn!');
+                            if (window.toastr) toastr.success('Đã xóa các sản phẩm đã chọn!');
                             } else {
-                                if (window.toastr) toastr.error(data.message ||
-                                    'Có lỗi khi xóa hàng loạt!');
+                            if (window.toastr) toastr.error(data.message || 'Có lỗi khi xóa hàng loạt!');
                             }
+                        // Ẩn modal
+                        const modalEl = document.getElementById('confirmBulkDeleteModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
                         })
                         .catch(() => {
                             if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
+                        // Ẩn modal
+                        const modalEl = document.getElementById('confirmBulkDeleteModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
                         });
                 });
             }

@@ -303,7 +303,7 @@
                                     <th>Ảnh chính</th>
                                     <th>Thư viện ảnh</th>
                                     <th>Lượt mua</th>
-                                    <th style="width: 100px;">Thao tác</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
@@ -343,8 +343,10 @@
                                                 <div class="position-relative" style="width: 60px; height: 60px;">
                                                     <img src="{{ asset('storage/' . $image->url) }}" 
                                                          class="img-thumbnail h-100 w-100" 
-                                                         style="object-fit: cover;"
-                                                         alt="Variant image">
+                                                         style="object-fit: cover; cursor: pointer;"
+                                                         alt="Variant image"
+                                                         onclick="showVariantImages({{ $variant->id }}, {{ json_encode($variant->images->pluck('url')->toArray()) }})"
+                                                         title="Click để xem ảnh lớn">
                                                 </div>
                                             @empty
                                                 <span class="text-muted">Chưa có ảnh</span>
@@ -356,11 +358,7 @@
                                             <i class="fas fa-shopping-cart me-1"></i>{{ number_format($purchaseCount) }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <a href="{{ route('admin.products.variants.edit', [$product->id, $variant->id]) }}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </td>
+
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -455,6 +453,30 @@ function deleteVariantImage(productId, variantId, imageId) {
 $(document).ready(function() {
     $('[data-bs-toggle="tooltip"]').tooltip();
 });
+
+// Hàm hiển thị ảnh biến thể trong modal
+function showVariantImages(variantId, imageUrls) {
+    const container = document.getElementById('variantImagesContainer');
+    container.innerHTML = '';
+    
+    imageUrls.forEach(function(url) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 col-sm-6';
+        col.innerHTML = `
+            <div class="text-center">
+                <img src="/storage/${url}" 
+                     class="img-fluid rounded shadow-sm" 
+                     style="max-height: 300px; object-fit: cover;"
+                     alt="Variant image">
+            </div>
+        `;
+        container.appendChild(col);
+    });
+    
+    // Hiển thị modal
+    const modal = new bootstrap.Modal(document.getElementById('variantImagesModal'));
+    modal.show();
+}
 </script>
 @endpush
 

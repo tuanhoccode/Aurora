@@ -492,13 +492,13 @@
                <div class="col-xl-12">
                   <div class="tp-section-title-wrapper-2 mb-50">
                      <span class="tp-section-title-pre-2">
-                        Bán chạy tuần này
+                        {{-- Bán chạy tuần này --}}
                         <svg width="82" height="22" viewBox="0 0 82 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                            <path d="M81 14.5798C0.890564 -8.05914 -5.81154 0.0503902 5.00322 21" stroke="currentColor"
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />
                         </svg>
                      </span>
-                     <h3 class="tp-section-title-2">Nổi bật tuần này</h3>
+                     <h3 class="tp-section-title-2">Sản phẩm nổi bật</h3>
                   </div>
                </div>
             </div>

@@ -1,7 +1,6 @@
 <?php
 
 
-
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -40,11 +39,11 @@ use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
 
 
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
@@ -395,7 +394,8 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
     Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
-    Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
+    Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
@@ -431,6 +431,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 

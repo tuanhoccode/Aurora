@@ -57,35 +57,49 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-    public function store(StoreUserRequest $request)
-    {
-        try {
-            $data = $request->validated();
-            $data['password'] = Hash::make($data['password']);
-            $data['is_change_password'] = 0;
+public function store(StoreUserRequest $request)
+{
+    try {
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
+        $data['is_change_password'] = 0;
 
-            if ($request->hasFile('avatar')) {
-                $file = $request->file('avatar');
-                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('avatars', $filename, 'public');
-                $data['avatar'] = $path;
-            }
-
-            $user = User::create($data);
-
-            \App\Models\UserAddress::create([
-                'user_id' => $user->id,
-                'address' => $request->input('address'),
-                'phone_number' => $request->input('address_phone'),
-                'fullname' => $request->input('address_name'),
-                'is_default' => 1,
-            ]);
-
-            return redirect()->route('admin.users.index')->with('success', 'Thêm người dùng thành công.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm người dùng: ' . $e->getMessage());
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('avatars', $filename, 'public');
+            $data['avatar'] = $path;
         }
+
+        //Tạo user
+        $user = User::create($data);
+
+        //Gửi email xác thực ngay lập tức
+        $user->sendEmailVerificationNotification();
+
+        //Chỉ tạo địa chỉ khi admin thực sự nhập đầy đủ
+        if (
+            $request->filled('address')
+            && $request->filled('address_phone')
+            && $request->filled('fullname_address') 
+        ) {
+            \App\Models\UserAddress::create([
+                'user_id'      => $user->id,
+                'address'      => $request->input('address'),
+                'phone_number' => $request->input('address_phone'),
+                'fullname'     => $request->input('fullname_address'),
+                'is_default'   => 1,
+            ]);
+        }
+
+        return redirect()->route('admin.users.index')
+                         ->with('success', 'Thêm người dùng thành công.');
+    } catch (\Exception $e) {
+        return redirect()->back()
+                         ->with('error', 'Có lỗi xảy ra khi thêm người dùng: ' . $e->getMessage());
     }
+}
+
 
     public function changeRole(Request $request, User $user)
     {
@@ -196,26 +210,33 @@ class UserController extends Controller
 
 
 
-    public function destroy(Request $request, User $user)
-    {
-        try {
-            $user->delete();
+public function destroy(Request $request, User $user)
+{
+    try {
+        $user->delete();
 
-            $currentPage = $request->input('page', 1);
-            $queryParams = $request->except('_token', '_method');
+        $currentPage = $request->input('page', 1);
+        $queryParams = $request->except('_token', '_method');
 
-            $perPage = 10;
-            $totalRecords = User::count();
-            $lastPage = (int) ceil($totalRecords / $perPage);
+        $perPage = 10;
+        $totalRecords = User::count();
+        $lastPage = (int) ceil($totalRecords / $perPage);
 
-            if ($currentPage > $lastPage && $lastPage > 0) {
-                $currentPage = $lastPage;
-            }
-
-            return redirect()->route('admin.users.index', array_merge($queryParams, ['page' => $currentPage]))
-                ->with('success', 'Xóa tài khoản thành công.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+        if ($currentPage > $lastPage && $lastPage > 0) {
+            $currentPage = $lastPage;
         }
+
+        return redirect()->route('admin.users.index', array_merge($queryParams, ['page' => $currentPage]))
+            ->with('success', 'Xóa tài khoản thành công.');
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Kiểm tra xem có phải lỗi khóa ngoại không (mã lỗi 1451)
+        if ($e->getCode() == '23000' && str_contains($e->getMessage(), '1451')) {
+            return redirect()->back()->with('error', 'Không thể xóa tài khoản này vì tài khoản đã phát sinh giao dịch hoặc dữ liệu liên quan.');
+        }
+        return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
     }
+}
+
 }
