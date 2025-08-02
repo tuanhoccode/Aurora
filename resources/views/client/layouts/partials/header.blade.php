@@ -182,8 +182,11 @@
                                             <span class="tp-header-action-badge cart-count">
                                                 @if(Auth::check())
                                                     @php
-                                                        $sessionCart = session("cart_" . Auth::id(), []);
-                                                        $cartCount = count($sessionCart);
+                                                        $cart = \App\Models\Cart::where('user_id', Auth::id())
+                                                            ->where('status', 'pending')
+                                                            ->with('items')
+                                                            ->first();
+                                                        $cartCount = $cart ? $cart->items->count() : 0;
                                                     @endphp
                                                     {{ $cartCount }}
                                                 @else

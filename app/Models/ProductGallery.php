@@ -25,7 +25,7 @@ class ProductGallery extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->url) {
-            return asset('assets2/img/product/2/prodcut-1.jpg');
+            return asset('assets2/img/product/2/default.png');
         }
         return asset('storage/' . $this->url);
     }
