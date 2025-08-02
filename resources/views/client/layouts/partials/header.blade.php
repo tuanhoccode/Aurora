@@ -90,9 +90,9 @@
                                             </ul>
                                         </li>
                                         <li class="has-mega-menu">
-                                            <a href="{{ route('shop') }}">Sản phẩm</a>
+                                            <a href="{{ route('shop') }}">Cửa hàng</a>
                                         </li>
-                                        {{-- <li class="has-dropdown has-mega-menu">
+                                        <li class="has-dropdown has-mega-menu">
                                             <a href="">Sản phẩm</a>
                                             <ul class="tp-submenu tp-mega-menu mega-menu-style-2">
                                                 <li class="has-dropdown">
@@ -116,7 +116,7 @@
                                                     </ul>
                                                 </li>
                                             </ul>
-                                        </li> --}}
+                                        </li>
                                         <li><a href="{{ route('contact') }}">Liên hệ</a></li>
                                     </ul>
                                 </nav>
@@ -253,45 +253,15 @@
 </header>
 
 <style>
-    /* General header styling */
-    .tp-header-area {
-        position: relative;
-        z-index: 1000;
-    }
-
-    /* Main menu styling */
-    .main-menu ul {
-        display: flex;
-        align-items: center;
-        gap: 30px; /* Khoảng cách giữa các mục menu */
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .main-menu ul li {
+    .tp-header-action-item.has-dropdown {
         position: relative;
     }
 
-    .main-menu ul li a {
-        display: block;
-        font-size: 16px;
-        color: #222;
-        text-decoration: none;
-        padding: 10px 0; /* Padding dọc để tăng vùng nhấp */
-        transition: color 0.3s ease;
-    }
-
-    .main-menu ul li a:hover {
-        color: #c0392b; /* Màu khi hover */
-    }
-
-    /* Dropdown menu styling */
-    .tp-submenu {
+    .tp-header-action-item.has-dropdown>.tp-submenu {
         position: absolute;
+        right: 0;
         top: 100%;
-        left: 0;
-        min-width: 200px;
+        min-width: 180px;
         background: #fff;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
         border-radius: 4px;
@@ -299,256 +269,76 @@
         z-index: 100;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
     }
 
-    .main-menu ul li:hover > .tp-submenu {
+    .tp-header-action-item.has-dropdown:hover>.tp-submenu,
+    .tp-header-action-item.has-dropdown:focus-within>.tp-submenu {
         opacity: 1;
         visibility: visible;
     }
 
-    .tp-submenu li {
+    .tp-header-action-item.has-dropdown>.tp-submenu li {
         list-style: none;
         padding: 0 20px;
     }
 
-    .tp-submenu li a {
+    .tp-header-action-item.has-dropdown>.tp-submenu li a,
+    .tp-header-action-item.has-dropdown>.tp-submenu li span {
         display: block;
         color: #222;
-        padding: 8px 0;
-        font-size: 15px;
+        padding: 6px 0;
         text-decoration: none;
+        font-size: 15px;
     }
 
-    .tp-submenu li a:hover {
+    .tp-header-action-item.has-dropdown>.tp-submenu li a:hover {
         color: #c0392b;
     }
 
-    /* Account dropdown specific styling */
-    .tp-header-action-item.has-dropdown {
-        position: relative;
+    .tp-account-menu {
+        width: 240px;
+        padding: 10px 0;
     }
-
-    .tp-header-action-item.has-dropdown > .tp-submenu {
-        right: 0;
-        left: auto;
-        min-width: 240px;
-        padding: 15px 0; /* Padding lớn hơn cho menu tài khoản */
+    .tp-account-menu-header {
+        padding: 10px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 10px;
+        line-height: 1.4;
     }
-
-    .tp-header-action-item.has-dropdown:hover > .tp-submenu,
-    .tp-header-action-item.has-dropdown:focus-within > .tp-submenu {
-        opacity: 1;
-        visibility: visible;
+    .tp-account-menu-name {
+        display: block;
+        font-weight: 600;
+        color: #1c1c1e;
     }
-
+    .tp-account-menu-email {
+        display: block;
+        font-size: 0.85rem;
+        color: #777;
+    }
     .tp-account-menu li a {
         display: flex;
         align-items: center;
-        gap: 12px; /* Khoảng cách giữa icon và văn bản */
-        font-size: 15px;
-        padding: 10px 20px;
-        color: #222;
+        gap: 12px;
+        font-size: 1rem;
+        padding: 8px 20px;
     }
-
     .tp-account-menu li a i {
-        width: 20px;
+        width: 16px;
         text-align: center;
         color: #888;
     }
-
-    .tp-account-menu li a:hover {
-        color: #c0392b;
-        background: #f9f9f9; /* Hiệu ứng hover nhẹ */
-    }
-
-    .tp-account-menu-header {
-        padding: 12px 20px;
-        border-bottom: 1px solid #f0f0f0;
-        margin-bottom: 12px;
-    }
-
-    .tp-account-menu-name {
-        font-weight: 600;
-        font-size: 16px;
-        color: #1c1c1e;
-    }
-
     .tp-account-menu-divider {
         height: 1px;
         background-color: #f0f0f0;
-        margin: 12px 0;
+        margin: 10px 0;
     }
-
-    /* Header action items (search, cart, account) */
-    .tp-header-bottom-right {
-        display: flex;
-        align-items: center;
-        gap: 20px; /* Khoảng cách giữa các phần tử hành động */
-        justify-content: flex-end;
+    .tp-account-menu li > span {
+        display: none; /* Hide the old username span */
     }
-
-    .tp-header-action {
-        display: flex;
-        align-items: center;
-        gap: 15px; /* Khoảng cách giữa các icon */
-    }
-
-    .tp-header-action-item {
-        position: relative;
-    }
-
-    .tp-header-action-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #222;
-    }
-
-    .tp-header-action-badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #c0392b;
-        color: #fff;
-        border-radius: 50%;
-        font-size: 12px;
-        width: 18px;
-        height: 18px;
-        line-height: 18px;
-        text-align: center;
-    }
-
-    /* Search form */
-    .tp-header-search-2 {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .tp-header-search-2 input {
-        padding: 8px 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        width: 200px; /* Chiều rộng cố định cho ô tìm kiếm */
-    }
-
-    .tp-header-search-2 button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #222;
-    }
-
-    /* Back to top button */
-    .back-to-top-wrapper {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 100;
-    }
-
-    .back-to-top-btn {
-        background: #c0392b;
-        border: none;
-        border-radius: 4px;
-        padding: 10px;
-        cursor: pointer;
-        color: #fff;
-    }
-
-    /* Search area */
-    .tp-search-area {
-        padding: 20px 0;
-    }
-
-    .tp-search-form {
-        text-align: center;
-    }
-
-    .tp-search-input {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .tp-search-input input {
-        padding: 10px 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        width: 300px;
-        max-width: 100%;
-    }
-
-    .tp-search-input button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #222;
-    }
-
-    .tp-search-close-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 24px;
-        color: #222;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
-        .main-menu ul {
-            gap: 20px; /* Giảm khoảng cách trên màn hình nhỏ hơn */
-        }
-
-        .tp-header-search-2 input {
-            width: 150px;
-        }
-    }
-
-    @media (max-width: 991px) {
-        .main-menu {
-            display: none; /* Ẩn menu chính trên mobile */
-        }
-
-        .tp-header-bottom-right {
-            gap: 15px;
-        }
-
-        .tp-header-action {
-            gap: 10px;
-        }
-
-        .tp-header-search-2 input {
-            width: 120px;
-        }
-    }
-
-    @media (max-width: 767px) {
-        .tp-header-search-2 {
-            display: none; /* Ẩn ô tìm kiếm trên mobile */
-        }
-
-        .tp-header-action {
-            gap: 8px;
-        }
-
-        .tp-header-bottom-right {
-            padding-left: 0;
-        }
-    }
-
-    /* Hamburger menu for mobile */
-    .tp-offcanvas-open-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 5px;
+    .tp-header-action-item.has-dropdown .tp-account-menu {
+        left: 50%;
+        transform: translateX(-50%);
     }
 </style>
 

@@ -37,18 +37,11 @@ class CheckoutController extends Controller
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
             }
 
-            // Lấy selected_items từ query string hoặc session
-            $selectedItems = $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : session('selected_items', []);
-
-            // Kiểm tra nếu không có selected_items
-            if (empty($selectedItems)) {
-                Log::warning('No selected items found in checkout', ['user_id' => $userId]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
-            }
+            // Lấy selected_items từ query string
+            $selectedItems = $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : [];
 
             // Lưu selected_items vào session
             session(['selected_items' => $selectedItems]);
-            Log::info('Selected Items in index', ['selected_items' => $selectedItems]);
 
             // Tạo cart items từ session
             $cartItems = collect();
@@ -57,17 +50,17 @@ class CheckoutController extends Controller
                 if (!empty($selectedItems) && !in_array($itemData['id'], $selectedItems)) {
                     continue;
                 }
-
+                
                 $product = \App\Models\Product::with('categories')->find($itemData['product_id']);
                 if (!$product) continue;
-
+                
                 $variant = null;
                 if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
                     $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
                 }
-
+                
                 $currentPrice = $variant ? $variant->current_price : $product->current_price;
-
+                
                 $item = (object) [
                     'id' => $itemData['id'],
                     'product_id' => $product->id,
@@ -76,14 +69,12 @@ class CheckoutController extends Controller
                     'product' => $product,
                     'productVariant' => $variant,
                     'price_at_time' => $currentPrice,
-                    'variant_name' => $variant ? $variant->name : null, // Thêm variant_name nếu cần
                 ];
-
+                
                 $cartItems->push($item);
             }
 
             if ($cartItems->isEmpty()) {
-                Log::warning('No valid cart items after filtering', ['selected_items' => $selectedItems]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
             }
 
@@ -94,10 +85,6 @@ class CheckoutController extends Controller
 
             if ($discontinuedItems->isNotEmpty()) {
                 $discontinuedProductNames = $discontinuedItems->pluck('product.name')->implode(', ');
-                Log::warning('Checkout attempted with discontinued products', [
-                    'user_id' => Auth::id(),
-                    'discontinued_products' => $discontinuedProductNames
-                ]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Không thể thanh toán vì các sản phẩm sau đã ngừng kinh doanh: ' . $discontinuedProductNames);
             }
 
@@ -162,15 +149,7 @@ class CheckoutController extends Controller
                 'shipping_type' => 'nullable|in:thường,nhanh',
                 'payment_method' => 'nullable|in:cod,vnpay',
                 'note' => 'nullable|string|max:500',
-                'selected_items' => 'nullable', // Thêm validation cho selected_items
             ]);
-
-            // Cập nhật selected_items vào session nếu có
-            if ($request->has('selected_items')) {
-                $selectedItems = json_decode($request->selected_items, true);
-                session(['selected_items' => $selectedItems]);
-                Log::info('Received selected_items in update', ['selected_items' => $selectedItems]);
-            }
 
             $shippingFee = $request->shipping_type === 'nhanh' ? 30000 : 16500;
             session([
@@ -204,16 +183,16 @@ class CheckoutController extends Controller
             $userId = Auth::id();
             $sessionCart = session("cart_{$userId}", []);
             $cartTotal = 0;
-
+            
             foreach ($sessionCart as $itemData) {
                 $product = \App\Models\Product::find($itemData['product_id']);
                 if (!$product) continue;
-
+                
                 $variant = null;
                 if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
                     $variant = \App\Models\ProductVariant::find($itemData['product_variant_id']);
                 }
-
+                
                 $currentPrice = $variant ? $variant->current_price : $product->current_price;
                 $cartTotal += $currentPrice * $itemData['quantity'];
             }
@@ -428,17 +407,17 @@ class CheckoutController extends Controller
                 if (!empty($selectedItems) && !in_array($itemData['id'], $selectedItems)) {
                     continue;
                 }
-
+                
                 $product = \App\Models\Product::with('categories')->find($itemData['product_id']);
                 if (!$product) continue;
-
+                
                 $variant = null;
                 if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
                     $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
                 }
-
+                
                 $currentPrice = $variant ? $variant->current_price : $product->current_price;
-
+                
                 $item = (object) [
                     'id' => $itemData['id'],
                     'product_id' => $product->id,
@@ -448,7 +427,7 @@ class CheckoutController extends Controller
                     'productVariant' => $variant,
                     'price_at_time' => $currentPrice,
                 ];
-
+                
                 $cartItems->push($item);
             }
 
@@ -600,7 +579,7 @@ class CheckoutController extends Controller
                     $remainingItems[] = $itemData;
                 }
             }
-
+            
             session(["cart_{$userId}" => $remainingItems]);
             session()->forget(['coupon', 'selected_items']);
 
