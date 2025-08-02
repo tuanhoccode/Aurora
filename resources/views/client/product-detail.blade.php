@@ -5,314 +5,260 @@
         $hasVariants = isset($product->variants) && count($product->variants) > 0;
     @endphp
     <style>
-    .color-circle {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: inline-block;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
-    }
+        .color-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
 
-    .tp-color-variation-btn.active .color-circle {
-        border: 3px solid #000;
-        box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
-    }
+        .tp-color-variation-btn.active .color-circle {
+            border: 3px solid #000;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+        }
 
-    .tp-product-related-slider .swiper-button-next,
-    .tp-product-related-slider .swiper-button-prev {
-        color: #222;
-        background: #fff;
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        font-size: 0;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
-        border: 2px solid #e0e0e0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.18s;
-        z-index: 10;
-    }
+        /* Cho nút điều hướng màu đen */
+        .tp-product-related-slider .swiper-button-next,
+        .tp-product-related-slider .swiper-button-prev {
+            color: #222;
+            background: #fff;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.18s;
+            z-index: 10;
+        }
 
-    .tp-product-related-slider .swiper-button-next:after,
-    .tp-product-related-slider .swiper-button-prev:after {
-        display: none;
-    }
-
-    .tp-product-related-slider .swiper-button-next svg,
-    .tp-product-related-slider .swiper-button-prev svg {
-        width: 28px;
-        height: 28px;
-        display: block;
-        fill: #222;
-        transition: fill 0.2s;
-    }
-
-    .tp-product-related-slider .swiper-button-next:hover,
-    .tp-product-related-slider .swiper-button-prev:hover {
-        background: #222;
-        color: #fff;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-        transform: scale(1.08);
-    }
-
-    .tp-product-related-slider .swiper-button-next:hover svg,
-    .tp-product-related-slider .swiper-button-prev:hover svg {
-        fill: #fff;
-    }
-
-    .tp-product-related-slider .swiper-button-prev {
-        left: 0;
-    }
-
-    .tp-product-related-slider .swiper-button-next {
-        right: 0;
-    }
-
-    @media (max-width: 768px) {
-        .tp-product-related-slider .swiper-button-prev,
-        .tp-product-related-slider .swiper-button-next {
+        .tp-product-related-slider .swiper-button-next:after,
+        .tp-product-related-slider .swiper-button-prev:after {
             display: none;
         }
-    }
 
-    .related-product-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
-        border: 1px solid #f0f0f0;
-        padding: 22px 18px 18px 18px;
-        transition: box-shadow 0.25s, transform 0.2s;
-        text-align: center;
-        position: relative;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
+        .tp-product-related-slider .swiper-button-next svg,
+        .tp-product-related-slider .swiper-button-prev svg {
+            width: 28px;
+            height: 28px;
+            display: block;
+            fill: #222;
+            transition: fill 0.2s;
+        }
 
-    .related-product-card:hover {
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
-        transform: translateY(-4px) scale(1.03);
-    }
+        .tp-product-related-slider .swiper-button-next:hover,
+        .tp-product-related-slider .swiper-button-prev:hover {
+            background: #222;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            transform: scale(1.08);
+        }
 
-    .related-product-thumb {
-        width: 100%;
-        height: 170px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 18px;
-        overflow: hidden;
-    }
+        .tp-product-related-slider .swiper-button-next:hover svg,
+        .tp-product-related-slider .swiper-button-prev:hover svg {
+            fill: #fff;
+        }
 
-    .related-product-thumb img {
-        max-height: 150px;
-        max-width: 100%;
-        object-fit: contain;
-        border-radius: 10px;
-        transition: transform 0.25s;
-    }
+        .tp-product-related-slider .swiper-button-prev {
+            left: 0;
+        }
 
-    .related-product-card:hover .related-product-thumb img {
-        transform: scale(1.08);
-    }
+        .tp-product-related-slider .swiper-button-next {
+            right: 0;
+        }
 
-    .related-product-title {
-        font-size: 17px;
-        font-weight: 600;
-        margin-bottom: 6px;
-        color: #222;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        @media (max-width: 768px) {
 
-    .related-product-cats {
-        font-size: 13px;
-        color: #888;
-        margin-bottom: 8px;
-    }
+            .tp-product-related-slider .swiper-button-prev,
+            .tp-product-related-slider .swiper-button-next {
+                display: none;
+            }
+        }
 
-    .related-product-price {
-        font-size: 18px;
-        font-weight: 700;
-        color: #e53935;
-        margin-bottom: 14px;
-    }
+        /* --- Related Products Modern Card --- */
+        .related-product-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+            border: 1px solid #f0f0f0;
+            padding: 22px 18px 18px 18px;
+            transition: box-shadow 0.25s, transform 0.2s;
+            text-align: center;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
 
-    .related-product-btn {
-        display: inline-block;
-        background: var(--tp-theme-primary, #2d8cf0);
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 7px 18px;
-        font-size: 15px;
-        font-weight: 500;
-        margin-top: auto;
-        transition: background 0.2s;
-        text-decoration: none;
-    }
+        .related-product-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
+            transform: translateY(-4px) scale(1.03);
+        }
 
-    .related-product-btn:hover {
-        background: #1a6dc2;
-        color: #fff;
-    }
-
-    @media (max-width: 767px) {
         .related-product-thumb {
-            height: 120px;
+            width: 100%;
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+
+        .related-product-thumb img {
+            max-height: 150px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            transition: transform 0.25s;
+        }
+
+        .related-product-card:hover .related-product-thumb img {
+            transform: scale(1.08);
         }
 
         .related-product-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #222;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .related-product-cats {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .related-product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e53935;
+            margin-bottom: 14px;
+        }
+
+        .related-product-btn {
+            display: inline-block;
+            background: var(--tp-theme-primary, #2d8cf0);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 18px;
             font-size: 15px;
+            font-weight: 500;
+            margin-top: auto;
+            transition: background 0.2s;
+            text-decoration: none;
         }
 
-        .related-product-card {
-            padding: 14px 6px 12px 6px;
+        .related-product-btn:hover {
+            background: #1a6dc2;
+            color: #fff;
         }
-    }
 
-    .tp-section-title-wrapper-6 {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 38px;
-    }
+        @media (max-width: 767px) {
+            .related-product-thumb {
+                height: 120px;
+            }
 
-    .tp-section-title-pre-6 {
-        font-size: 17px;
-        color: #4a90e2;
-        font-weight: 500;
-        text-transform: capitalize;
-        letter-spacing: 1px;
-        margin-bottom: 7px;
-        background: none;
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
+            .related-product-title {
+                font-size: 15px;
+            }
 
-    .tp-section-title-6 {
-        font-size: 2.4rem;
-        font-weight: 700;
-        color: #23272f;
-        letter-spacing: 0.5px;
-        margin: 0;
-        line-height: 1.18;
-        position: relative;
-        display: inline-block;
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
+            .related-product-card {
+                padding: 14px 6px 12px 6px;
+            }
+        }
 
-    .tp-section-title-6::after {
-        content: '';
-        display: block;
-        width: 60px;
-        height: 4px;
-        margin: 10px auto 0 auto;
-        border-radius: 2px;
-        background: #4a90e2;
-        opacity: 0.18;
-    }
+        .tp-section-title-wrapper-6 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 38px;
+        }
 
-    .tp-cart-minus.disabled,
-    .tp-cart-plus.disabled {
-        pointer-events: none;
-        opacity: 0.5;
-        background: #eee !important;
-        color: #aaa !important;
-        cursor: not-allowed !important;
-    }
+        .tp-section-title-pre-6 {
+            font-size: 17px;
+            color: #4a90e2;
+            font-weight: 500;
+            text-transform: capitalize;
+            letter-spacing: 1px;
+            margin-bottom: 7px;
+            background: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
 
-    #subImageGallery {
+        .tp-section-title-6 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #23272f;
+            letter-spacing: 0.5px;
+            margin: 0;
+            line-height: 1.18;
+            position: relative;
+            display: inline-block;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .tp-section-title-6::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            margin: 10px auto 0 auto;
+            border-radius: 2px;
+            background: #4a90e2;
+            opacity: 0.18;
+        }
+
+        .tp-cart-minus.disabled,
+        .tp-cart-plus.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            background: #eee !important;
+            color: #aaa !important;
+            cursor: not-allowed !important;
+        }
+        #subImageGallery {
         max-height: 500px;
         overflow-y: auto;
         padding-right: 8px;
-        min-width: 88px; /* Đảm bảo không gian cố định */
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
     }
 
-    #subImageGallery .sub-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
-        cursor: pointer;
-        display: block;
-        background-color: #f0f0f0; /* Màu nền placeholder */
-    }
-
-    #subImageGallery .sub-image img {
+    #subImageGallery img {
         width: 100%;
-        height: 100%;
+        height: 100px;
         object-fit: cover;
+        cursor: pointer;
         border-radius: 6px;
-        display: block;
-        transition: border 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    #subImageGallery .sub-image:hover {
+    #subImageGallery img:hover {
         transform: scale(1.05);
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-        border: 2px solid #007bff;
-    }
-
-    #subImageGallery .sub-image.skeleton {
-        position: relative;
-        overflow: hidden;
-        background: #e0e0e0;
-    }
-
-    #subImageGallery .sub-image.skeleton::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
-        background-size: 200% 100%;
-        animation: skeleton-loading 1.5s infinite;
-    }
-
-    @keyframes skeleton-loading {
-        0% {
-            background-position: 200% 0;
-        }
-        100% {
-            background-position: -200% 0;
-        }
     }
 
     .product-image-wrapper {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 16px; /* Giảm khoảng cách giữa ảnh phụ và chính */
     }
 
     .main-product-image-container {
-        width: 100%;
         max-width: 500px;
-        height: 500px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f9f9f9;
-    }
-
-    .main-product-image-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        transition: opacity 0.3s ease;
     }
 
     @media (max-width: 768px) {
@@ -321,39 +267,22 @@
             align-items: stretch;
         }
     }
+    .main-product-image-container {
+    width: 100%;
+    max-width: 500px;
+    height: 500px; /* 👈 cố định chiều cao */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .tp-color-variation-btn {
-        width: 45px !important;
-        height: 45px !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        border: 2px solid #ddd !important;
-        overflow: hidden !important;
-        background-color: transparent !important;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        margin: 5px;
-    }
-
-    .tp-color-variation-btn img {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        border-radius: 50% !important;
-    }
-
-    .tp-color-variation-btn:hover {
-        border-color: color-mix(in srgb, var(--active-border-color) 30%, #ffffff) !important;
-    }
-
-    .tp-color-variation-btn.active {
-        border-color: var(--active-border-color) !important;
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
-    }
-</style>
-
+.main-product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 👈 hoặc 'cover' nếu muốn ảnh đầy khung */
+}
+    </style>
     <main>
         <!-- breadcrumb area start -->
         <section class="breadcrumb__area breadcrumb__style-2 include-bg pt-50 pb-20">
@@ -399,22 +328,27 @@
                                 <div class="row">
                                     <!-- Ảnh con bên trái -->
                                     <div class="col-2 d-flex flex-column gap-2" id="subImageGallery">
-                                        <!-- Ảnh phụ sẽ được render bằng JavaScript -->
-                                    </div>
-
+    @if ($variants->isEmpty())
+        @foreach ($product->images as $image)
+            <img src="{{ asset('storage/' . $image->url) }}"
+                class="img-thumbnail thumbnail-preview mb-2"
+                style="width: 100%; height: 80px; object-fit: cover; cursor: pointer;"
+                onclick="document.getElementById('mainProductImage').src=this.src">
+        @endforeach
+    @endif
+</div>
                                     <!-- Ảnh chính bên phải -->
-                                    <div class="col-10 d-flex justify-content-center">
-                                        <div class="card shadow-sm border-0" style="max-width: 500px;">
-                                            <div class="position-relative overflow-hidden rounded-4"
-                                                style="width: 100%; height: 500px; display: flex; align-items: center; justify-content: center; background-color: #f9f9f9;">
-                                                <img id="mainProductImage"
-                                                    src="{{ $mainImage ? asset('storage/' . $mainImage) : asset('assets2/img/product/2/prodcut-1.jpg') }}"
-                                                    alt="{{ $product->name }}" class="img-fluid"
-                                                    style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease;"
-                                                    onerror="this.src='{{ asset('assets2/img/product/2/prodcut-1.jpg') }}'">
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="col-10 d-flex justify-content-center">
+    <div class="card shadow-sm border-0" style="max-width: 500px;">
+        <div class="position-relative overflow-hidden rounded-4" style="width: 100%; height: 500px; display: flex; align-items: center; justify-content: center; background-color: #f9f9f9;">
+            <img id="mainProductImage"
+                src="{{ asset('storage/' . $product->thumbnail) }}"
+                alt="{{ $product->name }}"
+                class="img-fluid"
+                style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease;">
+        </div>
+    </div>
+</div>
                                 </div>
                             </div>
                         </div> <!-- col end -->
@@ -451,7 +385,7 @@
                                                             <i class="far fa-star text-muted"></i>
                                                         @endif
                                                     @endfor
-                                                    <span>({{ $reviewCount }} đánh giá)</span>
+                                                    <span>({{ $reviewCount  }} đánh giá)</span>
                                                 </div>
                                             @else
                                                 <span>Chưa có đánh giá</span>
@@ -488,20 +422,15 @@
                                     @endphp
 
                                     <div class="tp-product-details-price-wrapper mb-20">
-                                        @if ($hasVariants)
-                                            @php $variant = $product->variants->first(); @endphp
-                                            <span class="tp-product-details-price new-price" id="product-price">
-                                                {{ number_format($variant->regular_price, 0, ',', '.') }} <span
-                                                    style="color: red;">₫</span>
+                                        <span class="tp-product-details-price new-price" id="product-price">
+                                            {{ number_format($unit, 0, ',', '.') }}₫
+                                        </span>
+                                        @if ($product->sale_price)
+                                            <span class="tp-product-details-price old-price" id="product-old-price">
+                                                {{ number_format($product->price, 0, ',', '.') }}₫
                                             </span>
-                                            <span id="unit-price" data-unit="{{ $variant->regular_price }}"
-                                                style="display: none;"></span>
                                         @else
-                                            <span class="tp-product-details-price new-price" id="product-price">
-                                                {{ number_format($product->price, 0, ',', '.') }} <span
-                                                    style="color: red;">₫</span>
-                                            </span>
-                                            <span id="unit-price" data-unit="{{ $product->price }}"
+                                            <span class="tp-product-details-price old-price" id="product-old-price"
                                                 style="display: none;"></span>
                                         @endif
 
@@ -510,12 +439,12 @@
                                             style="display: none;"></span>
                                     </div>
                                     {{-- Nếu không có biến thể thì hiển thị luôn --}}
-                                    {{-- @if ($product->variants->isEmpty())
+                                    @if ($product->variants->isEmpty())
                                         <div class="mt-3">
                                             <strong>Chất liệu:</strong> {{ $product->material }}
                                         </div>
-                                    @endif --}}
-
+                                    @endif
+                                                                                
                                     {{-- Nếu có biến thể thì khối ẩn, hiện khi chọn biến thể --}}
                                     @if ($product->variants->isNotEmpty())
                                         <div id="materialSection" class="mt-3 d-none">
@@ -534,30 +463,32 @@
                                     <span id="unit-price" style="display:none;">{{ $unit }}</span>
                                     <!-- variations -->
 
+
+
                                     @if ($hasVariants)
                                         @php
-                                            // Tất cả mã màu định nghĩa
+                                            // Định nghĩa tất cả các màu hệ thống
                                             $allColors = [
-                                                'DO' => ['name' => 'Đỏ'],
-                                                'VANG' => ['name' => 'Vàng'],
-                                                'DEN' => ['name' => 'Đen'],
-                                                'TRANG' => ['name' => 'Trắng'],
-                                                'XAM' => ['name' => 'Xám'],
-                                                'XA' => ['name' => 'Xanh'],
-                                                'NA' => ['name' => 'Nâu'],
-                                                'BE' => ['name' => 'Be'],
-                                                'XN' => ['name' => 'Xanh Ngọc'],
+                                                'DO' => ['name' => 'Đỏ', 'hex' => '#FF0000'],
+                                                'VANG' => ['name' => 'Vàng', 'hex' => '#F8B655'],
+                                                'DEN' => ['name' => 'Đen', 'hex' => '#000000'],
+                                                'TRANG' => ['name' => 'Trắng', 'hex' => '#FFFFFF'],
+                                                'XAM' => ['name' => 'Xám', 'hex' => '#CBCBCB'],
+                                                'XA' => ['name' => 'Xanh', 'hex' => '#00FF00'],
+                                                'NAU' => ['name' => 'Nâu', 'hex' => '#8B4513'],
+                                                'BE' => ['name' => 'Be', 'hex' => '#F5F5DC'],
+                                                'XN' => ['name' => 'Xanh Ngọc', 'hex' => '#40C4FF']
                                             ];
 
-                                            // Lấy danh sách mã màu có thật trong sản phẩm
+                                            // Tìm tất cả mã màu có thực sự xuất hiện trong SKU
                                             $productColors = collect($product->variants)
                                                 ->map(function ($variant) {
                                                     $parts = explode('-', $variant->sku);
-                                                    return strtoupper(end($parts)); // mã màu
+                                                    return strtoupper(end($parts)); // Lấy phần cuối của SKU làm mã màu
                                                 })
                                                 ->unique();
 
-                                            // Lấy danh sách size có thật
+                                            // Các size đang có
                                             $productSizes = collect($product->variants)
                                                 ->map(function ($variant) {
                                                     $parts = explode('-', $variant->sku);
@@ -566,46 +497,30 @@
                                                 ->filter()
                                                 ->unique();
 
-                                            // Danh sách ảnh đại diện cho từng màu
-                                            $colorImages = [];
-                                            foreach ($product->variants as $variant) {
-                                                $parts = explode('-', $variant->sku);
-                                                $colorCode = strtoupper(end($parts));
-                                                if (!isset($colorImages[$colorCode]) && $variant->img) {
-                                                    $colorImages[$colorCode] = $variant->img;
-                                                }
-                                            }
-
+                                            // Tất cả size định nghĩa sẵn
                                             $allSizes = ['S', 'M', 'L', 'XL', 'XXL'];
                                         @endphp
-
-                                        <!-- Màu -->
                                         <div class="tp-product-details-variation-item">
-                                            <h4 class="tp-product-details-variation-title">
-                                                Màu : <span id="selected-color-name" style="font-weight: normal;"></span>
-                                            </h4>
-                                            <div class="tp-product-details-variation-list d-flex gap-2 flex-wrap">
+                                            <h4 class="tp-product-details-variation-title">Màu :</h4>
+                                            <div class="tp-product-details-variation-list">
                                                 @foreach ($allColors as $code => $color)
                                                     @php
                                                         $isAvailable = $productColors->contains($code);
-                                                        $imgUrl = $colorImages[$code] ?? null;
                                                     @endphp
-
-                                                    @if ($isAvailable && $imgUrl)
-                                                        <button type="button"
-                                                            class="tp-color-variation-btn {{ $loop->first ? 'active' : '' }}"
-                                                            data-color="{{ $code }}"
-                                                            style="--active-border-color: {{ $color['hex'] ?? '#000' }};"
-                                                            title="{{ $color['name'] }}">
-                                                            <img src="{{ asset('storage/' . $imgUrl) }}"
-                                                                alt="{{ $color['name'] }}">
+                                                    @if ($isAvailable)
+                                                        <button type="button" class="tp-color-variation-btn"
+                                                            data-color="{{ $code }}">
+                                                            <span class="color-circle"
+                                                                style="background-color: {{ $color['hex'] }};"></span>
+                                                            <span
+                                                                class="tp-color-variation-tootltip">{{ $color['name'] }}</span>
                                                         </button>
                                                     @endif
                                                 @endforeach
+
                                             </div>
                                         </div>
 
-                                        <!-- Kích cỡ -->
                                         <div class="tp-product-details-variation-item">
                                             <h4 class="tp-product-details-variation-title">Kích cỡ :</h4>
                                             <div class="tp-product-details-variation-list">
@@ -615,32 +530,20 @@
                                                         <span>{{ $size }}</span>
                                                     </button>
                                                 @endforeach
+
                                             </div>
                                         </div>
                                     @endif
-
-                                    {{-- Thông báo sản phẩm ngừng kinh doanh --}}
-                                    @if (!$product->is_active)
-                                        <div class="alert alert-warning mb-3" role="alert">
-                                            <i class="fa fa-exclamation-triangle me-2"></i>
-                                            <strong>Sản phẩm đã ngừng kinh doanh!</strong> Sản phẩm này hiện không còn được
-                                            bán.
-                                        </div>
-                                    @endif
-
                                     {{-- Số lượng + Thêm giỏ hàng --}}
                                     <div class="tp-product-details-action-wrapper">
                                         <h3 class="tp-product-details-action-title">Số lượng</h3>
                                         <div class="tp-product-details-action-item-wrapper d-flex align-items-center">
                                             <div class="tp-product-details-quantity">
                                                 <div class="tp-product-quantity mb-15 mr-15">
-                                                    <span id="detail-cart-minus" class="tp-cart-minus"
-                                                        @if (!$product->is_active) style="opacity: 0.5; pointer-events: none;" @endif>–</span>
+                                                    <span id="detail-cart-minus" class="tp-cart-minus">–</span>
                                                     <input id="quantity" name="quantity" class="tp-cart-input"
-                                                        type="text" value="1"
-                                                        @if (!$product->is_active) disabled @endif>
-                                                    <span id="detail-cart-plus" class="tp-cart-plus"
-                                                        @if (!$product->is_active) style="opacity: 0.5; pointer-events: none;" @endif>+</span>
+                                                        type="text" value="1">
+                                                    <span id="detail-cart-plus" class="tp-cart-plus">+</span>
                                                 </div>
                                             </div>
                                             <div class="tp-product-details-add-to-cart mb-15 w-100">
@@ -655,14 +558,8 @@
                                                     <input type="hidden" name="price" id="variant_price"
                                                         value="{{ !$hasVariants ? $product->sale_price ?? $product->price : '' }}">
                                                     <button type="submit"
-                                                        class="tp-product-details-add-to-cart-btn w-100"
-                                                        @if (!$product->is_active) disabled title="Sản phẩm này đã ngừng kinh doanh" @endif>
-                                                        @if (!$product->is_active)
-                                                            Sản phẩm đã ngừng kinh doanh
-                                                        @else
-                                                            Thêm vào giỏ hàng
-                                                        @endif
-                                                    </button>
+                                                        class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ
+                                                        hàng</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -830,14 +727,8 @@
                                                     <div class="mb-3">
                                                         @php
                                                             // Chỉ lấy các đánh giá gốc
-                                                            $validReviews = $product->reviews
-                                                                ->where('is_active', 1)
-                                                                ->where('review_id', null)
-                                                                ->where('rating', '>=', 1);
-                                                            $averageRating =
-                                                                $validReviews->count() > 0
-                                                                    ? $validReviews->avg('rating')
-                                                                    : 0;
+                                                            $validReviews = $product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1);
+                                                            $averageRating = $validReviews->count() > 0 ? $validReviews->avg('rating') : 0;
                                                             $reviewCount = $validReviews->count();
                                                         @endphp
 
@@ -853,7 +744,7 @@
                                                     @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
                                                         <div class="review-item border-bottom pb-3 mb-3">
                                                             <div class="d-flex justify-content-between">
-                                                                <strong>{{ $review->user->fullname ?? 'Khách hàng' }}</strong>
+                                                                <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
                                                                 <small
                                                                     class="text-muted">{{ $review->created_at->format('d/m/Y') }}</small>
                                                             </div>
@@ -872,104 +763,92 @@
                                                         <p>Chưa có đánh giá nào cho sản phẩm này.</p>
                                                     @endforelse
                                                 </div>
-                                                <div class="tp-product-details-review-list pr-110">
-                                                    <h3 class="tp-product-details-review-title">Đánh giá và bình luận của
-                                                        khách hàng</h3>
+                                            <div class="tp-product-details-review-list pr-110">
+                                                <h3 class="tp-product-details-review-title">Đánh giá và bình luận của khách hàng</h3>
 
 
-                                                    <!-- Hiển thị reviews -->
+                                                <!-- Hiển thị reviews -->
 
-                                                    @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
-                                                        <div
-                                                            class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
+                                                    <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-thumb me-3">
                                                                 <a href="#">
-                                                                    <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                        alt="avatar" width="50">
+                                                                    <img src="{{ $review->user->avatar 
+                                                                        ? asset('storage/' . $review->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                 </a>
                                                             </div>
                                                             <div class="tp-product-details-review-avater-content">
-                                                                <div
-                                                                    class="tp-product-details-review-avater-rating text-warning mb-1">
-                                                                    {!! str_repeat('<i class="fa-solid fa-star"> </i>', $review->rating) !!}
-                                                                    {!! str_repeat('<i class="fa-regular fa-star"> </i>', 5 - $review->rating) !!}
+                                                                <div class="tp-product-details-review-avater-rating text-warning mb-1">
+                                                                    {!!str_repeat('<i class="fa-solid fa-star"> </i>' , $review->rating)!!}
+                                                                    {!!str_repeat('<i class="fa-regular fa-star"> </i>' , 5- $review->rating)!!}
                                                                 </div>
-                                                                <h3 class="tp-product-details-review-avater-title mb-1">
-                                                                    {{ $review->user->fullname }} </h3>
-                                                                <span
-                                                                    class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">{{$review->user->fullname}} </h3>
+                                                                <span class="tp-product-details-review-avater-meta d-block mb-1">{{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}</span>
                                                                 <div class="tp-product-details-review-avater-comment mb-1">
-                                                                    {{ $review->review_text }}
+                                                                    {{$review->review_text}}
                                                                 </div>
-                                                                @foreach ($review->replies->where('is_active', 1) as $reply)
-                                                                    <div
-                                                                        class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                        <strong
-                                                                            class="text-primary">{{ $reply->user->fullname ?? 'shop' }}</strong>
-                                                                        trả lời:
-                                                                        <p class="mb-0">{{ $reply->review_text }}</p>
-                                                                        <small
-                                                                            class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
-                                                                    </div>
+                                                                @foreach($review->replies->where('is_active', 1) as $reply)
+                                                                <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                    <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                    <p class="mb-0">{{$reply->review_text}}</p>
+                                                                    <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
+                                                                </div>
+
                                                                 @endforeach
-                                                                @if ($review->reason)
-                                                                    <small class="text-muted">Lý do:
-                                                                        {{ $review->reason }}</small>
+                                                                @if($review->reason)
+                                                                <small class="text-muted">Lý do: {{$review ->reason}}</small>
                                                                 @endif
                                                             </div>
-                                                        </div>
+                                                    </div>
 
-                                                    @endforeach
+                                                @endforeach
 
-                                                    <!-- Hiển thị comment -->
-                                                    @foreach ($product->comments->where('is_active', 1)->where('parent_id', null)->sortByDesc('created_at')->take(2) as $comment)
-                                                        <div
-                                                            class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                <!-- Hiển thị comment -->
+                                                @foreach($product->comments->where('is_active', 1)->where('parent_id', null) ->sortByDesc('created_at')->take(2) as $comment)
+                                                   <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $comment->user->avatar ? asset('storage/' . $comment->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                            alt="avatar" width="50">
+                                                                        <img src="{{ $comment->user->avatar 
+                                                                        ? asset('storage/' . $comment->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                             </div>
                                                             <div class="tp-product-details-review-avater-content">
-                                                                <h3 class="tp-product-details-review-avater-title mb-1">
-                                                                    {{ $comment->user->fullname }}</h3>
-                                                                <span
-                                                                    class="tp-product-details-review-avater-meta d-block mb-1">{{ $comment->created_at->format('d/m/Y') }}</span>
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">{{$comment->user->fullname}}</h3>
+                                                                <span class="tp-product-details-review-avater-meta d-block mb-1">{{$comment->created_at->format('d/m/Y')}}</span>
                                                                 <div class="tp-product-details-review-avater-comment mb-1">
-                                                                    {{ $comment->content }}
+                                                                    {{$comment->content}}
                                                                 </div>
-                                                                @foreach ($comment->replies->where('is_active', 1) as $reply)
-                                                                    <div
-                                                                        class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                        <strong
-                                                                            class="text-primary">{{ $reply->user->fullname ?? 'shop' }}</strong>
-                                                                        trả lời:
-                                                                        <p class="mb-0">{{ $reply->content }}</p>
-                                                                        <small
-                                                                            class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                                @foreach($comment->replies->where('is_active', 1) as $reply)
+                                                                    <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                        <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                        <p class="mb-0">{{$reply->content}}</p>
+                                                                        <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
                                                                     </div>
-                                                                    @if ($comment->reason)
-                                                                        <small class="text-muted">Lý do:
-                                                                            {{ $comment->reason }}</small>
+                                                                    @if($comment->reason)
+                                                                        <small class="text-muted">Lý do: {{$comment ->reason}}</small>
                                                                     @endif
                                                                 @endforeach
                                                             </div>
-                                                        </div>
+                                                   </div>
 
-                                                    @endforeach
-                                                    <!-- Phần đánh giá bình luận còn lại (ẩn) -->
+                                                @endforeach
+                                                 <!-- Phần đánh giá bình luận còn lại (ẩn) -->
                                                     <div id="more-reviews" style="display: none;">
                                                         <!-- Các đánh giá còn lại -->
-                                                        @foreach ($product->reviews->where('is_active', 1)->where('rating', '>=', 1)->sortByDesc('created_at')->skip(3) as $review)
-                                                            <div
-                                                                class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                        @foreach($product->reviews->where('is_active', 1)->where('rating', '>=', 1)->sortByDesc('created_at')->skip(3) as $review)
+                                                            <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                            alt="avatar" width="50">
+                                                                        <img src="{{ $review->user->avatar 
+                                                                        ? asset('storage/' . $review->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                                 <div class="tp-product-details-review-avater-content">
@@ -977,129 +856,110 @@
                                                                         {!! str_repeat('<i class="fa-solid fa-star"></i>', $review->rating) !!}
                                                                         {!! str_repeat('<i class="fa-regular fa-star"></i>', 5 - $review->rating) !!}
                                                                     </div>
-                                                                    <h3
-                                                                        class="tp-product-details-review-avater-title mb-1">
-                                                                        {{ $review->user->fullname }} </h3>
-                                                                    <span
-                                                                        class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
-                                                                    <div
-                                                                        class="tp-product-details-review-avater-comment mb-1">
-                                                                        {{ $review->review_text }}
+                                                                    <h3 class="tp-product-details-review-avater-title mb-1">{{$review->user->fullname}} </h3>
+                                                                    <span class="tp-product-details-review-avater-meta d-block mb-1">{{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}</span>
+                                                                    <div class="tp-product-details-review-avater-comment mb-1">
+                                                                        {{$review->review_text}}
                                                                     </div>
-                                                                    @foreach ($review->replies->where('is_active', 1) as $reply)
-                                                                        <div
-                                                                            class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                            <strong
-                                                                                class="text-primary">{{ $reply->user->fullname ?? 'Shop' }}</strong>
-                                                                            trả lời:
-                                                                            <p class="mb-0">{{ $reply->review_text }}
-                                                                            </p>
-                                                                            <small
-                                                                                class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                                    @foreach($review->replies->where('is_active', 1) as $reply)
+                                                                        <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                            <strong class="text-primary">{{$reply->user->fullname ?? 'Shop'}}</strong> trả lời:
+                                                                            <p class="mb-0">{{$reply->review_text}}</p>
+                                                                            <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
                                                                         </div>
+
                                                                     @endforeach
-                                                                    @if ($review->reason)
-                                                                        <small class="text-muted">Lý do:
-                                                                            {{ $review->reason }}</small>
+                                                                    @if($review->reason)
+                                                                        <small class="text-muted">Lý do: {{ $review->reason }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
                                                         @endforeach
 
                                                         <!-- Các bình luận còn lại -->
-                                                        @foreach ($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
-                                                            <div
-                                                                class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                        @foreach($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
+                                                            <div class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                                 <div class="tp-product-details-review-avater-thumb me-3">
                                                                     <a href="#">
-                                                                        <img src="{{ $comment->user->avatar ? asset('storage/' . $comment->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                            alt="avatar" width="50">
+                                                                        <img src="{{ $comment->user->avatar 
+                                                                        ? asset('storage/' . $comment->user->avatar) 
+                                                                        : asset('assets2/img/users/avatars.png') }}" 
+                                                                         alt="avatar" width="50">
                                                                     </a>
                                                                 </div>
                                                                 <div class="tp-product-details-review-avater-content">
-                                                                    <h3
-                                                                        class="tp-product-details-review-avater-title mb-1">
-                                                                        {{ $comment->user->fullname }}</h3>
-                                                                    <span
-                                                                        class="tp-product-details-review-avater-meta d-block mb-1">{{ $comment->created_at->format('d/m/Y') }}</span>
-                                                                    <div
-                                                                        class="tp-product-details-review-avater-comment mb-1">
-                                                                        {{ $comment->content }}
+                                                                    <h3 class="tp-product-details-review-avater-title mb-1">{{$comment->user->fullname}}</h3>
+                                                                    <span class="tp-product-details-review-avater-meta d-block mb-1">{{$comment->created_at->format('d/m/Y')}}</span>
+                                                                    <div class="tp-product-details-review-avater-comment mb-1">
+                                                                        {{$comment->content}}
                                                                     </div>
-                                                                    @foreach ($comment->replies->where('is_active', 1) as $reply)
-                                                                        <div
-                                                                            class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                            <strong
-                                                                                class="text-primary">{{ $reply->user->fullname ?? 'shop' }}</strong>
-                                                                            trả lời:
-                                                                            <p class="mb-0">{{ $reply->content }}</p>
-                                                                            <small
-                                                                                class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                                    @foreach($comment->replies->where('is_active', 1) as $reply)
+                                                                        <div class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                            <strong class="text-primary">{{$reply->user->fullname ?? 'shop'}}</strong> trả lời:
+                                                                            <p class="mb-0">{{$reply->content}}</p>
+                                                                            <small class="text-muted">{{$reply->created_at->format('d/m/Y H:i')}}</small>
                                                                         </div>
+
                                                                     @endforeach
-                                                                    @if ($comment->reason)
-                                                                        <small class="text-muted">Lý do:
-                                                                            {{ $comment->reason }}</small>
+                                                                    @if($comment->reason)
+                                                                        <small class="text-muted">Lý do: {{ $comment->reason }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
                                                         @endforeach
                                                     </div>
-                                                    <!-- Nút Xem thêm -->
-                                                    @if ($product->reviews->count() > 3 || $product->comments->count() > 2)
-                                                        <div class="text-center mt-3">
-                                                            <button id="show-more-btn" class="btn btn-outline-primary">Xem
-                                                                thêm đánh giá và bình luận</button>
+                                                <!-- Nút Xem thêm -->
+                                                 @if($product->reviews->count() >3 || $product->comments->count()>2)
+                                                 <div class="text-center mt-3">
+                                                        <button id="show-more-btn" class="btn btn-outline-primary">Xem thêm đánh giá và bình luận</button>
+                                                 </div>
+                                                 @endif
+                                            </div>
+                                          </div>
+                                       </div> <!-- end col -->
+                                                <br><br>
+                                                <div class="tp-product-details-review-form">
+                                                    <h3 class="tp-product-details-review-form-title">Đánh giá sản phẩm này</h3>
+                                                    <form action="{{route('client.store', $product)}}" method="Post">
+                                                        @csrf
+                                                        <div
+                                                            class="tp-product-details-review-form-rating d-flex align-items-center">
+                                                            <p>Đánh giá của bạn :</p>
+                                                            <div class="tp-product-details-review-form-rating-icon d-flex align-items-center">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}"
+                                                                           class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
+                                                                    <label for="star{{ $i }}" class="me-1 star-label" style="cursor: pointer;">
+                                                                        <i class="fa-regular fa-star" style="color: #ccc;"></i>
+                                                                    </label>
+                                                                @endfor
+                                                                @error('rating')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
+                                                            </div>
                                                         </div>
-                                                    @endif
+                                                        <!-- Nội dunng đánh giá -->
+                                                        <div class="tp-product-details-review-input-wrapper">
+                                                            <div class="tp-product-details-review-input-box">
+                                                                <div class="tp-product-details-review-input">
+                                                                    <textarea  name="review_text" placeholder="Viết đánh giá của bạn...">{{old('review_text')}}</textarea>
+                                                                </div>
+                                                                @error('review_text')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
+                                                                <div class="tp-product-details-review-input-title">
+                                                                    <label for="msg">Bình luận của bạn</label>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="tp-product-details-review-btn-wrapper">
+                                                            <button type="submit" class="tp-product-details-review-btn">Gửi bình luận</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                        </div> <!-- end col -->
-                                        <br><br>
-                                        <div class="tp-product-details-review-form">
-                                            <h3 class="tp-product-details-review-form-title">Đánh giá sản phẩm này</h3>
-                                            <form action="{{ route('client.store', $product) }}" method="Post">
-                                                @csrf
-                                                <div
-                                                    class="tp-product-details-review-form-rating d-flex align-items-center">
-                                                    <p>Đánh giá của bạn :</p>
-                                                    <div
-                                                        class="tp-product-details-review-form-rating-icon d-flex align-items-center">
-                                                        @for ($i = 1; $i <= 5; $i++)
-                                                            <input type="radio" name="rating"
-                                                                id="star{{ $i }}" value="{{ $i }}"
-                                                                class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
-                                                            <label for="star{{ $i }}" class="me-1 star-label"
-                                                                style="cursor: pointer;">
-                                                                <i class="fa-regular fa-star" style="color: #ccc;"></i>
-                                                            </label>
-                                                        @endfor
-                                                        @error('rating')
-                                                            <span class="text-danger">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                                <!-- Nội dunng đánh giá -->
-                                                <div class="tp-product-details-review-input-wrapper">
-                                                    <div class="tp-product-details-review-input-box">
-                                                        <div class="tp-product-details-review-input">
-                                                            <textarea name="review_text" placeholder="Viết đánh giá của bạn...">{{ old('review_text') }}</textarea>
-                                                        </div>
-                                                        @error('review_text')
-                                                            <span class="text-danger">{{ $message }}</span>
-                                                        @enderror
-                                                        <div class="tp-product-details-review-input-title">
-                                                            <label for="msg">Bình luận của bạn</label>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="tp-product-details-review-btn-wrapper">
-                                                    <button type="submit" class="tp-product-details-review-btn">Gửi bình
-                                                        luận</button>
-                                                </div>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -1107,8 +967,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            </div>
             </div>
             </div>
         </section>
@@ -1142,8 +1000,7 @@
                                         <div class="tp-product-item-2 mb-40">
                                             <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
                                                 @if (!empty($related->slug))
-                                                    <a
-                                                        href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                                    <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
                                                         <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
                                                     </a>
                                                 @else
@@ -1154,13 +1011,11 @@
                                             </div>
                                             <div class="tp-product-content-2 pt-15">
                                                 <div class="tp-product-tag-2">
-                                                    <a
-                                                        href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
+                                                    <a href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
                                                 </div>
                                                 <h3 class="tp-product-title-2">
                                                     @if (!empty($related->slug))
-                                                        <a
-                                                            href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
+                                                        <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">{{ $related->name }}</a>
                                                     @else
                                                         <span>{{ $related->name }}</span>
                                                     @endif
@@ -1171,11 +1026,9 @@
                                                     @endfor
                                                 </div>
                                                 <div class="tp-product-price-wrapper-2">
-                                                    <span
-                                                        class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
+                                                    <span class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
                                                     @if ($related->original_price && $related->original_price > $related->price)
-                                                        <span
-                                                            class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
+                                                        <span class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -1204,483 +1057,413 @@
             </div>
         </section>
     </main>
-    {{-- 1. Link Swiper --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+        {{-- 1. Link Swiper --}}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
     {{-- 2. Script chính --}}
     <script>
-        const defaultImages = @json($defaultImages);
+        const defaultImages = @json($product->images->map(fn($i) => ['url' => $i->url]));
     </script>
 
+
+
     <script>
-        const variants = @json($variantsWithImages);
-        const cartProductIds = @json($cartProductIds ?? []);
-        const cartVariantIds = @json($cartVariantIds ?? []);
+const variants = @json($variantsWithImages);
+const cartProductIds = @json($cartProductIds ?? []);
+const cartVariantIds = @json($cartVariantIds ?? []);
 
-        let selectedColorCode = null;
-        let selectedSize = null;
+let selectedColorCode = null;
+let selectedSize = null;
 
-        // Khởi tạo gallery khi trang load
-        document.addEventListener('DOMContentLoaded', function() {
-            showUniqueImagesFromAllVariants();
-        });
+const formatCurrency = num => num.toLocaleString('vi-VN') + '₫';
 
-        const formatCurrency = num => num.toLocaleString('vi-VN') + '₫';
+function updateTotal() {
+  const unitPriceEl = document.getElementById('unit-price');
+  const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
+  const totalPriceEl = document.getElementById('total-price');
+  const unit = parseFloat(unitPriceEl.dataset.unit || 0);
+  let qty = parseInt(quantityInput.value) || 1;
+  qty = qty < 1 ? 1 : qty;
+  quantityInput.value = qty;
+  totalPriceEl.textContent = formatCurrency(unit * qty);
+}
 
-        function updateTotal() {
-            const unitPriceEl = document.getElementById('unit-price');
-            const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
-            const totalPriceEl = document.getElementById('total-price');
-            const unit = parseFloat(unitPriceEl.dataset.unit || 0);
-            let qty = parseInt(quantityInput.value) || 1;
-            qty = qty < 1 ? 1 : qty;
-            quantityInput.value = qty;
-            totalPriceEl.textContent = formatCurrency(unit * qty);
+function updateVariantInfo() {
+  if (!selectedColorCode || !selectedSize) return;
+  const variant = variants.find(v => {
+    const [_, size, color] = v.sku.toUpperCase().split('-');
+    return size === selectedSize && color === selectedColorCode;
+  });
+  if (!variant) return;
+
+  document.getElementById('sku-display').textContent = variant.sku;
+  const price = Number(variant.sale_price ?? variant.regular_price);
+  const oldPrice = variant.sale_price ? Number(variant.regular_price) : null;
+  document.getElementById('product-price').textContent = formatCurrency(price);
+  const oldPriceEl = document.getElementById('product-old-price');
+  oldPriceEl.textContent = oldPrice ? formatCurrency(oldPrice) : '';
+  oldPriceEl.style.display = oldPrice ? 'inline' : 'none';
+  const unitPriceEl = document.getElementById('unit-price');
+  unitPriceEl.dataset.unit = price;
+  unitPriceEl.textContent = formatCurrency(price);
+
+  const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
+  quantityInput.value = 1;
+  updateTotal();
+
+  const stockEl = document.getElementById('product-stock');
+  if (stockEl) {
+    stockEl.textContent = variant.stock > 0 ? `Trong kho: ${variant.stock}` : 'Hết hàng';
+    quantityInput.disabled = variant.stock < 1;
+    const addBtn = document.getElementById('add-to-cart-btn');
+    if (addBtn) addBtn.disabled = variant.stock < 1;
+  }
+
+  const mainImageEl = document.getElementById('mainProductImage');
+  if (mainImageEl && variant.img) {
+    mainImageEl.style.opacity = 0;
+    setTimeout(() => {
+      mainImageEl.src = '/storage/' + variant.img;
+      mainImageEl.onload = () => mainImageEl.style.opacity = 1;
+    }, 150);
+  }
+
+  const subImageGallery = document.getElementById('subImageGallery');
+  subImageGallery.innerHTML = '';
+  if (variant.images?.length) {
+    variant.images.forEach(img => {
+      const imgEl = document.createElement('img');
+      imgEl.src = '/storage/' + img.url;
+      imgEl.className = 'img-thumbnail thumbnail-preview';
+      imgEl.style.width = '100%';
+      imgEl.style.height = '80px';
+      imgEl.style.objectFit = 'cover';
+      imgEl.style.cursor = 'pointer';
+      imgEl.addEventListener('click', () => {
+        if (mainImageEl) {
+          mainImageEl.style.opacity = 0;
+          setTimeout(() => {
+            mainImageEl.src = imgEl.src;
+            mainImageEl.onload = () => mainImageEl.style.opacity = 1;
+          }, 150);
         }
+      });
+      subImageGallery.appendChild(imgEl);
+    });
+  }
 
-        function updateVariantInfo() {
-            if (!selectedColorCode || !selectedSize) return;
-            const variant = variants.find(v => {
-                const [_, size, color] = v.sku.toUpperCase().split('-');
-                return size === selectedSize && color === selectedColorCode;
-            });
-            if (!variant) return;
+  ['variant_sku', 'product_variant_id', 'variant_price'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (id === 'variant_sku') el.value = variant.sku;
+    if (id === 'product_variant_id') el.value = variant.id;
+    if (id === 'variant_price') el.value = variant.sale_price ?? variant.regular_price;
+  });
+  // Hiển thị chất liệu nếu có
+  const materialSection = document.getElementById('materialSection');
+  const materialText = document.getElementById('materialText');
+  if (materialSection && materialText) {
+    if (variant.material) {
+      materialText.textContent = variant.material;
+      materialSection.classList.remove('d-none');
+    } else {
+      materialText.textContent = '';
+      materialSection.classList.add('d-none');
+    }
+  }
 
-            document.getElementById('sku-display').textContent = variant.sku;
-            const price = Number(variant.sale_price ?? variant.regular_price);
-            const oldPrice = variant.sale_price ? Number(variant.regular_price) : null;
-            document.getElementById('product-price').textContent = formatCurrency(price);
-            const oldPriceEl = document.getElementById('product-old-price');
-            oldPriceEl.textContent = oldPrice ? formatCurrency(oldPrice) : '';
-            oldPriceEl.style.display = oldPrice ? 'inline' : 'none';
-            const unitPriceEl = document.getElementById('unit-price');
-            unitPriceEl.dataset.unit = price;
-            unitPriceEl.textContent = formatCurrency(price);
+  checkAndToggleAddToCartBtn();
+}
 
-            const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
-            quantityInput.value = 1;
+function filterSizesByColor(colorCode) {
+  const availableSizes = variants
+    .filter(v => v.sku.toUpperCase().split('-')[2] === colorCode)
+    .map(v => v.sku.toUpperCase().split('-')[1]);
+
+  document.querySelectorAll('.tp-size-variation-btn').forEach(btn => {
+    btn.style.display = availableSizes.includes(btn.dataset.size.toUpperCase()) ? '' : 'none';
+  });
+
+  if (!availableSizes.includes(selectedSize)) {
+    selectedSize = null;
+    document.querySelectorAll('.tp-size-variation-btn').forEach(btn => btn.classList.remove('active'));
+  }
+}
+
+function getMaxQty() {
+  if (variants.length && selectedColorCode && selectedSize) {
+    const variant = variants.find(v => {
+      const [_, size, color] = v.sku.toUpperCase().split('-');
+      return size === selectedSize && color === selectedColorCode;
+    });
+    if (variant) return variant.stock;
+  }
+  return {{ $product->stock ?? 9999 }};
+}
+
+function checkAndToggleAddToCartBtn() {
+  // Đã bỏ logic chặn thêm sản phẩm đã có trong giỏ hàng, luôn cho phép thêm
+  const addToCartForm = document.querySelector('#detail-add-to-cart-form');
+  const addToCartBtn = addToCartForm?.querySelector('button[type="submit"]');
+  const qtyInput = document.getElementById('quantity');
+  const minusBtn = document.getElementById('detail-cart-minus');
+  const plusBtn = document.getElementById('detail-cart-plus');
+  if (!addToCartBtn) return;
+  addToCartBtn.disabled = false;
+  addToCartBtn.textContent = 'Thêm vào giỏ hàng';
+  addToCartBtn.classList.remove('in-cart', 'already-toast');
+  if (qtyInput) qtyInput.disabled = false;
+  if (minusBtn) minusBtn.classList.remove('disabled');
+  if (plusBtn) plusBtn.classList.remove('disabled');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Gán sự kiện cho các nút màu
+  document.querySelectorAll('.tp-color-variation-btn').forEach(btn => {
+    if (btn.classList.contains('disabled')) return;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tp-color-variation-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedColorCode = btn.dataset.color.toUpperCase();
+      filterSizesByColor(selectedColorCode);
+      updateVariantInfo();
+    });
+  });
+
+  // Gán sự kiện cho các nút size
+  document.querySelectorAll('.tp-size-variation-btn').forEach(btn => {
+    if (btn.classList.contains('disabled')) return;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tp-size-variation-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedSize = btn.dataset.size.toUpperCase();
+      updateVariantInfo();
+    });
+  });
+
+  // Nút trừ số lượng
+  document.getElementById('detail-cart-minus')?.addEventListener('click', () => {
+    const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
+    let val = parseInt(quantityInput.value) || 1;
+    if (val > 1) quantityInput.value = val - 1;
+    updateTotal();
+  });
+
+  // Nút cộng số lượng
+  document.getElementById('detail-cart-plus')?.addEventListener('click', () => {
+    const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
+    let val = parseInt(quantityInput.value) || 1;
+    const maxQty = getMaxQty();
+    if (val >= maxQty) {
+      if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+      quantityInput.value = maxQty;
+    } else {
+      quantityInput.value = val + 1;
+    }
+    updateTotal();
+  });
+
+  // Giới hạn số lượng nhập tay
+  const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
+  quantityInput.addEventListener('input', () => {
+    let val = parseInt(quantityInput.value) || 1;
+    const maxQty = getMaxQty();
+    if (val > maxQty) {
+      if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+      val = maxQty;
+    }
+    if (val < 1) val = 1;
+    quantityInput.value = val;
+    updateTotal();
+  });
+  quantityInput.addEventListener('blur', () => {
+    let val = parseInt(quantityInput.value) || 1;
+    const maxQty = getMaxQty();
+    if (val > maxQty) {
+      if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+      quantityInput.value = maxQty;
+    }
+    updateTotal();
+  });
+
+  // Khởi tạo slider (giữ nguyên)
+  new Swiper('.tp-product-related-slider-active', {
+    slidesPerView: 4,
+    spaceBetween: 20,
+    loop: false,
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+      1200: { slidesPerView: 4 },
+      992: { slidesPerView: 3 },
+      768: { slidesPerView: 2 },
+      576: { slidesPerView: 1 },
+    }
+  });
+
+  // Kiểm tra nút thêm giỏ hàng lúc đầu
+  checkAndToggleAddToCartBtn();
+
+  // Cập nhật nút khi thay đổi biến thể
+  if (variants.length > 0) {
+    document.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(btn => {
+      btn.addEventListener('click', () => setTimeout(checkAndToggleAddToCartBtn, 0));
+    });
+  }
+
+  // Xử lý submit form thêm vào giỏ hàng
+  const addToCartForm = document.querySelector('#detail-add-to-cart-form');
+  if (addToCartForm) {
+    addToCartForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const qtyInput = document.getElementById('quantity');
+      const qty = parseInt(qtyInput.value) || 1;
+      let maxQty = {{ $product->stock ?? 9999 }};
+      const hasVariants = variants.length > 0;
+      const productId = {{ $product->id }};
+
+      if (hasVariants) {
+        const variantId = document.getElementById('product_variant_id').value;
+        if (!variantId) {
+          if (window.toastr) toastr.error('Vui lòng phân loại hàng!');
+          return;
+        }
+        const variant = variants.find(v => v.id == variantId);
+        if (variant) maxQty = variant.stock;
+      }
+
+      if (qty > maxQty) {
+        if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
+        qtyInput.value = maxQty;
+        return;
+      }
+
+      // Gửi request thêm vào giỏ hàng
+      const formData = new FormData(addToCartForm);
+      if (qtyInput) formData.set('quantity', qtyInput.value);
+
+      fetch(addToCartForm.action, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+      })
+      .then(res => {
+        if (!res.ok) return res.text().then(text => { throw new Error(text || 'Lỗi không xác định từ server') });
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          if (window.toastr) toastr.success(data.message || 'Đã thêm sản phẩm vào giỏ hàng!');
+          document.dispatchEvent(new CustomEvent('cart:updated'));
+          // Sau khi thêm thành công, reset lại giao diện:
+          // 1. Reset số lượng về 1
+          if (qtyInput) {
+            qtyInput.value = 1;
             updateTotal();
-
-            const stockEl = document.getElementById('product-stock');
-            if (stockEl) {
-                stockEl.textContent = variant.stock > 0 ? `Trong kho: ${variant.stock}` : 'Hết hàng';
-                quantityInput.disabled = variant.stock < 1;
-                const addBtn = document.getElementById('add-to-cart-btn');
-                if (addBtn) addBtn.disabled = variant.stock < 1;
-            }
-
+          }
+          // 2. Bỏ chọn các nút màu/size (nếu có)
+          document.querySelectorAll('.tp-color-variation-btn.active').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tp-size-variation-btn.active').forEach(btn => btn.classList.remove('active'));
+          selectedColorCode = null;
+          selectedSize = null;
+          // 3. Ẩn lại phần chất liệu nếu có
+          const materialSection = document.getElementById('materialSection');
+          const materialText = document.getElementById('materialText');
+          if (materialSection && materialText) {
+            materialText.textContent = '';
+            materialSection.classList.add('d-none');
+          }
+          // 4. Cập nhật lại giá/tổng tiền về giá gốc sản phẩm
+          const unitPriceEl = document.getElementById('unit-price');
+          const productPrice = Number(unitPriceEl?.dataset.unit || unitPriceEl?.textContent || 0);
+          updateTotal();
+          // 5. Đặt lại ảnh chính về ảnh mặc định nếu có biến thể
+          if (variants.length > 0) {
             const mainImageEl = document.getElementById('mainProductImage');
-            if (mainImageEl && variant.img) {
-                mainImageEl.style.opacity = 0;
-                setTimeout(() => {
-                    mainImageEl.src = '/storage/' + variant.img;
-                    mainImageEl.onload = () => mainImageEl.style.opacity = 1;
-                }, 150);
+            if (mainImageEl && defaultImages.length > 0) {
+              mainImageEl.src = '/storage/' + defaultImages[0].url;
             }
-
+            // 6. Reset sub images về ảnh mặc định
             const subImageGallery = document.getElementById('subImageGallery');
-            subImageGallery.innerHTML = '';
-            if (variant.images?.length) {
-                variant.images.forEach(img => {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = '/storage/' + img.url;
-                    imgEl.className = 'img-thumbnail thumbnail-preview';
-                    imgEl.style.width = '100%';
-                    imgEl.style.height = '80px';
-                    imgEl.style.objectFit = 'cover';
-                    imgEl.style.cursor = 'pointer';
-                    imgEl.addEventListener('click', () => {
-                        if (mainImageEl && mainImageEl.src !== imgEl.src) {
-                            mainImageEl.style.opacity = 0;
-                            setTimeout(() => {
-                                mainImageEl.src = imgEl.src;
-                                mainImageEl.onload = () => mainImageEl.style.opacity = 1;
-                            }, 150);
-                        }
-                    });
-                    subImageGallery.appendChild(imgEl);
-                });
-            }
-
-            ['variant_sku', 'product_variant_id', 'variant_price'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (id === 'variant_sku') el.value = variant.sku;
-                if (id === 'product_variant_id') el.value = variant.id;
-                if (id === 'variant_price') el.value = variant.sale_price ?? variant.regular_price;
-            });
-            // Hiển thị chất liệu nếu có
-            const materialSection = document.getElementById('materialSection');
-            const materialText = document.getElementById('materialText');
-            if (materialSection && materialText) {
-                if (variant.material) {
-                    materialText.textContent = variant.material;
-                    materialSection.classList.remove('d-none');
-                } else {
-                    materialText.textContent = '';
-                    materialSection.classList.add('d-none');
-                }
-            }
-
-            checkAndToggleAddToCartBtn();
-        }
-
-        function filterSizesByColor(colorCode) {
-            const availableSizes = variants
-                .filter(v => v.sku.toUpperCase().split('-')[2] === colorCode)
-                .map(v => v.sku.toUpperCase().split('-')[1]);
-
-            document.querySelectorAll('.tp-size-variation-btn').forEach(btn => {
-                btn.style.display = availableSizes.includes(btn.dataset.size.toUpperCase()) ? '' : 'none';
-            });
-
-            if (!availableSizes.includes(selectedSize)) {
-                selectedSize = null;
-                document.querySelectorAll('.tp-size-variation-btn').forEach(btn => btn.classList.remove('active'));
-            }
-        }
-
-        function getMaxQty() {
-            if (variants.length && selectedColorCode && selectedSize) {
-                const variant = variants.find(v => {
-                    const [_, size, color] = v.sku.toUpperCase().split('-');
-                    return size === selectedSize && color === selectedColorCode;
-                });
-                if (variant) return variant.stock;
-            }
-            return {{ $product->stock ?? 9999 }};
-        }
-
-        function checkAndToggleAddToCartBtn() {
-            const addToCartForm = document.querySelector('#detail-add-to-cart-form');
-            const addToCartBtn = addToCartForm?.querySelector('button[type="submit"]');
-            const qtyInput = document.getElementById('quantity');
-            const minusBtn = document.getElementById('detail-cart-minus');
-            const plusBtn = document.getElementById('detail-cart-plus');
-            const hasVariants = variants.length > 0;
-            const productId = {{ $product->id }};
-
-            function setInCartUI() {
-                if (!addToCartBtn) return;
-                addToCartBtn.disabled = true;
-                addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-                addToCartBtn.classList.add('in-cart');
-                if (qtyInput) qtyInput.disabled = true;
-                if (minusBtn) minusBtn.classList.add('disabled');
-                if (plusBtn) plusBtn.classList.add('disabled');
-                addToCartBtn.classList.add('already-toast');
-            }
-
-            function setNormalUI() {
-                if (!addToCartBtn) return;
-                addToCartBtn.disabled = false;
-                addToCartBtn.textContent = 'Thêm vào giỏ hàng';
-                addToCartBtn.classList.remove('in-cart', 'already-toast');
-                if (qtyInput) qtyInput.disabled = false;
-                if (minusBtn) minusBtn.classList.remove('disabled');
-                if (plusBtn) plusBtn.classList.remove('disabled');
-            }
-
-            if (hasVariants) {
-                const variantId = document.getElementById('product_variant_id')?.value;
-                if (variantId && cartVariantIds.map(String).includes(String(variantId))) {
-                    setInCartUI();
-                } else {
-                    setNormalUI();
-                }
-            } else {
-                if (cartProductIds.includes(Number(productId))) {
-                    setInCartUI();
-                } else {
-                    setNormalUI();
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Gán sự kiện cho các nút màu
-            document.querySelectorAll('.tp-color-variation-btn').forEach(btn => {
-                if (btn.classList.contains('disabled')) return;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tp-color-variation-btn').forEach(b => b.classList
-                        .remove('active'));
-                    btn.classList.add('active');
-                    selectedColorCode = btn.dataset.color.toUpperCase();
-                    filterSizesByColor(selectedColorCode);
-                    updateVariantInfo();
-                });
-            });
-
-            // Gán sự kiện cho các nút size
-            document.querySelectorAll('.tp-size-variation-btn').forEach(btn => {
-                if (btn.classList.contains('disabled')) return;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tp-size-variation-btn').forEach(b => b.classList
-                        .remove('active'));
-                    btn.classList.add('active');
-                    selectedSize = btn.dataset.size.toUpperCase();
-                    updateVariantInfo();
-                });
-            });
-
-            // Nút trừ số lượng
-            document.getElementById('detail-cart-minus')?.addEventListener('click', () => {
-                const quantityInput = document.getElementById('quantity') || document.querySelector(
-                    '.tp-cart-input');
-                let val = parseInt(quantityInput.value) || 1;
-                if (val > 1) quantityInput.value = val - 1;
-                updateTotal();
-            });
-
-            // Nút cộng số lượng
-            document.getElementById('detail-cart-plus')?.addEventListener('click', () => {
-                const quantityInput = document.getElementById('quantity') || document.querySelector(
-                    '.tp-cart-input');
-                let val = parseInt(quantityInput.value) || 1;
-                const maxQty = getMaxQty();
-                if (val >= maxQty) {
-                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
-                    quantityInput.value = maxQty;
-                } else {
-                    quantityInput.value = val + 1;
-                }
-                updateTotal();
-            });
-
-            // Giới hạn số lượng nhập tay
-            const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
-            quantityInput.addEventListener('input', () => {
-                let val = parseInt(quantityInput.value) || 1;
-                const maxQty = getMaxQty();
-                if (val > maxQty) {
-                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
-                    val = maxQty;
-                }
-                if (val < 1) val = 1;
-                quantityInput.value = val;
-                updateTotal();
-            });
-            quantityInput.addEventListener('blur', () => {
-                let val = parseInt(quantityInput.value) || 1;
-                const maxQty = getMaxQty();
-                if (val > maxQty) {
-                    if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
-                    quantityInput.value = maxQty;
-                }
-                updateTotal();
-            });
-
-            // Khởi tạo slider (giữ nguyên)
-            new Swiper('.tp-product-related-slider-active', {
-                slidesPerView: 4,
-                spaceBetween: 20,
-                loop: false,
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                breakpoints: {
-                    1200: {
-                        slidesPerView: 4
-                    },
-                    992: {
-                        slidesPerView: 3
-                    },
-                    768: {
-                        slidesPerView: 2
-                    },
-                    576: {
-                        slidesPerView: 1
-                    },
-                }
-            });
-
-            // Kiểm tra nút thêm giỏ hàng lúc đầu
-            checkAndToggleAddToCartBtn();
-
-            // Cập nhật nút khi thay đổi biến thể
-            if (variants.length > 0) {
-                document.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(btn => {
-                    btn.addEventListener('click', () => setTimeout(checkAndToggleAddToCartBtn, 0));
-                });
-            }
-
-            // Xử lý submit form thêm vào giỏ hàng
-            const addToCartForm = document.querySelector('#detail-add-to-cart-form');
-            if (addToCartForm) {
-                addToCartForm.addEventListener('submit', e => {
-                    e.preventDefault();
-
-                    const qtyInput = document.getElementById('quantity');
-                    const qty = parseInt(qtyInput.value) || 1;
-                    let maxQty = {{ $product->stock ?? 9999 }};
-                    const hasVariants = variants.length > 0;
-                    const productId = {{ $product->id }};
-
-                    if (hasVariants) {
-                        const variantId = document.getElementById('product_variant_id').value;
-                        if (!variantId) {
-                            if (window.toastr) toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
-                            return;
-                        }
-                        const variant = variants.find(v => v.id == variantId);
-                        if (variant) maxQty = variant.stock;
-                    }
-
-                    if (qty > maxQty) {
-                        if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
-                        qtyInput.value = maxQty;
-                        return;
-                    }
-
-                    // Kiểm tra đã có trong giỏ
-                    if (hasVariants) {
-                        const variantId = document.getElementById('product_variant_id').value;
-                        if (cartVariantIds.map(String).includes(String(variantId))) {
-                            if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-                            const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-                            if (addToCartBtn) {
-                                addToCartBtn.disabled = true;
-                                addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-                            }
-                            return;
-                        }
-                    } else {
-                        if (cartProductIds.includes(Number(productId))) {
-                            if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-                            const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-                            if (addToCartBtn) {
-                                addToCartBtn.disabled = true;
-                                addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-                            }
-                            return;
-                        }
-                    }
-
-                    // Gửi request thêm vào giỏ hàng
-                    const formData = new FormData(addToCartForm);
-                    if (qtyInput) formData.set('quantity', qtyInput.value);
-
-                    fetch(addToCartForm.action, {
-                            method: 'POST',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            },
-                            body: formData
-                        })
-                        .then(res => {
-                            if (!res.ok) return res.text().then(text => {
-                                throw new Error(text || 'Lỗi không xác định từ server')
-                            });
-                            return res.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                if (window.toastr) toastr.success(data.message ||
-                                    'Đã thêm sản phẩm vào giỏ hàng!');
-                                document.dispatchEvent(new CustomEvent('cart:updated'));
-                                // Cập nhật cart IDs
-                                if (hasVariants) {
-                                    const variantId = document.getElementById('product_variant_id')
-                                        .value;
-                                    cartVariantIds.push(String(variantId));
-                                } else {
-                                    cartProductIds.push(Number(productId));
-                                }
-                                checkAndToggleAddToCartBtn();
-                            } else {
-                                if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Lỗi khi thêm vào giỏ hàng:', err);
-                            if (window.toastr) toastr.error(
-                                'Không thể thêm sản phẩm. Vui lòng thử lại sau.');
-                        });
-                });
-            }
-
-            // Đồng bộ khi xóa sản phẩm khỏi mini-cart
-            document.addEventListener('cart:item-removed', e => {
-                const detail = e.detail || {};
-                if ('product_id' in detail) {
-                    const idx = cartProductIds.indexOf(Number(detail.product_id));
-                    if (idx !== -1) cartProductIds.splice(idx, 1);
-                }
-                if ('variant_id' in detail && detail.variant_id) {
-                    const idx = cartVariantIds.map(String).indexOf(String(detail.variant_id));
-                    if (idx !== -1) cartVariantIds.splice(idx, 1);
-                }
-                checkAndToggleAddToCartBtn();
-            });
-        });
-        // Hiển thị ảnh phụ mặc định
-        showUniqueImagesFromAllVariants();
-
-        function showUniqueImagesFromAllVariants() {
-            const subImageGallery = document.getElementById('subImageGallery');
-            const mainImageEl = document.getElementById('mainProductImage');
-            if (!subImageGallery) return;
-
-            subImageGallery.innerHTML = '';
-            const shownRelativeUrls = new Set();
-
-            const getRelativeUrl = (url) => {
-                if (!url) return '';
-                return url.replace(/^\/?storage\//, '');
-            };
-
-            const addSubImage = (url) => {
-                const relativeUrl = getRelativeUrl(url);
-                if (!relativeUrl || shownRelativeUrls.has(relativeUrl)) return;
-
-                shownRelativeUrls.add(relativeUrl);
-
+            if (subImageGallery) {
+              subImageGallery.innerHTML = '';
+              defaultImages.forEach(img => {
                 const imgEl = document.createElement('img');
-                imgEl.src = '/storage/' + relativeUrl;
-                imgEl.className = 'img-thumbnail thumbnail-preview';
+                imgEl.src = '/storage/' + img.url;
+                imgEl.className = 'img-thumbnail thumbnail-preview mb-2';
                 imgEl.style.width = '100%';
                 imgEl.style.height = '80px';
                 imgEl.style.objectFit = 'cover';
                 imgEl.style.cursor = 'pointer';
                 imgEl.addEventListener('click', () => {
-                    if (mainImageEl) {
-                        mainImageEl.style.opacity = 0;
-                        setTimeout(() => {
-                            mainImageEl.src = imgEl.src;
-                            mainImageEl.onload = () => mainImageEl.style.opacity = 1;
-                        }, 150);
-                    }
+                  if (mainImageEl) mainImageEl.src = imgEl.src;
                 });
                 subImageGallery.appendChild(imgEl);
-            };
-
-            // Chỉ hiển thị ảnh từ variants nếu có
-            if (variants && variants.length > 0) {
-                variants.forEach(variant => {
-                    if (variant.img) addSubImage(variant.img);
-
-                    if (Array.isArray(variant.images)) {
-                        variant.images.forEach(img => {
-                            if (img.url) addSubImage(img.url);
-                        });
-                    }
-                });
-            } else {
-                // Nếu không có variants, hiển thị ảnh gốc
-                defaultImages.forEach(img => {
-                    if (img.url) addSubImage(img.url);
-                });
+              });
             }
+          }
+        } else {
+          if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
         }
-    </script>
+      })
+      .catch(async err => {
+        console.error('Lỗi khi thêm vào giỏ hàng:', err, typeof err);
+        let msg = 'Không thể thêm sản phẩm. Vui lòng thử lại sau.';
+        // Nếu err là Response object (fetch trả về)
+        if (err && typeof err.text === 'function') {
+          try {
+            const text = await err.text();
+            const parsed = JSON.parse(text);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {}
+        }
+        // Nếu err là Error object với .message là JSON string
+        else if (err && typeof err.message === 'string') {
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {
+            msg = err.message;
+          }
+        }
+        // Nếu err là string JSON
+        else if (typeof err === 'string') {
+          try {
+            const parsed = JSON.parse(err);
+            if (parsed && parsed.message) msg = parsed.message;
+          } catch (e) {}
+        }
+        if (window.toastr) toastr.error(msg);
+      });
+    });
+  }
+
+  // Đồng bộ khi xóa sản phẩm khỏi mini-cart
+  document.addEventListener('cart:item-removed', e => {
+    const detail = e.detail || {};
+    if ('product_id' in detail) {
+      const idx = cartProductIds.indexOf(Number(detail.product_id));
+      if (idx !== -1) cartProductIds.splice(idx, 1);
+    }
+    if ('variant_id' in detail && detail.variant_id) {
+      const idx = cartVariantIds.map(String).indexOf(String(detail.variant_id));
+      if (idx !== -1) cartVariantIds.splice(idx, 1);
+    }
+    checkAndToggleAddToCartBtn();
+  });
+});
+</script>
 
     <!-- JavaScript để xử lý hiệu ứng chọn sao và nút xem thêm bình luận-->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const stars = document.querySelectorAll('.star-label i');
             const radioInputs = document.querySelectorAll('input[name="rating"]');
 
@@ -1714,21 +1497,14 @@
                 });
             });
         });
-        document.querySelectorAll('.tp-color-variation-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const colorCode = this.getAttribute('data-color');
-                const colorName = this.getAttribute('title'); // Lấy tên màu từ title
-                document.getElementById('selected-color-name').textContent = colorName;
-            });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const btn = document.getElementById('show-more-btn');
             const more = document.getElementById('more-reviews');
 
             if (btn && more) {
                 let isExpanded = false;
 
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     if (isExpanded) {
                         more.style.display = 'none';
                         btn.textContent = 'Xem thêm đánh giá & bình luận';
@@ -1743,11 +1519,11 @@
     </script>
     <!-- Tránh khi load trang thì vẫn ở lại trang reviews và description -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function(){
             const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
             //Gắn sự kiện click: Lưu tab được chọn vào localStorage
-            tabButtons.forEach(function(btn) {
-                btn.addEventListener('click', function() {
+            tabButtons.forEach(function(btn){
+                btn.addEventListener('click', function(){
                     const target = btn.getAttribute('data-bs-target');
                     localStorage.setItem('activeProductTab', target);
                 });
@@ -1763,7 +1539,7 @@
         });
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
 
 @endsection

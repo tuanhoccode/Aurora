@@ -30,75 +30,25 @@ class CheckoutController extends Controller
             }
 
             $user = Auth::user();
-            $userId = Auth::id();
-            $sessionCart = session("cart_{$userId}", []);
+            $cart = Cart::where('user_id', Auth::id())->first();
 
-            if (empty($sessionCart)) {
-                return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
+            if (!$cart) {
+                return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng không tồn tại!');
             }
 
-            // Lấy selected_items từ query string hoặc session
-            $selectedItems = $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : session('selected_items', []);
-
-            // Kiểm tra nếu không có selected_items
-            if (empty($selectedItems)) {
-                Log::warning('No selected items found in checkout', ['user_id' => $userId]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
-            }
+            // Lấy selected_items từ query string
+            $selectedItems = $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : [];
 
             // Lưu selected_items vào session
             session(['selected_items' => $selectedItems]);
-            Log::info('Selected Items in index', ['selected_items' => $selectedItems]);
 
-            // Tạo cart items từ session
-            $cartItems = collect();
-            foreach ($sessionCart as $itemData) {
-                // Nếu có selected_items, chỉ lấy những item được chọn
-                if (!empty($selectedItems) && !in_array($itemData['id'], $selectedItems)) {
-                    continue;
-                }
-
-                $product = \App\Models\Product::with('categories')->find($itemData['product_id']);
-                if (!$product) continue;
-
-                $variant = null;
-                if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
-                    $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
-                }
-
-                $currentPrice = $variant ? $variant->current_price : $product->current_price;
-
-                $item = (object) [
-                    'id' => $itemData['id'],
-                    'product_id' => $product->id,
-                    'product_variant_id' => $variant ? $variant->id : null,
-                    'quantity' => $itemData['quantity'],
-                    'product' => $product,
-                    'productVariant' => $variant,
-                    'price_at_time' => $currentPrice,
-                    'variant_name' => $variant ? $variant->name : null, // Thêm variant_name nếu cần
-                ];
-
-                $cartItems->push($item);
-            }
+            // Lọc cart items
+            $cartItems = $cart->items()->when(!empty($selectedItems), function ($query) use ($selectedItems) {
+                return $query->whereIn('id', $selectedItems);
+            })->get();
 
             if ($cartItems->isEmpty()) {
-                Log::warning('No valid cart items after filtering', ['selected_items' => $selectedItems]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
-            }
-
-            // Kiểm tra sản phẩm đã ngừng kinh doanh
-            $discontinuedItems = $cartItems->filter(function ($item) {
-                return $item->product && !$item->product->is_active;
-            });
-
-            if ($discontinuedItems->isNotEmpty()) {
-                $discontinuedProductNames = $discontinuedItems->pluck('product.name')->implode(', ');
-                Log::warning('Checkout attempted with discontinued products', [
-                    'user_id' => Auth::id(),
-                    'discontinued_products' => $discontinuedProductNames
-                ]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Không thể thanh toán vì các sản phẩm sau đã ngừng kinh doanh: ' . $discontinuedProductNames);
             }
 
             $cartTotal = $cartItems->sum(function ($item) {
@@ -147,7 +97,7 @@ class CheckoutController extends Controller
                 'selected_items' => $selectedItems
             ]);
 
-            return view('client.checkout', compact('cartItems', 'cartTotal', 'addresses', 'defaultAddress', 'shippingFee', 'user', 'coupon', 'discount', 'shippingType'));
+            return view('client.checkout', compact('cart', 'cartItems', 'cartTotal', 'addresses', 'defaultAddress', 'shippingFee', 'user', 'coupon', 'discount', 'shippingType'));
         } catch (\Exception $e) {
             Log::error('Checkout error: ' . $e->getMessage());
             return redirect()->route('shopping-cart.index')->with('error', 'Đã xảy ra lỗi, vui lòng thử lại!');
@@ -162,15 +112,7 @@ class CheckoutController extends Controller
                 'shipping_type' => 'nullable|in:thường,nhanh',
                 'payment_method' => 'nullable|in:cod,vnpay',
                 'note' => 'nullable|string|max:500',
-                'selected_items' => 'nullable', // Thêm validation cho selected_items
             ]);
-
-            // Cập nhật selected_items vào session nếu có
-            if ($request->has('selected_items')) {
-                $selectedItems = json_decode($request->selected_items, true);
-                session(['selected_items' => $selectedItems]);
-                Log::info('Received selected_items in update', ['selected_items' => $selectedItems]);
-            }
 
             $shippingFee = $request->shipping_type === 'nhanh' ? 30000 : 16500;
             session([
@@ -201,22 +143,10 @@ class CheckoutController extends Controller
                 ->where('end_date', '>=', now())
                 ->first();
 
-            $userId = Auth::id();
-            $sessionCart = session("cart_{$userId}", []);
-            $cartTotal = 0;
-
-            foreach ($sessionCart as $itemData) {
-                $product = \App\Models\Product::find($itemData['product_id']);
-                if (!$product) continue;
-
-                $variant = null;
-                if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
-                    $variant = \App\Models\ProductVariant::find($itemData['product_variant_id']);
-                }
-
-                $currentPrice = $variant ? $variant->current_price : $product->current_price;
-                $cartTotal += $currentPrice * $itemData['quantity'];
-            }
+            $cart = Cart::where('user_id', Auth::id())->first();
+            $cartTotal = $cart->items->sum(function ($item) {
+                return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
+            });
 
             if (!$coupon) {
                 session()->forget('coupon');
@@ -411,64 +341,22 @@ class CheckoutController extends Controller
                 'shipping_type.in' => 'Phương thức vận chuyển không hợp lệ.',
             ]);
 
-            $userId = Auth::id();
-            $sessionCart = session("cart_{$userId}", []);
+            $cart = Cart::where('user_id', Auth::id())->with('items')->first();
 
-            if (empty($sessionCart)) {
-                \Log::warning('Cart is empty or not found', ['user_id' => $userId]);
+            if (!$cart || $cart->items->isEmpty()) {
+                \Log::warning('Cart is empty or not found', ['user_id' => Auth::id()]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng trống!');
             }
 
             $selectedItems = session('selected_items', []);
 
-            // Tạo cart items từ session
-            $cartItems = collect();
-            foreach ($sessionCart as $itemData) {
-                // Nếu có selected_items, chỉ lấy những item được chọn
-                if (!empty($selectedItems) && !in_array($itemData['id'], $selectedItems)) {
-                    continue;
-                }
-
-                $product = \App\Models\Product::with('categories')->find($itemData['product_id']);
-                if (!$product) continue;
-
-                $variant = null;
-                if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
-                    $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
-                }
-
-                $currentPrice = $variant ? $variant->current_price : $product->current_price;
-
-                $item = (object) [
-                    'id' => $itemData['id'],
-                    'product_id' => $product->id,
-                    'product_variant_id' => $variant ? $variant->id : null,
-                    'quantity' => $itemData['quantity'],
-                    'product' => $product,
-                    'productVariant' => $variant,
-                    'price_at_time' => $currentPrice,
-                ];
-
-                $cartItems->push($item);
-            }
+            $cartItems = $cart->items()->when(!empty($selectedItems), function ($query) use ($selectedItems) {
+                return $query->whereIn('id', $selectedItems);
+            })->get();
 
             if ($cartItems->isEmpty()) {
                 \Log::warning('No selected items for checkout', ['selected_items' => $selectedItems]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
-            }
-
-            // Kiểm tra sản phẩm đã ngừng kinh doanh
-            $discontinuedItems = $cartItems->filter(function ($item) {
-                return $item->product && !$item->product->is_active;
-            });
-
-            if ($discontinuedItems->isNotEmpty()) {
-                $discontinuedProductNames = $discontinuedItems->pluck('product.name')->implode(', ');
-                \Log::warning('Checkout attempted with discontinued products', [
-                    'user_id' => Auth::id(),
-                    'discontinued_products' => $discontinuedProductNames
-                ]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Không thể thanh toán vì các sản phẩm sau đã ngừng kinh doanh: ' . $discontinuedProductNames);
             }
 
             $address = UserAddress::where('id', $request->address_id)
@@ -501,7 +389,6 @@ class CheckoutController extends Controller
                 'note' => $request->note,
                 'total_amount' => $total,
                 'shipping_type' => $request->shipping_type,
-                'shipping_fee' => $shippingFee,
                 'is_paid' => 0,
                 'is_refunded' => 0,
                 'coupon_id' => $coupon ? $coupon->id : null,
@@ -586,22 +473,16 @@ class CheckoutController extends Controller
                 }
             }
 
-            // Xóa các sản phẩm đã đặt hàng khỏi giỏ hàng session
-            $remainingItems = [];
-            foreach ($sessionCart as $itemData) {
-                $shouldRemove = false;
-                foreach ($cartItems as $orderedItem) {
-                    if ($itemData['id'] == $orderedItem->id) {
-                        $shouldRemove = true;
-                        break;
-                    }
-                }
-                if (!$shouldRemove) {
-                    $remainingItems[] = $itemData;
-                }
+            foreach ($cartItems as $item) {
+                $item->delete();
             }
 
-            session(["cart_{$userId}" => $remainingItems]);
+            if ($cart->items()->count() === 0) {
+                $cart->delete();
+            }
+            if ($cart->items()->count() === 0) {
+                $cart->delete();
+            }
             session()->forget(['coupon', 'selected_items']);
 
             if ($request->payment_method === 'cod') {

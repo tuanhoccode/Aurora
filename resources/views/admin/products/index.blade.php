@@ -3,127 +3,87 @@
 @section('title', 'Quản lý sản phẩm')
 
 @section('content')
+<div class="container-fluid py-4">
+    {{-- Header Section --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Quản lý sản phẩm</h1>
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-gray-800">Danh sách sản phẩm</h1>
+            <p class="text-muted mt-1">Quản lý thông tin các sản phẩm trong hệ thống</p>
+        </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.products.trash') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-trash"></i>
-                Thùng rác @if ($trashedCount > 0)
-                    <span class="badge bg-danger">{{ $trashedCount }}</span>
+            <a href="{{ route('admin.products.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
+                <i class="bi bi-plus-circle me-1"></i> Thêm mới
+            </a>
+            <a href="{{ route('admin.products.trash') }}" class="btn btn-outline-danger shadow-sm rounded-pill px-4">
+                <i class="bi bi-trash3 me-1"></i> Thùng rác
+                @if ($trashedCount > 0)
+                    <span class="badge bg-danger ms-1">{{ $trashedCount }}</span>
                 @endif
             </a>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                Thêm sản phẩm
-            </a>
         </div>
     </div>
 
-    {{-- Bulk Actions --}}
-    <div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success bulk-action" data-action="activate">
-                <i class="bi bi-check-circle"></i>
-                Kích hoạt
-            </button>
-            <button type="button" class="btn btn-warning bulk-action" data-action="deactivate">
-                <i class="bi bi-x-circle"></i>
-                Vô hiệu
-            </button>
-            <button type="button" class="btn btn-danger bulk-action" data-action="delete">
-                <i class="bi bi-trash"></i>
-                Xóa
-            </button>
-            <button type="button" class="btn btn-light ms-auto cancel-bulk">
-                <i class="bi bi-x-lg"></i>
-                Hủy
-            </button>
+    {{-- Alert Messages --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded" role="alert">
+            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </div>
-
-    {{-- Search --}}
-    <div class="card shadow-sm rounded-3 border-0 mb-3">
-        <div class="card-body">
-            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
-                <div class="col-12">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="search" value="{{ request('search') }}"
-                            placeholder="Tìm kiếm sản phẩm...">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        @if (request('search'))
-                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </form>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </div>
+    @endif
 
-    {{-- Filters --}}
-    <div class="card shadow-sm rounded-3 border-0 mb-3">
-        <div class="card-body">
-            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
-                <div class="col-md-4">
-                    <select class="form-select" name="category">
-                        <option value="">Tất cả danh mục</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ request('category') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <select class="form-select" name="brand">
-                        <option value="">Tất cả thương hiệu</option>
-                        @foreach ($brands as $brand)
-                            <option value="{{ $brand->id }}" {{ request('brand') == $brand->id ? 'selected' : '' }}>
-                                {{ $brand->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <div class="d-flex gap-2">
-                        <select class="form-select" name="status">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Đang kinh doanh
-                            </option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ngừng kinh doanh
-                            </option>
-                        </select>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-filter"></i>
-                        </button>
-                        @if (request()->hasAny(['category', 'brand', 'status']))
-                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Products Table --}}
     <div class="card shadow-sm rounded-3 border-0">
-        <div class="card-body">
+        <div class="card-body p-4">
+            {{-- Search and Filter Form --}}
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <form action="{{ route('admin.products.index') }}" method="GET" class="d-flex gap-2">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm sản phẩm..." value="{{ request('search') }}">
+                        </div>
+                        <select name="status" class="form-select" style="width: auto" onchange="this.form.submit()">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Đang kinh doanh</option>
+                            <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Ngừng kinh doanh</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="col-md-6 text-end">
+                    {{-- Bulk Actions --}}
+                    <button type="button" class="btn btn-success rounded-pill px-4 bulk-toggle-btn me-2" style="display: none;" onclick="bulkToggleStatus(1)" data-bs-toggle="tooltip" title="Kích hoạt đã chọn">
+                        <i class="bi bi-check-circle me-1"></i>
+                        <i class="bi bi-toggle-on"></i>
+                        <span class="badge bg-white text-success ms-2 selected-count">0</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 bulk-toggle-btn me-2" style="display: none;" onclick="bulkToggleStatus(0)" data-bs-toggle="tooltip" title="Vô hiệu đã chọn">
+                        <i class="bi bi-x-circle me-1"></i>
+                        <i class="bi bi-toggle-off"></i>
+                        <span class="badge bg-white text-secondary ms-2 selected-count">0</span>
+                    </button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 bulk-delete-btn" style="display: none;" data-bs-toggle="tooltip" title="Xóa đã chọn">
+                        <i class="bi bi-trash me-1"></i>
+                        <i class="bi bi-check2-square"></i>
+                        <span class="badge bg-white text-danger ms-2 selected-count">0</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="bg-light">
                         <tr>
-                            <th width="40">
+                            <th style="width: 40px">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="selectAll">
                                 </div>
                             </th>
-                            <th width="80">Ảnh</th>
+                            <th style="width: 60px">Ảnh</th>
                             <th>Tên sản phẩm</th>
                             <th>Mã SP</th>
                             <th>Giá bán</th>
@@ -132,7 +92,7 @@
                             <th>Tồn kho</th>
                             <th>Loại</th>
                             <th>Trạng thái</th>
-                            <th width="100">Thao tác</th>
+                            <th style="width: 100px">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,7 +104,13 @@
                                 </div>
                             </td>
                             <td>
-                                <img src="{{ $product->thumbnail ? asset('storage/' . $product->thumbnail) : 'https://via.placeholder.com/50' }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                @if($product->thumbnail)
+                                    <img src="{{ asset('storage/' . $product->thumbnail) }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                @else
+                                    <div class="text-muted small text-center" style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:#f3f3f3;border-radius:8px;">
+                                        <i class="bi bi-image" style="font-size:1.5rem;"></i>
+                                    </div>
+                                @endif
                             </td>
                             <td>
                                 <div class="fw-semibold text-primary">
@@ -156,27 +122,16 @@
                                         {{ $product->name }}
                                     @endif
                                 </div>
-                                <div class="text-muted small">{!! Str::limit($product->short_description, 40) !!}</div>
+                                <div class="text-muted small">{{ Str::limit($product->short_description, 40) }}</div>
                             </td>
                             <td><span class="badge bg-light text-dark border">{{ $product->sku }}</span></td>
                             <td>
-                                @if ($product->type === 'variant' && $product->variants->count() > 0)
-                                    @php $variant = $product->variants->first(); @endphp
-                                    @if ($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
-                                        <span class="text-decoration-line-through text-muted">{{ number_format($variant->regular_price) }}đ</span>
-                                        <span class="text-danger fw-bold ms-1">{{ number_format($variant->sale_price) }}đ</span>
-                                        <span class="badge bg-danger ms-1">-{{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
-                                    @else
-                                        <span>{{ number_format($variant->regular_price) }}đ</span>
-                                    @endif
+                                @if ($product->is_sale && $product->sale_price < $product->price)
+                                    <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
+                                    <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
+                                    <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
                                 @else
-                                    @if ($product->is_sale && $product->sale_price < $product->price)
-                                        <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
-                                        <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
-                                        <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
-                                    @else
-                                        <span>{{ number_format($product->price) }}đ</span>
-                                    @endif
+                                    <span>{{ number_format($product->price) }}đ</span>
                                 @endif
                             </td>
                             <td>
@@ -215,19 +170,32 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" class="form-check-input toggle-status" data-id="{{ $product->id }}" {{ $product->is_active ? 'checked' : '' }}>
-                                </div>
+                                <span class="badge rounded-pill {{ $product->is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} px-3 py-2">
+                                    <i class="bi bi-circle-fill me-1 small"></i>
+                                    {{ $product->is_active ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }}
+                                </span>
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-three-dots fs-5"></i>
+                                    <button class="btn btn-link text-dark p-0 m-0" type="button" id="dropdownMenu{{ $product->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots fs-4"></i>
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('admin.products.show', $product->id) }}"><i class="bi bi-eye me-2"></i>Xem</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('admin.products.edit', $product->id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item text-danger delete-product @if($product->hasOrders) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($product->hasOrders) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 py-2" aria-labelledby="dropdownMenu{{ $product->id }}" style="min-width: 180px;">
+                                        <li>
+                                            <a href="{{ route('admin.products.show', $product->id) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                                <i class="bi bi-eye text-primary"></i> <span>Xem chi tiết</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.products.edit', $product->id) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                                <i class="bi bi-pencil-square text-warning"></i> <span>Chỉnh sửa</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-danger delete-product" data-id="{{ $product->id }}" data-name="{{ $product->name }}">
+                                                <i class="bi bi-trash"></i> <span>Xóa</span>
+                                            </button>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>
@@ -254,32 +222,58 @@
         </div>
     </div>
 
-    {{-- Delete Modal --}}
+    {{-- Delete Confirmation Modal --}}
     <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header border-0">
                     <h5 class="modal-title">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="deleteProductName"></strong>?</p>
-                    <p class="mb-0 text-danger">Hành động này không thể hoàn tác!</p>
+                    <div class="text-center mb-4">
+                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                    </div>
+                    <p class="text-center mb-0">
+                        Bạn có chắc chắn muốn xóa sản phẩm "<span id="deleteProductName" class="fw-bold"></span>"?
+                    </p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
                     <form id="deleteForm" action="" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash"></i>
-                            Xóa
-                        </button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Xóa</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Bulk Delete Confirmation Modal --}}
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Xác nhận xóa hàng loạt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                    </div>
+                    <p class="text-center mb-0">
+                        Bạn có chắc chắn muốn xóa <span id="bulkDeleteCount" class="fw-bold"></span> sản phẩm đã chọn?
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitBulkDelete()">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -355,12 +349,7 @@
                         }
                     },
                     error: function(xhr) {
-                        const response = xhr.responseJSON;
-                        if (response && response.error) {
-                            alert(response.error);
-                        } else {
-                            alert('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
-                        }
+                        alert('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
                     }
                 });
             });
@@ -391,7 +380,7 @@
             // Delete confirmation
             $('.delete-product').click(function(e) {
                 if ($(this).data('locked')) {
-                    alert('Không thể xóa sản phẩm đã có trong đơn hàng');
+                    alert('Sản phẩm đang có trong đơn hàng giao thành công và không thể xóa.');
                     e.preventDefault();
                     return false;
                 }

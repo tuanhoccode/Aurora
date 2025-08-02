@@ -52,8 +52,7 @@ class ProductVariant extends Model
             'attribute_value_product_variant',
             'product_variant_id',
             'attribute_value_id'
-        )->select(['attribute_values.id', 'attribute_values.attribute_id', 'attribute_values.value', 'attribute_values.is_active'])
-         ->with('attribute');
+        )->with('attribute');
     }
 
     public function orderItems()
@@ -81,7 +80,7 @@ class ProductVariant extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductImage::class, 'product_variant_id');
+        return $this->hasMany(ProductGallery::class, 'product_variant_id');
     }
 
     public function productVariant()
