@@ -350,8 +350,36 @@
                     ->where('review_id', null)
                     ->where('rating', '>', 0);
 
-                   $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
-                  @endphp
+                           $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
+                        @endphp
+
+                        <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                            @if ($validReviews->count() > 0)
+                                <div class="review-item pb-3">
+                                    <div class="text-warning mb-1">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($i <= $avg)
+                                                ★
+                                            @else
+                                                ☆
+                                            @endif
+                                        @endfor
+                                    </div>
+                                </div>
+                            @else
+                                <p>Chưa có đánh giá.</p>
+                            @endif
+                        </div>
+
+
+                      <div class="tp-product-price-wrapper-2">
+                        <span
+                          class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
+                        @if ($product->original_price && $product->original_price > $product->price)
+                      <span
+                        class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
+                     @endif
+                      </div>
 
                    <div class="tp-product-rating-icon tp-product-rating-icon-2">
                      @if ($validReviews->count() > 0)
@@ -481,29 +509,29 @@
                                          <div class="tp-testimonial-rating">
                                            @for($i = 0; $i < 5; $i++)
                                        <span><i class="fa-solid fa-star text-warning"></i></span>
-                                     @endfor
-                                         </div>
-                                         <div class="tp-testimonial-content">
-                                           <p>"{{$review->review_text}}"</p>
-                                         </div>
-                                         <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                           <div class="tp-testimonial-user d-flex align-items-center">
-                                             <div class="tp-testimonial-avater mr-10">
-                                                <img src="{{ $review->user->avatar
-                       ? asset('storage/' . $review->user->avatar)
-                       : asset('assets2/img/users/avatars.png') }}" alt="avatar" width="50">
-                                             </div>
-                                             <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                                <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}
-                                                </h3>
-                                                <span class="tp-testimonial-designation">Khách hàng</span>
-                                             </div>
-                                           </div>
-                                         </div>
+                                    @endfor
+                                 </div>
+                                 <div class="tp-testimonial-content">
+                                    <p>"{{$review->review_text}}"</p>
+                                 </div>
+                                 <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                                    <div class="tp-testimonial-user d-flex align-items-center">
+                                       <div class="tp-testimonial-avater mr-10">
+                                          <img src="{{ $review->user->avatar
+                                          ? asset('storage/' . $review->user->avatar)
+                                          : asset('assets2/img/users/avatars.png') }}"
+                                           alt="avatar" width="50">
                                        </div>
-                     @empty
-                        <p class="text-center">Chưa có đánh giá 5 sao</p>
-                     @endforelse
+                                       <div class="tp-testimonial-user-info tp-testimonial-user-translate">
+                                          <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}</h3>
+                                          <span class="tp-testimonial-designation">Khách hàng</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           @empty
+                              <p class="text-center">Chưa có đánh giá 5 sao</p>
+                           @endforelse
 
                         </div>
                      </div>

@@ -1,6 +1,8 @@
 <?php
 
 
+use App\Http\Controllers\Admin\BannerController;
+
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -124,15 +126,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
         // Xóa ảnh gallery của biến thể
         Route::delete('/{product}/variants/delete-gallery-image/{image}', [ProductVariantController::class, 'deleteGalleryImage'])->name('variants.delete-gallery-image');
-        
+
         // Xử lý ảnh gallery cho biến thể
         Route::post('/variants/upload-gallery', [ProductVariantController::class, 'uploadGallery'])->name('variants.upload-gallery');
         Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteVariantImage'])->name('variants.delete-image');
         Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
-        
+
         // Lấy danh sách ảnh của biến thể
         Route::get('/{product}/variants/{variant}/images', [ProductVariantController::class, 'getImages'])->name('variants.images');
-        
+
         // Xóa ảnh biến thể
         Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
@@ -289,7 +291,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
 
-    
+
 });
 
 
@@ -313,7 +315,7 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
 Route::prefix('categories')->name('client.categories.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-}); 
+});
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -422,8 +424,9 @@ Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderControlle
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 
-   
+
 });
+
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
