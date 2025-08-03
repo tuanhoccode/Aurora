@@ -40,10 +40,17 @@ class HomeController extends Controller
 
         //Lấy 8 đánh giá 5 sao mới nhất đã duyệt
         $topReviews = Review::with('user')
-        ->where('is_active', 1)
-        ->where('rating', 5)
-        ->latest()->take(8)->get();
+            ->where('is_active', 1)
+            ->where('rating', 5)
+            ->latest()->take(8)->get();
 
-        return view('client.home', compact('products', 'categories', 'topReviews'));
+        // Lấy 4 sản phẩm có views cao nhất
+        $featuredThisWeek = Product::where('is_active', 1)
+            ->where('views', '>', 0)
+            ->orderByDesc('views')
+            ->take(4)
+            ->get();
+
+        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek'));
     }
 }
