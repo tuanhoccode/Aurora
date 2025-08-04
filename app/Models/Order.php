@@ -16,6 +16,7 @@ class Order extends Model
         'address',
         'note',
         'total_amount',
+        'discount_amount',
         'shipping_type',
         'is_paid',
         'is_refunded',
