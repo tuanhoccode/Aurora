@@ -291,6 +291,18 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
 
+    // Banner Routes
+    Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('index');
+        Route::get('/create', [BannerController::class, 'create'])->name('create');
+        Route::post('/', [BannerController::class, 'store'])->name('store');
+        Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
+        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('edit');
+        Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
+        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
+        Route::put('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
+    });
+
 
 });
 
