@@ -94,7 +94,7 @@
         </li>
       <li>
         <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
-            href="{{ route('admin.dashboard') }}">
+            href="{{ route('admin.banners.index') }}">
             <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
         </a>
      </li>

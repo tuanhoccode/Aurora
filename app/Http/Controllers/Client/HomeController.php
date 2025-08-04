@@ -69,14 +69,8 @@ class HomeController extends Controller
             ->where('is_active', 1)
             ->get();
 
-        // Lấy danh mục cho banner area (thay thế banner)
-        $categoryBanners = Category::select('id', 'name', 'icon', 'is_active')
-            ->where('is_active', 1)
-            ->whereNotNull('icon')
-            ->where('icon', '!=', '')
-            ->orderBy('id')
-            ->take(6)
-            ->get();
+        // Lấy banner từ database
+        $banners = Banner::active()->ordered()->get();
 
         // Tối ưu query reviews
         $topReviews = Review::select('id', 'user_id', 'product_id', 'rating', 'review_text', 'created_at', 'is_active')
@@ -113,7 +107,7 @@ class HomeController extends Controller
             }
         });
 
-        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'categoryBanners'));
+        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'banners'));
     }
 }
 
