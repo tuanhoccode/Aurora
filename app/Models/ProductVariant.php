@@ -80,7 +80,7 @@ class ProductVariant extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductGallery::class, 'product_variant_id');
+        return $this->hasMany(ProductImage::class, 'product_variant_id');
     }
 
     public function productVariant()
@@ -112,4 +112,15 @@ class ProductVariant extends Model
             $q->select('id', 'code');
         }])->get()->pluck('order.code')->unique()->toArray();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($variant) {
+            // Xóa toàn bộ ảnh phụ của biến thể này
+            $variant->images()->delete();
+        });
+    }
 }
+

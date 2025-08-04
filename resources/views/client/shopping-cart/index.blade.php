@@ -1508,6 +1508,56 @@
                 }, 500);
             });
 
+            cartTableBody.addEventListener('input', function(e) {
+                const input = e.target;
+                if (!input.classList.contains('qty-input')) return;
+                const row = input.closest('tr[data-item-id]');
+                const itemId = row.getAttribute('data-item-id');
+                if (!itemId || itemId === 'null' || itemId === 'undefined') {
+                    console.error('Thiếu hoặc sai itemId khi cập nhật số lượng giỏ hàng!', itemId, row);
+                    return;
+                }
+                let qty = parseInt(input.value, 10);
+                if (isNaN(qty) || qty < 1) qty = 1;
+                const stock = parseInt(row.getAttribute('data-stock'), 10) || 9999;
+                if (qty > stock) {
+                    qty = stock;
+                    if (window.toastr) toastr.error('Chỉ còn ' + stock + ' sản phẩm trong kho!');
+                }
+                input.value = qty;
+                updateLineTotal(row, qty);
+                updateCartSummary();
+                toggleQtyButtons(row, qty, stock);
+                if (debounceTimers[itemId]) clearTimeout(debounceTimers[itemId]);
+                debounceTimers[itemId] = setTimeout(() => {
+                    updateServerQty(itemId, qty, function(success, data) {
+                        if (!success) {
+                            if (data && data.message && data.message.includes('Chỉ còn')) {
+                                input.value = stock;
+                                updateLineTotal(row, stock);
+                                updateCartSummary();
+                                toggleQtyButtons(row, stock, stock);
+                            } else {
+                                console.error('Lỗi cập nhật giỏ hàng:', data && data
+                                    .message, 'itemId:', itemId, 'qty:', qty);
+                            }
+                        }
+                        if (debounceTimers[itemId]) clearTimeout(debounceTimers[itemId]);
+                    });
+                }, 500);
+            });
+
+            cartTableBody.addEventListener('blur', function(e) {
+                if (!e.target.classList.contains('qty-input')) return;
+                const input = e.target;
+                const row = input.closest('tr[data-item-id]');
+                const stock = parseInt(row.getAttribute('data-stock'), 10) || 9999;
+                const qty = parseInt(input.value, 10) || 1;
+                if (qty === stock && window.toastr) toastr.error('Chỉ còn ' + stock +
+                    ' sản phẩm trong kho!');
+                toggleQtyButtons(row, qty, stock);
+            }, true);
+
             cartTableBody.addEventListener('change', function(e) {
                 if (e.target.classList.contains('cart-item-checkbox')) {
                     updateCartSummary();
@@ -1601,10 +1651,10 @@
             updateBulkDeleteBtn();
 
             // Thay thế sự kiện click nút bulkDeleteBtn:
-            bulkDeleteBtn.addEventListener('click', function() {
-                const checked = getAllItemCheckboxes().filter(cb => cb.checked);
-                if (checked.length === 0) return;
-                const ids = checked.map(cb => cb.value);
+                bulkDeleteBtn.addEventListener('click', function() {
+                    const checked = getAllItemCheckboxes().filter(cb => cb.checked);
+                    if (checked.length === 0) return;
+                    const ids = checked.map(cb => cb.value);
                 // Cập nhật nội dung modal
                 const msg = `Bạn có chắc muốn xóa ${ids.length > 1 ? ids.length + ' sản phẩm đã chọn' : 'sản phẩm đã chọn'} khỏi giỏ hàng?`;
                 document.getElementById('bulk-delete-modal-message').textContent = msg;
@@ -1621,39 +1671,39 @@
                     if (!ids.length) return;
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     fetch('/shopping-cart/bulk-delete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken
-                        },
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
                         body: JSON.stringify({ ids })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            ids.forEach(id => {
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                ids.forEach(id => {
                                 const row = document.querySelector(`tr[data-item-id="${id}"]`);
-                                if (row) row.remove();
-                            });
-                            updateCartSummary();
-                            updateBulkDeleteBtn();
-                            updateSelectAllState();
+                                    if (row) row.remove();
+                                });
+                                updateCartSummary();
+                                updateBulkDeleteBtn();
+                                updateSelectAllState();
                             if (window.toastr) toastr.success('Đã xóa các sản phẩm đã chọn!');
-                        } else {
+                            } else {
                             if (window.toastr) toastr.error(data.message || 'Có lỗi khi xóa hàng loạt!');
-                        }
+                            }
                         // Ẩn modal
                         const modalEl = document.getElementById('confirmBulkDeleteModal');
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
-                    })
-                    .catch(() => {
-                        if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
+                        })
+                        .catch(() => {
+                            if (window.toastr) toastr.error('Lỗi kết nối server khi xóa hàng loạt!');
                         // Ẩn modal
                         const modalEl = document.getElementById('confirmBulkDeleteModal');
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
-                    });
+                        });
                 });
             }
 
@@ -1865,3 +1915,4 @@
         }
     }
 </style>
+

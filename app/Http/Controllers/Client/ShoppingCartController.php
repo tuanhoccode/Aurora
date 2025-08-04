@@ -75,7 +75,7 @@ class ShoppingCartController extends Controller
         if ($product->type === 'variant') {
             // Sản phẩm có biến thể, bắt buộc phải có product_variant_id hợp lệ
             if (!$request->product_variant_id) {
-                $msg = 'Vui lòng phân loại hàng!';
+                $msg = 'Vui lòng chọn đầy đủ màu và kích cỡ!';
                 if ($request->expectsJson()) {
                     return response()->json(['success' => false, 'message' => $msg], 400);
                 }
@@ -111,55 +111,23 @@ class ShoppingCartController extends Controller
             ->where('product_variant_id', $request->product_variant_id)
             ->first();
 
-        $currentQtyInCart = $item ? $item->quantity : 0;
-        $totalQty = $currentQtyInCart + $quantity;
-        if ($product->type === 'variant') {
-            $variant = \App\Models\ProductVariant::find($request->product_variant_id);
-            if ($variant) {
-                if ($currentQtyInCart >= $variant->stock) {
-                    $msg = 'Bạn đã có đủ số lượng sản phẩm này trong giỏ hàng.';
-                    if ($request->expectsJson()) {
-                        return response()->json(['success' => false, 'message' => $msg], 400);
-                    }
-                    return redirect()->back()->with('error', $msg);
-                }
-                if ($totalQty > $variant->stock) {
-                    $msg = 'Bạn đã có đủ số lượng sản phẩm này trong giỏ hàng.';
-                    if ($request->expectsJson()) {
-                        return response()->json(['success' => false, 'message' => $msg], 400);
-                    }
-                    return redirect()->back()->with('error', $msg);
-                }
+        if ($item) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm này đã có trong giỏ hàng!'
+                ], 400);
             }
-        } else {
-            if ($currentQtyInCart >= $product->stock) {
-                $msg = 'Bạn đã có đủ số lượng sản phẩm này trong giỏ hàng.';
-                if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'message' => $msg], 400);
-                }
-                return redirect()->back()->with('error', $msg);
-            }
-            if ($totalQty > $product->stock) {
-                $msg = 'Bạn đã có đủ số lượng sản phẩm này trong giỏ hàng.';
-                if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'message' => $msg], 400);
-                }
-                return redirect()->back()->with('error', $msg);
-            }
+            return redirect()->back()->with('error', 'Sản phẩm này đã có trong giỏ hàng!');
         }
 
-        if ($item) {
-            $item->quantity = $totalQty;
-            $item->save();
-        } else {
-            CartItem::create([
-                'cart_id' => $cart->id,
-                'product_id' => $request->product_id,
-                'product_variant_id' => $request->product_variant_id,
-                'quantity' => $quantity,
-                'price_at_time' => $request->price,
-            ]);
-        }
+        CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $request->product_id,
+            'product_variant_id' => $request->product_variant_id,
+            'quantity' => $quantity,
+            'price_at_time' => $request->price,
+        ]);
 
         if ($request->expectsJson()) {
             return response()->json([
