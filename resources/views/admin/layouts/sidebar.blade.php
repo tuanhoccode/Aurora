@@ -90,7 +90,14 @@
         <li>
             <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}"
                 href="{{ route('admin.reviews.comments') }}">
-                <span class="nav-icon"><i class="fas fa-comments"></i></span> Đánh giá sản phẩm
+                <span class="nav-icon position-relative"><i class="fas fa-comments"></i>
+                    @if($hasPendingFeedbacks)
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                            <span class="visually-hidden">Có đánh giá/bình luận mới</span>
+                        </span>
+                    @endif
+                </span>
+                 Đánh giá sản phẩm
             </a>
         </li>
         <li>

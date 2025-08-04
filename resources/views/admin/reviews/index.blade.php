@@ -77,6 +77,10 @@
                                     </td>
                                     <td>
                                         {{ $comment->content }}
+                                        @if(optional($comment->user)-> role === 'admin')
+                                            <br>
+                                            <span class="badge bg-primary">Phản hồi từ Admin</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($comment->type === 'review' && $comment->rating !== null)
@@ -85,7 +89,7 @@
                                             <br>
                                             
                                         @else
-                                            <span class="text-muted">Không có</span>
+                                            <span class="text-muted">Bình luận</span>
                                         @endif
                                     </td>
                                     

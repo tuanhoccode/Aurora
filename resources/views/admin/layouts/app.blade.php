@@ -258,15 +258,19 @@
                                     <i class="fa fa-globe fa-sm fa-fw me-2 text-gray-400"></i>
                                     Xem trang khách
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <!-- <a class="dropdown-item" href="#">
                                     <i class="fa fa-user fa-sm fa-fw me-2 text-gray-400"></i>
                                     Profile
-                                </a>
+                                </a> -->
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{ route('admin.logout') }}"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="fa fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
-                                    Logout
+                                    Đăng xuất
                                 </a>
+                                <form id="logout-form" action="{{route('admin.logout')}}" method="post" class="d-none">
+                                    @csrf
+                                </form>
                             </div>
                         </li>
                     </ul>
