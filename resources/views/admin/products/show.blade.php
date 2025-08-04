@@ -15,6 +15,11 @@
     font-size: 0.95rem;
 }
 .discount-badge {
+/* Custom style for variant attribute badges */
+.badge.bg-secondary {
+  background-color: #e4e4e4 !important;
+  color: #333 !important;
+}
     font-size: 0.7rem;
     padding: 0.2rem 0.4rem;
 }
