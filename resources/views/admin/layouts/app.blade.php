@@ -149,7 +149,7 @@
         }
         .form-control:focus,
         .form-select:focus {
-            border-color: #435ebe;
+            border-color: #e4e4e4;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
         .ck-editor__editable {
@@ -213,7 +213,7 @@
             padding: 0.375rem 0.75rem;
         }
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-            background-color: #435ebe;
+            background-color: #e4e4e4;
             color: #fff;
             border: none;
             padding: 2px 8px;
@@ -227,7 +227,7 @@
             border-color: #dee2e6;
         }
         .select2-container--bootstrap-5 .select2-search__field:focus {
-            border-color: #435ebe;
+            border-color: #e4e4e4;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
     </style>
