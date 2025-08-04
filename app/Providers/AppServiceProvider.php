@@ -8,6 +8,8 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Models\Cart;
+use App\Models\Comment;
+use App\Models\Review;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -63,5 +65,11 @@ class AppServiceProvider extends ServiceProvider
             $view->with('categories', \App\Models\Category::where('is_active', 1)->get());
         });
         Paginator::useBootstrap();
+
+        View::composer('admin.layouts.sidebar', function ($view){
+            $pendingComments = Comment::where('is_active', 0)->count();
+            $pendingReviews= Review::where('is_active', 0)->count();
+            $view->with('hasPendingFeedbacks', $pendingComments + $pendingReviews > 0);
+        });
     }
 }
