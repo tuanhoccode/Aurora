@@ -18,14 +18,11 @@ class AdminLoginController extends Controller
         //Kiểm tra xem remember có được chọn k
         $remember = $request->filled('remember');
         if (Auth::attempt($credentials, $remember)) {
-            // dd(Auth::user()->role);
-            if (Auth::user()->role !== 'admin') {
-                Auth::logout();
-                return back()->withErrors(['email' => 'Bạn không có quyền đăng nhập trang quản trị']);
-                
-            }
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'))->with('success', 'Đăng nhập thành công!');
+            $user = Auth::user();
+            return redirect()->intended(route('admin.dashboard'))->with('success', 'Đăng nhập thành công ('
+                . ($user->role === 'admin' ? 'Admin' : 'Nhân viên') .'
+            )');
 
         }
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);

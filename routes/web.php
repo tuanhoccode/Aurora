@@ -54,10 +54,10 @@ Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     //Coupon routes
-    Route::prefix('coupons')->name('coupons.')->group(function () {
+    Route::middleware('admin.only')->prefix('coupons')->name('coupons.')->group(function () {
         Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/bulk-restore', [CouponController::class, 'bulkRestore'])->name('bulk-restore');
         Route::post('/bulk-force-delete', [CouponController::class, 'bulkForceDelete'])->name('bulk-force-delete');
@@ -137,9 +137,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // Xóa ảnh biến thể
         Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
-    Route::resource('users', UserController::class);
-    Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
-    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole');
+    Route::resource('users', UserController::class)->middleware('admin.only');
+    Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus')->middleware('admin.only');
+    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole')->middleware('admin.only');
     // Brands Routes
     Route::prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
@@ -271,7 +271,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
 
     //Quản lý bình luận
-    Route::prefix('reviews')->name('reviews.')->group(function () {
+    Route::middleware('admin.only')->prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [CommentController::class, 'index'])->name('comments');
         Route::get('/{type}/{id}', [CommentController::class, 'showComment'])->name('showComment');
         Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])->name('approve');

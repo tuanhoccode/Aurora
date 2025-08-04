@@ -249,7 +249,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="me-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                                <span class="me-2 d-none d-lg-inline text-gray-600 small">{{Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'}}</span>
                                 <img class="img-profile rounded-circle" style="width: 40px; height: 40px;" 
                                      src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=ffffff&size=128">
                             </a>

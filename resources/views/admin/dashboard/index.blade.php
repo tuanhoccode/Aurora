@@ -69,7 +69,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="h3 mb-2 fw-bold">Bảng Điều Khiển</h1>
-                <p class="text-muted mb-0">Chào mừng trở lại, {{ Auth::user()->name ?? 'Admin' }}!</p>
+                <p class="text-muted mb-0">Chào mừng trở lại, {{Auth::user()->fullname}}({{Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'}})!</p>
             </div>
             <div class="date-info">
                 <span class="badge bg-light text-dark shadow-sm">
