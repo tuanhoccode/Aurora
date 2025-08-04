@@ -92,19 +92,19 @@
                 <span class="nav-icon"><i class="fas fa-comments"></i></span> Đánh giá sản phẩm
             </a>
         </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}"
-                href="{{ route('admin.banners.index') }}">
-                <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
-            </a>
-        </li>
+      <li>
+        <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
+            href="{{ route('admin.dashboard') }}">
+            <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
+        </a>
+     </li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
                 href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Trang CMS
             </a>
         </li>
-        <li>
+        {{-- <li>
             <a class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
                 href="{{ route('admin.product-images.all') }}">
                 <span class="nav-icon">
@@ -112,7 +112,7 @@
                 </span>
                 Quản lý ảnh
             </a>
-        </li>
+        </li> --}}
         <li>
             <a class="nav-link {{ request()->routeIs('admin.stocks.index') ? 'active' : '' }}"
                 href="{{ route('admin.stocks.index') }}">

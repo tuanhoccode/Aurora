@@ -30,8 +30,7 @@ class ProductRequest extends FormRequest
             'gallery_images' => 'nullable|array',
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
-            'is_sale' => 'nullable|boolean',
-            'stock' => $this->input('type') !== 'variant' ? 'required|numeric|min:0|max:100' : 'nullable'
+            'is_sale' => 'nullable|boolean'
         ];
 
         // Thêm validation cho biến thể nếu là sản phẩm biến thể và có dữ liệu variants
@@ -54,7 +53,7 @@ class ProductRequest extends FormRequest
             ];
             $rules['variants.*.price'] = 'required|numeric|min:0';
             $rules['variants.*.sale_price'] = 'nullable|numeric|min:0';
-            $rules['variants.*.stock'] = 'required|numeric|min:0|max:100';
+            $rules['variants.*.stock'] = 'required|numeric|min:0';
             $rules['variants.*.attributes'] = 'required|array|min:1';
             $rules['variants.*.attributes.*'] = 'exists:attribute_values,id';
             $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048';
@@ -170,11 +169,6 @@ class ProductRequest extends FormRequest
             'variants.*.stock.required' => 'Tồn kho của biến thể là bắt buộc',
             'variants.*.stock.numeric' => 'Tồn kho phải là số',
             'variants.*.stock.min' => 'Tồn kho không được âm',
-            'variants.*.stock.max' => 'Tồn kho không được vượt quá 100',
-            'stock.required' => 'Tồn kho là bắt buộc',
-            'stock.numeric' => 'Tồn kho phải là số',
-            'stock.min' => 'Tồn kho không được âm',
-            'stock.max' => 'Tồn kho không được vượt quá 100',
             'variants.*.attributes.required' => 'Thuộc tính của biến thể là bắt buộc',
             'variants.*.attributes.array' => 'Thuộc tính phải là mảng',
             'variants.*.attributes.min' => 'Vui lòng chọn ít nhất một thuộc tính',

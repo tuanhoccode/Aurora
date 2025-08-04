@@ -10,7 +10,6 @@ use App\Models\Category;
 use App\Models\Review;
 use App\Models\Banner;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 
 class HomeController extends Controller
@@ -70,7 +69,6 @@ class HomeController extends Controller
             ->where('is_active', 1)
             ->get();
 
-
         // Lấy danh mục cho banner area (thay thế banner)
         $categoryBanners = Category::select('id', 'name', 'icon', 'is_active')
             ->where('is_active', 1)
@@ -80,7 +78,6 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-
         // Tối ưu query reviews
         $topReviews = Review::select('id', 'user_id', 'product_id', 'rating', 'review_text', 'created_at', 'is_active')
             ->with(['user:id,fullname,avatar'])
@@ -89,7 +86,6 @@ class HomeController extends Controller
             ->latest()
             ->take(8)
             ->get();
-
 
         // Tối ưu query featured products
         $featuredThisWeek = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'views', 'is_active', 'type')
@@ -117,14 +113,7 @@ class HomeController extends Controller
             }
         });
 
-
-        // Lấy banner cho slider chính
-        $mainSliders = Banner::where('is_active', 1)
-            ->orderBy('sort_order')
-            ->get();
-
-
-        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'mainSliders', 'categoryBanners'));
+        return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'categoryBanners'));
     }
 }
 

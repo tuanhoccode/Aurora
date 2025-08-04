@@ -42,7 +42,7 @@ class Product extends Model
 
     public function galleries()
     {
-        return $this->hasMany(ProductGallery::class);
+        return $this->hasMany(ProductImage::class);
     }
 
     protected static function boot()
