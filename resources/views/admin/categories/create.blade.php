@@ -51,11 +51,9 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label for="parent_id" class="form-label fw-bold">Danh mục cha</label>
-                                    <select name="parent_id"
-                                            id="parent_id"
-                                            class="form-select @error('parent_id') is-invalid @enderror">
-                                        <option value="">Chọn danh mục cha</option>
-                                        @foreach($categories as $category)
+                                    <select name="parent_id" class="form-select">
+                                        <option value="">-- Không có (là danh mục gốc) --</option>
+                                        @foreach ($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('parent_id') == $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}
                                             </option>
@@ -138,4 +136,4 @@
         });
     });
 </script>
-@endpush 
+@endpush
