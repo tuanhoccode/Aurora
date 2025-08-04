@@ -138,7 +138,7 @@
                     <div class="order-detail-card__header">
                         <h4>Thông tin đơn hàng</h4>
                         @php
-                            $currentStatusName = $order->currentStatus ? $order->currentStatus->status->name : 'Chờ xác nhận';
+                            $currentStatusName = optional(optional($order->currentStatus)->status)->name ?? 'Chờ xác nhận';
                         @endphp
                         <span class="badge bg-{{ $currentStatusName === 'Đã hủy' ? 'danger' : ($currentStatusName === 'Chờ xác nhận' ? 'primary' : 'success') }}">
                             {{ $currentStatusName }}
@@ -294,7 +294,7 @@
 
 <!-- Form hủy đơn hàng -->
 @if($order->cancellation_status === null && 
-    ($order->currentStatus->status->code === 'PENDING' || $order->currentStatus->status->code === 'PROCESSING'))
+    (optional(optional($order->currentStatus)->status)->code === 'PENDING' || optional(optional($order->currentStatus)->status)->code === 'PROCESSING'))
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">

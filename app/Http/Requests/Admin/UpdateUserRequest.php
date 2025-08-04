@@ -31,7 +31,7 @@ class UpdateUserRequest extends FormRequest
 
         // Nếu có chọn thay đổi mật khẩu thì thêm các rule cho password
         if ($this->filled('is_change_password')) {
-            $rules['password'] = ['required', 'string', 'min:6', 'confirmed'];
+            $rules['password'] = ['required', 'string', 'min:6', 'max:255', 'confirmed'];
             // => Trường `password_confirmation` phải được gửi kèm theo và giống với `password`
         }
 
@@ -56,6 +56,7 @@ class UpdateUserRequest extends FormRequest
             'password.required' => 'Vui lòng nhập mật khẩu mới.',
             'password.string' => 'Mật khẩu phải là chuỗi.',
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.max' => 'Mật khẩu phải không quá 255 ký tự.',
             'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
         ];
     }

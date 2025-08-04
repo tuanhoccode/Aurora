@@ -4,29 +4,20 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    {{-- Header Section --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">Thùng rác sản phẩm</h1>
+            <h1 class="h3 mb-0 fw-bold text-gray-800">Thùng rác bình luận</h1>
             <p class="mb-0 text-muted">Quản lý các bình luận đã xóa tạm thời</p>
         </div>
         <div>
-            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại
-            </a>
+            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-light rounded-pill shadow-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
         </div>
     </div>
-
-    
-
-   
-
-    {{-- Main Card --}}
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             <th>Người dùng</th>
                             <th>Sản phẩm</th>
@@ -42,7 +33,7 @@
                         <tr>
 
                             <td>
-                                <div class="fw-medium text-primary">{{ $comment->user ? $comment->user->fullname : 'N/A'  }}</div>
+                                <div class="fw-medium text-primary">{{ $comment->user->fullname }}</div>
                                 <!-- <small class="text-muted d-block">{{ Str::limit($comment->short_description, 100) }}</small> -->
                             </td>
                             <td>
@@ -101,14 +92,14 @@
                     </tbody>
                 </table>
             </div>
-
             @if($trashComments->hasPages())
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="text-muted">
-                    Hiển thị {{ $trashComments->firstItem() ?? 0 }} đến {{ $trashComments->lastItem() ?? 0 }} 
-                    trong tổng số {{ $trashComments->total() ?? 0 }} sản phẩm
+                    Hiển thị {{ $trashComments->firstItem() ?? 0 }} đến {{ $trashComments->lastItem() ?? 0 }} trong tổng số {{ $trashComments->total() ?? 0 }} bình luận
                 </div>
-                {{ $trashComments->links() }}
+                <div>
+                    {{ $trashComments->links('pagination::bootstrap-5') }}
+                </div>
             </div>
             @endif
         </div>

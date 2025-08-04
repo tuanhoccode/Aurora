@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Admin\BannerController;
 
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -39,16 +40,16 @@ use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
 
 
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
 use Dom\Comment;
-
+Route::post('/payment/vnpay/callback', [CheckoutController::class, 'vnpayCallback'])->name('vnpay.callback');
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
@@ -125,15 +126,15 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
         // Xóa ảnh gallery của biến thể
         Route::delete('/{product}/variants/delete-gallery-image/{image}', [ProductVariantController::class, 'deleteGalleryImage'])->name('variants.delete-gallery-image');
-        
+
         // Xử lý ảnh gallery cho biến thể
         Route::post('/variants/upload-gallery', [ProductVariantController::class, 'uploadGallery'])->name('variants.upload-gallery');
         Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteVariantImage'])->name('variants.delete-image');
         Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
-        
+
         // Lấy danh sách ảnh của biến thể
         Route::get('/{product}/variants/{variant}/images', [ProductVariantController::class, 'getImages'])->name('variants.images');
-        
+
         // Xóa ảnh biến thể
         Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
@@ -290,7 +291,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
 
-    
+
 });
 
 
@@ -314,7 +315,7 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
 Route::prefix('categories')->name('client.categories.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-}); 
+});
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -382,7 +383,8 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
     Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
-    Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
+    Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
@@ -418,11 +420,13 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 
-   
+
 });
+
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
