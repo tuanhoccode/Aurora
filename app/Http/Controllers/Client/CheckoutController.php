@@ -26,40 +26,78 @@ class CheckoutController extends Controller
     {
         try {
             if (!Auth::check()) {
+                \Log::warning('User not authenticated', ['user_id' => Auth::id()]);
                 return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục!');
             }
 
             $user = Auth::user();
-            $cart = Cart::where('user_id', Auth::id())->with(['items.product', 'items.productVariant'])->first();
+            $cart = Cart::where('user_id', $user->id)
+                ->with(['items' => function ($query) {
+                    $query->with(['product', 'productVariant']);
+                }])
+                ->first();
 
             if (!$cart) {
-                \Log::warning('Cart not found', ['user_id' => Auth::id()]);
+                \Log::warning('Cart not found', ['user_id' => $user->id]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Giỏ hàng không tồn tại!');
             }
 
             // Lấy selected_items từ session, sử dụng query string như dự phòng
-            $selectedItems = session('selected_items', $request->query('selected_items') ? json_decode($request->query('selected_items'), true) : []);
+            $selectedItems = session('selected_items', []);
+            if ($request->query('selected_items')) {
+                try {
+                    $decodedItems = json_decode($request->query('selected_items'), true);
+                    if (is_array($decodedItems) && !empty($decodedItems)) {
+                        $selectedItems = array_map('intval', $decodedItems); // Chuyển thành số nguyên
+                        session(['selected_items' => $selectedItems]); // Lưu vào session
+                        \Log::info('Selected items updated from query', ['selected_items' => $selectedItems]);
+                    } else {
+                        \Log::warning('Invalid selected_items format', ['query' => $request->query('selected_items')]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error decoding selected_items', [
+                        'query' => $request->query('selected_items'),
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
 
             // Kiểm tra selected_items là mảng hợp lệ và không rỗng
             if (!is_array($selectedItems) || empty($selectedItems)) {
-                \Log::warning('No valid selected items', ['selected_items' => $selectedItems, 'query' => $request->query('selected_items')]);
+                \Log::warning('No valid selected items', [
+                    'selected_items' => $selectedItems,
+                    'query' => $request->query('selected_items')
+                ]);
                 return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
             }
 
-            // Lưu selected_items vào session
-            session(['selected_items' => $selectedItems]);
-
-            // Lọc cart items dựa trên selected_items
-            $cartItems = $cart->items()->whereIn('id', $selectedItems)->get();
+            // Lọc cart items dựa trên selected_items và kiểm tra stock
+            $cartItems = $cart->items->filter(function ($item) use ($selectedItems) {
+                return in_array($item->id, $selectedItems);
+            })->filter(function ($item) {
+                $stock = $item->productVariant ? $item->productVariant->stock : $item->product->stock;
+                return $stock >= $item->quantity;
+            });
 
             if ($cartItems->isEmpty()) {
-                \Log::warning('No matching cart items for selected_items', ['selected_items' => $selectedItems]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Các sản phẩm được chọn không hợp lệ hoặc đã bị xóa!');
+                \Log::warning('No valid cart items after filtering', [
+                    'selected_items' => $selectedItems,
+                    'user_id' => $user->id
+                ]);
+                session()->forget('selected_items');
+                return redirect()->route('shopping-cart.index')->with('error', 'Các sản phẩm được chọn không hợp lệ hoặc không đủ số lượng trong kho!');
             }
 
             // Tính tổng giá trị giỏ hàng
             $cartTotal = $cartItems->sum(function ($item) {
-                $price = $item->price_at_time ?? $item->product->price ?? 0;
+                $price = $item->price_at_time ?? $item->product->price ?? null;
+                if ($price === null) {
+                    \Log::error('Price not found for cart item', [
+                        'item_id' => $item->id,
+                        'product_id' => $item->product_id
+                    ]);
+                    throw new \Exception('Không thể tính giá sản phẩm: ' . $item->product->name);
+                }
                 $quantity = $item->quantity ?? 0;
                 \Log::debug('Cart Item Calculation', [
                     'product_id' => $item->product_id,
@@ -72,7 +110,7 @@ class CheckoutController extends Controller
             });
 
             // Lấy danh sách địa chỉ
-            $addresses = UserAddress::where('user_id', Auth::id())->get();
+            $addresses = UserAddress::where('user_id', $user->id)->get();
             $defaultAddress = $addresses->where('is_default', 1)->first();
 
             // Đặt địa chỉ mặc định nếu chưa có trong session
@@ -81,34 +119,38 @@ class CheckoutController extends Controller
             }
 
             // Đặt mặc định phương thức thanh toán và vận chuyển
-            if (!session('payment_method')) {
-                session(['payment_method' => 'cod']);
-            }
-
-            if (!session('shipping_type')) {
-                session(['shipping_type' => 'thường']);
-            }
-
-            $shippingType = old('shipping_type', session('shipping_type', 'thường'));
+            $paymentMethod = session('payment_method', 'cod');
+            $shippingType = session('shipping_type', 'thường');
             $shippingFee = $shippingType === 'nhanh' ? 30000 : 16500;
-            session(['shipping_fee' => $shippingFee]);
+            session([
+                'payment_method' => $paymentMethod,
+                'shipping_type' => $shippingType,
+                'shipping_fee' => $shippingFee
+            ]);
 
             // Xử lý mã giảm giá
             $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
             $discount = 0;
             if ($coupon && $this->isValidCoupon($coupon, $cartTotal)) {
                 $discount = $this->calculateDiscount($coupon, $cartTotal);
+            } else if ($coupon) {
+                \Log::warning('Invalid coupon', ['coupon_id' => $coupon->id, 'cart_total' => $cartTotal]);
+                session()->forget('coupon');
             }
 
+            // Log dữ liệu để debug
             \Log::info('Checkout Summary', [
-                'cartTotal' => $cartTotal,
-                'shippingFee' => $shippingFee,
-                'shippingType' => $shippingType,
+                'user_id' => $user->id,
+                'cart_id' => $cart->id,
+                'cart_items_count' => $cartItems->count(),
+                'cart_total' => $cartTotal,
+                'shipping_fee' => $shippingFee,
+                'shipping_type' => $shippingType,
                 'coupon' => $coupon ? $coupon->toArray() : null,
                 'discount' => $discount,
                 'selected_items' => $selectedItems,
                 'address_id' => session('checkout_address_id'),
-                'payment_method' => session('payment_method')
+                'payment_method' => $paymentMethod
             ]);
 
             return view('client.checkout', compact(
@@ -124,7 +166,10 @@ class CheckoutController extends Controller
                 'shippingType'
             ));
         } catch (\Exception $e) {
-            \Log::error('Checkout Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            \Log::error('Checkout Error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('shopping-cart.index')->with('error', 'Đã xảy ra lỗi, vui lòng thử lại!');
         }
     }
