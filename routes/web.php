@@ -49,7 +49,6 @@ use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
 use Dom\Comment;
-Route::post('/payment/vnpay/callback', [CheckoutController::class, 'vnpayCallback'])->name('vnpay.callback');
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
