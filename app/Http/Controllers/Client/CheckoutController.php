@@ -570,6 +570,7 @@ class CheckoutController extends Controller
             'is_paid' => $orderData['payment_method'] ?? 'cod' === 'cod' ? 0 : 1,
             'is_refunded' => 0,
             'coupon_id' => $orderData['coupon_id'],
+            'discount_amount' => $orderData['discount'] ?? 0,
             'is_refunded_canceled' => 0,
             'check_refunded_canceled' => 0,
             'img_refunded_money' => null,
@@ -579,7 +580,8 @@ class CheckoutController extends Controller
             'order_id' => $order->id,
             'code' => $order->code,
             'address' => $order->address,
-            'city' => $order->city
+            'city' => $order->city,
+            'discount_amount' => $order->discount_amount
         ]);
 
         // Tạo trạng thái đơn hàng
