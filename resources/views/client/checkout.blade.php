@@ -1,4 +1,3 @@
-```blade
 @extends('client.layouts.default')
 
 @section('title', 'Thanh toán')

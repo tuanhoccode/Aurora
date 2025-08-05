@@ -32,7 +32,7 @@ class ReviewController extends Controller
                     $q->where('product_id', $product->id);
                 })->exists();
             if (!$hasPurchased) {
-                return back()->with('error', 'Bạn chỉ có thể đánh giá khi bạn đã mua và nhận hàng thành công.');
+                return back()->with('error', 'Bạn chỉ có thể đánh giá khi bạn đã mua sản phẩm và nhận hàng thành công.');
             }
 
             //Kiểm tra đã đánh giá trước đó chưa
@@ -58,7 +58,7 @@ class ReviewController extends Controller
                 'review_text' => $req->review_text,
                 'is_active' =>  0,
             ]);
-            return back()->with('success', 'Đánh giá của bạn đã được gửi và đang chờ duyệt.');
+            return back()->with('success', 'Đánh giá của bạn đang chờ kiểm duyệt và sẽ hiển thị sau khi được duyệt.');
         } else {
             Comment::create([
                 'product_id' => $product->id,
@@ -67,6 +67,6 @@ class ReviewController extends Controller
                 'is_active' =>  0,
             ]);
         }
-        return back()-> with('success', 'Bình luận của bạn đã được gửi và đang chờ duyệt.');
+        return back()-> with('success', 'Bình luận của bạn đang chờ kiểm duyệt và sẽ hiển thị sau khi được duyệt.');
     }   
 }
