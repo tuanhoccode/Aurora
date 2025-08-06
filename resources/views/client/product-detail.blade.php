@@ -460,10 +460,28 @@
                             <!-- price -->
                             {{-- Hiển thị giá --}}
                             <div class="tp-product-details-price-wrapper mb-20">
-                                @php
-                                    $unit = $product->sale_price ?? $product->price;
-                                @endphp
+                               @php
+                                if ($product->variants->count()) {
+                                    $unit = $product->variants->min(function ($variant) {
+                                        return $variant->sale_price ?? $variant->price ?? PHP_INT_MAX;
+                                    });
 
+                                    $original = $product->variants->min(function ($variant) {
+                                        return $variant->price ?? PHP_INT_MAX;
+                                    });
+
+                                    if ($unit === PHP_INT_MAX) {
+                                        $unit = 0;
+                                    }
+
+                                    if ($original === PHP_INT_MAX) {
+                                        $original = null;
+                                    }
+                                } else {
+                                    $unit = $product->sale_price ?? $product->price ?? 0;
+                                    $original = $product->sale_price ? $product->price : null;
+                                }
+                            @endphp
                                 <div class="tp-product-details-price-wrapper mb-20">
                                     <span class="tp-product-details-price new-price" id="product-price">
                                         {{ number_format($unit, 0, ',', '.') }}₫
@@ -477,18 +495,15 @@
                                             style="display: none;"></span>
                                     @endif
 
-                                    {{-- Đơn giá (ẩn số thật để tính toán) --}}
                                     <span id="unit-price" data-unit="{{ $unit }}"
                                         style="display: none;"></span>
                                 </div>
-                                {{-- Nếu không có biến thể thì hiển thị luôn --}}
                                 @if ($product->variants->isEmpty())
                                     <div class="mt-3">
                                         <strong>Chất liệu:</strong> {{ $product->material }}
                                     </div>
                                 @endif
 
-                                {{-- Nếu có biến thể thì khối ẩn, hiện khi chọn biến thể --}}
                                 @if ($product->variants->isNotEmpty())
                                     <div id="materialSection" class="mt-3 d-none">
                                         <strong>Chất liệu:</strong>
@@ -788,22 +803,43 @@
                                                             ->where('is_active', 1)
                                                             ->where('review_id', null)
                                                             ->where('rating', '>=', 1);
-                                                        $averageRating = $validReviews->count() > 0
-                                                            ? $validReviews->avg('rating')
-                                                            : 0;
+                                                        $averageRating =
+                                                            $validReviews->count() > 0
+                                                                ? $validReviews->avg('rating')
+                                                                : 0;
                                                         $reviewCount = $validReviews->count();
-                                                        //Làm tròn sao
-                                                        $roundedStars = round($averageRating);
-                                                        $fullStars = $roundedStars;
-                                                        $emptyStars = 5 - $roundedStars;
                                                     @endphp
 
                                                     <span class="fs-4 fw-bold text-warning">
-                                                        {!! str_repeat('★', $fullStars) !!}{!! str_repeat('☆', $emptyStars) !!}
+                                                        {!! str_repeat('★', floor($averageRating)) !!}{!! str_repeat('☆', 5 - floor($averageRating)) !!}
                                                     </span>
                                                     <span class="ms-2">({{ number_format($averageRating, 1) }}/5 từ
                                                         {{ $reviewCount }} đánh giá)</span>
                                                 </div>
+
+                                                <!-- Danh sách đánh giá -->
+
+                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
+                                                    <div class="review-item border-bottom pb-3 mb-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <strong>{{ $review->user->name ?? 'Khách hàng' }}</strong>
+                                                            <small
+                                                                class="text-muted">{{ $review->created_at->format('d/m/Y') }}</small>
+                                                        </div>
+                                                        <div class="text-warning mb-1">
+                                                            {!! str_repeat('★', $review->rating ?? 0) !!}{!! str_repeat('☆', 5 - $review->rating) !!}
+                                                        </div>
+                                                        <p class="mb-0">{{ $review->review_text }}</p>
+
+
+                                                        @if ($review->reason)
+                                                            <small class="text-muted">Lý do:
+                                                                {{ $review->reason }}</small>
+                                                        @endif
+                                                    </div>
+                                                @empty
+                                                    <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                                                @endforelse
                                             </div>
                                             <div class="tp-product-details-review-list pr-110">
                                                 <h3 class="tp-product-details-review-title">Đánh giá và bình luận của
@@ -812,7 +848,7 @@
 
                                                 <!-- Hiển thị reviews -->
 
-                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(5) as $review)
+                                                @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
                                                     <div
                                                         class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                         <div class="tp-product-details-review-avater-thumb me-3">
@@ -855,7 +891,7 @@
                                                 @endforeach
 
                                                 <!-- Hiển thị comment -->
-                                                @foreach ($product->comments->where('is_active', 1)->where('parent_id', null)->sortByDesc('created_at')->take(5) as $comment)
+                                                @foreach ($product->comments->where('is_active', 1)->where('parent_id', null)->sortByDesc('created_at')->take(2) as $comment)
                                                     <div
                                                         class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                         <div class="tp-product-details-review-avater-4">
@@ -940,7 +976,7 @@
                                                     @endforeach
 
                                                     <!-- Các bình luận còn lại -->
-                                                    @foreach ($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(4) as $comment)
+                                                    @foreach ($product->comments->where('is_active', 1)->sortByDesc('created_at')->skip(2) as $comment)
                                                         <div
                                                             class="tp-product-details-review-avater d-flex align-items-start mb-4">
                                                             <div class="tp-product-details-review-avater-thumb me-3">
@@ -979,7 +1015,7 @@
                                                     @endforeach
                                                 </div>
                                                 <!-- Nút Xem thêm -->
-                                                @if ($product->reviews->count() > 4 || $product->comments->count() > 4)
+                                                @if ($product->reviews->count() > 3 || $product->comments->count() > 2)
                                                     <div class="text-center mt-3">
                                                         <button id="show-more-btn" class="btn btn-outline-primary">Xem
                                                             thêm đánh giá và bình luận</button>
