@@ -240,7 +240,7 @@ class CheckoutController extends Controller
         }
     }
 
-    public function applyCoupon(Request $request)
+        public function applyCoupon(Request $request)
     {
         try {
             $request->validate([
