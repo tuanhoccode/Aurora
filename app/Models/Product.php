@@ -353,4 +353,9 @@ class Product extends Model
     public function getAverageRatingAttribute(){
         return round($this->reviews()->where('is_active', 1)->avg('rating'),1) ?? 0;
     }
+    public function wishlists()
+{
+    return $this->hasMany(Wishlist::class);
+}
+
 }

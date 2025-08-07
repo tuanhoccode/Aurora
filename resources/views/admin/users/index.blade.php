@@ -127,42 +127,54 @@
 @endsection
 
 @push('scripts')
+<!-- Thêm toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
     $(document).ready(function () {
+        // --- Toastr thông báo từ session ---
+        @if (session('success'))
+            toastr.success("{{ session('success') }}");
+        @endif
+        @if (session('error'))
+            toastr.error("{{ session('error') }}");
+        @endif
+
         // --- Status Editable ---
         $(document).on('click', '.status-editable', function () {
             let $span = $(this);
-            let currentStatus = $span.data('status');
+            let oldStatus = $span.data('status');
             let userId = $span.data('id');
 
             let select = `
-                <select class="form-select form-select-sm status-select" data-id="${userId}" style="min-width:100px;">
-                    <option value="active" ${currentStatus === 'active' ? 'selected' : ''}>Active</option>
-                    <option value="inactive" ${currentStatus === 'inactive' ? 'selected' : ''}>Inactive</option>
+                <select class="form-select form-select-sm status-select" 
+                        data-id="${userId}"
+                        data-old-status="${oldStatus}"
+                        style="min-width:100px;">
+                    <option value="active" ${oldStatus === 'active' ? 'selected' : ''}>Active</option>
+                    <option value="inactive" ${oldStatus === 'inactive' ? 'selected' : ''}>Inactive</option>
                 </select>
             `;
-
             $span.replaceWith(select);
-            $(`select[data-id=${userId}]`).focus();
+            select = $(`select[data-id=${userId}]`);
+            select.focus();
         });
 
         $(document).on('change', '.status-select', function () {
             let $select = $(this);
             let newStatus = $select.val();
+            let oldStatus = $select.data('old-status');
             let userId = $select.data('id');
 
             $.ajax({
                 url: `/admin/users/${userId}/change-status`,
                 method: 'PATCH',
-                data: {
-                    status: newStatus,
-                    _token: '{{ csrf_token() }}'
-                },
+                data: { status: newStatus, _token: '{{ csrf_token() }}' },
                 success: function () {
                     let badgeClass = newStatus === 'active' ? 'bg-success' : 'bg-danger';
                     let badgeText = newStatus === 'active' ? 'Active' : 'Inactive';
-
-                    let newSpan = `
+                    let span = `
                         <span class="badge ${badgeClass} status-editable"
                               data-id="${userId}"
                               data-status="${newStatus}"
@@ -170,76 +182,63 @@
                             ${badgeText}
                         </span>
                     `;
-                    $select.replaceWith(newSpan);
+                    $select.replaceWith(span);
+                    toastr.success('Cập nhật trạng thái thành công.');
                 },
                 error: function () {
-                    alert('Cập nhật trạng thái thất bại.');
+                    toastr.error('Cập nhật trạng thái thất bại.');
+                    let badgeClass = oldStatus === 'active' ? 'bg-success' : 'bg-danger';
+                    let badgeText = oldStatus === 'active' ? 'Active' : 'Inactive';
+                    let span = `
+                        <span class="badge ${badgeClass} status-editable"
+                              data-id="${userId}"
+                              data-status="${oldStatus}"
+                              style="cursor: pointer;">
+                            ${badgeText}
+                        </span>
+                    `;
+                    $select.replaceWith(span);
                 }
             });
         });
 
-        $(document).on('blur', '.status-select', function () {
-            let $select = $(this);
-            let selectedStatus = $select.val();
-            let userId = $select.data('id');
-
-            let badgeClass = selectedStatus === 'active' ? 'bg-success' : 'bg-danger';
-            let badgeText = selectedStatus === 'active' ? 'Active' : 'Inactive';
-
-            let span = `
-                <span class="badge ${badgeClass} status-editable"
-                      data-id="${userId}"
-                      data-status="${selectedStatus}"
-                      style="cursor: pointer;">
-                    ${badgeText}
-                </span>
-            `;
-            $select.replaceWith(span);
-        });
-
-
         // --- Role Editable ---
         $(document).on('click', '.role-editable', function () {
             let $span = $(this);
-            let currentRole = $span.data('role');
+            let oldRole = $span.data('role');
             let userId = $span.data('id');
 
             let select = `
-                <select class="form-select form-select-sm role-select" data-id="${userId}" style="min-width:120px;">
-                    <option value="customer" ${currentRole === 'customer' ? 'selected' : ''}>Customer</option>
-                    <option value="employee" ${currentRole === 'employee' ? 'selected' : ''}>Employee</option>
-                    <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Admin</option>
+                <select class="form-select form-select-sm role-select" 
+                        data-id="${userId}"
+                        data-old-role="${oldRole}"
+                        style="min-width:120px;">
+                    <option value="customer" ${oldRole === 'customer' ? 'selected' : ''}>Customer</option>
+                    <option value="employee" ${oldRole === 'employee' ? 'selected' : ''}>Employee</option>
+                    <option value="admin" ${oldRole === 'admin' ? 'selected' : ''}>Admin</option>
                 </select>
             `;
-
             $span.replaceWith(select);
-            $(`select[data-id=${userId}]`).focus();
+            select = $(`select[data-id=${userId}]`);
+            select.focus();
         });
 
         $(document).on('change', '.role-select', function () {
             let $select = $(this);
             let newRole = $select.val();
+            let oldRole = $select.data('old-role');
             let userId = $select.data('id');
 
             $.ajax({
                 url: `/admin/users/${userId}/change-role`,
                 method: 'PATCH',
-                data: {
-                    role: newRole,
-                    _token: '{{ csrf_token() }}'
-                },
+                data: { role: newRole, _token: '{{ csrf_token() }}' },
                 success: function () {
-                    let roleClass = 'bg-secondary text-white';
-                    let roleLabel = 'Customer';
-                    if(newRole === 'admin') {
-                        roleClass = 'bg-primary text-white';
-                        roleLabel = 'Admin';
-                    } else if(newRole === 'employee') {
-                        roleClass = 'bg-warning text-dark';
-                        roleLabel = 'Employee';
-                    }
-
-                    let newSpan = `
+                    let roleClass = newRole === 'admin' ? 'bg-primary text-white' :
+                                    newRole === 'employee' ? 'bg-warning text-dark' :
+                                    'bg-secondary text-white';
+                    let roleLabel = newRole.charAt(0).toUpperCase() + newRole.slice(1);
+                    let span = `
                         <span class="badge ${roleClass} role-editable"
                               data-id="${userId}"
                               data-role="${newRole}"
@@ -247,38 +246,26 @@
                             ${roleLabel}
                         </span>
                     `;
-                    $select.replaceWith(newSpan);
+                    $select.replaceWith(span);
+                    toastr.success('Cập nhật vai trò thành công.');
                 },
                 error: function () {
-                    alert('Cập nhật vai trò thất bại.');
+                    toastr.error('Cập nhật vai trò thất bại.');
+                    let roleClass = oldRole === 'admin' ? 'bg-primary text-white' :
+                                    oldRole === 'employee' ? 'bg-warning text-dark' :
+                                    'bg-secondary text-white';
+                    let roleLabel = oldRole.charAt(0).toUpperCase() + oldRole.slice(1);
+                    let span = `
+                        <span class="badge ${roleClass} role-editable"
+                              data-id="${userId}"
+                              data-role="${oldRole}"
+                              style="cursor: pointer;">
+                            ${roleLabel}
+                        </span>
+                    `;
+                    $select.replaceWith(span);
                 }
             });
-        });
-
-        $(document).on('blur', '.role-select', function () {
-            let $select = $(this);
-            let selectedRole = $select.val();
-            let userId = $select.data('id');
-
-            let roleClass = 'bg-secondary text-white';
-            let roleLabel = 'Customer';
-            if(selectedRole === 'admin') {
-                roleClass = 'bg-primary text-white';
-                roleLabel = 'Admin';
-            } else if(selectedRole === 'employee') {
-                roleClass = 'bg-warning text-dark';
-                roleLabel = 'Employee';
-            }
-
-            let span = `
-                <span class="badge ${roleClass} role-editable"
-                      data-id="${userId}"
-                      data-role="${selectedRole}"
-                      style="cursor: pointer;">
-                    ${roleLabel}
-                </span>
-            `;
-            $select.replaceWith(span);
         });
     });
 </script>

@@ -132,6 +132,49 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header fw-bold">
+                        Sản phẩm yêu thích ({{ is_countable($wishlists) ? count($wishlists) : 0 }})
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Giá</th>
+                                    <th>Ngày thêm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($wishlists as $wishlist)
+                                    <tr>
+                                        <td>
+                                            <img src="{{ $wishlist->product->thumbnail ? asset('storage/' . $wishlist->product->thumbnail) : 'https://via.placeholder.com/50' }}"
+                                                 alt="{{ $wishlist->product->name }}" width="50">
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('client.product.show', ['slug' => $wishlist->product->slug]) }}" target="_blank">
+                                                {{ $wishlist->product->name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {{ number_format($wishlist->product->price, 0, ',', '.') }} ₫
+                                        </td>
+                                        <td>
+                                            {{ $wishlist->created_at->format('d/m/Y') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Chưa có sản phẩm yêu thích</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

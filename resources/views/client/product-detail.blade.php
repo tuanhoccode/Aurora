@@ -460,28 +460,28 @@
                             <!-- price -->
                             {{-- Hiển thị giá --}}
                             <div class="tp-product-details-price-wrapper mb-20">
-                               @php
-                                if ($product->variants->count()) {
-                                    $unit = $product->variants->min(function ($variant) {
-                                        return $variant->sale_price ?? $variant->price ?? PHP_INT_MAX;
-                                    });
+                                @php
+                                    if ($product->variants->count()) {
+                                        $unit = $product->variants->min(function ($variant) {
+                                            return $variant->sale_price ?? $variant->price ?? PHP_INT_MAX;
+                                        });
 
-                                    $original = $product->variants->min(function ($variant) {
-                                        return $variant->price ?? PHP_INT_MAX;
-                                    });
+                                        $original = $product->variants->min(function ($variant) {
+                                            return $variant->price ?? PHP_INT_MAX;
+                                        });
 
-                                    if ($unit === PHP_INT_MAX) {
-                                        $unit = 0;
+                                        if ($unit === PHP_INT_MAX) {
+                                            $unit = 0;
+                                        }
+
+                                        if ($original === PHP_INT_MAX) {
+                                            $original = null;
+                                        }
+                                    } else {
+                                        $unit = $product->sale_price ?? $product->price ?? 0;
+                                        $original = $product->sale_price ? $product->price : null;
                                     }
-
-                                    if ($original === PHP_INT_MAX) {
-                                        $original = null;
-                                    }
-                                } else {
-                                    $unit = $product->sale_price ?? $product->price ?? 0;
-                                    $original = $product->sale_price ? $product->price : null;
-                                }
-                            @endphp
+                                @endphp
                                 <div class="tp-product-details-price-wrapper mb-20">
                                     <span class="tp-product-details-price new-price" id="product-price">
                                         {{ number_format($unit, 0, ',', '.') }}₫
@@ -495,8 +495,7 @@
                                             style="display: none;"></span>
                                     @endif
 
-                                    <span id="unit-price" data-unit="{{ $unit }}"
-                                        style="display: none;"></span>
+                                    <span id="unit-price" data-unit="{{ $unit }}" style="display: none;"></span>
                                 </div>
                                 @if ($product->variants->isEmpty())
                                     <div class="mt-3">
@@ -584,8 +583,7 @@
                                                         data-color="{{ $code }}"
                                                         style="--active-border-color: {{ $color['hex'] ?? '#000' }};"
                                                         title="{{ $color['name'] }}">
-                                                        <img src="{{ asset('storage/' . $imgUrl) }}"
-                                                            alt="{{ $color['name'] }}">
+                                                        <img src="{{ asset('storage/' . $imgUrl) }}" alt="{{ $color['name'] }}">
                                                     </button>
                                                 @endif
                                             @endforeach
@@ -597,8 +595,7 @@
                                         <h4 class="tp-product-details-variation-title">Kích cỡ :</h4>
                                         <div class="tp-product-details-variation-list">
                                             @foreach ($productSizes as $size)
-                                                <button type="button" class="tp-size-variation-btn"
-                                                    data-size="{{ $size }}">
+                                                <button type="button" class="tp-size-variation-btn" data-size="{{ $size }}">
                                                     <span>{{ $size }}</span>
                                                 </button>
                                             @endforeach
@@ -613,8 +610,8 @@
                                         <div class="tp-product-details-quantity">
                                             <div class="tp-product-quantity mb-15 mr-15">
                                                 <span id="detail-cart-minus" class="tp-cart-minus">–</span>
-                                                <input id="quantity" name="quantity" class="tp-cart-input"
-                                                    type="text" value="1">
+                                                <input id="quantity" name="quantity" class="tp-cart-input" type="text"
+                                                    value="1">
                                                 <span id="detail-cart-plus" class="tp-cart-plus">+</span>
                                             </div>
                                         </div>
@@ -623,10 +620,9 @@
                                                 action="{{ route('shopping-cart.add') }}" method="POST">
                                                 @csrf
                                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                <input type="hidden" name="product_variant_id"
-                                                    id="product_variant_id" value="">
-                                                <input type="hidden" name="variant_sku" id="variant_sku"
+                                                <input type="hidden" name="product_variant_id" id="product_variant_id"
                                                     value="">
+                                                <input type="hidden" name="variant_sku" id="variant_sku" value="">
                                                 <input type="hidden" name="price" id="variant_price"
                                                     value="{{ !$hasVariants ? $product->sale_price ?? $product->price : '' }}">
                                                 <button type="submit"
@@ -639,7 +635,8 @@
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                                         <input type="hidden" name="quantity" value="1">
-                                        {{-- <button type="submit" class="tp-product-details-buy-now-btn w-100">Mua ngay</button> --}}
+                                        {{-- <button type="submit" class="tp-product-details-buy-now-btn w-100">Mua
+                                            ngay</button> --}}
                                     </form>
                                 </div>
                                 <div class="tp-product-details-action-sm">
@@ -663,7 +660,9 @@
                                         </svg>
                                         So sánh sản phẩm
                                     </button>
-                                    <button type="button" class="tp-product-details-action-sm-btn">
+                                    <button type="button" id="add-to-wishlist-btn"
+                                        class="tp-product-details-action-sm-btn btn-add-wishlist"
+                                        data-product-id="{{ $product->id }}">
                                         <svg width="17" height="16" viewBox="0 0 17 16" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
                                             <path fill-rule="evenodd" clip-rule="evenodd"
@@ -743,8 +742,8 @@
                                         data-bs-target="#nav-description" type="button" role="tab"
                                         aria-controls="nav-description" aria-selected="true">Mô tả chi tiết</button>
                                     <button class="nav-link" id="nav-review-tab" data-bs-toggle="tab"
-                                        data-bs-target="#nav-review" type="button" role="tab"
-                                        aria-controls="nav-review" aria-selected="false">
+                                        data-bs-target="#nav-review" type="button" role="tab" aria-controls="nav-review"
+                                        aria-selected="false">
                                         Đánh giá
                                     </button>
                                     <span id="productTabMarker" class="tp-product-details-tab-line"></span>
@@ -805,8 +804,8 @@
                                                             ->where('rating', '>=', 1);
                                                         $averageRating =
                                                             $validReviews->count() > 0
-                                                                ? $validReviews->avg('rating')
-                                                                : 0;
+                                                            ? $validReviews->avg('rating')
+                                                            : 0;
                                                         $reviewCount = $validReviews->count();
                                                     @endphp
 
@@ -849,44 +848,45 @@
                                                 <!-- Hiển thị reviews -->
 
                                                 @forelse ($product->reviews->where('is_active', 1)->where('review_id', null)->where('rating', '>=', 1)->sortByDesc('created_at')->take(3) as $review)
-                                                    <div
-                                                        class="tp-product-details-review-avater d-flex align-items-start mb-4">
-                                                        <div class="tp-product-details-review-avater-thumb me-3">
-                                                            <a href="#">
-                                                                <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                    alt="avatar" width="50">
-                                                            </a>
-                                                        </div>
-                                                        <div class="tp-product-details-review-avater-content">
-                                                            <div
-                                                                class="tp-product-details-review-avater-rating text-warning mb-1">
-                                                                {!! str_repeat('<i class="fa-solid fa-star"> </i>', $review->rating) !!}
-                                                                {!! str_repeat('<i class="fa-regular fa-star"> </i>', 5 - $review->rating) !!}
-                                                            </div>
-                                                            <h3 class="tp-product-details-review-avater-title mb-1">
-                                                                {{ $review->user->fullname }} </h3>
-                                                            <span
-                                                                class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
-                                                            <div class="tp-product-details-review-avater-comment mb-1">
-                                                                {{ $review->review_text }}
-                                                            </div>
-                                                            @foreach ($review->replies->where('is_active', 1) as $reply)
-                                                                <div
-                                                                    class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                    <strong
-                                                                        class="text-primary">{{ $reply->user->fullname ?? 'shop' }}</strong>
-                                                                    trả lời:
-                                                                    <p class="mb-0">{{ $reply->review_text }}</p>
-                                                                    <small
-                                                                        class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
-                                                                </div>
-                                                            @endforeach
-                                                            @if ($review->reason)
-                                                                <small class="text-muted">Lý do:
-                                                                    {{ $review->reason }}</small>
-                                                            @endif
-                                                        </div>
+                                                <div
+                                                    class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                    <div class="tp-product-details-review-avater-thumb me-3">
+                                                        <a href="#">
+                                                            <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
+                                                                alt="avatar" width="50">
+                                                        </a>
                                                     </div>
+                                                    <div class="tp-product-details-review-avater-content">
+                                                        <div
+                                                            class="tp-product-details-review-avater-rating text-warning mb-1">
+                                                            {!! str_repeat('<i class="fa-solid fa-star"> </i>', $review->rating) !!}
+                                                            {!! str_repeat('<i class="fa-regular fa-star"> </i>', 5 - $review->rating) !!}
+                                                        </div>
+                                                        <h3 class="tp-product-details-review-avater-title mb-1">
+                                                            {{ $review->user->fullname }}
+                                                        </h3>
+                                                        <span
+                                                            class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
+                                                        <div class="tp-product-details-review-avater-comment mb-1">
+                                                            {{ $review->review_text }}
+                                                        </div>
+                                                        @foreach ($review->replies->where('is_active', 1) as $reply)
+                                                            <div
+                                                                class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                <strong
+                                                                    class="text-primary">{{ $reply->user->fullname ?? 'shop' }}</strong>
+                                                                trả lời:
+                                                                <p class="mb-0">{{ $reply->review_text }}</p>
+                                                                <small
+                                                                    class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                            </div>
+                                                        @endforeach
+                                                        @if ($review->reason)
+                                                            <small class="text-muted">Lý do:
+                                                                {{ $review->reason }}</small>
+                                                        @endif
+                                                    </div>
+                                                </div>
 
                                                 @endforeach
 
@@ -904,7 +904,8 @@
                                                         </div>
                                                         <div class="tp-product-details-review-avater-content">
                                                             <h3 class="tp-product-details-review-avater-title mb-1">
-                                                                {{ $comment->user->fullname }}</h3>
+                                                                {{ $comment->user->fullname }}
+                                                            </h3>
                                                             <span
                                                                 class="tp-product-details-review-avater-meta d-block mb-1">{{ $comment->created_at->format('d/m/Y') }}</span>
                                                             <div class="tp-product-details-review-avater-comment mb-1">
@@ -946,13 +947,12 @@
                                                                     {!! str_repeat('<i class="fa-solid fa-star"></i>', $review->rating) !!}
                                                                     {!! str_repeat('<i class="fa-regular fa-star"></i>', 5 - $review->rating) !!}
                                                                 </div>
-                                                                <h3
-                                                                    class="tp-product-details-review-avater-title mb-1">
-                                                                    {{ $review->user->fullname }} </h3>
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">
+                                                                    {{ $review->user->fullname }}
+                                                                </h3>
                                                                 <span
                                                                     class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
-                                                                <div
-                                                                    class="tp-product-details-review-avater-comment mb-1">
+                                                                <div class="tp-product-details-review-avater-comment mb-1">
                                                                     {{ $review->review_text }}
                                                                 </div>
                                                                 @foreach ($review->replies->where('is_active', 1) as $reply)
@@ -986,13 +986,12 @@
                                                                 </a>
                                                             </div>
                                                             <div class="tp-product-details-review-avater-content">
-                                                                <h3
-                                                                    class="tp-product-details-review-avater-title mb-1">
-                                                                    {{ $comment->user->fullname }}</h3>
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">
+                                                                    {{ $comment->user->fullname }}
+                                                                </h3>
                                                                 <span
                                                                     class="tp-product-details-review-avater-meta d-block mb-1">{{ $comment->created_at->format('d/m/Y') }}</span>
-                                                                <div
-                                                                    class="tp-product-details-review-avater-comment mb-1">
+                                                                <div class="tp-product-details-review-avater-comment mb-1">
                                                                     {{ $comment->content }}
                                                                 </div>
                                                                 @foreach ($comment->replies->where('is_active', 1) as $reply)
@@ -1035,8 +1034,7 @@
                                                 <div
                                                     class="tp-product-details-review-form-rating-icon d-flex align-items-center">
                                                     @for ($i = 1; $i <= 5; $i++)
-                                                        <input type="radio" name="rating"
-                                                            id="star{{ $i }}" value="{{ $i }}"
+                                                        <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}"
                                                             class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
                                                         <label for="star{{ $i }}" class="me-1 star-label"
                                                             style="cursor: pointer;">
@@ -1052,7 +1050,8 @@
                                             <div class="tp-product-details-review-input-wrapper">
                                                 <div class="tp-product-details-review-input-box">
                                                     <div class="tp-product-details-review-input">
-                                                        <textarea name="review_text" placeholder="Viết đánh giá của bạn...">{{ old('review_text') }}</textarea>
+                                                        <textarea name="review_text"
+                                                            placeholder="Viết đánh giá của bạn...">{{ old('review_text') }}</textarea>
                                                     </div>
                                                     @error('review_text')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -1111,8 +1110,7 @@
                                     <div class="tp-product-item-2 mb-40">
                                         <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
                                             @if (!empty($related->slug))
-                                                <a
-                                                    href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                                <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
                                                     <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
                                                 </a>
                                             @else
@@ -1123,8 +1121,7 @@
                                         </div>
                                         <div class="tp-product-content-2 pt-15">
                                             <div class="tp-product-tag-2">
-                                                <a
-                                                    href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
+                                                <a href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
                                             </div>
                                             <h3 class="tp-product-title-2">
                                                 @if (!empty($related->slug))
@@ -1157,14 +1154,14 @@
                         <!-- Nút điều hướng -->
                         <div class="swiper-button-prev">
                             <svg viewBox="0 0 32 32" width="28" height="28">
-                                <polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor"
-                                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                <polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor" stroke-width="3"
+                                    stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </div>
                         <div class="swiper-button-next">
                             <svg viewBox="0 0 32 32" width="28" height="28">
-                                <polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor"
-                                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                <polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor" stroke-width="3"
+                                    stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </div>
                     </div>
@@ -1173,6 +1170,46 @@
         </div>
     </section>
 </main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.btn-add-wishlist').forEach(button => {
+            button.addEventListener('click', function () {
+                const productId = this.dataset.productId;
+
+                fetch('/wishlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        product_id: productId
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                            if (window.toastr) {
+                                toastr.error(data.message);
+                            }
+                        } else {
+                            if (window.toastr) {
+                                toastr.success(data.message || "Đã thêm vào yêu thích!");
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        if (window.toastr) {
+                            toastr.error("Có lỗi xảy ra!");
+                        }
+                        console.error(error);
+                    });
+            });
+        });
+    });
+</script>
+
+
 {{-- 1. Link Swiper --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
@@ -1527,14 +1564,14 @@
                 if (qtyInput) formData.set('quantity', qtyInput.value);
 
                 fetch(addToCartForm.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content')
-                        },
-                        body: formData
-                    })
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    },
+                    body: formData
+                })
                     .then(res => {
                         if (!res.ok) return res.text().then(text => {
                             throw new Error(text || 'Lỗi không xác định từ server')
@@ -1666,7 +1703,7 @@
 
 <!-- JavaScript để xử lý hiệu ứng chọn sao và nút xem thêm bình luận-->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const stars = document.querySelectorAll('.star-label i');
         const radioInputs = document.querySelectorAll('input[name="rating"]');
 
@@ -1701,20 +1738,20 @@
         });
     });
     document.querySelectorAll('.tp-color-variation-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const colorCode = this.getAttribute('data-color');
             const colorName = this.getAttribute('title'); // Lấy tên màu từ title
             document.getElementById('selected-color-name').textContent = colorName;
         });
     });
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const btn = document.getElementById('show-more-btn');
         const more = document.getElementById('more-reviews');
 
         if (btn && more) {
             let isExpanded = false;
 
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 if (isExpanded) {
                     more.style.display = 'none';
                     btn.textContent = 'Xem thêm đánh giá & bình luận';
@@ -1729,11 +1766,11 @@
 </script>
 <!-- Tránh khi load trang thì vẫn ở lại trang reviews và description -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
         //Gắn sự kiện click: Lưu tab được chọn vào localStorage
-        tabButtons.forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        tabButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 const target = btn.getAttribute('data-bs-target');
                 localStorage.setItem('activeProductTab', target);
             });

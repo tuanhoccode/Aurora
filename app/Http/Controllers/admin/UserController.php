@@ -12,6 +12,8 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+
 
 class UserController extends Controller
 {
@@ -49,7 +51,10 @@ class UserController extends Controller
             return $review;
         });
 
-        return view('admin.users.show', compact('user', 'orders', 'reviews'));
+        // Lấy danh sách sản phẩm yêu thích
+        $wishlists = $user->wishlists()->with('product')->get();
+
+        return view('admin.users.show', compact('user', 'orders', 'reviews', 'wishlists'));
     }
 
     public function create()
@@ -57,105 +62,151 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $data['password'] = Hash::make($data['password']);
+            $data['is_change_password'] = 0;
+
+            if ($request->hasFile('avatar')) {
+                $file = $request->file('avatar');
+                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('avatars', $filename, 'public');
+                $data['avatar'] = $path;
+            }
+
+            //Tạo user
+            $user = User::create($data);
+
+            //Gửi email xác thực ngay lập tức
+            $user->sendEmailVerificationNotification();
+
+            //Chỉ tạo địa chỉ khi admin thực sự nhập đầy đủ
+            if (
+                $request->filled('address')
+                && $request->filled('address_phone')
+                && $request->filled('fullname_address')
+            ) {
+                \App\Models\UserAddress::create([
+                    'user_id'      => $user->id,
+                    'address'      => $request->input('address'),
+                    'phone_number' => $request->input('address_phone'),
+                    'fullname'     => $request->input('fullname_address'),
+                    'is_default'   => 1,
+                ]);
+            }
+
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Thêm người dùng thành công.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi thêm người dùng: ' . $e->getMessage());
+        }
+    }
+
+
+public function changeRole(Request $request, User $user)
 {
+    // 1. Không cho user tự thay đổi role chính mình
+    if (Auth::id() === $user->id) {
+        $message = 'Bạn không thể thay đổi vai trò của chính mình.';
+
+        return $request->ajax()
+            ? response()->json(['success' => false, 'message' => $message], 403)
+            : back()->with('error', $message);
+    }
+
+    // 2. Không cho thay đổi role của user đang là admin
+    if ($user->role === 'admin') {
+        $message = 'Không được phép thay đổi vai trò của Admin.';
+
+        return $request->ajax()
+            ? response()->json(['success' => false, 'message' => $message], 403)
+            : back()->with('error', $message);
+    }
+
+    // 3. Validate role gửi lên
+    $validated = $request->validate([
+        'role' => 'required|in:customer,employee,admin',
+    ]);
+
     try {
-        $data = $request->validated();
-        $data['password'] = Hash::make($data['password']);
-        $data['is_change_password'] = 0;
+        $user->role = $validated['role'];
+        $user->save();
 
-        if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('avatars', $filename, 'public');
-            $data['avatar'] = $path;
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Cập nhật vai trò thành công.']);
         }
 
-        //Tạo user
-        $user = User::create($data);
-
-        //Gửi email xác thực ngay lập tức
-        $user->sendEmailVerificationNotification();
-
-        //Chỉ tạo địa chỉ khi admin thực sự nhập đầy đủ
-        if (
-            $request->filled('address')
-            && $request->filled('address_phone')
-            && $request->filled('fullname_address') 
-        ) {
-            \App\Models\UserAddress::create([
-                'user_id'      => $user->id,
-                'address'      => $request->input('address'),
-                'phone_number' => $request->input('address_phone'),
-                'fullname'     => $request->input('fullname_address'),
-                'is_default'   => 1,
-            ]);
-        }
-
-        return redirect()->route('admin.users.index')
-                         ->with('success', 'Thêm người dùng thành công.');
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Cập nhật vai trò thành công.');
     } catch (\Exception $e) {
-        return redirect()->back()
-                         ->with('error', 'Có lỗi xảy ra khi thêm người dùng: ' . $e->getMessage());
+        $message = 'Có lỗi khi cập nhật vai trò: ' . $e->getMessage();
+
+        return $request->ajax()
+            ? response()->json(['success' => false, 'message' => $message], 500)
+            : back()->with('error', $message);
     }
 }
 
 
-    public function changeRole(Request $request, User $user)
-    {
-        try {
-            $request->validate([
-                'role' => 'required|in:customer,employee,admin',
-            ]);
 
-            $user->role = $request->role;
-            $user->save();
 
-            if ($request->ajax()) {
-                return response()->json(['success' => true]);
-            }
-
-            return redirect()->route('admin.users.index')->with('success', 'Cập nhật vai trò thành công.');
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-            }
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật vai trò: ' . $e->getMessage());
-        }
+public function changeStatus(Request $request, User $user)
+{
+    // 1. Chặn admin tự khóa chính họ
+    if (Auth::id() === $user->id) {
+        return back()->with('error', 'Bạn không thể thay đổi trạng thái của chính mình.');
     }
 
-
-    public function changeStatus(Request $request, User $user)
-    {
-        try {
-            $request->validate([
-                'status' => 'required|in:active,inactive',
-                'reason_lock' => 'nullable|string|max:255',  // Thêm validate lý do khóa
-            ]);
-
-            $user->status = $request->status;
-
-            if ($user->status === 'inactive') {
-                // Gán lý do khóa nếu có
-                $user->reason_lock = $request->input('reason_lock', 'Không rõ lý do');
-                // Xóa session để ép logout ngay
-                DB::table('sessions')->where('user_id', $user->id)->delete();
-            } else {
-                // Mở khóa thì xoá lý do khóa
-                $user->reason_lock = null;
-            }
-
-            $user->save();
-
-            if ($request->ajax()) {
-                return response()->json(['success' => true]);
-            }
-
-            return redirect()->route('admin.users.index')->with('success', 'Cập nhật trạng thái thành công.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái: ' . $e->getMessage());
-        }
+    // 2. Chặn việc thay đổi trạng thái của tài khoản đã là admin
+    if ($user->role === 'admin') {
+        return back()->with('error', 'Không được phép thay đổi trạng thái của Admin.');
     }
+
+    try {
+        $request->validate([
+            'status'      => 'required|in:active,inactive',
+            'reason_lock' => 'nullable|string|max:255',
+        ]);
+
+        $newStatus = $request->input('status');
+        $user->status = $newStatus;
+
+        if ($newStatus === 'inactive') {
+            $user->reason_lock = $request->input('reason_lock', 'Không rõ lý do');
+        } else {
+            $user->reason_lock = null;
+        }
+
+        $user->save();
+
+        // Nếu vừa chuyển sang inactive thì ép logout
+        if ($newStatus === 'inactive') {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Cập nhật trạng thái thành công.');
+    } catch (\Exception $e) {
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+        return back()->with('error', 'Có lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+    }
+}
+
+
 
 
     public function edit($id)
@@ -164,79 +215,89 @@ public function store(StoreUserRequest $request)
         return view('admin.users.edit', compact('user'));
     }
 
-    public function update(UpdateUserRequest $request, $id)
-    {
-        try {
-            // Lấy thông tin người dùng từ database, kèm theo kiểm tra tồn tại
-            $user = User::findOrFail($id);
+public function update(UpdateUserRequest $request, $id)
+{
+    // Lấy user cần cập nhật
+    $user = User::findOrFail($id);
 
-            $forceLogout = false; // Biến dùng để xác định có cần đăng xuất người dùng hay không
-
-            // Nếu trạng thái thay đổi từ "active" sang "inactive", đánh dấu cần đăng xuất
-            if ($user->status === 'active' && $request->status === 'inactive') {
-                $forceLogout = true;
-            }
-
-            // Nếu có yêu cầu đổi mật khẩu, cũng cần đăng xuất
-            if ($request->filled('is_change_password') && $request->filled('password')) {
-                $forceLogout = true;
-            }
-
-            // Cập nhật các trường cơ bản
-            $user->update([
-                'role' => $request->role,
-                'status' => $request->status,
-                'reason_lock' => $request->reason_lock,
-                'is_change_password' => $request->input('is_change_password', false),
-            ]);
-
-            // Nếu có yêu cầu đổi mật khẩu, thực hiện băm và lưu mật khẩu mới
-            if ($request->filled('is_change_password') && $request->filled('password')) {
-                $user->password = Hash::make($request->password);
-                $user->save(); // Lưu lại mật khẩu mới
-            }
-
-            // Nếu cần đăng xuất, xóa hết session của user này
-            if ($forceLogout) {
-                DB::table('sessions')->where('user_id', $user->id)->delete();
-            }
-
-            return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
-        } catch (\Exception $e) {
-            // Trả về thông báo lỗi nếu có exception xảy ra
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
-        }
+    // ❌ Không cho phép admin tự sửa chính họ
+    if (Auth::id() === $user->id) {
+        return back()->with('error', 'Bạn không thể cập nhật thông tin của chính mình.');
     }
 
+    // ❌ Không cho phép cập nhật thông tin Admin khác
+    if ($user->role === 'admin') {
+        return back()->with('error', 'Không được phép cập nhật thông tin của tài khoản Admin.');
+    }
 
-
-public function destroy(Request $request, User $user)
-{
     try {
-        $user->delete();
+        $forceLogout = false;
 
-        $currentPage = $request->input('page', 1);
-        $queryParams = $request->except('_token', '_method');
-
-        $perPage = 10;
-        $totalRecords = User::count();
-        $lastPage = (int) ceil($totalRecords / $perPage);
-
-        if ($currentPage > $lastPage && $lastPage > 0) {
-            $currentPage = $lastPage;
+        // Nếu chuyển từ active → inactive → cần đăng xuất
+        if ($user->status === 'active' && $request->status === 'inactive') {
+            $forceLogout = true;
         }
 
-        return redirect()->route('admin.users.index', array_merge($queryParams, ['page' => $currentPage]))
-            ->with('success', 'Xóa tài khoản thành công.');
-    } catch (\Illuminate\Database\QueryException $e) {
-        // Kiểm tra xem có phải lỗi khóa ngoại không (mã lỗi 1451)
-        if ($e->getCode() == '23000' && str_contains($e->getMessage(), '1451')) {
-            return redirect()->back()->with('error', 'Không thể xóa tài khoản này vì tài khoản đã phát sinh giao dịch hoặc dữ liệu liên quan.');
+        // Nếu người dùng yêu cầu đổi mật khẩu
+        $changePassword = $request->filled('is_change_password') && $request->filled('password');
+        if ($changePassword) {
+            $forceLogout = true;
         }
-        return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+
+        // Cập nhật thông tin người dùng
+        $user->role = $request->role;
+        $user->status = $request->status;
+        $user->reason_lock = $request->reason_lock;
+        $user->is_change_password = $request->input('is_change_password', false);
+
+        // Nếu có yêu cầu đổi mật khẩu thì băm và gán
+        if ($changePassword) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        // Nếu cần đăng xuất thì xóa session
+        if ($forceLogout) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
     } catch (\Exception $e) {
-        return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+        return back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
     }
 }
 
+
+
+
+
+    public function destroy(Request $request, User $user)
+    {
+        try {
+            $user->delete();
+
+            $currentPage = $request->input('page', 1);
+            $queryParams = $request->except('_token', '_method');
+
+            $perPage = 10;
+            $totalRecords = User::count();
+            $lastPage = (int) ceil($totalRecords / $perPage);
+
+            if ($currentPage > $lastPage && $lastPage > 0) {
+                $currentPage = $lastPage;
+            }
+
+            return redirect()->route('admin.users.index', array_merge($queryParams, ['page' => $currentPage]))
+                ->with('success', 'Xóa tài khoản thành công.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Kiểm tra xem có phải lỗi khóa ngoại không (mã lỗi 1451)
+            if ($e->getCode() == '23000' && str_contains($e->getMessage(), '1451')) {
+                return redirect()->back()->with('error', 'Không thể xóa tài khoản này vì tài khoản đã phát sinh giao dịch hoặc dữ liệu liên quan.');
+            }
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa tài khoản: ' . $e->getMessage());
+        }
+    }
 }
