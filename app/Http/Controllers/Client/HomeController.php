@@ -14,9 +14,13 @@ use Carbon\Carbon;
 
 class HomeController extends Controller
 {
+    public function index()
+    {
+        return $this->shop();
+    }
+
     public function shop()
     {
-        // Tối ưu query sản phẩm - chỉ lấy các trường cần thiết
         $products = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'stock', 'type', 'brand_id', 'is_active')
             ->with([
                 'brand:id,name',

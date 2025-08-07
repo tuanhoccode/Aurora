@@ -28,19 +28,34 @@ class CategoryController extends Controller
         $query->where('name', 'like', '%' . $request->q . '%');
     }
 
-    //Lọc theo nhiều khoảng giá (checkbox)
+    // Lọc theo nhiều khoảng giá (checkbox)
     if ($request->filled('price_ranges')) {
         $query->where(function ($q) use ($request) {
-            foreach ($request->price_ranges as $range) {
-                [$min, $max] = explode('-', $range);
-                $q->orWhereBetween('price', [(int)$min, (int)$max]);
+            $hasValidRange = false;
+            foreach ((array)$request->price_ranges as $range) {
+                if (preg_match('/^(\d+)-(\d+)$/', $range, $matches)) {
+                    $min = (int)$matches[1];
+                    $max = (int)$matches[2];
+                    $q->orWhereBetween('price', [$min, $max]);
+                    $hasValidRange = true;
+                }
+            }
+            
+            if (!$hasValidRange) {
+                $q->whereRaw('1=0');
             }
         });
     }
 
     // Lọc theo thương hiệu
-    if ($request->filled('brand_ids')) {
-        $query->whereIn('brand_id', $request->brand_ids);
+    if ($request->filled('brands')) {
+        $brandIds = collect($request->input('brands', []))->filter(function($value) {
+            return is_numeric($value) && $value > 0;
+        })->unique()->values()->all();
+        
+        if (!empty($brandIds)) {
+            $query->whereIn('brand_id', $brandIds);
+        }
     }
 
     // Lọc trạng thái
