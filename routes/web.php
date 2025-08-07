@@ -41,7 +41,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 
-
+use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\Auth\LoginHistoryController;
@@ -301,8 +301,6 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
         Route::put('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
     });
-
-
 });
 
 
@@ -314,6 +312,13 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Product routes
 Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');
+
+// Yêu thích
+Route::middleware(['auth'])->group(function () {
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+});
 
 // Chi tiết sản phẩm
 Route::get('/product/{slug}', [ClientProductController::class, 'show'])
@@ -437,15 +442,13 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
 
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
- // Tracking đơn hàng
+    // Tracking đơn hàng
     Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
-Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
+    Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
-
-
 });
 
 
@@ -454,6 +457,3 @@ Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'ind
 Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
-
-
-

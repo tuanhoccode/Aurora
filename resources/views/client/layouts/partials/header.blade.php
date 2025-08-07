@@ -1,28 +1,3 @@
-{{-- <div id="loading">
-    <div id="loading-center">
-        <div id="loading-center-absolute">
-            <!-- loading content here -->
-            <div class="tp-preloader-content">
-                <div class="tp-preloader-logo">
-                    <div class="tp-preloader-circle">
-                        <svg width="190" height="190" viewBox="0 0 380 380" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <circle stroke="#D9D9D9" cx="190" cy="190" r="180" stroke-width="6"
-                                stroke-linecap="round"></circle>
-                            <circle stroke="red" cx="190" cy="190" r="180" stroke-width="6"
-                                stroke-linecap="round"></circle>
-                        </svg>
-                    </div>
-                    <img src="{{ asset('assets2/img/logo/preloader/preloader-icon.svg') }}" alt="">
-                </div>
-                <h3 class="tp-preloader-title">Aurora</h3>
-                <p class="tp-preloader-subtitle">Loading</p>
-            </div>
-        </div>
-    </div>
-</div> --}}
-<!-- pre loader area end -->
-
 <!-- back to top start -->
 <div class="back-to-top-wrapper">
     <button id="back_to_top" type="button" class="back-to-top-btn">
@@ -135,15 +110,14 @@
                                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                                 <path d="M18.9999 19L14.6499 14.65" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
                                         </button>
                                     </form>
                                 </div>
                                 <div class="tp-header-action d-flex align-items-center ml-30">
                                     <div class="tp-header-action-item d-none d-lg-block">
-                                        <a href="" class="tp-header-action-btn">
+                                        <a href="{{ route('wishlist.index') }}" class="tp-header-action-btn">
                                             <svg width="22" height="20" viewBox="0 0 22 20" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -155,8 +129,12 @@
                                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                             </svg>
-                                            <span class="tp-header-action-badge">0
-                                                {{-- {{ Auth::check() ? Auth::user()->wishlist()->count() : 0 }} --}}
+                                            <span class="tp-header-action-badge">
+                                                @if(Auth::check())
+                                                    {{ Auth::user()->wishlists()->count() }}
+                                                @else
+                                                    0
+                                                @endif
                                             </span>
                                         </a>
                                     </div>
@@ -173,11 +151,9 @@
                                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                                 <path d="M7.70365 10.1018H7.74942" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
+                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                                 <path d="M13.5343 10.1018H13.5801" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
+                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
                                             <span class="tp-header-action-badge cart-count">
                                                 @if(Auth::check())
@@ -210,26 +186,37 @@
                                                     <span class="tp-account-menu-name">{{ Auth::user()->fullname }}</span>
                                                 </li>
                                                 @if (Auth::user()->role === 'admin')
-                                                    <li><a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a></li>
+                                                    <li><a href="{{ route('admin.dashboard') }}"><i
+                                                                class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a>
+                                                    </li>
                                                 @endif
-                                                <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ sơ</a></li>
-                                                <li><a href=""><i class="fa-solid fa-heart"></i> Yêu thích</a></li>
-                                                <li><a href="{{ route('shopping-cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
-                                                <li><a href="{{ route('loginHistory') }}"><i class="fa-solid fa-user"></i> Phiên đăng nhập</a></li>
+                                                <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ
+                                                        sơ</a></li>
+                                                <li><a href="{{ route('wishlist.index') }}"><i
+                                                            class="fa-solid fa-heart"></i> Yêu thích</a></li>
+                                                <li><a href="{{ route('shopping-cart.index') }}"><i
+                                                            class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
+                                                <li><a href="{{ route('loginHistory') }}"><i class="fa-solid fa-user"></i>
+                                                        Phiên đăng nhập</a></li>
                                                 @auth
-                                                <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a></li>
+                                                    <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i>
+                                                            Đơn hàng của tôi</a></li>
                                                 @endauth
                                                 <li class="tp-account-menu-divider"></li>
                                                 <li>
-                                                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                                    <a href="#"
+                                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                                         <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                                                     </a>
-                                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                                    <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                                        style="display: none;">
                                                         @csrf
                                                     </form>
                                                 </li>
                                             @else
-                                                <li><a href="{{ route('login') }}"><i class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập / Đăng ký</a></li>
+                                                <li><a href="{{ route('login') }}"><i
+                                                            class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập / Đăng
+                                                        ký</a></li>
                                             @endif
                                         </ul>
                                     </div>
@@ -238,10 +225,8 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="16"
                                                 viewBox="0 0 30 16">
                                                 <rect x="10" width="20" height="2" fill="currentColor" />
-                                                <rect x="5" y="7" width="25" height="2"
-                                                    fill="currentColor" />
-                                                <rect x="10" y="14" width="20" height="2"
-                                                    fill="currentColor" />
+                                                <rect x="5" y="7" width="25" height="2" fill="currentColor" />
+                                                <rect x="10" y="14" width="20" height="2" fill="currentColor" />
                                             </svg>
                                         </button>
                                     </div>
@@ -303,22 +288,26 @@
         width: 240px;
         padding: 10px 0;
     }
+
     .tp-account-menu-header {
         padding: 10px 20px;
         border-bottom: 1px solid #f0f0f0;
         margin-bottom: 10px;
         line-height: 1.4;
     }
+
     .tp-account-menu-name {
         display: block;
         font-weight: 600;
         color: #1c1c1e;
     }
+
     .tp-account-menu-email {
         display: block;
         font-size: 0.85rem;
         color: #777;
     }
+
     .tp-account-menu li a {
         display: flex;
         align-items: center;
@@ -326,19 +315,24 @@
         font-size: 1rem;
         padding: 8px 20px;
     }
+
     .tp-account-menu li a i {
         width: 16px;
         text-align: center;
         color: #888;
     }
+
     .tp-account-menu-divider {
         height: 1px;
         background-color: #f0f0f0;
         margin: 10px 0;
     }
-    .tp-account-menu li > span {
-        display: none; /* Hide the old username span */
+
+    .tp-account-menu li>span {
+        display: none;
+        /* Hide the old username span */
     }
+
     .tp-header-action-item.has-dropdown .tp-account-menu {
         left: 50%;
         transform: translateX(-50%);
