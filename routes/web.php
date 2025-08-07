@@ -310,7 +310,10 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
 
 //Client
 
-Route::get('/', [HomeController::class, 'shop'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Product routes
+Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');
 
 // Chi tiết sản phẩm
 Route::get('/product/{slug}', [ClientProductController::class, 'show'])
@@ -396,6 +399,7 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
     Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
     Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::post('/checkout/clear-coupon-session', action: [CheckoutController::class, 'clearCouponSession'])->name('checkout.clear-coupon-session');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
@@ -425,6 +429,12 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
+    // Shopping Cart Routes
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
+    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
  // Tracking đơn hàng

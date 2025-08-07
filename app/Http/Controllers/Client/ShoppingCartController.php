@@ -44,98 +44,123 @@ class ShoppingCartController extends Controller
      */
     public function addToCart(Request $request)
     {
-        if (!Auth::check()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!'
-                ], 401);
-            }
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
-        }
-
-        $userId = Auth::id();
-        $cart = Cart::firstOrCreate(
-            ['user_id' => $userId, 'status' => 'pending'],
-            ['created_at' => now(), 'updated_at' => now()]
-        );
-
-        $quantity = (int) $request->input('quantity', 1);
-        if ($quantity < 1) $quantity = 1;
-
-        $product = \App\Models\Product::find($request->product_id);
-        if (!$product) {
-            $msg = 'Không tìm thấy sản phẩm!';
-            if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => $msg], 404);
-            }
-            return redirect()->back()->with('error', $msg);
-        }
-
-        if ($product->type === 'variant') {
-            // Sản phẩm có biến thể, bắt buộc phải có product_variant_id hợp lệ
-            if (!$request->product_variant_id) {
-                $msg = 'Vui lòng chọn đầy đủ màu và kích cỡ!';
+        try {
+            if (!Auth::check()) {
                 if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'message' => $msg], 400);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!'
+                    ], 401);
                 }
-                return redirect()->back()->with('error', $msg);
+                return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
             }
-            $variant = \App\Models\ProductVariant::find($request->product_variant_id);
-            if (!$variant) {
-                $msg = 'Không tìm thấy biến thể phù hợp!';
+
+            $userId = Auth::id();
+            $cart = Cart::firstOrCreate(
+                ['user_id' => $userId, 'status' => 'pending'],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
+
+            $quantity = (int) $request->input('quantity', 1);
+            if ($quantity < 1) $quantity = 1;
+
+            $product = \App\Models\Product::find($request->product_id);
+            if (!$product) {
+                $msg = 'Không tìm thấy sản phẩm!';
                 if ($request->expectsJson()) {
                     return response()->json(['success' => false, 'message' => $msg], 404);
                 }
                 return redirect()->back()->with('error', $msg);
             }
-            if ($variant->stock < $quantity) {
-                $msg = 'Chỉ còn '.$variant->stock.' sản phẩm trong kho!';
+
+            // Kiểm tra số lượng tồn kho
+            $availableStock = $product->type === 'variant'
+                ? \App\Models\ProductVariant::findOrFail($request->product_variant_id)->stock
+                : $product->stock;
+
+            // Nếu hết hàng, trả về thông báo rõ ràng
+            if ($availableStock < 1) {
+                $msg = 'Sản phẩm này đã hết hàng!';
                 if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'message' => $msg], 400);
+                    return response()->json([
+                        'success' => false,
+                        'message' => $msg
+                    ], 400);
                 }
                 return redirect()->back()->with('error', $msg);
             }
-        } else {
-            if ($product->stock < $quantity) {
-                $msg = 'Chỉ còn '.$product->stock.' sản phẩm trong kho!';
+
+            // Kiểm tra số lượng tồn kho tổng cộng
+            $currentQuantity = $cart->items()
+                ->where('product_id', $product->id)
+                ->where('product_variant_id', $request->product_variant_id)
+                ->sum('quantity');
+
+            $totalQuantity = $currentQuantity + $quantity;
+            if ($totalQuantity > $availableStock) {
+                $msg = 'Đã có đủ sản phẩm trong giỏ hàng.';
                 if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'message' => $msg], 400);
+                    return response()->json([
+                        'success' => false,
+                        'message' => $msg,
+                        'remaining_stock' => $availableStock - $currentQuantity
+                    ], 400);
                 }
                 return redirect()->back()->with('error', $msg);
             }
-        }
 
-        $item = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $request->product_id)
-            ->where('product_variant_id', $request->product_variant_id)
-            ->first();
+            // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+            $cartItem = $cart->items()
+                ->where('product_id', $product->id)
+                ->where('product_variant_id', $request->product_variant_id)
+                ->first();
 
-        if ($item) {
+            if ($cartItem) {
+                $cartItem->quantity += $quantity;
+                $cartItem->price_at_time = $request->price;
+                $cartItem->save();
+                $cartItem->updated_at = now();
+                $cartItem->save();
+            } else {
+                $cart->items()->create([
+                    'product_id' => $product->id,
+                    'product_variant_id' => $request->product_variant_id,
+                    'quantity' => $quantity,
+                    'price_at_time' => $request->price,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+
+            $msg = 'Đã thêm vào giỏ hàng!';
+
+            // Trả về kết quả
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $msg,
+                    'cart_count' => $cart->items->sum('quantity')
+                ]);
+            }
+            return redirect()->back()->with('success', $msg);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in addToCart:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Sản phẩm này đã có trong giỏ hàng!'
-                ], 400);
+                    'message' => 'Lỗi không xác định. Vui lòng thử lại sau.'
+                ], 500);
             }
-            return redirect()->back()->with('error', 'Sản phẩm này đã có trong giỏ hàng!');
+            return redirect()->back()->with('error', 'Lỗi không xác định. Vui lòng thử lại sau.');
         }
-
-        CartItem::create([
-            'cart_id' => $cart->id,
-            'product_id' => $request->product_id,
-            'product_variant_id' => $request->product_variant_id,
-            'quantity' => $quantity,
-            'price_at_time' => $request->price,
-        ]);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã thêm sản phẩm vào giỏ hàng!'
-            ]);
-        }
-        return redirect()->back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng!');
     }
 
     /**
@@ -155,12 +180,12 @@ class ShoppingCartController extends Controller
 
         $userId = Auth::id();
         $cart = Cart::where('user_id', $userId)->where('status', 'pending')->first();
-        
+
         if ($cart) {
             $item = CartItem::where('cart_id', $cart->id)->where('id', $itemId)->first();
             if ($item) {
                 $item->delete();
-                
+
                 if (request()->expectsJson()) {
                     return response()->json([
                         'success' => true,
@@ -173,7 +198,7 @@ class ShoppingCartController extends Controller
                 return redirect()->route('shopping-cart.index')->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng!');
             }
         }
-        
+
         if (request()->expectsJson()) {
             return response()->json([
                 'success' => false,
@@ -207,9 +232,10 @@ class ShoppingCartController extends Controller
         $deleted = $cart->items()->whereIn('id', $ids)->delete();
         return response()->json([
             'success' => true,
-            'deleted' => $deleted,
-            'message' => 'Đã xóa thành công ' . $deleted . ' sản phẩm khỏi giỏ hàng!'
+            'message' => 'Đã xóa thành công ' . $deleted . ' sản phẩm khỏi giỏ hàng!',
+            'deleted_count' => $deleted
         ]);
+        return redirect()->route('shopping-cart.index')->with('success', 'Đã xóa thành công ' . $deleted . ' sản phẩm khỏi giỏ hàng!');
     }
 
     /**
@@ -360,7 +386,7 @@ class ShoppingCartController extends Controller
         try {
             // Lấy dữ liệu giỏ hàng
             $cartData = json_decode($request->cart_data, true);
-            
+
             if (empty($cartData)) {
                 if ($request->expectsJson()) {
                     return response()->json([
@@ -433,7 +459,7 @@ class ShoppingCartController extends Controller
     public function orderSuccess()
     {
         $order = Session::get('last_order');
-        
+
         if (!$order) {
             return redirect()->route('home')->with('error', 'Không tìm thấy thông tin đơn hàng!');
         }
@@ -459,4 +485,4 @@ class ShoppingCartController extends Controller
                 return 30000;
         }
     }
-} 
+}

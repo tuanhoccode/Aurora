@@ -406,7 +406,7 @@
                                 <div class="tp-product-details-stock mb-10">
                                     <span id="product-stock">
                                         @if ($hasVariants)
-                                            Vui lòng chọn màu và kích cỡ
+                                            Vui lòng phân loại hàng!
                                         @else
                                             @if ($product->stock > 0)
                                                 Trong kho: {{ $product->stock }}
@@ -614,24 +614,30 @@
                                             <div class="tp-product-quantity mb-15 mr-15">
                                                 <span id="detail-cart-minus" class="tp-cart-minus">–</span>
                                                 <input id="quantity" name="quantity" class="tp-cart-input"
-                                                    type="text" value="1">
+                                                    type="text" value="1"
+                                                    @if(!$hasVariants && isset($product->stock) && $product->stock < 1) disabled @endif>
                                                 <span id="detail-cart-plus" class="tp-cart-plus">+</span>
                                             </div>
                                         </div>
                                         <div class="tp-product-details-add-to-cart mb-15 w-100">
                                             <form id="detail-add-to-cart-form" class="add-to-cart-form"
-                                                action="{{ route('shopping-cart.add') }}" method="POST">
+                                                action="{{ route('client.shopping-cart.add') }}" method="POST">
                                                 @csrf
                                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                                 <input type="hidden" name="product_variant_id"
                                                     id="product_variant_id" value="">
                                                 <input type="hidden" name="variant_sku" id="variant_sku"
                                                     value="">
-                                                <input type="hidden" name="price" id="variant_price"
-                                                    value="{{ !$hasVariants ? $product->sale_price ?? $product->price : '' }}">
+                                                <input type="hidden" name="price" id="variant_price" value="{{ $product->sale_price ?? $product->price }}">
                                                 <button type="submit"
-                                                    class="tp-product-details-add-to-cart-btn w-100">Thêm vào giỏ
-                                                    hàng</button>
+                                                    class="tp-product-details-add-to-cart-btn w-100"
+                                                    id="add-to-cart-btn"
+                                                    @if(!$hasVariants && isset($product->stock) && $product->stock < 1) disabled @endif>
+                                                    Thêm vào giỏ hàng
+                                                </button>
+                                                @if(!$hasVariants && isset($product->stock) && $product->stock < 1)
+                                                    <div class="text-danger mt-2">Sản phẩm đã hết hàng, không thể thêm vào giỏ hàng.</div>
+                                                @endif
                                             </form>
                                         </div>
                                     </div>
@@ -1325,17 +1331,6 @@
         const hasVariants = variants.length > 0;
         const productId = {{ $product->id }};
 
-        function setInCartUI() {
-            if (!addToCartBtn) return;
-            addToCartBtn.disabled = true;
-            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-            addToCartBtn.classList.add('in-cart');
-            if (qtyInput) qtyInput.disabled = true;
-            if (minusBtn) minusBtn.classList.add('disabled');
-            if (plusBtn) plusBtn.classList.add('disabled');
-            addToCartBtn.classList.add('already-toast');
-        }
-
         function setNormalUI() {
             if (!addToCartBtn) return;
             addToCartBtn.disabled = false;
@@ -1346,20 +1341,7 @@
             if (plusBtn) plusBtn.classList.remove('disabled');
         }
 
-        if (hasVariants) {
-            const variantId = document.getElementById('product_variant_id')?.value;
-            if (variantId && cartVariantIds.map(String).includes(String(variantId))) {
-                setInCartUI();
-            } else {
-                setNormalUI();
-            }
-        } else {
-            if (cartProductIds.includes(Number(productId))) {
-                setInCartUI();
-            } else {
-                setNormalUI();
-            }
-        }
+        setNormalUI();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1459,18 +1441,6 @@
                 },
             }
         });
-
-        // Kiểm tra nút thêm giỏ hàng lúc đầu
-        checkAndToggleAddToCartBtn();
-
-        // Cập nhật nút khi thay đổi biến thể
-        if (variants.length > 0) {
-            document.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(btn => {
-                btn.addEventListener('click', () => setTimeout(checkAndToggleAddToCartBtn, 0));
-            });
-        }
-
-        // Xử lý submit form thêm vào giỏ hàng
         const addToCartForm = document.querySelector('#detail-add-to-cart-form');
         if (addToCartForm) {
             addToCartForm.addEventListener('submit', e => {
@@ -1481,88 +1451,120 @@
                 let maxQty = {{ $product->stock ?? 9999 }};
                 const hasVariants = variants.length > 0;
                 const productId = {{ $product->id }};
-
                 if (hasVariants) {
                     const variantId = document.getElementById('product_variant_id').value;
                     if (!variantId) {
-                        if (window.toastr) toastr.error('Vui lòng chọn đầy đủ màu và kích cỡ!');
+                        if (window.toastr) toastr.error('Vui lòng phân loại hàng!');
                         return;
                     }
                     const variant = variants.find(v => v.id == variantId);
                     if (variant) maxQty = variant.stock;
                 }
-
                 if (qty > maxQty) {
                     if (window.toastr) toastr.error('Chỉ còn ' + maxQty + ' sản phẩm trong kho!');
                     qtyInput.value = maxQty;
                     return;
                 }
-
-                // Kiểm tra đã có trong giỏ
+                // Kiểm tra số lượng tồn kho
+                let availableStock = {{ $product->stock ?? 9999 }};
                 if (hasVariants) {
                     const variantId = document.getElementById('product_variant_id').value;
-                    if (cartVariantIds.map(String).includes(String(variantId))) {
-                        if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-                        const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-                        if (addToCartBtn) {
-                            addToCartBtn.disabled = true;
-                            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-                        }
+                    if (!variantId) {
+                        if (window.toastr) toastr.error('Vui lòng chọn biến thể sản phẩm!');
                         return;
+                    }
+                    const variant = variants.find(v => v.id == variantId);
+                    if (variant) availableStock = variant.stock;
+                }
+
+                // Kiểm tra số lượng tồn kho tổng cộng (số lượng trong giỏ hàng + số lượng muốn thêm)
+                let currentQuantity = 0;
+                if (hasVariants) {
+                    const variantId = document.getElementById('product_variant_id').value;
+                    if (cartVariantIds.includes(String(variantId))) {
+                        // Tìm số lượng hiện tại trong giỏ hàng cho biến thể này
+                        const cartItems = document.querySelectorAll('.cart-item');
+                        cartItems.forEach(item => {
+                            const itemVariantId = item.dataset.variantId;
+                            if (itemVariantId === variantId) {
+                                const itemQty = parseInt(item.querySelector('.cart-item-qty').textContent);
+                                currentQuantity += itemQty;
+                            }
+                        });
                     }
                 } else {
                     if (cartProductIds.includes(Number(productId))) {
-                        if (window.toastr) toastr.error('Sản phẩm này đã có trong giỏ hàng!');
-                        const addToCartBtn = addToCartForm.querySelector('button[type="submit"]');
-                        if (addToCartBtn) {
-                            addToCartBtn.disabled = true;
-                            addToCartBtn.textContent = 'Đã có trong giỏ hàng';
-                        }
-                        return;
+                        // Tìm số lượng hiện tại trong giỏ hàng cho sản phẩm này
+                        const cartItems = document.querySelectorAll('.cart-item');
+                        cartItems.forEach(item => {
+                            const itemProductId = parseInt(item.dataset.productId);
+                            if (itemProductId === productId) {
+                                const itemQty = parseInt(item.querySelector('.cart-item-qty').textContent);
+                                currentQuantity += itemQty;
+                            }
+                        });
                     }
                 }
 
-                // Gửi request thêm vào giỏ hàng
+                const totalQuantity = currentQuantity + parseInt(qtyInput.value);
+                if (totalQuantity > availableStock) {
+                    const message = `Đã có đủ sản phẩm trong giỏ hàng`;
+                    if (window.toastr) toastr.error(message);
+                    qtyInput.value = availableStock - currentQuantity;
+                    return;
+                }
                 const formData = new FormData(addToCartForm);
                 if (qtyInput) formData.set('quantity', qtyInput.value);
 
-                fetch(addToCartForm.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content')
-                        },
-                        body: formData
-                    })
-                    .then(res => {
-                        if (!res.ok) return res.text().then(text => {
-                            throw new Error(text || 'Lỗi không xác định từ server')
-                        });
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            if (window.toastr) toastr.success(data.message ||
-                                'Đã thêm sản phẩm vào giỏ hàng!');
-                            document.dispatchEvent(new CustomEvent('cart:updated'));
-                            // Cập nhật cart IDs
-                            if (hasVariants) {
-                                const variantId = document.getElementById('product_variant_id')
-                                    .value;
-                                cartVariantIds.push(String(variantId));
-                            } else {
-                                cartProductIds.push(Number(productId));
+                fetch('{{ route('client.shopping-cart.add') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    },
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(data => {
+                            if (data && data.message) {
+                                throw new Error(data.message);
                             }
-                            checkAndToggleAddToCartBtn();
+                            throw new Error('Lỗi không xác định từ server');
+                        });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        if (window.toastr) toastr.success(data.message ||
+                            'Đã thêm sản phẩm vào giỏ hàng!');
+                        document.dispatchEvent(new CustomEvent('cart:updated'));
+                        // Cập nhật cart IDs
+                        if (hasVariants) {
+                            const variantId = document.getElementById('product_variant_id')
+                                .value;
+                            cartVariantIds.push(String(variantId));
                         } else {
-                            if (window.toastr) toastr.error(data.message || 'Có lỗi xảy ra!');
+                            cartProductIds.push(Number(productId));
                         }
-                    })
-                    .catch(err => {
-                        console.error('Lỗi khi thêm vào giỏ hàng:', err);
-                        if (window.toastr) toastr.error(
-                            'Không thể thêm sản phẩm. Vui lòng thử lại sau.');
+                        checkAndToggleAddToCartBtn();
+                    } else {
+                        // Không cần hiển thị thông báo lỗi ở đây vì đã xử lý ở catch
+                        console.error('Server response error:', data);
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi khi thêm vào giỏ hàng:', err);
+                    if (window.toastr) {
+                        // Chỉ hiển thị một thông báo lỗi duy nhất từ server
+                        if (err instanceof Error && err.message) {
+                            toastr.error(err.message);
+                        } else {
+                            toastr.error('Lỗi không xác định từ server');
+                        }
+                    }
                     });
             });
         }

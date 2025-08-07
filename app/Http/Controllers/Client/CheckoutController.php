@@ -154,17 +154,41 @@ class CheckoutController extends Controller
                 'payment_method' => $paymentMethod
             ]);
 
+            // Lấy danh sách mã giảm giá có sẵn
+            $availableCoupons = Coupon::where('is_active', true)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->where(function ($query) {
+                    $query->whereNull('usage_limit')
+                          ->orWhereRaw('usage_count < usage_limit');
+                })
+                ->orderBy('discount_value', 'desc')
+                ->get();
+
+            Log::info('Checkout Summary', [
+                'cartTotal' => $cartTotal,
+                'shippingFee' => $shippingFee,
+                'shippingType' => $shippingType,
+                'coupon' => $coupon ? $coupon->toArray() : null,
+                'discount' => $discount,
+                'selected_items' => $selectedItems,
+                'address_id' => session('checkout_address_id'),
+                'payment_method' => session('payment_method')
+            ]);
+
             return view('client.checkout', compact(
                 'cart',
                 'cartItems',
                 'cartTotal',
                 'addresses',
+                'availableCoupons',
                 'defaultAddress',
                 'shippingFee',
                 'user',
                 'coupon',
                 'discount',
-                'shippingType'
+                'shippingType',
+                'availableCoupons'
             ));
         } catch (\Exception $e) {
             \Log::error('Checkout Error: ' . $e->getMessage(), [
@@ -249,6 +273,33 @@ class CheckoutController extends Controller
             return redirect()->route('checkout')->with('success', 'Áp dụng mã giảm giá thành công!');
         } catch (\Exception $e) {
             Log::error('Apply coupon error: ' . $e->getMessage());
+            return redirect()->route('checkout')->with('error', 'Lỗi khi áp dụng mã giảm giá, vui lòng thử lại!');
+        }
+    }
+    public function applyCouponById(Request $request)
+    {
+        try {
+            $request->validate([
+                'coupon_id' => 'required|exists:coupons,id',
+            ]);
+
+            $coupon = Coupon::findOrFail($request->coupon_id);
+
+            $cart = Cart::where('user_id', Auth::id())->first();
+            $cartTotal = $cart->items->sum(function ($item) {
+                return ($item->price_at_time ?? $item->product->price ?? 0) * ($item->quantity ?? 0);
+            });
+
+            if (!$this->isValidCoupon($coupon, $cartTotal)) {
+                session()->forget('coupon');
+                return redirect()->route('checkout')->with('error', 'Mã giảm giá không áp dụng được cho đơn hàng này!');
+            }
+
+            session(['coupon' => $coupon]);
+            Log::info('Coupon applied by ID', ['coupon_id' => $coupon->id, 'code' => $coupon->code]);
+            return redirect()->route('checkout')->with('success', 'Áp dụng mã giảm giá thành công!');
+        } catch (\Exception $e) {
+            Log::error('Apply coupon by ID error: ' . $e->getMessage());
             return redirect()->route('checkout')->with('error', 'Lỗi khi áp dụng mã giảm giá, vui lòng thử lại!');
         }
     }
