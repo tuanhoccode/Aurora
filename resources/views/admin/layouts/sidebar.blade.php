@@ -58,12 +58,14 @@
                 <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span> Đơn hàng
             </a>
         </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}"
-                href="{{ route('admin.coupons.index') }}">
-                <span class="nav-icon"><i class="fas fa-ticket-alt"></i></span> Mã giảm giá
-            </a>
-        </li>
+        @if(Auth::user()->role === 'admin')
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}"
+                    href="{{ route('admin.coupons.index') }}">
+                    <span class="nav-icon"><i class="fas fa-ticket-alt"></i></span> Mã giảm giá
+                </a>
+            </li>
+        @endif
         <li>
             <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}"
                 href="{{ route('admin.dashboard') }}">
@@ -72,32 +74,41 @@
         </li>
 
         <hr>
+        @if(Auth::user()->role === 'admin')
+            {{-- Người dùng --}}
+            <li class="sidebar-heading">Người dùng</li>
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}"
+                    href="{{ route('admin.users.index') }}">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span> Người dùng
+                </a>
+            </li>
 
-        {{-- Người dùng --}}
-        <li class="sidebar-heading">Người dùng</li>
+            <hr>
+
+            {{-- Nội dung --}}
+            <li class="sidebar-heading">Nội dung</li>
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}"
+                    href="{{ route('admin.reviews.comments') }}">
+                    <span class="nav-icon position-relative"><i class="fas fa-comments"></i>
+                        @if($hasPendingFeedbacks)
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                <span class="visually-hidden">Có đánh giá/bình luận mới</span>
+                            </span>
+                        @endif
+                    </span>
+                     Đánh giá sản phẩm
+                </a>
+            </li>
+        @endif
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}"
-                href="{{ route('admin.users.index') }}">
-                <span class="nav-icon"><i class="fas fa-users"></i></span> Người dùng
+            <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}"
+                href="{{ route('admin.dashboard') }}">
+                <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
             </a>
         </li>
 
-        <hr>
-
-        {{-- Nội dung --}}
-        <li class="sidebar-heading">Nội dung</li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}"
-                href="{{ route('admin.reviews.comments') }}">
-                <span class="nav-icon"><i class="fas fa-comments"></i></span> Đánh giá sản phẩm
-            </a>
-        </li>
-      <li>
-        <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
-            href="{{ route('admin.banners.index') }}">
-            <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
-        </a>
-     </li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
                 href="{{ route('admin.dashboard') }}">
