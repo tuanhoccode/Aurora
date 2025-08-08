@@ -172,53 +172,61 @@
                             {{ $fulfillmentStatus }}</div>
                     </div>
                 </div>
-                <div class="card shadow-sm rounded mb-4">
-                    <div class="card-header bg-light fw-bold"><i class="fas fa-history me-2"></i>Lịch sử trạng thái</div>
-                    <div class="card-body p-0">
-                        @if ($order->statusHistory->isEmpty())
-                            <p class="text-muted p-3"><i class="fas fa-exclamation-triangle me-1"></i> Chưa có lịch sử trạng
-                                thái.</p>
-                        @else
-                            <div class="table-responsive">
-                                <table class="table table-bordered align-middle text-nowrap mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th><i class="fas fa-list-ol me-1"></i> STT</th>
-                                            <th><i class="fas fa-id-badge me-1"></i> ID</th>
-                                            <th><i class="fas fa-info me-1"></i> Trạng thái</th>
-                                            <th><i class="fas fa-sticky-note me-1"></i> Ghi chú</th>
-                                            <th><i class="fas fa-user-edit me-1"></i> Người cập nhật</th>
-                                            <th><i class="fas fa-clock me-1"></i> Thời gian</th>
-                                            <th><i class="fas fa-check-circle me-1"></i> Hiện tại</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($order->statusHistory as $status)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $status->id }}</td>
-                                                <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
-                                                <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
-                                                <td>{{ $status->modifier?->name ?? 'Hệ thống' }}</td>
-                                                <td>{{ $status->created_at->format('d/m/Y H:i:s') }}</td>
-                                                <td>
-                                                    @if ($status->is_current)
-                                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>
-                                                            Hiện tại</span>
-                                                    @else
-                                                        <span class="text-muted"><i class="fas fa-times me-1"></i> Cũ</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+
+                @if($order->cancel_reason || $order->cancelled_at)
+                <div class="card shadow-sm rounded mb-4 border-danger">
+                    <div class="card-header bg-danger text-white fw-bold">
+                        <i class="fas fa-times-circle me-2"></i>Thông tin hủy đơn hàng
+                    </div>
+                    <div class="card-body">
+                        @if($order->cancel_reason)
+                        <div class="mb-3">
+                            <div class="fw-bold text-danger mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Lý do hủy đơn:
                             </div>
+                            <div class="p-3 bg-light rounded border">
+                                {{ $order->cancel_reason }}
+                            </div>
+                        </div>
                         @endif
+
+                        @if($order->cancel_note)
+                        <div class="mb-3">
+                            <div class="fw-bold text-secondary mb-2">
+                                <i class="fas fa-sticky-note me-2"></i>Ghi chú hủy đơn:
+                            </div>
+                            <div class="p-3 bg-light rounded border">
+                                {{ $order->cancel_note }}
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($order->cancelled_at)
+                        <div class="mb-3">
+                            <div class="fw-bold text-secondary mb-2">
+                                <i class="fas fa-clock me-2"></i>Thời gian hủy đơn:
+                            </div>
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                {{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i:s') }}
+                                <br>
+                                <small class="text-muted">
+                                    ({{ \Carbon\Carbon::parse($order->cancelled_at)->diffForHumans() }})
+                                </small>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Đơn hàng này đã được khách hàng hủy. Vui lòng kiểm tra và xử lý theo quy trình của công ty.
+                        </div>
                     </div>
                 </div>
+                @endif
             </div>
             <div class="col-lg-4 mb-4">
+
                 <div class="card shadow-sm rounded mb-4">
                     <div class="card-header bg-light fw-bold"><i class="fas fa-sync-alt me-2"></i>Cập nhật trạng thái đơn
                         hàng</div>
@@ -285,6 +293,63 @@
                             <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary w-100"><i
                                     class="fas fa-arrow-left me-1"></i> Quay lại</a>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lịch sử trạng thái đơn hàng - Full width -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm rounded mb-4">
+                    <div class="card-header bg-light fw-bold">
+                        <i class="fas fa-history me-2"></i>Lịch sử trạng thái đơn hàng
+                    </div>
+                    <div class="card-body p-0">
+                        @if ($order->statusHistory->isEmpty())
+                            <p class="text-muted p-3">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Chưa có lịch sử trạng thái.
+                            </p>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle text-nowrap mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th><i class="fas fa-list-ol me-1"></i> STT</th>
+                                            <th><i class="fas fa-id-badge me-1"></i> ID</th>
+                                            <th><i class="fas fa-info me-1"></i> Trạng thái</th>
+                                            <th><i class="fas fa-sticky-note me-1"></i> Ghi chú</th>
+                                            <th><i class="fas fa-user-edit me-1"></i> Người cập nhật</th>
+                                            <th><i class="fas fa-clock me-1"></i> Thời gian</th>
+                                            <th><i class="fas fa-check-circle me-1"></i> Hiện tại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($order->statusHistory as $status)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $status->id }}</td>
+                                                <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
+                                                <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
+                                                <td>{{ $status->modifier?->name ?? 'Hệ thống' }}</td>
+                                                <td>{{ $status->created_at->format('d/m/Y H:i:s') }}</td>
+                                                <td>
+                                                    @if ($status->is_current)
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>Hiện tại
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">
+                                                            <i class="fas fa-times me-1"></i>Cũ
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

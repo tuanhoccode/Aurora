@@ -248,6 +248,10 @@
          <div class="tp-slider-active-2 swiper-container">
             <div class="swiper-wrapper">
                @forelse($banners as $banner)
+               {{-- Debug: Hiển thị thông tin banner --}}
+               @if(config('app.debug'))
+               <!-- Debug: Banner ID: {{ $banner->id }}, Title: {{ $banner->title }}, Active: {{ $banner->is_active ? 'Yes' : 'No' }}, Sort Order: {{ $banner->sort_order }}, Created: {{ $banner->created_at }}, Image: {{ $banner->image_url }}, Raw Image: {{ $banner->image }}, Count: {{ $loop->iteration }}, Total: {{ $banners->count() }}, Loop Index: {{ $loop->index }} -->
+               @endif
                <div class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
                   <div class="tp-slider-2-shape">
                      <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">

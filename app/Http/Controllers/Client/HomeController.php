@@ -73,8 +73,19 @@ class HomeController extends Controller
             ->where('is_active', 1)
             ->get();
 
-        // Lấy banner từ database
-        $banners = Banner::active()->ordered()->get();
+        // Lấy banner từ database - chỉ lấy những banner có trạng thái active
+        $banners = Banner::where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Debug: Log số lượng banner được lấy
+        if (config('app.debug')) {
+            \Log::info('Banners loaded: ' . $banners->count());
+            foreach ($banners as $banner) {
+                \Log::info("Banner ID: {$banner->id}, Title: {$banner->title}, Active: " . ($banner->is_active ? 'Yes' : 'No'));
+            }
+        }
 
         // Tối ưu query reviews
         $topReviews = Review::select('id', 'user_id', 'product_id', 'rating', 'review_text', 'created_at', 'is_active')

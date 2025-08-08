@@ -162,7 +162,35 @@
                             <i class="fas fa-tag"></i>
                             <span>Mã đơn hàng: {{ $order->code }}</span>
                         </div>
+                        @if($order->cancelled_at)
+                        <div class="order-info-item">
+                            <i class="fas fa-calendar-times text-danger"></i>
+                            <span class="text-danger">Ngày hủy: {{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i') }}</span>
+                        </div>
+                        @endif
+                        @if($currentStatusName === 'Giao hàng thành công')
+                        <div class="order-info-item">
+                            <i class="fas fa-credit-card text-success"></i>
+                            <span class="text-success fw-bold">Trạng thái thanh toán: Đã thanh toán</span>
+                        </div>
+                        @endif
                     </div>
+                    
+                    @if($order->cancel_reason)
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="text-danger mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Thông tin hủy đơn
+                        </h6>
+                        <div class="mb-2">
+                            <strong>Lý do hủy:</strong> {{ $order->cancel_reason }}
+                        </div>
+                        @if($order->cancel_note)
+                        <div>
+                            <strong>Ghi chú:</strong> {{ $order->cancel_note }}
+                        </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 
