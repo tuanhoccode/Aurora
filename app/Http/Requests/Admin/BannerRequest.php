@@ -24,7 +24,7 @@ class BannerRequest extends FormRequest
         $bannerId = $this->route('banner'); // Lấy ID banner nếu đang edit
         
         $rules = [
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:255|min:2',
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
             'sort_order' => [
@@ -42,9 +42,12 @@ class BannerRequest extends FormRequest
             'is_active' => 'boolean',
         ];
 
-        // Nếu là tạo mới hoặc có upload ảnh
-        if ($this->isMethod('POST') || $this->hasFile('image')) {
-            $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048';
+        // Nếu là tạo mới (POST) thì ảnh bắt buộc
+        if ($this->isMethod('POST')) {
+            $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048|dimensions:min_width=800,min_height=400';
+        } else {
+            // Nếu là cập nhật (PUT/PATCH) thì ảnh tùy chọn
+            $rules['image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048|dimensions:min_width=800,min_height=400';
         }
 
         return $rules;
@@ -57,12 +60,14 @@ class BannerRequest extends FormRequest
     {
         return [
             'title.required' => 'Tiêu đề banner là bắt buộc',
+            'title.min' => 'Tiêu đề phải có ít nhất 2 ký tự',
             'title.max' => 'Tiêu đề không được vượt quá 255 ký tự',
             'subtitle.max' => 'Dòng chữ nhỏ không được vượt quá 255 ký tự',
             'image.required' => 'Ảnh banner là bắt buộc',
             'image.image' => 'File phải là hình ảnh',
             'image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp',
             'image.max' => 'Kích thước ảnh không được vượt quá 2MB',
+            'image.dimensions' => 'Ảnh phải có kích thước tối thiểu 800x400 pixel',
             'link.url' => 'Link không đúng định dạng URL',
             'sort_order.integer' => 'Thứ tự phải là số nguyên',
             'sort_order.min' => 'Thứ tự phải lớn hơn hoặc bằng 0',

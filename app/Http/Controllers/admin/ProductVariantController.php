@@ -52,8 +52,12 @@ class ProductVariantController extends Controller
                 // Không lưu ảnh chính vào trường img nữa, chỉ lưu vào bảng product_images
                 $product->variants()->save($variant);
 
-                if (isset($variantData['attribute_values'])) {
+                if (isset($variantData['attribute_values']) && !empty($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
+                } else {
+                    // Nếu không có thuộc tính, xóa biến thể vừa tạo và báo lỗi
+                    $variant->delete();
+                    throw new \Exception("Bạn chưa thêm thuộc tính cho biến thể.");
                 }
 
                 // Lưu nhiều ảnh vào bảng product_images
@@ -252,9 +256,18 @@ class ProductVariantController extends Controller
             'stock' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
+        ], [
+            'img.required' => 'Bạn cần chọn ảnh cho sản phẩm biến thể',
+            'img.image' => 'File phải là hình ảnh',
+            'img.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif',
+            'img.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
+            'attribute_values.required' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.array' => 'Dữ liệu thuộc tính không hợp lệ',
+            'attribute_values.min' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.*.exists' => 'Giá trị thuộc tính không tồn tại',
         ]);
 
         // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc

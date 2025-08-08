@@ -154,22 +154,27 @@ $(document).ready(function() {
     $('.toggle-status').change(function() {
         const id = $(this).data('id');
         const isChecked = $(this).is(':checked');
+        const checkbox = $(this);
         
         $.ajax({
             url: `/admin/banners/${id}/toggle-status`,
             type: 'POST',
             data: {
-                _token: '{{ csrf_token() }}'
+                _token: '{{ csrf_token() }}',
+                _method: 'PUT'
             },
             success: function(response) {
                 if (response.success) {
                     toastr.success(response.message);
+                } else {
+                    toastr.error('Có lỗi xảy ra!');
+                    checkbox.prop('checked', !isChecked);
                 }
             },
-            error: function() {
+            error: function(xhr) {
                 toastr.error('Có lỗi xảy ra!');
                 // Revert checkbox
-                $(this).prop('checked', !isChecked);
+                checkbox.prop('checked', !isChecked);
             }
         });
     });

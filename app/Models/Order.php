@@ -23,6 +23,9 @@ class Order extends Model
         'is_refunded_canceled',
         'check_refunded_canceled',
         'img_refunded_money',
+        'cancel_reason',
+        'cancel_note',
+        'cancelled_at',
     ];
 
     public function items()
@@ -101,5 +104,25 @@ class Order extends Model
             'nhanh'  => 'Giao hàng nhanh',
             default  => 'Không rõ hình thức',
         };
+    }
+
+    /**
+     * Kiểm tra xem đơn hàng có thể hủy được không
+     */
+    public function canBeCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentOrderStatus)->status)->name;
+        $cancelableStatuses = ['Chờ xác nhận', 'Chờ lấy hàng', 'Gửi hàng'];
+        
+        return in_array($currentStatusName, $cancelableStatuses);
+    }
+
+    /**
+     * Kiểm tra xem đơn hàng đã bị hủy chưa
+     */
+    public function isCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentOrderStatus)->status)->name;
+        return $currentStatusName === 'Đã hủy';
     }
 }
