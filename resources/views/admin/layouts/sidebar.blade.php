@@ -36,17 +36,19 @@
                 <span class="nav-icon"><i class="fas fa-tags"></i></span> Danh mục
             </a>
         </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
-                href="{{ route('admin.brands.index') }}">
-                <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
-            </a>
-        </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
-                <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
-            </a>
-        </li>
+        @if(Auth::user()->role === 'admin')
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
+                    href="{{ route('admin.brands.index') }}">
+                    <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
+                </a>
+            </li>
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
+                    <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
+                </a>
+            </li>
+        @endif
 
         <hr>
 
@@ -84,6 +86,7 @@
                 </a>
             </li>
 
+        @endif
             <hr>
 
             {{-- Nội dung --}}
@@ -101,14 +104,14 @@
                      Đánh giá sản phẩm
                 </a>
             </li>
+        @if(Auth::user()->role === 'admin')
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
+                    href="{{ route('admin.banners.index') }}">
+                    <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
+                </a>
+            </li>
         @endif
-<li>
-        <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
-            href="{{ route('admin.banners.index') }}">
-            <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
-        </a>
-     </li>
-
         <li>
             <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
                 href="{{ route('admin.dashboard') }}">

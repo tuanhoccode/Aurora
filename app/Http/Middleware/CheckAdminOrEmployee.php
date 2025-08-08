@@ -23,7 +23,7 @@ class CheckAdminOrEmployee
         $user = Auth::user();
 
         if (!in_array($user->role, ['admin', 'employee'])) {
-            abort(403);
+            return redirect('/admin/login')->withErrors(['email' => 'Bạn không có quyền truy cập']);
         }
 
         return $next($request);

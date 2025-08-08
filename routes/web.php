@@ -141,7 +141,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus')->middleware('admin.only');
     Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole')->middleware('admin.only');
     // Brands Routes
-    Route::prefix('brands')->name('brands.')->group(function () {
+    Route::middleware('admin.only')->prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
         Route::get('/', [BrandController::class, 'index'])->name('index');
         Route::get('/create', [BrandController::class, 'create'])->name('create');
@@ -205,7 +205,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
 
 
     // Attributes
-    Route::prefix('attributes')->name('attributes.')->group(function () {
+    Route::middleware('admin.only')->prefix('attributes')->name('attributes.')->group(function () {
         // List và Form routes
         Route::get('/', [AttributeController::class, 'index'])->name('index');
         Route::get('/create', [AttributeController::class, 'create'])->name('create');
@@ -271,7 +271,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     Route::delete('/product-images/{id}', [ProductGalleryController::class, 'destroy'])->name('product-images.destroy');
 
     //Quản lý bình luận
-    Route::middleware('admin.only')->prefix('reviews')->name('reviews.')->group(function () {
+    Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [CommentController::class, 'index'])->name('comments');
         Route::get('/{type}/{id}', [CommentController::class, 'showComment'])->name('showComment');
         Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])->name('approve');
@@ -291,7 +291,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     });
 
     // Banner Routes
-    Route::prefix('banners')->name('banners.')->group(function () {
+    Route::middleware('admin.only')->prefix('banners')->name('banners.')->group(function () {
         Route::get('/', [BannerController::class, 'index'])->name('index');
         Route::get('/create', [BannerController::class, 'create'])->name('create');
         Route::post('/', [BannerController::class, 'store'])->name('store');
