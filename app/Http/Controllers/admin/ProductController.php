@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\Admin\ProductRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProductGallery;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -69,6 +70,9 @@ class ProductController extends Controller
 
     public function create()
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền thêm sản phẩm.');
+        }
         $brands = Brand::where('is_active', 1)->get();
         $categories = Category::where('is_active', 1)->get();
         $trashedCount = Product::onlyTrashed()->count();
@@ -81,6 +85,9 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền thêm sản phẩm.');
+            }
             DB::beginTransaction();
             
             $data = $request->validated();
@@ -306,6 +313,10 @@ class ProductController extends Controller
     public function edit($id)
     {
         try {
+            //Không cho nhân viên vào
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền chỉnh sửa sản phẩm.');
+            }
             // Nạp luôn các biến thể và thuộc tính cho view edit
             $product = Product::with([
                 'brand',
@@ -336,6 +347,10 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
         try {
+            //Không cho nhân viên vào
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền chỉnh sửa sản phẩm.');
+            }
             DB::beginTransaction();
             
             // Log toàn bộ request để kiểm tra
@@ -630,6 +645,9 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+        }
         // Kiểm tra sản phẩm có trong đơn hàng
         $hasOrder = $product->orderItems()->exists();
         // Kiểm tra sản phẩm có trong giỏ hàng
@@ -652,6 +670,9 @@ class ProductController extends Controller
     public function bulkToggleStatus(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền cập nhật trạng thái.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id',
@@ -677,6 +698,9 @@ class ProductController extends Controller
     public function bulkDelete(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id'
@@ -698,6 +722,9 @@ class ProductController extends Controller
 
     public function trash()
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền vào thùng giác.');
+        }
         $trashedProducts = Product::onlyTrashed()
             ->with(['brand', 'categories'])
             ->latest()
@@ -709,6 +736,9 @@ class ProductController extends Controller
     public function restore($id)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền khôi phục sản phẩm.');
+            }
             $product = Product::onlyTrashed()->findOrFail($id);
             $product->restore();
 
@@ -724,7 +754,10 @@ class ProductController extends Controller
 
     public function forceDelete($id)
     {
-        try {
+            try {
+                if (Auth::user()->role !== 'admin') {
+                    abort(403, 'Bạn không có quyền xóa vĩnh viễn sản phẩm.');
+            }
             $product = Product::onlyTrashed()->findOrFail($id);
 
             // Xóa ảnh sản phẩm
@@ -775,6 +808,9 @@ class ProductController extends Controller
     public function bulkForceDelete(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id'
@@ -810,6 +846,9 @@ class ProductController extends Controller
     public function deleteGalleryImage(Request $request, Product $product)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa hình ảnh.');
+            }
             $path = $request->json('path');
             
             // Tìm và xóa gallery image

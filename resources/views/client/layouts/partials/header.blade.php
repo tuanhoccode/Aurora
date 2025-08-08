@@ -185,7 +185,7 @@
                                                 <li class="tp-account-menu-header">
                                                     <span class="tp-account-menu-name">{{ Auth::user()->fullname }}</span>
                                                 </li>
-                                                @if (Auth::user()->role === 'admin')
+                                                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'employee')
                                                     <li><a href="{{ route('admin.dashboard') }}"><i
                                                                 class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a>
                                                     </li>

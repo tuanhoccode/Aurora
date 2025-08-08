@@ -95,7 +95,7 @@
     </div>
 
     @if ($allStocks->hasPages())
-        <div class="d-flex justify-content-center mt-4">
+        <div class="d-flex justify-content-end mt-4">
             {{ $allStocks->links('pagination::bootstrap-5') }}
         </div>
     @endif
