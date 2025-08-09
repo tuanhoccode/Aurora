@@ -17,14 +17,16 @@
             <h1 class="h3 mb-0 fw-bold text-gray-800">Quản lý bình luận</h1>
             <p class="text-muted mt-1">Quản lý các bình luận, đánh giá sản phẩm trong hệ thống</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
-                <i class="bi bi-trash"></i> Thùng rác
-                @if ($trashComments > 0)
-                    <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
-                @endif
-            </a>
-        </div>
+        @if(Auth::user()->role === 'admin')
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
+                    <i class="bi bi-trash"></i> Thùng rác
+                    @if ($trashComments > 0)
+                        <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
+                    @endif
+                </a>
+            </div>
+        @endif
     </div>
     <div class="card shadow-sm rounded-3 border-0 mb-4">
         <div class="card-body p-4">
@@ -76,6 +78,10 @@
                                     </td>
                                     <td>
                                         {{ $comment->content }}
+                                        @if(optional($comment->user)-> role === 'admin')
+                                            <br>
+                                            <span class="badge bg-primary">Phản hồi từ Admin</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($comment->type === 'review' && $comment->rating !== null)
@@ -84,7 +90,7 @@
                                             <br>
                                             
                                         @else
-                                            <span class="text-muted">Không có</span>
+                                            <span class="text-muted">Bình luận</span>
                                         @endif
                                     </td>
                                     

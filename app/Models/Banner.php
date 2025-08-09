@@ -15,7 +15,6 @@ class Banner extends Model
         'subtitle',
         'image',
         'link',
-        'position',
         'sort_order',
         'is_active'
     ];
@@ -47,11 +46,6 @@ class Banner extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function scopeByPosition($query, $position)
-    {
-        return $query->where('position', $position);
     }
 
     public function scopeOrdered($query)

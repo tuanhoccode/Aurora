@@ -145,11 +145,11 @@ class AttributeController extends Controller
             // Tải Attribute cùng với AttributeValues (chưa xóa mềm) và các sản phẩm liên kết
             $attribute = Attribute::with(['attributeValues' => function ($query) {
                 $query->whereNull('deleted_at'); // Chỉ lấy attribute_values chưa xóa mềm
-            }, 'attributeValues.productVariants'])->findOrFail($id);
+            }, 'attributeValues.products'])->findOrFail($id);
 
             // Kiểm tra xem có AttributeValue nào liên kết với sản phẩm hay không
             foreach ($attribute->attributeValues as $attributeValue) {
-                if ($attributeValue->productVariants()->exists()) {
+                if ($attributeValue->products()->exists()) {
                     return redirect()->back()->with('error', 'Không thể xóa thuộc tính "' . $attribute->name . '" vì có giá trị đang được liên kết với sản phẩm.');
                 }
             }

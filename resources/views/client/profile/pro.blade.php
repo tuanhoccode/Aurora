@@ -29,9 +29,6 @@
                             <div class="nav nav-tabs tp-tab-menu flex-column" id="profile-tab" role="tablist">
                                 <button class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false"><span><i class="fa-regular fa-user-pen"></i></span>Hồ sơ</button>
                                 <button class="nav-link" id="nav-information-tab" data-bs-toggle="tab" data-bs-target="#nav-information" type="button" role="tab" aria-controls="nav-information" aria-selected="false"><span><i class="fa-regular fa-circle-info"></i></span> Thông tin</button>
-                                <!-- <button class="nav-link" id="nav-address-tab" data-bs-toggle="tab" data-bs-target="#nav-address" type="button" role="tab" aria-controls="nav-address" aria-selected="false"><span><i class="fa-light fa-location-dot"></i></span> Địa chỉ </button> -->
-                                <!-- <button class="nav-link" id="nav-order-tab" data-bs-toggle="tab" data-bs-target="#nav-order" type="button" role="tab" aria-controls="nav-order" aria-selected="false"><span><i class="fa-light fa-clipboard-list-check"></i></span> Đơn hàng của tôi </button> -->
-                                <!-- <button class="nav-link" id="nav-notification-tab" data-bs-toggle="tab" data-bs-target="#nav-notification" type="button" role="tab" aria-controls="nav-notification" aria-selected="false"><span><i class="fa-regular fa-bell"></i></span> Notification</button> -->
                                 <button class="nav-link" id="nav-password-tab" data-bs-toggle="tab" data-bs-target="#nav-password" type="button" role="tab" aria-controls="nav-password" aria-selected="false"><span><i class="fa-regular fa-lock"></i></span> Thay đổi mật khẩu</button>
                                 <span id="marker-vertical" class="tp-tab-line d-none d-sm-inline-block"></span>
                             </div>
@@ -285,6 +282,7 @@
                             <div class="tab-pane fade" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
                                 <div class="profile__password">
                                     <form action="{{route('changePassword')}}" method="POST">
+                                        @csrf
                                         <input type="hidden" name="tab" value="info">
                                         <div class="row">
                                             <div class="col-xxl-12">
@@ -321,6 +319,9 @@
                                                     <div class="tp-profile-input-title">
                                                         <label for="con_new_pass">Xác nhận mật khẩu</label>
                                                     </div>
+                                                    @error('new_password')
+                                                    <div class="error">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
                                             <div class="col-xxl-6 col-md-6">

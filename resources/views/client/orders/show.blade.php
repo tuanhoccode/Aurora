@@ -138,7 +138,7 @@
                     <div class="order-detail-card__header">
                         <h4>Thông tin đơn hàng</h4>
                         @php
-                            $currentStatusName = $order->currentOrderStatus ? $order->currentOrderStatus->status->name : 'Chờ xác nhận';
+                            $currentStatusName = optional(optional($order->currentStatus)->status)->name ?? 'Chờ xác nhận';
                         @endphp
                         <span class="badge bg-{{ $currentStatusName === 'Đã hủy' ? 'danger' : ($currentStatusName === 'Chờ xác nhận' ? 'primary' : 'success') }}">
                             {{ $currentStatusName }}
@@ -162,7 +162,38 @@
                             <i class="fas fa-tag"></i>
                             <span>Mã đơn hàng: {{ $order->code }}</span>
                         </div>
+                        @if($order->cancelled_at)
+                        <div class="order-info-item">
+                            <i class="fas fa-calendar-times text-danger"></i>
+                            <span class="text-danger">Ngày hủy: {{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i') }}</span>
+                        </div>
+                        @endif
+                        <div class="order-info-item">
+                            <i class="fas fa-credit-card {{ $order->is_paid ? 'text-success' : 'text-warning' }}"></i>
+                            <span class="{{ $order->is_paid ? 'text-success' : 'text-warning' }} fw-bold">
+                                Trạng thái thanh toán: {{ $order->is_paid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                @if($order->is_paid && $order->paid_at)
+                                    ({{ $order->paid_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }})
+                                @endif
+                            </span>
+                        </div>
                     </div>
+                    
+                    @if($order->cancel_reason)
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="text-danger mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Thông tin hủy đơn
+                        </h6>
+                        <div class="mb-2">
+                            <strong>Lý do hủy:</strong> {{ $order->cancel_reason }}
+                        </div>
+                        @if($order->cancel_note)
+                        <div>
+                            <strong>Ghi chú:</strong> {{ $order->cancel_note }}
+                        </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -233,6 +264,7 @@
                                             <span class="badge bg-secondary me-2 mb-1">
                                                 {{ $attrName }}: {{ $attrValue }}
                                             </span>
+
                                         @endforeach
                                     </div>
                                 @elseif($item->variant && $item->variant->attributeValues->count() > 0)
@@ -267,7 +299,7 @@
             <!-- Tóm tắt đơn hàng -->
             <div class="col-12">
                 <div class="order-summary">
-                    <h4>Tóm tắt đơn hàng</h4>
+                    <h4>Tổng quan đơn hàng</h4>
                     <div class="order-summary__item">
                         <span>Sản phẩm</span>
                         <span>{{ $order->items->sum('quantity') }} sản phẩm</span>
@@ -282,6 +314,16 @@
                         <span>Phí vận chuyển ({{ $order->delivery_type_full_info }})</span>
                         <span class="text-success">{{ $order->shipping_fee_formatted }}</span>
                     </div>
+                    @if($order->discount_amount > 0)
+                    <div class="order-summary__item text-danger">
+                        <span>Mã giảm giá
+                            @if($order->coupon)
+                                ({{ $order->coupon->code }})
+                            @endif
+                        </span>
+                        <span>-{{ number_format($order->discount_amount, 0, ',', '.') }}đ</span>
+                    </div>
+                    @endif
                     <div class="order-summary__total">
                         <span>Tổng cộng</span>
                         <span>{{ number_format($order->total_amount, 0, ',', '.') }}đ</span>
@@ -294,7 +336,7 @@
 
 <!-- Form hủy đơn hàng -->
 @if($order->cancellation_status === null && 
-    ($order->currentOrderStatus && $order->currentOrderStatus->status->code === 'PENDING' || $order->currentOrderStatus && $order->currentOrderStatus->status->code === 'PROCESSING'))
+    (optional(optional($order->currentStatus)->status)->code === 'PENDING' || optional(optional($order->currentStatus)->status)->code === 'PROCESSING'))
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">

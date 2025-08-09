@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\Admin\ProductRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProductGallery;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -49,12 +50,6 @@ class ProductController extends Controller
 
         $products = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        // Kiểm tra sản phẩm nào có trong đơn hàng
-        $products->getCollection()->transform(function ($product) {
-            $product->hasOrders = $product->orderItems()->exists();
-            return $product;
-        });
-
         $brands = Brand::where('is_active', 1)->get(); // admin vẫn lấy tất cả brand đang hoạt động, không lọc is_visible
         $categories = Category::where('is_active', 1)->get();
         $totalProducts = Product::count();
@@ -75,6 +70,9 @@ class ProductController extends Controller
 
     public function create()
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền thêm sản phẩm.');
+        }
         $brands = Brand::where('is_active', 1)->get();
         $categories = Category::where('is_active', 1)->get();
         $trashedCount = Product::onlyTrashed()->count();
@@ -87,6 +85,9 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền thêm sản phẩm.');
+            }
             DB::beginTransaction();
             
             $data = $request->validated();
@@ -309,8 +310,7 @@ class ProductController extends Controller
             'variants.attributeValues.attribute',
             'variants.attributeValues' => function($query) {
                 $query->with('attribute');
-            },
-            'variants.images'
+            }
         ]);
 
         return view('admin.products.show', compact('product'));
@@ -319,6 +319,10 @@ class ProductController extends Controller
     public function edit($id)
     {
         try {
+            //Không cho nhân viên vào
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền chỉnh sửa sản phẩm.');
+            }
             // Nạp luôn các biến thể và thuộc tính cho view edit
             $product = Product::with([
                 'brand',
@@ -349,6 +353,10 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
         try {
+            //Không cho nhân viên vào
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền chỉnh sửa sản phẩm.');
+            }
             DB::beginTransaction();
             
             // Log toàn bộ request để kiểm tra
@@ -454,10 +462,18 @@ class ProductController extends Controller
                             // Kiểm tra SKU trùng lặp
                             $sku = $variantData['sku'] ?? null;
                             if ($sku) {
-                                // Kiểm tra SKU đã tồn tại trong các biến thể của sản phẩm hiện tại, loại trừ chính biến thể đang cập nhật
-                                $existingVariant = $product->variants()->where('sku', $sku)->where('id', '!=', $variantData['id'] ?? 0)->first();
+                                // Kiểm tra SKU đã tồn tại trong các biến thể của sản phẩm hiện tại
+                                $existingVariant = $product->variants()->where('sku', $sku)->first();
                                 if ($existingVariant) {
                                     throw new \Exception("SKU '{$sku}' đã tồn tại trong các biến thể của sản phẩm này.");
+                                }
+                                
+                                // Kiểm tra SKU trùng trong variants_old (nếu có)
+                                if ($request->has('variants_old')) {
+                                    $variantsOldSkus = collect($request->input('variants_old'))->pluck('sku')->filter()->toArray();
+                                    if (in_array($sku, $variantsOldSkus)) {
+                                        throw new \Exception("SKU '{$sku}' đã tồn tại trong các biến thể hiện tại của sản phẩm.");
+                                    }
                                 }
                                 
                                 // Kiểm tra SKU trùng trong cùng request
@@ -548,6 +564,18 @@ class ProductController extends Controller
                             if ($salePrice !== null && $salePrice !== '' && $price !== null && $price !== '' && $salePrice >= $price) {
                                 $errors[] = "Giá khuyến mãi của biến thể (ID: $variantId) phải nhỏ hơn giá gốc.";
                             }
+                            
+                            // Kiểm tra SKU trùng lặp trong phạm vi sản phẩm hiện tại
+                            if ($sku) {
+                                $existingVariant = $product->variants()
+                                    ->where('sku', $sku)
+                                    ->where('id', '!=', $variantId)
+                                    ->first();
+                                if ($existingVariant) {
+                                    $errors[] = "SKU '{$sku}' đã tồn tại trong biến thể khác của sản phẩm này.";
+                                }
+                            }
+                            
                             if (!empty($errors)) {
                                 DB::rollBack();
                                 return redirect()->back()->withInput()->withErrors(['variants_old' => $errors]);
@@ -560,8 +588,10 @@ class ProductController extends Controller
                             }
                             
                             $updateData = [
-                                'regular_price' => (int)$price,
-                                'stock' => (int)$stock,
+                                'sku' => $sku,
+                                'regular_price' => $price,
+                                'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
+                                'stock' => $stock,
                             ];
                             
                             // Chỉ cập nhật sale_price nếu có giá trị hoặc được set là null
@@ -629,13 +659,16 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+        }
         // Kiểm tra sản phẩm có trong đơn hàng
         $hasOrder = $product->orderItems()->exists();
-        
-        if ($hasOrder) {
-            return redirect()->back()->with('error', 'Không thể xóa sản phẩm đã có trong đơn hàng');
+        // Kiểm tra sản phẩm có trong giỏ hàng
+        $hasCart = \App\Models\CartItem::where('product_id', $product->id)->exists();
+        if ($hasOrder || $hasCart) {
+            return redirect()->back()->with('error', 'Không thể xoá sản phẩm đã có đơn hàng hoặc giỏ hàng');
         }
-        
         try {
             $product->delete();
             return redirect()
@@ -651,6 +684,9 @@ class ProductController extends Controller
     public function bulkToggleStatus(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền cập nhật trạng thái.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id',
@@ -676,33 +712,15 @@ class ProductController extends Controller
     public function bulkDelete(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id'
             ]);
 
-            $products = Product::whereIn('id', $validated['ids'])->get();
-            $productsWithOrders = [];
-            $productsToDelete = [];
-
-            foreach ($products as $product) {
-                if ($product->orderItems()->exists()) {
-                    $productsWithOrders[] = $product->name;
-                } else {
-                    $productsToDelete[] = $product->id;
-                }
-            }
-
-            if (!empty($productsWithOrders)) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Không thể xóa các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
-                ], 400);
-            }
-
-            if (!empty($productsToDelete)) {
-                Product::whereIn('id', $productsToDelete)->delete();
-            }
+            Product::whereIn('id', $validated['ids'])->delete();
 
             return response()->json([
                 'success' => true,
@@ -718,6 +736,9 @@ class ProductController extends Controller
 
     public function trash()
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền vào thùng giác.');
+        }
         $trashedProducts = Product::onlyTrashed()
             ->with(['brand', 'categories'])
             ->latest()
@@ -729,6 +750,9 @@ class ProductController extends Controller
     public function restore($id)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền khôi phục sản phẩm.');
+            }
             $product = Product::onlyTrashed()->findOrFail($id);
             $product->restore();
 
@@ -744,15 +768,11 @@ class ProductController extends Controller
 
     public function forceDelete($id)
     {
-        try {
-            $product = Product::onlyTrashed()->findOrFail($id);
-
-            // Kiểm tra sản phẩm có trong đơn hàng
-            $hasOrder = $product->orderItems()->exists();
-            
-            if ($hasOrder) {
-                return redirect()->back()->with('error', 'Không thể xóa vĩnh viễn sản phẩm đã có trong đơn hàng');
+            try {
+                if (Auth::user()->role !== 'admin') {
+                    abort(403, 'Bạn không có quyền xóa vĩnh viễn sản phẩm.');
             }
+            $product = Product::onlyTrashed()->findOrFail($id);
 
             // Xóa ảnh sản phẩm
             if ($product->thumbnail) {
@@ -802,31 +822,17 @@ class ProductController extends Controller
     public function bulkForceDelete(Request $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa sản phẩm.');
+            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id'
             ]);
 
             $products = Product::onlyTrashed()->whereIn('id', $validated['ids'])->get();
-            $productsWithOrders = [];
-            $productsToDelete = [];
 
             foreach ($products as $product) {
-                if ($product->orderItems()->exists()) {
-                    $productsWithOrders[] = $product->name;
-                } else {
-                    $productsToDelete[] = $product;
-                }
-            }
-
-            if (!empty($productsWithOrders)) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Không thể xóa vĩnh viễn các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
-                ], 400);
-            }
-
-            foreach ($productsToDelete as $product) {
                 // Xóa ảnh sản phẩm
                 if ($product->thumbnail) {
                     Storage::disk('public')->delete($product->thumbnail);
@@ -854,6 +860,9 @@ class ProductController extends Controller
     public function deleteGalleryImage(Request $request, Product $product)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa hình ảnh.');
+            }
             $path = $request->json('path');
             
             // Tìm và xóa gallery image

@@ -5,7 +5,7 @@
         <div class="card-header">
             <strong>Biến thể hiện tại:</strong>
             @foreach($variant->attributeValues as $attributeValue)
-                <span class="badge bg-light text-dark me-2">
+                <span class="badge bg-secondary me-2">
                     {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
                 </span>
             @endforeach
@@ -112,10 +112,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.getElementById('modalSkuInput').value = sku;
     }
+    // Khôi phục dữ liệu từ session khi có lỗi validate
+    function restoreAttributeSelections() {
+        @if(old('attribute_values'))
+            let oldAttributeValues = @json(old('attribute_values'));
+            if (oldAttributeValues) {
+                Object.keys(oldAttributeValues).forEach(function(attrId) {
+                    let valueId = oldAttributeValues[attrId];
+                    let radio = document.querySelector(`input[name="attribute_values[${attrId}]"][value="${valueId}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+                // Cập nhật SKU sau khi khôi phục
+                updateSKU();
+            }
+        @endif
+    }
+
+    // Gọi hàm khôi phục khi trang load
+    restoreAttributeSelections();
+
     document.querySelectorAll('.attribute-radio').forEach(cb => {
         cb.addEventListener('change', updateSKU);
     });
     // Gọi lần đầu để đồng bộ khi load trang
     updateSKU();
 });
-</script> 
+</script>
+<style>
+/* Custom style for variant attribute badges */
+.badge.bg-secondary {
+  background-color: #e4e4e4 !important;
+  color: #333 !important;
+}
+</style> 

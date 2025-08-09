@@ -334,8 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const stock = item.querySelector('input[name*="[stock]"]').value;
             const regularPrice = item.querySelector('input[name*="[regular_price]"]').value;
             const attributeValues = item.querySelectorAll('input[name*="[attribute_values][]"]');
+            const image = item.querySelector('input[name*="[img]"]').files[0];
 
-            if (!sku || !stock || !regularPrice || attributeValues.length === 0) {
+            if (!sku || !stock || !regularPrice || attributeValues.length === 0 || !image) {
                 isValid = false;
                 console.log(`Variant ${index + 1} has missing required fields`);
             }

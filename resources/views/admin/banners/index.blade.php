@@ -31,7 +31,6 @@
                         <tr>
                             <th width="80">Ảnh</th>
                             <th>Tiêu đề</th>
-                            <th>Vị trí</th>
                             <th>Thứ tự</th>
                             <th>Link</th>
                             <th>Ngày tạo</th>
@@ -55,11 +54,6 @@
                                 @if($banner->subtitle)
                                     <div class="text-muted small">{{ Str::limit($banner->subtitle, 40) }}</div>
                                 @endif
-                            </td>
-                            <td>
-                                <span class="badge bg-{{ $banner->position == 'slider' ? 'primary' : ($banner->position == 'banner' ? 'success' : 'warning') }}">
-                                    {{ ucfirst($banner->position) }}
-                                </span>
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">{{ $banner->sort_order }}</span>
@@ -97,7 +91,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <i class="bi bi-images display-4 text-muted mb-3 d-block"></i>
                                 <h5 class="text-muted">Không có banner nào</h5>
                                 <p class="text-muted">Bắt đầu tạo banner đầu tiên của bạn</p>
@@ -160,22 +154,27 @@ $(document).ready(function() {
     $('.toggle-status').change(function() {
         const id = $(this).data('id');
         const isChecked = $(this).is(':checked');
+        const checkbox = $(this);
         
         $.ajax({
             url: `/admin/banners/${id}/toggle-status`,
             type: 'POST',
             data: {
-                _token: '{{ csrf_token() }}'
+                _token: '{{ csrf_token() }}',
+                _method: 'PUT'
             },
             success: function(response) {
                 if (response.success) {
                     toastr.success(response.message);
+                } else {
+                    toastr.error('Có lỗi xảy ra!');
+                    checkbox.prop('checked', !isChecked);
                 }
             },
-            error: function() {
+            error: function(xhr) {
                 toastr.error('Có lỗi xảy ra!');
                 // Revert checkbox
-                $(this).prop('checked', !isChecked);
+                checkbox.prop('checked', !isChecked);
             }
         });
     });

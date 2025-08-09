@@ -40,7 +40,7 @@ class ProductVariantController extends Controller
     {
         try {
             $validatedData = $request->validated();
-            
+
             foreach ($validatedData['variants'] as $variantData) {
                 $variant = new ProductVariant([
                     'sku' => $variantData['sku'],
@@ -51,9 +51,13 @@ class ProductVariantController extends Controller
 
                 // Không lưu ảnh chính vào trường img nữa, chỉ lưu vào bảng product_images
                 $product->variants()->save($variant);
-                
-                if (isset($variantData['attribute_values'])) {
+
+                if (isset($variantData['attribute_values']) && !empty($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
+                } else {
+                    // Nếu không có thuộc tính, xóa biến thể vừa tạo và báo lỗi
+                    $variant->delete();
+                    throw new \Exception("Bạn chưa thêm thuộc tính cho biến thể.");
                 }
 
                 // Lưu nhiều ảnh vào bảng product_images
@@ -109,7 +113,7 @@ class ProductVariantController extends Controller
 
         return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
     }
-    
+
     /**
      * Get all images for a variant
      */
@@ -117,7 +121,7 @@ class ProductVariantController extends Controller
     {
         try {
             $images = $variant->images()->orderBy('is_primary', 'desc')->get();
-            
+
             $formattedImages = $images->map(function($image) {
                 return [
                     'id' => $image->id,
@@ -127,25 +131,25 @@ class ProductVariantController extends Controller
                     'created_at' => $image->created_at->format('Y-m-d H:i:s')
                 ];
             });
-            
+
             return response()->json([
                 'success' => true,
                 'images' => $formattedImages
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Error getting variant images:', [
                 'error' => $e->getMessage(),
                 'variant_id' => $variant->id
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải ảnh biến thể.'
             ], 500);
         }
     }
-    
+
     /**
      * Upload images for a variant
      */
@@ -155,20 +159,20 @@ class ProductVariantController extends Controller
             $request->validate([
                 'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // Max 10MB per file
             ]);
-            
+
             $uploadedImages = [];
-            
+
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('products/variants', 'public');
-                    
+
                     $imageModel = \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'product_variant_id' => $variant->id,
                         'url' => $path,
                         'is_primary' => 0
                     ]);
-                    
+
                     $uploadedImages[] = [
                         'id' => $imageModel->id,
                         'url' => asset('storage/' . $path),
@@ -178,26 +182,26 @@ class ProductVariantController extends Controller
                     ];
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Tải ảnh lên thành công',
                 'images' => $uploadedImages
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Error uploading variant images:', [
                 'error' => $e->getMessage(),
                 'variant_id' => $variant->id
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải ảnh lên: ' . $e->getMessage()
             ], 500);
         }
     }
-    
+
     /**
      * Xóa ảnh biến thể
      */
@@ -207,35 +211,35 @@ class ProductVariantController extends Controller
             $image = \App\Models\ProductImage::where('product_variant_id', $variant->id)
                 ->where('id', $imageId)
                 ->firstOrFail();
-                
+
             if ($image->is_primary) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Không thể xóa ảnh đại diện từ đây. Vui lòng đặt ảnh khác làm ảnh đại diện trước.'
                 ], 400);
             }
-            
+
             // Xóa file ảnh khỏi storage
             if (Storage::disk('public')->exists($image->url)) {
                 Storage::disk('public')->delete($image->url);
             }
-            
+
             $image->delete();
-            
+
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Đã xóa ảnh thành công.'
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Error deleting variant image:', [
                 'error' => $e->getMessage(),
                 'variant_id' => $variant->id,
                 'image_id' => $imageId
             ]);
-            
+
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Có lỗi xảy ra khi xóa ảnh: ' . $e->getMessage()
             ], 500);
         }
@@ -383,9 +387,18 @@ class ProductVariantController extends Controller
             'stock' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
+        ], [
+            'img.required' => 'Bạn cần chọn ảnh cho sản phẩm biến thể',
+            'img.image' => 'File phải là hình ảnh',
+            'img.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif',
+            'img.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
+            'attribute_values.required' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.array' => 'Dữ liệu thuộc tính không hợp lệ',
+            'attribute_values.min' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.*.exists' => 'Giá trị thuộc tính không tồn tại',
         ]);
 
         // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc
@@ -512,7 +525,7 @@ class ProductVariantController extends Controller
             $variantId = $request->variant_id;
             $variantIndex = $request->variant_index;
             $productId = $request->product_id; // Có thể cần cho trường hợp tạo mới
-            
+
             // Kiểm tra xem có ảnh nào được tải lên không
             if (!$request->hasFile('gallery')) {
                 return response()->json([
@@ -520,24 +533,24 @@ class ProductVariantController extends Controller
                     'message' => 'Không có ảnh nào được tải lên'
                 ], 400);
             }
-            
+
             $uploadedImages = [];
             $temporaryImages = [];
-            
+
             // Tạo thư mục tạm nếu chưa tồn tại
             $tempDir = 'products/variants/temp';
             if (!Storage::disk('public')->exists($tempDir)) {
                 Storage::disk('public')->makeDirectory($tempDir, 0755, true);
             }
-            
+
             foreach ($request->file('gallery') as $file) {
                 // Tạo tên file duy nhất
                 $fileName = 'temp_' . ($variantId ?? 'new') . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                
+
                 if ($variantId) {
                     // Nếu có variant_id (trường hợp chỉnh sửa)
                     $path = $file->storeAs('products/variants', $fileName, 'public');
-                    
+
                     // Tạo bản ghi trong database
                     $image = new \App\Models\ProductImage([
                         'product_id' => ProductVariant::find($variantId)->product_id,
@@ -545,9 +558,9 @@ class ProductVariantController extends Controller
                         'url' => $path,
                         'is_default' => false
                     ]);
-                    
+
                     $image->save();
-                    
+
                     $uploadedImages[] = [
                         'id' => $image->id,
                         'url' => asset('storage/' . $path)
@@ -555,7 +568,7 @@ class ProductVariantController extends Controller
                 } else {
                     // Nếu không có variant_id (trường hợp tạo mới)
                     $path = $file->storeAs($tempDir, $fileName, 'public');
-                    
+
                     // Lưu thông tin ảnh tạm để trả về
                     $uploadedImages[] = [
                         'id' => null, // Chưa có ID vì chưa lưu vào database
@@ -565,13 +578,13 @@ class ProductVariantController extends Controller
                     ];
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Tải lên ảnh thành công',
                 'images' => $uploadedImages
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error uploading variant gallery images:', [
                 'error' => $e->getMessage(),
@@ -579,7 +592,7 @@ class ProductVariantController extends Controller
                 'variant_id' => $request->variant_id ?? null,
                 'variant_index' => $request->variant_index ?? null
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải lên ảnh: ' . $e->getMessage()

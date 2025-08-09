@@ -15,6 +15,11 @@
     font-size: 0.95rem;
 }
 .discount-badge {
+/* Custom style for variant attribute badges */
+.badge.bg-secondary {
+  background-color: #e4e4e4 !important;
+  color: #333 !important;
+}
     font-size: 0.7rem;
     padding: 0.2rem 0.4rem;
 }
@@ -37,14 +42,16 @@
                 </ol>
             </nav>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-primary">
-                <i class="bi bi-pencil-square"></i> Chỉnh sửa
-            </a>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Xóa
-            </button>
-        </div>
+        @if(Auth::user()->role === 'admin')
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Hàng đầu tiên: Thông tin sản phẩm và hình ảnh -->

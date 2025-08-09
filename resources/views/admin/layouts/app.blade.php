@@ -149,7 +149,7 @@
         }
         .form-control:focus,
         .form-select:focus {
-            border-color: #435ebe;
+            border-color: #e4e4e4;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
         .ck-editor__editable {
@@ -213,7 +213,7 @@
             padding: 0.375rem 0.75rem;
         }
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-            background-color: #435ebe;
+            background-color: #e4e4e4;
             color: #fff;
             border: none;
             padding: 2px 8px;
@@ -227,7 +227,7 @@
             border-color: #dee2e6;
         }
         .select2-container--bootstrap-5 .select2-search__field:focus {
-            border-color: #435ebe;
+            border-color: #e4e4e4;
             box-shadow: 0 0 0 0.2rem rgba(67, 94, 190, 0.15);
         }
     </style>
@@ -249,7 +249,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="me-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                                <span class="me-2 d-none d-lg-inline text-gray-600 small">{{Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'}}</span>
                                 <img class="img-profile rounded-circle" style="width: 40px; height: 40px;" 
                                      src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=ffffff&size=128">
                             </a>
@@ -258,15 +258,19 @@
                                     <i class="fa fa-globe fa-sm fa-fw me-2 text-gray-400"></i>
                                     Xem trang khách
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <!-- <a class="dropdown-item" href="#">
                                     <i class="fa fa-user fa-sm fa-fw me-2 text-gray-400"></i>
                                     Profile
-                                </a>
+                                </a> -->
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{ route('admin.logout') }}"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="fa fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
-                                    Logout
+                                    Đăng xuất
                                 </a>
+                                <form id="logout-form" action="{{route('admin.logout')}}" method="post" class="d-none">
+                                    @csrf
+                                </form>
                             </div>
                         </li>
                     </ul>

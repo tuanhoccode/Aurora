@@ -1,6 +1,8 @@
 <?php
 
 
+use App\Http\Controllers\Admin\BannerController;
+
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -34,13 +36,12 @@ use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
-use App\Http\Controllers\admin\BannerController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
 
-
+use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
 use App\Http\Controllers\Client\Auth\LoginHistoryController;
@@ -48,16 +49,15 @@ use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
 use Dom\Comment;
-
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     //Coupon routes
-    Route::prefix('coupons')->name('coupons.')->group(function () {
+    Route::middleware('admin.only')->prefix('coupons')->name('coupons.')->group(function () {
         Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/bulk-restore', [CouponController::class, 'bulkRestore'])->name('bulk-restore');
         Route::post('/bulk-force-delete', [CouponController::class, 'bulkForceDelete'])->name('bulk-force-delete');
@@ -125,23 +125,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
         // Xóa ảnh gallery của biến thể
         Route::delete('/{product}/variants/delete-gallery-image/{image}', [ProductVariantController::class, 'deleteGalleryImage'])->name('variants.delete-gallery-image');
-        
+
         // Xử lý ảnh gallery cho biến thể
         Route::post('/variants/upload-gallery', [ProductVariantController::class, 'uploadGallery'])->name('variants.upload-gallery');
         Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteVariantImage'])->name('variants.delete-image');
         Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
-        
+
         // Lấy danh sách ảnh của biến thể
         Route::get('/{product}/variants/{variant}/images', [ProductVariantController::class, 'getImages'])->name('variants.images');
-        
+
         // Xóa ảnh biến thể
         Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
-    Route::resource('users', UserController::class);
-    Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
-    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole');
+    Route::resource('users', UserController::class)->middleware('admin.only');
+    Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus')->middleware('admin.only');
+    Route::patch('users/{user}/change-role', [UserController::class, 'changeRole'])->name('admin.users.changeRole')->middleware('admin.only');
     // Brands Routes
-    Route::prefix('brands')->name('brands.')->group(function () {
+    Route::middleware('admin.only')->prefix('brands')->name('brands.')->group(function () {
         // List và Form routes
         Route::get('/', [BrandController::class, 'index'])->name('index');
         Route::get('/create', [BrandController::class, 'create'])->name('create');
@@ -170,18 +170,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{brand}/toggle-active', [BrandController::class, 'toggleActive'])->name('toggle-active');
     });
 
-
-    // Banners Routes
-    Route::prefix('banners')->name('banners.')->group(function () {
-        Route::get('/', [BannerController::class, 'index'])->name('index');
-        Route::get('/create', [BannerController::class, 'create'])->name('create');
-        Route::post('/', [BannerController::class, 'store'])->name('store');
-        Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
-        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('edit');
-        Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
-        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
-        Route::post('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
-    });
 
     // Categories Routes
     Route::prefix('categories')->name('categories.')->group(function () {
@@ -217,7 +205,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     // Attributes
-    Route::prefix('attributes')->name('attributes.')->group(function () {
+    Route::middleware('admin.only')->prefix('attributes')->name('attributes.')->group(function () {
         // List và Form routes
         Route::get('/', [AttributeController::class, 'index'])->name('index');
         Route::get('/create', [AttributeController::class, 'create'])->name('create');
@@ -302,7 +290,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/comment-search', [CommentController::class, 'searchComment'])->name('searchComment');
     });
 
-    
+    // Banner Routes
+    Route::middleware('admin.only')->prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('index');
+        Route::get('/create', [BannerController::class, 'create'])->name('create');
+        Route::post('/', [BannerController::class, 'store'])->name('store');
+        Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
+        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('edit');
+        Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
+        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
+        Route::put('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
+    });
 });
 
 
@@ -310,7 +308,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 //Client
 
-Route::get('/', [HomeController::class, 'shop'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Product routes
+Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');
+
+// Yêu thích
+Route::middleware(['auth'])->group(function () {
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+});
 
 // Chi tiết sản phẩm
 Route::get('/product/{slug}', [ClientProductController::class, 'show'])
@@ -326,7 +334,7 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
 Route::prefix('categories')->name('client.categories.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
-}); 
+});
 
 Route::middleware('web')->group(function () {
     //login & register
@@ -396,6 +404,7 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
     Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
     Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::post('/checkout/clear-coupon-session', action: [CheckoutController::class, 'clearCouponSession'])->name('checkout.clear-coupon-session');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
@@ -425,25 +434,26 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
+    // Shopping Cart Routes
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
+    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
- // Tracking đơn hàng
+    // Tracking đơn hàng
     Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
-Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
+    Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
-
-   
 });
+
 
 Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'index'])->name('search');
 
 Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
-Route::post('/shopping-cart/dismiss-price-change/{itemId}', [App\Http\Controllers\Client\ShoppingCartController::class, 'dismissPriceChange'])->name('shopping-cart.dismiss-price-change');
-
-
-

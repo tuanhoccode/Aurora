@@ -133,36 +133,37 @@
                                 <a href="{{ route('admin.products.index', ['category' => $category->id]) }}" class="btn btn-link btn-sm px-0"><i class="bi bi-box-seam"></i> Xem tất cả sản phẩm</a>
                             @endif
                         @endif
-
-                        <div class="mt-4">
-                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-warning shadow-sm rounded me-2">
-                                <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa
-                            </a>
-                            {{-- Nút xóa mềm hoặc xóa vĩnh viễn tùy trạng thái --}}
-                            @if ($category->deleted_at)
-                                <button type="button"
-                                        class="btn btn-success shadow-sm rounded me-2"
-                                        onclick="confirmRestore('{{ $category->id }}', '{{ $category->name }}')">
-                                     <i class="bi bi-arrow-counterclockwise me-1"></i> Khôi phục
-                                </button>
-                                <button type="button"
-                                        class="btn btn-danger shadow-sm rounded"
-                                        onclick="confirmForceDelete('{{ $category->id }}', '{{ $category->name }}')">
-                                     <i class="bi bi-x-octagon me-1"></i> Xóa vĩnh viễn
-                                </button>
-                            @else
-                                @if($category->products()->count() > 0)
-                                    <button type="button" class="btn btn-danger shadow-sm rounded" disabled title="Không thể xóa vì còn sản phẩm liên kết">
-                                        <i class="bi bi-trash me-1"></i> Xóa mềm
+                        @if(Auth::user()->role === 'admin')
+                            <div class="mt-4">
+                                <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-warning shadow-sm rounded me-2">
+                                    <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa
+                                </a>
+                                {{-- Nút xóa mềm hoặc xóa vĩnh viễn tùy trạng thái --}}
+                                @if ($category->deleted_at)
+                                    <button type="button"
+                                            class="btn btn-success shadow-sm rounded me-2"
+                                            onclick="confirmRestore('{{ $category->id }}', '{{ $category->name }}')">
+                                         <i class="bi bi-arrow-counterclockwise me-1"></i> Khôi phục
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-danger shadow-sm rounded"
+                                            onclick="confirmForceDelete('{{ $category->id }}', '{{ $category->name }}')">
+                                         <i class="bi bi-x-octagon me-1"></i> Xóa vĩnh viễn
                                     </button>
                                 @else
-                                    <button type="button" class="btn btn-danger shadow-sm rounded"
-                                        onclick="confirmDelete('{{ $category->id }}', '{{ $category->name }}')">
-                                        <i class="bi bi-trash me-1"></i> Xóa mềm
-                                    </button>
+                                    @if($category->products()->count() > 0)
+                                        <button type="button" class="btn btn-danger shadow-sm rounded" disabled title="Không thể xóa vì còn sản phẩm liên kết">
+                                            <i class="bi bi-trash me-1"></i> Xóa mềm
+                                        </button>
+                                    @else
+                                        <button type="button" class="btn btn-danger shadow-sm rounded"
+                                            onclick="confirmDelete('{{ $category->id }}', '{{ $category->name }}')">
+                                            <i class="bi bi-trash me-1"></i> Xóa mềm
+                                        </button>
+                                    @endif
                                 @endif
-                            @endif
-                        </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

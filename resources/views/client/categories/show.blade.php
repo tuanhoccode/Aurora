@@ -239,7 +239,7 @@
         <!-- SIDEBAR FILTER -->
         <div class="col-xl-3 col-lg-3 mb-4">
             <div class="tp-shop-sidebar">
-                <form method="GET" action="{{ route('shop') }}">
+                <form method="GET" action="{{ route('client.categories.show', $category->id) }}">
                     <!-- Status Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Trạng thái</h3>
@@ -271,7 +271,7 @@
                                     @foreach($brands as $brand)
                                     <li class="d-flex justify-content-between mb-10">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="brand_ids[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brand_ids'))->contains($brand->id) ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="checkbox" name="brands[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brands'))->contains($brand->id) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="brand_{{ $brand->id }}">{{ $brand->name }}</label>
                                         </div>
                                     </li>

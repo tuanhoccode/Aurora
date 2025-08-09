@@ -324,6 +324,58 @@
                               </td>
                             </tr>
                           @endforeach
+
+                          {{-- Thêm đoạn này để render lại biến thể mới từ old('variants') nếu có --}}
+                          @if(old('variants') && count(old('variants')) > 0)
+                            @foreach(old('variants') as $i => $variant)
+                              <tr>
+                                <td>
+                                  @if(isset($variant['attributes']))
+                                    @foreach($variant['attributes'] as $attrId => $valueId)
+                                      <input type="hidden" name="variants[{{ $i }}][attributes][{{ $attrId }}]" value="{{ $valueId }}">
+                                      @php
+                                        $attr = $attributes->firstWhere('id', $attrId);
+                                        $value = $attr ? $attr->values->firstWhere('id', $valueId) : null;
+                                      @endphp
+                                      @if($attr && $value)
+                                        <span class="badge bg-secondary me-1">{{ $attr->name }}: {{ $value->value }}</span>
+                                      @endif
+                                    @endforeach
+                                  @endif
+                                </td>
+                                <td>
+                                  <input type="text" class="form-control" name="variants[{{ $i }}][sku]" value="{{ $variant['sku'] ?? '' }}" readonly>
+                                </td>
+                                <td>
+                                  <input type="number" class="form-control variant-price" name="variants[{{ $i }}][price]" value="{{ $variant['price'] ?? '' }}" min="0" placeholder="Giá gốc">
+                                </td>
+                                <td>
+                                  <input type="number" class="form-control variant-sale-price" name="variants[{{ $i }}][sale_price]" value="{{ $variant['sale_price'] ?? '' }}" min="0" placeholder="Giá khuyến mãi">
+                                  <small class="text-muted discount-percentage" style="display:none;"></small>
+                                </td>
+                                <td>
+                                  <input type="number" class="form-control" name="variants[{{ $i }}][stock]" value="{{ $variant['stock'] ?? '' }}" min="0" max="100" placeholder="Tồn kho (tối đa 100)">
+                                </td>
+                                <td>
+                                  <input type="file" class="form-control mb-2" name="variants[{{ $i }}][image]" accept="image/*">
+                                  <div class="variant-gallery-upload">
+                                    <label class="form-label small text-muted mb-1 d-block">Thư viện ảnh</label>
+                                    <input type="file" class="form-control variant-gallery-input" 
+                                           data-variant-index="{{ $i }}" 
+                                           name="variants[{{ $i }}][gallery][]" 
+                                           multiple 
+                                           accept="image/*">
+                                    <div class="variant-gallery-preview mt-2 d-flex flex-wrap gap-2" id="variant-gallery-{{ $i }}">
+                                      <!-- Ảnh sẽ được hiển thị ở đây -->
+                                    </div>
+                                  </div>
+                                </td>
+                                <td class="text-center">
+                                  <button type="button" class="btn btn-sm btn-danger remove-variant-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                              </tr>
+                            @endforeach
+                          @endif
                         </tbody>
                       </table>
                     </div>
@@ -362,6 +414,11 @@
 }
 .variant-sale-price:focus + .discount-percentage {
   color: #198754;
+}
+/* Custom style for variant attribute badges */
+.badge.bg-secondary {
+  background-color: #e4e4e4 !important;
+  color: #333 !important;
 }
 </style>
 @endpush
@@ -462,12 +519,312 @@
     $('#variantPreview').show();
   }
 
+    // Khôi phục dữ liệu từ session khi có lỗi validate
+  function restoreVariantData() {
+    // Kiểm tra xem có dữ liệu variants từ session không
+    @if(old('variants'))
+      let oldVariants = @json(old('variants'));
+      if (oldVariants && oldVariants.length > 0) {
+        console.log('Đang khôi phục dữ liệu từ session...', oldVariants);
+        
+        // Khôi phục các thuộc tính đã chọn từ variants mới
+        let selectedAttributes = {};
+        oldVariants.forEach(function(variant, idx) {
+          if (variant.attributes) {
+            Object.keys(variant.attributes).forEach(function(attrId) {
+              let valueId = variant.attributes[attrId];
+              if (!selectedAttributes[attrId]) {
+                selectedAttributes[attrId] = [];
+              }
+              if (!selectedAttributes[attrId].includes(valueId)) {
+                selectedAttributes[attrId].push(valueId);
+              }
+            });
+          }
+        });
+        
+        console.log('Thuộc tính cần khôi phục:', selectedAttributes);
+        
+        // Áp dụng các thuộc tính đã chọn vào select
+        Object.keys(selectedAttributes).forEach(function(attrId) {
+          let select = $(`select[name="variant_attributes[${attrId}][]"]`);
+          console.log('Đang khôi phục thuộc tính', attrId, 'với giá trị:', selectedAttributes[attrId]);
+          
+          // Xóa tất cả selection trước
+          select.val(null);
+          
+          // Chọn lại các giá trị
+          selectedAttributes[attrId].forEach(function(valueId) {
+            let option = select.find(`option[value="${valueId}"]`);
+            if (option.length > 0) {
+              option.prop('selected', true);
+              console.log('Đã chọn option:', valueId);
+            } else {
+              console.log('Không tìm thấy option với value:', valueId);
+            }
+          });
+        });
+        
+        // Trigger change event để cập nhật select2
+        $('.variant-attribute-select').trigger('change');
+        
+        // Fallback: Nếu select2 không hoạt động, thử cách khác
+        setTimeout(function() {
+          $('.variant-attribute-select').each(function() {
+            let select = $(this);
+            let selectedValues = select.val();
+            if (!selectedValues || selectedValues.length === 0) {
+              // Thử khôi phục lại
+              let attrId = select.attr('name').match(/\d+/)[0];
+              if (selectedAttributes[attrId]) {
+                console.log('Fallback: Khôi phục lại thuộc tính', attrId);
+                selectedAttributes[attrId].forEach(function(valueId) {
+                  select.find(`option[value="${valueId}"]`).prop('selected', true);
+                });
+                select.trigger('change');
+              }
+            }
+          });
+        }, 100);
+        
+        // Tạo lại các biến thể mới mà không xóa biến thể cũ
+        setTimeout(function() {
+          // Lấy số lượng dòng hiện tại (chỉ biến thể cũ)
+          let currentRows = {{ $product->variants->count() }};
+          console.log('Số biến thể hiện có:', currentRows);
+          
+          // Tạo các biến thể mới từ thuộc tính đã chọn
+          let attributes = [];
+          $('.variant-attribute-select').each(function() {
+            let attrName = $(this).closest('.mb-2').find('label').text();
+            let attrId = $(this).attr('name').match(/\d+/)[0];
+            let values = $(this).val();
+            console.log('Thuộc tính', attrName, 'có giá trị:', values);
+            if(values && values.length > 0) {
+              attributes.push({
+                id: attrId,
+                name: attrName,
+                values: values.map(v => $(this).find(`option[value="${v}"]`).text()),
+                valueIds: values
+              });
+            }
+          });
+          
+          console.log('Thuộc tính đã chọn:', attributes);
+          
+          if (attributes.length > 0) {
+            // Tạo tổ hợp biến thể
+            function cartesian(arr) {
+              return arr.reduce(function(a, b) {
+                return a.flatMap(d => b.values.map(e => d.concat([{attr: b.name, value: e, attr_id: b.id, value_id: b.valueIds[b.values.indexOf(e)]}])))
+              }, [[]]);
+            }
+            
+            let combos = cartesian(attributes);
+            console.log('Tổ hợp biến thể:', combos);
+            let tbody = '';
+            
+            combos.forEach(function(combo, idx) {
+              // Lấy giá trị từ old() helper nếu có
+              let oldSku = '';
+              let oldPrice = '';
+              let oldSalePrice = '';
+              let oldStock = '';
+              
+              if (oldVariants && oldVariants[idx]) {
+                oldSku = oldVariants[idx].sku || '';
+                oldPrice = oldVariants[idx].price || '';
+                oldSalePrice = oldVariants[idx].sale_price || '';
+                oldStock = oldVariants[idx].stock || '';
+              }
+              
+              let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${currentRows+idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
+              let sku = viToEnConvert($('input[name="name"]').val());
+              combo.forEach(c => {
+                let attrLower = c.attr.toLowerCase();
+                if (
+                  attrLower.includes('màu') ||
+                  attrLower.includes('color')
+                ) {
+                  let colorCode = colorMap[c.value] || removeVietnameseTones(c.value).substring(0,2).toUpperCase();
+                  sku += '-' + colorCode;
+                } else if (
+                  attrLower.includes('size') ||
+                  attrLower.includes('kích')
+                ) {
+                  sku += '-' + removeVietnameseTones(c.value).toUpperCase();
+                }
+              });
+              
+              tbody += `<tr>
+                <td>${attrStr}</td>
+                <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${oldSku || sku}\" readonly></td>
+                <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\" value=\"${oldPrice}\"></td>
+                <td>
+                  <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
+                  <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
+                </td>
+                <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\" value=\"${oldStock}\"></td>
+                <td>
+                  <!-- Ảnh đại diện -->
+                  <input type=\"file\" class=\"form-control mb-2\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\">
+                  
+                  <!-- Gallery ảnh cho biến thể -->
+                  <div class=\"variant-gallery-upload\">
+                    <label class=\"form-label small text-muted mb-1 d-block\">Thư viện ảnh</label>
+                    <input type=\"file\" class=\"form-control variant-gallery-input\" 
+                           data-variant-index=\"${currentRows+idx}\" 
+                           name=\"variants[${currentRows+idx}][gallery][]\" 
+                           multiple 
+                           accept=\"image/*\">
+                    <div class=\"variant-gallery-preview mt-2 d-flex flex-wrap gap-2\" id=\"variant-gallery-${currentRows+idx}\">
+                      <!-- Ảnh sẽ được hiển thị ở đây -->
+                    </div>
+                  </div>
+                </td>
+                <td class=\"text-center\"><button type=\"button\" class=\"btn btn-sm btn-danger remove-variant-row\"><i class=\"fas fa-trash\"></i></button></td>
+              </tr>`;
+            });
+            
+            console.log('Thêm', combos.length, 'biến thể mới vào bảng');
+            
+            // Thêm các biến thể mới vào cuối bảng (không xóa biến thể cũ)
+            $('#variantTable tbody').append(tbody);
+            $('#variantTableWrapper').show();
+            $('#noVariantsMessage').hide();
+            
+            // Tính toán và hiển thị phần trăm giảm giá cho các biến thể mới
+            $('#variantTable tbody tr').each(function() {
+              let row = $(this);
+              let priceInput = row.find('input[name*="[price]"]');
+              let salePriceInput = row.find('input[name*="[sale_price]"]');
+              let discountPercentage = row.find('.discount-percentage');
+              
+              let price = parseFloat(priceInput.val()) || 0;
+              let salePrice = parseFloat(salePriceInput.val()) || 0;
+              
+              if (price > 0 && salePrice > 0 && salePrice < price) {
+                let discount = Math.round(((price - salePrice) / price) * 100);
+                discountPercentage.text(`Giảm ${discount}%`).show();
+              }
+            });
+            
+            // Thêm event handler cho nút xóa biến thể mới
+            $('#variantTable').off('click', '.remove-variant-row').on('click', '.remove-variant-row', function() {
+              $(this).closest('tr').remove();
+              // Kiểm tra nếu không còn biến thể nào thì hiển thị thông báo
+              if ($('#variantTable tbody tr').length === 0) {
+                $('#variantTableWrapper').hide();
+                $('#noVariantsMessage').show();
+              }
+            });
+            
+            // Thêm event handler cho validate giá khuyến mãi
+            $('#variantTable').off('input', 'input[name*="[sale_price]"], input[name*="[price]"]').on('input', 'input[name*="[sale_price]"], input[name*="[price]"]', function() {
+              let row = $(this).closest('tr');
+              let priceInput = row.find('input[name*="[price]"]');
+              let salePriceInput = row.find('input[name*="[sale_price]"]');
+              let discountPercentage = row.find('.discount-percentage');
+              
+              let price = parseFloat(priceInput.val()) || 0;
+              let salePrice = parseFloat(salePriceInput.val()) || 0;
+              
+              // Validate giá khuyến mãi
+              if (salePrice > 0 && salePrice >= price) {
+                salePriceInput.addClass('is-invalid');
+                if (!salePriceInput.next('.invalid-feedback').length) {
+                  salePriceInput.after('<div class="invalid-feedback">Giá khuyến mãi phải nhỏ hơn giá gốc</div>');
+                }
+                discountPercentage.hide();
+              } else {
+                salePriceInput.removeClass('is-invalid');
+                salePriceInput.next('.invalid-feedback').remove();
+                
+                // Tính và hiển thị phần trăm giảm giá
+                if (price > 0 && salePrice > 0 && salePrice < price) {
+                  let discount = Math.round(((price - salePrice) / price) * 100);
+                  discountPercentage.text(`Giảm ${discount}%`).show();
+                } else {
+                  discountPercentage.hide();
+                }
+              }
+            });
+            
+            // Thêm event handler cho preview ảnh gallery
+            $('#variantTable').off('change', 'input[name*="[gallery][]"]').on('change', 'input[name*="[gallery][]"]', function() {
+              let files = this.files;
+              let variantIndex = $(this).data('variant-index');
+              let previewContainer = $(`#variant-gallery-${variantIndex}`);
+              
+              previewContainer.empty();
+              
+              Array.from(files).forEach(function(file, index) {
+                if (file.type.startsWith('image/')) {
+                  let reader = new FileReader();
+                  reader.onload = function(e) {
+                    let img = $('<img>')
+                      .attr('src', e.target.result)
+                      .addClass('img-thumbnail')
+                      .css({
+                        'width': '60px',
+                        'height': '60px',
+                        'object-fit': 'cover',
+                        'margin-right': '5px',
+                        'margin-bottom': '5px'
+                      });
+                    previewContainer.append(img);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              });
+            });
+            
+            console.log('Khôi phục dữ liệu hoàn tất');
+          } else {
+            console.log('Không có thuộc tính nào được chọn, không thể tạo biến thể');
+          }
+        }, 200); // Tăng timeout để đảm bảo select2 đã cập nhật
+      } else {
+        console.log('Không có dữ liệu variants từ session');
+      }
+    @else
+      console.log('Không có old("variants")');
+    @endif
+  }
+
+  // Gọi hàm khôi phục khi trang load
+  $(document).ready(function() {
+    console.log('Document ready, bắt đầu khôi phục dữ liệu...');
+    
+    // Đợi một chút để đảm bảo select2 đã được khởi tạo
+    setTimeout(function() {
+      restoreVariantData();
+      
+      // Tự động chuyển sang tab danh sách biến thể nếu có dữ liệu từ session
+      @if(old('variants'))
+        setTimeout(function() {
+          $('#list-tab').tab('show');
+          console.log('Đã chuyển sang tab danh sách biến thể');
+        }, 100);
+      @endif
+    }, 500);
+  });
+
   // Tính toán khi thay đổi thuộc tính
   $('.variant-attribute-select').on('change', function() {
     calculateVariantCount();
   });
   // Sửa lại JS để khi tạo biến thể mới, index của variants mới không bị trùng với variants_old
   $('#generateVariantsBtn').on('click', function() {
+    // Kiểm tra xem đã có biến thể mới được tạo từ session chưa
+    @if(old('variants'))
+      let hasNewVariants = @json(old('variants')).length > 0;
+      if (hasNewVariants) {
+        console.log('Đã có biến thể mới từ session, bỏ qua việc tạo mới');
+        return;
+      }
+    @endif
+    
     let attributes = [];
     $('.variant-attribute-select').each(function() {
       let attrName = $(this).closest('.mb-2').find('label').text();
@@ -498,6 +855,22 @@
     let combos = cartesian(attributes);
     let tbody = '';
     combos.forEach(function(combo, idx) {
+      // Lấy giá trị từ old() helper nếu có
+      let oldSku = '';
+      let oldPrice = '';
+      let oldSalePrice = '';
+      let oldStock = '';
+      
+      @if(old('variants'))
+        let oldVariants = @json(old('variants'));
+        if (oldVariants && oldVariants[idx]) {
+          oldSku = oldVariants[idx].sku || '';
+          oldPrice = oldVariants[idx].price || '';
+          oldSalePrice = oldVariants[idx].sale_price || '';
+          oldStock = oldVariants[idx].stock || '';
+        }
+      @endif
+      
       let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${currentRows+idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
       let sku = productSlug;
       combo.forEach(c => {
@@ -517,14 +890,30 @@
       });
       tbody += `<tr>
         <td>${attrStr}</td>
-        <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${sku}\" readonly></td>
-        <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\"></td>
+        <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${oldSku || sku}\" readonly></td>
+        <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\" value=\"${oldPrice}\"></td>
         <td>
-          <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\">
+          <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
           <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
         </td>
-                                    <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\"></td>
-        <td><input type=\"file\" class=\"form-control\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\"></td>
+        <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\" value=\"${oldStock}\"></td>
+        <td>
+          <!-- Ảnh đại diện -->
+          <input type=\"file\" class=\"form-control mb-2\" name=\"variants[${currentRows+idx}][image]\" accept=\"image/*\">
+          
+          <!-- Gallery ảnh cho biến thể -->
+          <div class=\"variant-gallery-upload\">
+            <label class=\"form-label small text-muted mb-1 d-block\">Thư viện ảnh</label>
+            <input type=\"file\" class=\"form-control variant-gallery-input\" 
+                   data-variant-index=\"${currentRows+idx}\" 
+                   name=\"variants[${currentRows+idx}][gallery][]\" 
+                   multiple 
+                   accept=\"image/*\">
+            <div class=\"variant-gallery-preview mt-2 d-flex flex-wrap gap-2\" id=\"variant-gallery-${currentRows+idx}\">
+              <!-- Ảnh sẽ được hiển thị ở đây -->
+            </div>
+          </div>
+        </td>
         <td class=\"text-center\"><button type=\"button\" class=\"btn btn-sm btn-danger remove-variant-row\"><i class=\"fas fa-trash\"></i></button></td>
       </tr>`;
     });
@@ -807,7 +1196,7 @@ $('form').on('submit', function(e) {
     }
   }
 
-  // Xử lý khi chọn ảnh gallery cho biến thể
+  // Xử lý khi chọn ảnh gallery cho biến thể cũ
   $('input[name^="variant_gallery["]').on('change', function() {
     const variantId = $(this).data('variant-id');
     const files = this.files;
@@ -879,6 +1268,77 @@ $('form').on('submit', function(e) {
     });
   });
   
+  // Xử lý khi chọn ảnh gallery cho biến thể mới
+  $(document).on('change', '.variant-gallery-input', function() {
+    const variantIndex = $(this).data('variant-index');
+    const files = this.files;
+    const galleryContainer = $(`#variant-gallery-${variantIndex}`);
+    const token = $('meta[name="csrf-token"]').attr('content');
+    
+    // Tạo form data để gửi file
+    const formData = new FormData();
+    formData.append('_token', token);
+    formData.append('variant_index', variantIndex);
+    
+    // Thêm từng file vào form data
+    for (let i = 0; i < files.length; i++) {
+      formData.append('gallery[]', files[i]);
+    }
+    
+    // Hiển thị loading
+    const loadingHtml = `
+      <div class="position-relative d-inline-block me-2 mb-2">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Đang tải lên...</span>
+      </div>`;
+    
+    const $loading = $(loadingHtml);
+    galleryContainer.append($loading);
+    
+    // Gửi yêu cầu upload ảnh lên server
+    $.ajax({
+      url: '{{ route("admin.products.variants.upload-gallery") }}',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        // Xóa thông báo loading
+        $loading.remove();
+        
+        if (response.success && response.images && response.images.length > 0) {
+          // Xử lý từng ảnh đã upload thành công
+          response.images.forEach(function(image) {
+            const imgPreview = `
+              <div class="position-relative d-inline-block me-2 mb-2">
+                <img src="${image.url}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                        style="width: 20px; height: 20px; line-height: 18px;"
+                        onclick="$(this).closest('.position-relative').remove();">
+                  <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="variants[${variantIndex}][gallery_images][]" value="${image.temp_path || image.id}">
+              </div>`;
+            
+            galleryContainer.append(imgPreview);
+          });
+          
+          toastr.success('Tải lên ảnh thành công');
+        } else {
+          toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        }
+      },
+      error: function(xhr) {
+        $loading.remove();
+        const response = xhr.responseJSON || {};
+        toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
+        console.error('Error uploading images:', xhr.responseText);
+      }
+    });
+  });
+  
   // Khôi phục dữ liệu variants mới nếu có lỗi validation
   @if(old('variants') && count(old('variants')) > 0)
     const oldVariants = @json(old('variants'));
@@ -903,7 +1363,23 @@ $('form').on('submit', function(e) {
             <td><input type="number" class="form-control variant-price" name="variants[${currentRows+index}][price]" value="${variant.price || ''}" min="0" placeholder="Giá gốc"></td>
             <td><input type="number" class="form-control variant-sale-price" name="variants[${currentRows+index}][sale_price]" value="${variant.sale_price || ''}" min="0" placeholder="Giá khuyến mãi"></td>
             <td><input type="number" class="form-control" name="variants[${currentRows+index}][stock]" value="${variant.stock || ''}" min="0" max="100" placeholder="Tồn kho (tối đa 100)"></td>
-            <td><input type="file" class="form-control" name="variants[${currentRows+index}][image]" accept="image/*"></td>
+            <td>
+              <!-- Ảnh đại diện -->
+              <input type="file" class="form-control mb-2" name="variants[${currentRows+index}][image]" accept="image/*">
+              
+              <!-- Gallery ảnh cho biến thể -->
+              <div class="variant-gallery-upload">
+                <label class="form-label small text-muted mb-1 d-block">Thư viện ảnh</label>
+                <input type="file" class="form-control variant-gallery-input" 
+                       data-variant-index="${currentRows+index}" 
+                       name="variants[${currentRows+index}][gallery][]" 
+                       multiple 
+                       accept="image/*">
+                <div class="variant-gallery-preview mt-2 d-flex flex-wrap gap-2" id="variant-gallery-${currentRows+index}">
+                  <!-- Ảnh sẽ được hiển thị ở đây -->
+                </div>
+              </div>
+            </td>
             <td class="text-center"><button type="button" class="btn btn-sm btn-danger remove-variant-row"><i class="fas fa-trash"></i></button></td>
           </tr>`;
         $('#variantTable tbody').append(variantRow);

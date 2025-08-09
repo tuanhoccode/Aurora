@@ -8,6 +8,8 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Models\Cart;
+use App\Models\Comment;
+use App\Models\Review;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -36,34 +38,18 @@ class AppServiceProvider extends ServiceProvider
         View::composer('client.shopping-cart.mini-cart', function ($view) {
             if (Auth::check()) {
                 $userId = Auth::id();
-                $sessionCart = session("cart_{$userId}", []);
-                $miniCartItems = collect();
-                $miniCartSubtotal = 0;
-                
-                foreach ($sessionCart as $itemData) {
-                    $product = \App\Models\Product::find($itemData['product_id']);
-                    if (!$product) continue;
-                    
-                    $variant = null;
-                    if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
-                        $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
-                    }
-                    
-                    $currentPrice = $variant ? $variant->current_price : $product->current_price;
-                    
-                    $item = (object) [
-                        'id' => $itemData['id'],
-                        'product_id' => $product->id,
-                        'product_variant_id' => $variant ? $variant->id : null,
-                        'quantity' => $itemData['quantity'],
-                        'product' => $product,
-                        'productVariant' => $variant,
-                        'price_at_time' => $currentPrice,
-                    ];
-                    
-                    $miniCartItems->push($item);
-                    $miniCartSubtotal += $currentPrice * $itemData['quantity'];
-                }
+                $cart = Cart::where('user_id', $userId)
+                    ->where('status', 'pending')
+                    ->with([
+                        'items.product',
+                        'items.productVariant.attributeValues.attribute',
+                    ])
+                    ->first();
+
+                $miniCartItems = $cart ? $cart->items : collect();
+                $miniCartSubtotal = $miniCartItems->sum(function($item) {
+                    return $item->price_at_time * $item->quantity;
+                });
 
                 $view->with(compact('miniCartItems', 'miniCartSubtotal'));
             } else {
@@ -79,5 +65,11 @@ class AppServiceProvider extends ServiceProvider
             $view->with('categories', \App\Models\Category::where('is_active', 1)->get());
         });
         Paginator::useBootstrap();
+
+        View::composer('admin.layouts.sidebar', function ($view){
+            $pendingComments = Comment::where('is_active', 0)->count();
+            $pendingReviews= Review::where('is_active', 0)->count();
+            $view->with('hasPendingFeedbacks', $pendingComments + $pendingReviews > 0);
+        });
     }
 }

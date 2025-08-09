@@ -287,6 +287,11 @@
 .variant-sale-price:focus + .discount-percentage {
   color: #198754;
 }
+/* Custom style for variant attribute badges */
+.badge.bg-secondary {
+  background-color: #e4e4e4 !important;
+  color: #333 !important;
+}
 </style>
 @endpush
 @push('scripts')
@@ -410,6 +415,70 @@
     $('input[name="name"]').trigger('input');
   });
 
+  // Khôi phục dữ liệu từ session khi có lỗi validate
+  function restoreVariantData() {
+    // Kiểm tra xem có dữ liệu variants từ session không
+    @if(old('variants'))
+      let oldVariants = @json(old('variants'));
+      if (oldVariants && oldVariants.length > 0) {
+        // Khôi phục các thuộc tính đã chọn từ variants
+        let selectedAttributes = {};
+        oldVariants.forEach(function(variant, idx) {
+          if (variant.attributes) {
+            Object.keys(variant.attributes).forEach(function(attrId) {
+              let valueId = variant.attributes[attrId];
+              if (!selectedAttributes[attrId]) {
+                selectedAttributes[attrId] = [];
+              }
+              if (!selectedAttributes[attrId].includes(valueId)) {
+                selectedAttributes[attrId].push(valueId);
+              }
+            });
+          }
+        });
+        
+        // Áp dụng các thuộc tính đã chọn vào select
+        Object.keys(selectedAttributes).forEach(function(attrId) {
+          let select = $(`select[name="variant_attributes[${attrId}][]"]`);
+          selectedAttributes[attrId].forEach(function(valueId) {
+            select.find(`option[value="${valueId}"]`).prop('selected', true);
+          });
+        });
+        
+        // Trigger change event để cập nhật select2
+        $('.variant-attribute-select').trigger('change');
+        
+        // Tạo lại bảng biến thể với dữ liệu cũ
+        setTimeout(function() {
+          $('#generateVariantsBtn').click();
+          
+          // Khôi phục giá trị các trường input
+          setTimeout(function() {
+            oldVariants.forEach(function(variant, idx) {
+              let row = $(`#variantTable tbody tr:eq(${idx})`);
+              if (row.length > 0) {
+                if (variant.sku) row.find('input[name*="[sku]"]').val(variant.sku);
+                if (variant.price) row.find('input[name*="[price]"]').val(variant.price);
+                if (variant.sale_price) row.find('input[name*="[sale_price]"]').val(variant.sale_price);
+                if (variant.stock) row.find('input[name*="[stock]"]').val(variant.stock);
+              }
+            });
+          }, 100);
+        }, 100);
+      }
+    @endif
+  }
+
+  // Gọi hàm khôi phục khi trang load
+  restoreVariantData();
+  
+  // Tự động chuyển sang tab danh sách biến thể nếu có dữ liệu từ session
+  @if(old('variants'))
+    setTimeout(function() {
+      $('#list-tab').tab('show');
+    }, 200);
+  @endif
+
   // Tự động tạo SKU cho biến thể khi sinh dòng mới
   $('#generateVariantsBtn').on('click', function() {
     // Lấy các giá trị thuộc tính đã chọn
@@ -477,12 +546,28 @@
           sku += '-' + removeVietnameseTones(c.value).toUpperCase();
         }
       });
+      // Lấy giá trị từ old() helper nếu có
+      let oldSku = '';
+      let oldPrice = '';
+      let oldSalePrice = '';
+      let oldStock = '';
+      
+      @if(old('variants'))
+        let oldVariants = @json(old('variants'));
+        if (oldVariants && oldVariants[idx]) {
+          oldSku = oldVariants[idx].sku || '';
+          oldPrice = oldVariants[idx].price || '';
+          oldSalePrice = oldVariants[idx].sale_price || '';
+          oldStock = oldVariants[idx].stock || '';
+        }
+      @endif
+      
       tbody += `<tr>
         <td>${attrStr}</td>
-        <td><input type="text" class="form-control" name="variants[${idx}][sku]" value="${sku}" placeholder="Để trống để tự tạo"></td>
-        <td><input type="number" class="form-control variant-price" name="variants[${idx}][price]" min="0" placeholder="Giá gốc"></td>
-        <td><input type="number" class="form-control variant-sale-price" name="variants[${idx}][sale_price]" min="0" placeholder="Giá khuyến mãi"></td>
-                                    <td><input type="number" class="form-control" name="variants[${idx}][stock]" min="0" max="100" placeholder="Tồn kho (tối đa 100)"></td>
+        <td><input type="text" class="form-control" name="variants[${idx}][sku]" value="${oldSku || sku}" placeholder="Để trống để tự tạo"></td>
+        <td><input type="number" class="form-control variant-price" name="variants[${idx}][price]" min="0" placeholder="Giá gốc" value="${oldPrice}"></td>
+        <td><input type="number" class="form-control variant-sale-price" name="variants[${idx}][sale_price]" min="0" placeholder="Giá khuyến mãi" value="${oldSalePrice}"></td>
+        <td><input type="number" class="form-control" name="variants[${idx}][stock]" min="0" max="100" placeholder="Tồn kho (tối đa 100)" value="${oldStock}"></td>
         <td>
           <!-- Ảnh đại diện -->
           <input type="file" class="form-control mb-2" name="variants[${idx}][image]" accept="image/*">

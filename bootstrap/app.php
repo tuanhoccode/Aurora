@@ -16,9 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'admin' => AdminMiddleware::class,
             'check.session' => \App\Http\Middleware\CheckSessionValid::class,
+            'check.admin-or-employee' => \App\Http\Middleware\CheckAdminOrEmployee::class,
+            'admin.only' => \App\Http\Middleware\CheckAdminOnly::class,
         ]);
         $middleware->group('web', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -28,5 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            if ($e->getStatusCode() === 403) {
+                return response()->view('admin.errors.403', [], 403);
+            }
+        });
+    })
+    ->create();

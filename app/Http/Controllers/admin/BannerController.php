@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BannerRequest;
@@ -10,85 +10,88 @@ use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        $query = Banner::query();
-
-        // Tìm kiếm theo tiêu đề
-        if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('subtitle', 'like', '%' . $request->search . '%');
-        }
-
-        // Lọc theo vị trí
-        if ($request->filled('position')) {
-            $query->where('position', $request->position);
-        }
-
-        // Lọc theo trạng thái
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status);
-        }
-
-        $banners = $query->orderBy('created_at', 'desc')
-                        ->orderBy('sort_order', 'asc')
-                        ->paginate(10);
-
+        $banners = Banner::orderBy('sort_order', 'asc')->paginate(10);
         return view('admin.banners.index', compact('banners'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $usedSortOrders = Banner::pluck('sort_order')->toArray();
-        $nextSortOrder = Banner::getNextAvailableSortOrder();
-        
-        return view('admin.banners.create', compact('usedSortOrders', 'nextSortOrder'));
+        return view('admin.banners.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(BannerRequest $request)
     {
-        $data = $request->validated();
-        
-        // Tự động gán sort_order nếu không được cung cấp
-        if (empty($data['sort_order'])) {
-            $data['sort_order'] = Banner::getNextAvailableSortOrder();
-        }
-        
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('banners', 'public');
-            $data['image'] = $imagePath;
-        }
+        try {
+            $data = $request->validated();
+            $data['is_active'] = $request->has('is_active');
 
-        Banner::create($data);
+            // Xử lý upload ảnh
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $imagePath = $image->storeAs('banners', $imageName, 'public');
+                $data['image'] = $imagePath;
+            }
 
-        return redirect()->route('admin.banners.index')
-            ->with('success', 'Banner đã được tạo thành công!');
+            // Tự động set sort_order nếu không được cung cấp
+            if (empty($data['sort_order'])) {
+                $data['sort_order'] = Banner::getNextAvailableSortOrder();
+            }
+
+            Banner::create($data);
+
+            return redirect()->route('admin.banners.index')
+                ->with('success', 'Banner đã được tạo thành công!');
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+        }
     }
 
-    public function show($id)
+    /**
+     * Display the specified resource.
+     */
+    public function show(Banner $banner)
     {
-        $banner = Banner::findOrFail($id);
         return view('admin.banners.show', compact('banner'));
     }
 
-    public function edit($id)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Banner $banner)
     {
-        $banner = Banner::findOrFail($id);
         return view('admin.banners.edit', compact('banner'));
     }
 
-    public function update(BannerRequest $request, $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(BannerRequest $request, Banner $banner)
     {
-        $banner = Banner::findOrFail($id);
         $data = $request->validated();
+        $data['is_active'] = $request->has('is_active');
 
+        // Xử lý upload ảnh mới
         if ($request->hasFile('image')) {
             // Xóa ảnh cũ
             if ($banner->image && Storage::disk('public')->exists($banner->image)) {
                 Storage::disk('public')->delete($banner->image);
             }
-            
-            $imagePath = $request->file('image')->store('banners', 'public');
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('banners', $imageName, 'public');
             $data['image'] = $imagePath;
         }
 
@@ -98,30 +101,48 @@ class BannerController extends Controller
             ->with('success', 'Banner đã được cập nhật thành công!');
     }
 
-    public function destroy($id)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Banner $banner)
     {
-        $banner = Banner::findOrFail($id);
-        
         // Xóa ảnh
         if ($banner->image && Storage::disk('public')->exists($banner->image)) {
             Storage::disk('public')->delete($banner->image);
         }
-        
+
         $banner->delete();
 
         return redirect()->route('admin.banners.index')
             ->with('success', 'Banner đã được xóa thành công!');
     }
 
-    public function toggleStatus($id)
+    /**
+     * Toggle active status
+     */
+    public function toggleStatus(Banner $banner)
     {
-        $banner = Banner::findOrFail($id);
-        $banner->update(['is_active' => !$banner->is_active]);
+        try {
+            $oldStatus = $banner->is_active;
+            $newStatus = !$oldStatus;
+            
+            $banner->update(['is_active' => $newStatus]);
+            
+            // Refresh model để đảm bảo dữ liệu mới nhất
+            $banner->refresh();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Trạng thái banner đã được cập nhật!',
-            'is_active' => $banner->is_active
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Trạng thái banner đã được cập nhật!',
+                'is_active' => $banner->is_active,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

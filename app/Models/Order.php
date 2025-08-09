@@ -16,6 +16,7 @@ class Order extends Model
         'address',
         'note',
         'total_amount',
+        'discount_amount',
         'shipping_type',
         'shipping_fee',
         'is_paid',
@@ -23,6 +24,9 @@ class Order extends Model
         'is_refunded_canceled',
         'check_refunded_canceled',
         'img_refunded_money',
+        'cancel_reason',
+        'cancel_note',
+        'cancelled_at',
     ];
 
     public function items()
@@ -33,6 +37,11 @@ class Order extends Model
     public function payment()
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function user()
@@ -103,13 +112,27 @@ class Order extends Model
         };
     }
 
+    /**
+     * Kiểm tra xem đơn hàng có thể hủy được không
+     */
+    public function canBeCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        // Nếu không có trạng thái, mặc định cho phép hủy
+        return $currentStatusName === 'Chờ xác nhận' || is_null($currentStatusName);
+    }
+
+    /**
+     * Kiểm tra xem đơn hàng đã bị hủy chưa
+     */
+    public function isCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        return $currentStatusName === 'Đã hủy';
+    }
+
     public function getShippingFeeFormattedAttribute()
     {
         return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
-    }
-
-    public function getSubtotalAttribute()
-    {
-        return $this->total_amount - ($this->shipping_fee ?? 0);
     }
 }

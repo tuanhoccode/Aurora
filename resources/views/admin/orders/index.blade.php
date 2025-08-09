@@ -71,6 +71,11 @@
                         <i class="fas fa-times-circle me-1"></i> Thất bại ({{ $failedCount }})
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request('filter') == 'cancelled' ? 'active' : '' }}" href="{{ route('admin.orders.index', ['filter' => 'cancelled']) }}">
+                        <i class="fas fa-ban me-1"></i> Đã hủy ({{ $cancelledCount ?? 0 }})
+                    </a>
+                </li>
             </ul>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -126,8 +131,27 @@
                             </td>
                             <td>{{ $order->created_at->format('d/m/Y, H:i') }}</td>
                             <td>
-                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-info btn-sm rounded-pill" title="Xem chi tiết">
-                                    <i class="fas fa-eye me-1"></i> Chi tiết
+                                @if($order->cancel_reason || $order->cancelled_at)
+                                <div class="mb-2">
+                                    <span class="badge bg-danger rounded-pill">
+                                        <i class="fas fa-times-circle me-1"></i>Đã hủy
+                                    </span>
+                                    @if($order->cancel_reason)
+                                    <br>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ Str::limit($order->cancel_reason, 30) }}
+                                    </small>
+                                    @endif
+                                    @if($order->cancelled_at)
+                                    <br>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-clock me-1"></i>{{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i') }}
+                                    </small>
+                                    @endif
+                                </div>
+                                @endif
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-outline-primary btn-sm rounded-circle" title="Xem chi tiết đơn hàng" data-bs-toggle="tooltip" data-bs-placement="top">
+                                    <i class="fas fa-eye"></i>
                                 </a>
                             </td>
                         </tr>
@@ -147,3 +171,47 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .btn-outline-primary.btn-sm.rounded-circle {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-width: 1.5px;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .btn-outline-primary.btn-sm.rounded-circle:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+        border-color: #007bff;
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-outline-primary.btn-sm.rounded-circle:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    }
+    
+    .btn-outline-primary.btn-sm.rounded-circle i {
+        font-size: 0.875rem;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    // Khởi tạo tooltip cho các nút
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+@endpush
