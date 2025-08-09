@@ -29,11 +29,14 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\GoogleController;
+use App\Http\Controllers\Client\ContactController as ClientContactController;
+
 
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\admin\CommentController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Client\Auth\RegisterController;
@@ -56,6 +59,12 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 //Admin
 Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+      // Liên hệ
+    Route::resource('contacts', AdminContactController::class);
+    Route::post('contacts/{id}/update-status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
+    Route::post('contacts/{id}/reply', [AdminContactController::class, 'reply'])->name('contacts.reply');
+
     //Coupon routes
     Route::middleware('admin.only')->prefix('coupons')->name('coupons.')->group(function () {
         Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
@@ -413,12 +422,10 @@ Route::middleware('web')->group(function () {
     Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
     Route::get('/address/edit/{id?}', [CheckoutController::class, 'editAddress'])->name('address.edit');
     Route::post('/address/save', [CheckoutController::class, 'saveAddress'])->name('address.save');
-    // Trang liên hệ
-    Route::get('/contact', function () {
-        return view('client.contact');
-    })->name('contact');
-    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
+    // Trang liên hệ
+    Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
     // Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () {
