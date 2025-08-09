@@ -52,13 +52,14 @@
                                 </div>
 
                                 <div class="col-md-12 mb-3">
-                                    <label for="stock" class="form-label fw-bold">Số lượng tồn kho <span class="text-danger">*</span></label>
+                                    <label for="stock" class="form-label fw-bold">Số lượng tồn kho (tối đa 100) <span class="text-danger">*</span></label>
                                     <input type="number" 
                                            name="stock" 
                                            id="stock" 
                                            class="form-control @error('stock') is-invalid @enderror" 
                                            value="{{ old('stock') }}" 
                                            min="0" 
+                                           max="100"
                                            placeholder="Nhập số lượng tồn kho">
                                     @error('stock')
                                         <div class="invalid-feedback">{{ $message }}</div>

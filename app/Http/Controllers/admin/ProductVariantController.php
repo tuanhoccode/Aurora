@@ -26,7 +26,7 @@ class ProductVariantController extends Controller
      */
     public function create(Product $product)
     {
-        $attributes = Attribute::with(['values' => function ($query) {
+        $attributes = Attribute::with(['values' => function($query) {
             $query->where('is_active', 1);
         }])->where('is_active', 1)->get();
         return view('admin.products.variants.create', compact('product', 'attributes'));
@@ -40,7 +40,7 @@ class ProductVariantController extends Controller
     {
         try {
             $validatedData = $request->validated();
-
+            
             foreach ($validatedData['variants'] as $variantData) {
                 $variant = new ProductVariant([
                     'sku' => $variantData['sku'],
@@ -51,7 +51,7 @@ class ProductVariantController extends Controller
 
                 // Không lưu ảnh chính vào trường img nữa, chỉ lưu vào bảng product_images
                 $product->variants()->save($variant);
-
+                
                 if (isset($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
@@ -92,10 +92,153 @@ class ProductVariantController extends Controller
      */
     public function edit(Product $product, ProductVariant $variant)
     {
-        $attributes = \App\Models\Attribute::with('values')->get();
+        $attributes = Attribute::with(['values' => function($query) {
+            $query->where('is_active', 1);
+        }])->where('is_active', 1)->get();
+
+
+        // Thêm dòng này để truyền $selectedValues cho view
         $selectedValues = $variant->attributeValues->pluck('id')->toArray();
-        $images = $variant->images; // Lấy ảnh từ bảng product_images
-        return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues', 'images'));
+
+
+        if (request()->has('modal')) {
+            // Trả về partial form cho modal
+            return view('admin.products.variants._edit_form', compact('product', 'variant', 'attributes', 'selectedValues'));
+        }
+
+
+        return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
+    }
+    
+    /**
+     * Get all images for a variant
+     */
+    public function getImages(Product $product, ProductVariant $variant)
+    {
+        try {
+            $images = $variant->images()->orderBy('is_primary', 'desc')->get();
+            
+            $formattedImages = $images->map(function($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => asset('storage/' . $image->url),
+                    'name' => basename($image->url),
+                    'is_primary' => $image->is_primary,
+                    'created_at' => $image->created_at->format('Y-m-d H:i:s')
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'images' => $formattedImages
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting variant images:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh biến thể.'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Upload images for a variant
+     */
+    public function uploadImages(Request $request, Product $product, ProductVariant $variant)
+    {
+        try {
+            $request->validate([
+                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // Max 10MB per file
+            ]);
+            
+            $uploadedImages = [];
+            
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products/variants', 'public');
+                    
+                    $imageModel = \App\Models\ProductImage::create([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variant->id,
+                        'url' => $path,
+                        'is_primary' => 0
+                    ]);
+                    
+                    $uploadedImages[] = [
+                        'id' => $imageModel->id,
+                        'url' => asset('storage/' . $path),
+                        'name' => basename($path),
+                        'is_primary' => 0,
+                        'created_at' => $imageModel->created_at->format('Y-m-d H:i:s')
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Tải ảnh lên thành công',
+                'images' => $uploadedImages
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error uploading variant images:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh lên: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Xóa ảnh biến thể
+     */
+    public function deleteImage(Request $request, Product $product, ProductVariant $variant, $imageId)
+    {
+        try {
+            $image = \App\Models\ProductImage::where('product_variant_id', $variant->id)
+                ->where('id', $imageId)
+                ->firstOrFail();
+                
+            if ($image->is_primary) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xóa ảnh đại diện từ đây. Vui lòng đặt ảnh khác làm ảnh đại diện trước.'
+                ], 400);
+            }
+            
+            // Xóa file ảnh khỏi storage
+            if (Storage::disk('public')->exists($image->url)) {
+                Storage::disk('public')->delete($image->url);
+            }
+            
+            $image->delete();
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Đã xóa ảnh thành công.'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting variant image:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id,
+                'image_id' => $imageId
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Có lỗi xảy ra khi xóa ảnh: ' . $e->getMessage()
+            ], 500);
+        }
     }
     
     /**
@@ -234,29 +377,34 @@ class ProductVariantController extends Controller
      */
     public function update(Request $request, Product $product, ProductVariant $variant)
     {
+        // Đã bỏ kiểm tra isInProcessingOrder để cho phép chỉnh sửa mọi biến thể
         $validated = $request->validate([
             'sku' => 'nullable|string|max:255',
             'stock' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
         ]);
 
+        // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc
         if (isset($validated['sale_price']) && $validated['sale_price'] !== null && $validated['sale_price'] > $validated['regular_price']) {
             return back()->withInput()->withErrors(['sale_price' => 'Giá khuyến mãi không được lớn hơn giá gốc.']);
         }
 
+
         try {
             DB::beginTransaction();
+
 
             Log::info('Attempting to update variant:', [
                 'variant_id' => $variant->id,
                 'validated_data' => $validated,
             ]);
 
+
+            // Check for duplicate attribute combinations (excluding current variant)
             $attributeValueIds = array_values($validated['attribute_values']);
             sort($attributeValueIds);
             $existingCombinations = $product->variants->filter(function ($v) use ($variant) {
@@ -265,10 +413,23 @@ class ProductVariantController extends Controller
                 return $v->attributeValues->pluck('id')->sort()->values()->toArray();
             })->toArray();
 
+
             if (in_array($attributeValueIds, $existingCombinations)) {
                 throw new \Exception("Tổ hợp thuộc tính này đã tồn tại trong một biến thể khác.");
             }
 
+
+            // Handle image upload
+            $imgPath = $variant->img;
+            if ($request->hasFile('img')) {
+                if ($imgPath && Storage::disk('public')->exists($imgPath)) {
+                    Storage::disk('public')->delete($imgPath);
+                }
+                $imgPath = $request->file('img')->store('products/variants', 'public');
+            }
+
+
+            // Generate unique SKU if needed
             $sku = strtoupper(trim($validated['sku']));
             if (empty($sku) || ProductVariant::where('sku', $sku)->where('id', '!=', $variant->id)->exists()) {
                 $baseSku = $product->sku . '-VAR';
@@ -279,43 +440,26 @@ class ProductVariantController extends Controller
                 } while (ProductVariant::where('sku', $sku)->where('id', '!=', $variant->id)->exists());
             }
 
-            // Handle default image
-            $updateData = [
+
+            // Update variant
+            $variant->update([
                 'sku' => $sku,
                 'stock' => $validated['stock'],
                 'regular_price' => $validated['regular_price'],
                 'sale_price' => $validated['sale_price'] ?? null,
-            ];
+                'img' => $imgPath,
+            ]);
 
-            if ($request->hasFile('img')) {
-                // Delete old default image if exists
-                if ($variant->img && Storage::disk('public')->exists($variant->img)) {
-                    Storage::disk('public')->delete($variant->img);
-                }
-                $updateData['img'] = $request->file('img')->store('products/variants', 'public');
-            }
 
-            $variant->update($updateData);
-
-            // Handle gallery images
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    if ($image && $image->isValid()) {
-                        $path = $image->store('products/variants', 'public');
-                        \App\Models\ProductImage::create([
-                            'product_id' => $product->id,
-                            'product_variant_id' => $variant->id,
-                            'url' => $path,
-                        ]);
-                    }
-                }
-            }
-
+            // Sync attribute values
             $variant->attributeValues()->sync($validated['attribute_values']);
+
 
             Log::info('Variant updated:', ['variant_id' => $variant->id]);
 
+
             DB::commit();
+
 
             return redirect()->route('admin.products.edit', $product)
                 ->with('success', 'Biến thể đã được cập nhật thành công.');

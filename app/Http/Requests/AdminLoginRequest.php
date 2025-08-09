@@ -22,9 +22,9 @@ class AdminLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string|min:6'
-        ];
+            'email' => 'required|email|regex:/^[^@]+@[^@]+\.[^@]+$/|exists:users,email',
+            'password' => 'required|string|min:6|max:255'
+        ];  
     }
     public function messages(): array
     {
@@ -33,10 +33,14 @@ class AdminLoginRequest extends FormRequest
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
                 'email.exists' => 'Email chưa được đăng kí',
+                'email.regex' => 'Email phải chứa ký tự @ và "."',
 
                 'password.required' => 'Vui lòng nhập mật khẩu',
                 'password.string' => 'Mật khẩu không hợp lệ',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+                'password.max' => 'Mật khẩu không được quá 255 ký tự',
+                
+                
             ];
     }
 }

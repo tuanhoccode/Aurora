@@ -49,6 +49,12 @@ class ProductController extends Controller
 
         $products = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
+        // Kiểm tra sản phẩm nào có trong đơn hàng
+        $products->getCollection()->transform(function ($product) {
+            $product->hasOrders = $product->orderItems()->exists();
+            return $product;
+        });
+
         $brands = Brand::where('is_active', 1)->get(); // admin vẫn lấy tất cả brand đang hoạt động, không lọc is_visible
         $categories = Category::where('is_active', 1)->get();
         $totalProducts = Product::count();
@@ -186,11 +192,17 @@ class ProductController extends Controller
                         $usedSkus[] = $sku;
                     }
                     
+                    // Xử lý giá khuyến mãi
+                    $salePrice = null;
+                    if (isset($variantData['sale_price']) && $variantData['sale_price'] !== '') {
+                        $salePrice = (int)$variantData['sale_price'];
+                    }
+                    
                     $variant = $product->variants()->create([
                         'sku' => $sku,
-                        'regular_price' => $variantData['regular_price'] ?? $variantData['price'] ?? 0,
-                        'sale_price' => $variantData['sale_price'] ?? null,
-                        'stock' => $variantData['stock'] ?? 0,
+                        'regular_price' => (int)($variantData['regular_price'] ?? $variantData['price'] ?? 0),
+                        'sale_price' => $salePrice,
+                        'stock' => (int)($variantData['stock'] ?? 0),
                     ]);
                     
                     // Lưu thuộc tính cho biến thể
@@ -297,7 +309,8 @@ class ProductController extends Controller
             'variants.attributeValues.attribute',
             'variants.attributeValues' => function($query) {
                 $query->with('attribute');
-            }
+            },
+            'variants.images'
         ]);
 
         return view('admin.products.show', compact('product'));
@@ -541,11 +554,18 @@ class ProductController extends Controller
                             }
 
                             // Cập nhật thông tin cơ bản
+                            $salePrice = null;
+                            if (isset($variantData['sale_price']) && $variantData['sale_price'] !== '') {
+                                $salePrice = (int)$variantData['sale_price'];
+                            }
+                            
                             $updateData = [
-                                'regular_price' => $price,
-                                'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
-                                'stock' => $stock,
+                                'regular_price' => (int)$price,
+                                'stock' => (int)$stock,
                             ];
+                            
+                            // Chỉ cập nhật sale_price nếu có giá trị hoặc được set là null
+                            $updateData['sale_price'] = $salePrice;
                             
                             // Xử lý ảnh nếu có
                             if ($request->hasFile("variants_old.{$variantId}.image")) {
@@ -611,11 +631,11 @@ class ProductController extends Controller
     {
         // Kiểm tra sản phẩm có trong đơn hàng
         $hasOrder = $product->orderItems()->exists();
-        // Kiểm tra sản phẩm có trong giỏ hàng
-        $hasCart = \App\Models\CartItem::where('product_id', $product->id)->exists();
-        if ($hasOrder || $hasCart) {
-            return redirect()->back()->with('error', 'Không thể xoá sản phẩm đã có đơn hàng hoặc giỏ hàng');
+        
+        if ($hasOrder) {
+            return redirect()->back()->with('error', 'Không thể xóa sản phẩm đã có trong đơn hàng');
         }
+        
         try {
             $product->delete();
             return redirect()
@@ -661,7 +681,28 @@ class ProductController extends Controller
                 'ids.*' => 'exists:products,id'
             ]);
 
-            Product::whereIn('id', $validated['ids'])->delete();
+            $products = Product::whereIn('id', $validated['ids'])->get();
+            $productsWithOrders = [];
+            $productsToDelete = [];
+
+            foreach ($products as $product) {
+                if ($product->orderItems()->exists()) {
+                    $productsWithOrders[] = $product->name;
+                } else {
+                    $productsToDelete[] = $product->id;
+                }
+            }
+
+            if (!empty($productsWithOrders)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Không thể xóa các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
+                ], 400);
+            }
+
+            if (!empty($productsToDelete)) {
+                Product::whereIn('id', $productsToDelete)->delete();
+            }
 
             return response()->json([
                 'success' => true,
@@ -705,6 +746,13 @@ class ProductController extends Controller
     {
         try {
             $product = Product::onlyTrashed()->findOrFail($id);
+
+            // Kiểm tra sản phẩm có trong đơn hàng
+            $hasOrder = $product->orderItems()->exists();
+            
+            if ($hasOrder) {
+                return redirect()->back()->with('error', 'Không thể xóa vĩnh viễn sản phẩm đã có trong đơn hàng');
+            }
 
             // Xóa ảnh sản phẩm
             if ($product->thumbnail) {
@@ -760,8 +808,25 @@ class ProductController extends Controller
             ]);
 
             $products = Product::onlyTrashed()->whereIn('id', $validated['ids'])->get();
+            $productsWithOrders = [];
+            $productsToDelete = [];
 
             foreach ($products as $product) {
+                if ($product->orderItems()->exists()) {
+                    $productsWithOrders[] = $product->name;
+                } else {
+                    $productsToDelete[] = $product;
+                }
+            }
+
+            if (!empty($productsWithOrders)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Không thể xóa vĩnh viễn các sản phẩm sau vì đã có trong đơn hàng: ' . implode(', ', $productsWithOrders)
+                ], 400);
+            }
+
+            foreach ($productsToDelete as $product) {
                 // Xóa ảnh sản phẩm
                 if ($product->thumbnail) {
                     Storage::disk('public')->delete($product->thumbnail);

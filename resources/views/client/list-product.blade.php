@@ -3,55 +3,232 @@
 @section('content')
 <style>
     .d-none-by-js { display: none !important; }
-    .tp-product-item-2 { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .sidebar-filter h5 { font-size: 1.1rem; margin-bottom: 0.5rem; margin-top: 1.5rem; }
-    .sidebar-filter .form-check { margin-bottom: 0.5rem; }
-    .sidebar-filter { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 1.5rem 1rem; }
     
-    .product-badge-outofstock {
-      position: absolute;
-      top: 10px; left: 10px;
-      background: #d90429;
-      color: #fff;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      z-index: 20;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    /* Cải thiện layout sản phẩm */
+    .tp-product-item-2 { 
+        background: #fff; 
+        border-radius: 12px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .product-out-of-stock-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255,255,255,0.8);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #d90429;
-      font-size: 1.1rem;
-      text-align: center;
-      border-radius: 8px;
-      gap: 8px;
+    
+    .tp-product-item-2:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
-    .tp-product-thumb-2.out-of-stock img {
-      filter: grayscale(1) brightness(0.85);
-      opacity: 0.7;
+    
+    /* Cố định kích thước ảnh sản phẩm */
+    .tp-product-thumb-2 {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        overflow: hidden;
+        border-radius: 8px 8px 0 0;
     }
-    .tp-product-thumb-2.out-of-stock {
-      pointer-events: none;
-    }
-    .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
-      display: none;
-    }
+    
     .tp-product-thumb-2 img {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .tp-product-item-2:hover .tp-product-thumb-2 img {
+        transform: scale(1.05);
+    }
+    
+    /* Cố định kích thước content */
+    .tp-product-content-2 {
+        padding: 15px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    /* Giới hạn độ dài tên sản phẩm */
+    .tp-product-title-2 {
+        margin: 8px 0;
+        line-height: 1.4;
+        height: 2.8em; /* 2 dòng */
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+    }
+    
+    .tp-product-title-2 a {
+        color: #333;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    .tp-product-title-2 a:hover {
+        color: #007bff;
+    }
+    
+    /* Cố định kích thước brand tag */
+    .tp-product-tag-2 {
+        margin-bottom: 8px;
+        height: 20px;
+        overflow: hidden;
+    }
+    
+    .tp-product-tag-2 a {
+        font-size: 0.8rem;
+        color: #666;
+        text-decoration: none;
+        background: #f8f9fa;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Cố định kích thước rating */
+    .tp-product-rating-icon {
+        margin: 8px 0;
+        height: 24px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .tp-product-rating-icon p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #999;
+    }
+    
+    .review-item {
+        padding-bottom: 0 !important;
+    }
+    
+    .review-item .text-warning {
+        font-size: 0.9rem;
+    }
+    
+    /* Cố định kích thước price */
+    .tp-product-price-wrapper-2 {
+        margin-top: auto;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .tp-product-price-2.new-price {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .tp-product-price-2.old-price {
+        font-size: 0.9rem;
+        color: #999;
+        text-decoration: line-through;
+        margin-left: 8px;
+    }
+    
+    /* Cải thiện sidebar */
+    .sidebar-filter h5 { 
+        font-size: 1.1rem; 
+        margin-bottom: 0.5rem; 
+        margin-top: 1.5rem; 
+    }
+    
+    .sidebar-filter .form-check { 
+        margin-bottom: 0.5rem; 
+    }
+    
+    .sidebar-filter { 
+        background: #fff; 
+        border-radius: 12px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+        padding: 1.5rem 1rem; 
+        position: sticky;
+        top: 20px;
+    }
+    
+    /* Badge hết hàng */
+    .product-badge-outofstock {
+        position: absolute;
+        top: 10px; 
+        left: 10px;
+        background: #d90429;
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        z-index: 20;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .product-out-of-stock-overlay {
+        position: absolute;
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #d90429;
+        font-size: 1rem;
+        text-align: center;
+        border-radius: 8px;
+        gap: 8px;
+    }
+    
+    .tp-product-thumb-2.out-of-stock img {
+        filter: grayscale(1) brightness(0.85);
+        opacity: 0.7;
+    }
+    
+    .tp-product-thumb-2.out-of-stock {
+        pointer-events: none;
+    }
+    
+    .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
+        display: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .tp-product-thumb-2 {
+            height: 220px;
+        }
+        
+        .tp-product-title-2 {
+            font-size: 0.9rem;
+            height: 2.6em;
+        }
+        
+        .tp-product-price-2.new-price {
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .tp-product-thumb-2 {
+            height: 200px;
+        }
+        
+        .tp-product-content-2 {
+            padding: 12px;
+        }
     }
 </style>
+
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
@@ -163,8 +340,8 @@
                             ? ($product->variants->sum('stock') <= 0)
                             : (($product->stock ?? 0) <= 0);
                     @endphp
-                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 product-item{{ $index >= $defaultShow ? ' d-none-by-js' : '' }}">
-                        <div class="tp-product-item-2 mb-40">
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 product-item{{ $index >= $defaultShow ? ' d-none-by-js' : '' }}" style="margin-bottom: 30px;">
+                        <div class="tp-product-item-2">
                             <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img {{ $isOutOfStock ? 'out-of-stock' : '' }}">
                                 <a href="{{ $product->slug ? route('client.product.show', ['slug' => $product->slug]) : '#' }}">
                                     <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
@@ -177,12 +354,16 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="tp-product-content-2 pt-15">
+                            <div class="tp-product-content-2">
                                 <div class="tp-product-tag-2">
-                                    <a href="#">{{ $product->brand->name ?? 'Không có thương hiệu' }}</a>
+                                    <a href="#" title="{{ $product->brand->name ?? 'Không có thương hiệu' }}">
+                                        {{ $product->brand->name ?? 'Không có thương hiệu' }}
+                                    </a>
                                 </div>
                                 <h3 class="tp-product-title-2">
-                                    <a href="{{ $product->slug ? route('client.product.show', ['slug' => $product->slug]) : '#' }}">{{ $product->name }}</a>
+                                    <a href="{{ $product->slug ? route('client.product.show', ['slug' => $product->slug]) : '#' }}" title="{{ $product->name }}">
+                                        {{ $product->name }}
+                                    </a>
                                 </h3>
                                 @php
                                    $validReviews = $product->reviews
@@ -195,8 +376,8 @@
 
                                 <div class="tp-product-rating-icon tp-product-rating-icon-2">
                                     @if ($validReviews->count() > 0)
-                                        <div class="review-item pb-3">
-                                            <div class="text-warning mb-1">
+                                        <div class="review-item">
+                                            <div class="text-warning">
                                                 @for ($i = 1; $i <= 5; $i++)
                                                     @if ($i <= $avg)
                                                         ★
@@ -211,17 +392,18 @@
                                     @endif
                                 </div>
                                 <div class="tp-product-price-wrapper-2">
-                                    <span
-                                        class="tp-product-price-2 new-price">{{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
-                                      @if ($product->original_price && $product->original_price > $product->price)
-                                    <span
-                                        class="tp-product-price-2 old-price">{{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span></span>
-                                      @endif
+                                    <span class="tp-product-price-2 new-price">
+                                        {{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                    </span>
+                                    @if ($product->original_price && $product->original_price > $product->price)
+                                        <span class="tp-product-price-2 old-price">
+                                            {{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                        </span>
+                                    @endif
                                 </div>
-                                
                             </div>
+                        </div>
                     </div>
-                </div>
                 @endforeach
             </div>
             <div class="text-center my-4">
@@ -234,7 +416,7 @@
                     </button>
                 @endif
             </div>
-    </div>
+        </div>
     </div>
 </div>
 @endsection

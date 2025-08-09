@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Models\Cart;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
         // View Composer cho header
         View::composer('*', function ($view) {
             $view->with('headerCategories', Category::where('is_active', 1)->get());
@@ -34,18 +36,34 @@ class AppServiceProvider extends ServiceProvider
         View::composer('client.shopping-cart.mini-cart', function ($view) {
             if (Auth::check()) {
                 $userId = Auth::id();
-                $cart = Cart::where('user_id', $userId)
-                    ->where('status', 'pending')
-                    ->with([
-                        'items.product',
-                        'items.productVariant.attributeValues.attribute',
-                    ])
-                    ->first();
-
-                $miniCartItems = $cart ? $cart->items : collect();
-                $miniCartSubtotal = $miniCartItems->sum(function($item) {
-                    return $item->price_at_time * $item->quantity;
-                });
+                $sessionCart = session("cart_{$userId}", []);
+                $miniCartItems = collect();
+                $miniCartSubtotal = 0;
+                
+                foreach ($sessionCart as $itemData) {
+                    $product = \App\Models\Product::find($itemData['product_id']);
+                    if (!$product) continue;
+                    
+                    $variant = null;
+                    if (isset($itemData['product_variant_id']) && $itemData['product_variant_id']) {
+                        $variant = \App\Models\ProductVariant::with('attributeValues.attribute')->find($itemData['product_variant_id']);
+                    }
+                    
+                    $currentPrice = $variant ? $variant->current_price : $product->current_price;
+                    
+                    $item = (object) [
+                        'id' => $itemData['id'],
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variant ? $variant->id : null,
+                        'quantity' => $itemData['quantity'],
+                        'product' => $product,
+                        'productVariant' => $variant,
+                        'price_at_time' => $currentPrice,
+                    ];
+                    
+                    $miniCartItems->push($item);
+                    $miniCartSubtotal += $currentPrice * $itemData['quantity'];
+                }
 
                 $view->with(compact('miniCartItems', 'miniCartSubtotal'));
             } else {
@@ -60,5 +78,6 @@ class AppServiceProvider extends ServiceProvider
         View::composer('client.layouts.partials.header', function ($view) {
             $view->with('categories', \App\Models\Category::where('is_active', 1)->get());
         });
+        Paginator::useBootstrap();
     }
 }

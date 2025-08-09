@@ -22,13 +22,16 @@ class ProductVariant extends Model
 
     protected $attributes = [
         'regular_price' => 0,
-        'sale_price' => 0,
+        // Đã xóa sale_price khỏi đây để cho phép null
     ];
 
     protected $casts = [
         'stock' => 'integer',
-        'regular_price' => 'integer',
-        'sale_price' => 'integer'
+        'regular_price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
+        'img' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     public function product(): BelongsTo
@@ -52,7 +55,8 @@ class ProductVariant extends Model
             'attribute_value_product_variant',
             'product_variant_id',
             'attribute_value_id'
-        )->with('attribute');
+        )->select(['attribute_values.id', 'attribute_values.attribute_id', 'attribute_values.value', 'attribute_values.is_active'])
+         ->with('attribute');
     }
 
     public function orderItems()
@@ -112,4 +116,15 @@ class ProductVariant extends Model
             $q->select('id', 'code');
         }])->get()->pluck('order.code')->unique()->toArray();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($variant) {
+            // Xóa toàn bộ ảnh phụ của biến thể này
+            $variant->images()->delete();
+        });
+    }
 }
+

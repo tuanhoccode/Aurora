@@ -24,7 +24,9 @@ class StockController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0|max:100',
+        ], [
+            'stock.max' => 'Tồn kho không được vượt quá 100'
         ]);
 
         Stock::create($request->only('product_id', 'stock'));
@@ -53,7 +55,9 @@ class StockController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0|max:100',
+        ], [
+            'stock.max' => 'Tồn kho không được vượt quá 100'
         ]);
 
         $stock->update($request->only('product_id', 'stock'));

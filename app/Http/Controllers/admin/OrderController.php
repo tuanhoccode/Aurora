@@ -99,6 +99,18 @@ class OrderController extends Controller
                 }
 
                 OrderStatusHistory::create($data);
+                
+                // Đồng bộ với bảng order_order_status
+                \App\Models\OrderOrderStatus::create([
+                    'order_id' => $order->id,
+                    'order_status_id' => 1, // Chờ xác nhận
+                    'modified_by' => Auth::id() ?? 1,
+                    'note' => 'Trạng thái mặc định',
+                    'is_current' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
                 $order->update(['order_status_id' => 1]);
             }
         }
@@ -218,6 +230,24 @@ class OrderController extends Controller
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Không thể tạo lịch sử trạng thái!');
             }
+
+            // Cập nhật bảng order_order_status để đồng bộ với client tracking
+            // Đánh dấu trạng thái cũ là không còn hiện tại
+            DB::table('order_order_status')
+                ->where('order_id', $order->id)
+                ->where('is_current', 1)
+                ->update(['is_current' => 0]);
+
+            // Thêm bản ghi mới vào order_order_status
+            \App\Models\OrderOrderStatus::create([
+                'order_id' => $order->id,
+                'order_status_id' => $to,
+                'modified_by' => Auth::id() ?? 1,
+                'note' => $note,
+                'is_current' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             // Cập nhật trạng thái và các trường khác trong bảng Order
             $order->update([

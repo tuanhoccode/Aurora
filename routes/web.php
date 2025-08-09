@@ -1,7 +1,6 @@
 <?php
 
 
-
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -35,15 +34,16 @@ use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\admin\BannerController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
 
 
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\ShopController;
@@ -126,11 +126,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // Xóa ảnh gallery của biến thể
         Route::delete('/{product}/variants/delete-gallery-image/{image}', [ProductVariantController::class, 'deleteGalleryImage'])->name('variants.delete-gallery-image');
         
-        // Xóa ảnh đại diện của biến thể
         // Xử lý ảnh gallery cho biến thể
         Route::post('/variants/upload-gallery', [ProductVariantController::class, 'uploadGallery'])->name('variants.upload-gallery');
         Route::post('/{product}/variants/delete-image', [ProductVariantController::class, 'deleteVariantImage'])->name('variants.delete-image');
         Route::post('/{product}/variants/{variant}/delete-default-image', [ProductVariantController::class, 'deleteDefaultImage'])->name('variants.delete-default-image');
+        
+        // Lấy danh sách ảnh của biến thể
+        Route::get('/{product}/variants/{variant}/images', [ProductVariantController::class, 'getImages'])->name('variants.images');
+        
+        // Xóa ảnh biến thể
+        Route::delete('/{product}/variants/{variant}/images/{image}', [ProductVariantController::class, 'deleteImage'])->name('variants.delete-image');
     });
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
@@ -165,6 +170,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{brand}/toggle-active', [BrandController::class, 'toggleActive'])->name('toggle-active');
     });
 
+
+    // Banners Routes
+    Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('index');
+        Route::get('/create', [BannerController::class, 'create'])->name('create');
+        Route::post('/', [BannerController::class, 'store'])->name('store');
+        Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
+        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('edit');
+        Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
+        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
+        Route::post('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('toggle-status');
+    });
 
     // Categories Routes
     Route::prefix('categories')->name('categories.')->group(function () {
@@ -377,7 +394,8 @@ Route::middleware('web')->group(function () {
     Route::get('/shopping-cart/vnpay/return', [CheckoutController::class, 'vnpayReturn'])->name('vnpay.return');
     Route::get('/shopping-cart/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
-    Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
+    Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
+    Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
 
@@ -413,6 +431,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 
@@ -424,6 +443,7 @@ Route::get('/search', [App\Http\Controllers\Client\SearchController::class, 'ind
 Route::get('/list-product', [\App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop');
 
 Route::post('/shopping-cart/bulk-delete', [App\Http\Controllers\Client\ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+Route::post('/shopping-cart/dismiss-price-change/{itemId}', [App\Http\Controllers\Client\ShoppingCartController::class, 'dismissPriceChange'])->name('shopping-cart.dismiss-price-change');
 
 
 
