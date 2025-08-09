@@ -18,6 +18,7 @@ class Order extends Model
         'total_amount',
         'discount_amount',
         'shipping_type',
+        'shipping_fee',
         'is_paid',
         'is_refunded',
         'is_refunded_canceled',
@@ -36,6 +37,11 @@ class Order extends Model
     public function payment()
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function user()
@@ -111,10 +117,9 @@ class Order extends Model
      */
     public function canBeCancelled()
     {
-        $currentStatusName = optional(optional($this->currentOrderStatus)->status)->name;
-        $cancelableStatuses = ['Chờ xác nhận', 'Chờ lấy hàng', 'Gửi hàng'];
-        
-        return in_array($currentStatusName, $cancelableStatuses);
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        // Nếu không có trạng thái, mặc định cho phép hủy
+        return $currentStatusName === 'Chờ xác nhận' || is_null($currentStatusName);
     }
 
     /**
@@ -122,7 +127,12 @@ class Order extends Model
      */
     public function isCancelled()
     {
-        $currentStatusName = optional(optional($this->currentOrderStatus)->status)->name;
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
         return $currentStatusName === 'Đã hủy';
+    }
+
+    public function getShippingFeeFormattedAttribute()
+    {
+        return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
     }
 }

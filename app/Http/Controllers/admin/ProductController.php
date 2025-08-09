@@ -193,11 +193,17 @@ class ProductController extends Controller
                         $usedSkus[] = $sku;
                     }
                     
+                    // Xử lý giá khuyến mãi
+                    $salePrice = null;
+                    if (isset($variantData['sale_price']) && $variantData['sale_price'] !== '') {
+                        $salePrice = (int)$variantData['sale_price'];
+                    }
+                    
                     $variant = $product->variants()->create([
                         'sku' => $sku,
-                        'regular_price' => $variantData['regular_price'] ?? $variantData['price'] ?? 0,
-                        'sale_price' => $variantData['sale_price'] ?? null,
-                        'stock' => $variantData['stock'] ?? 0,
+                        'regular_price' => (int)($variantData['regular_price'] ?? $variantData['price'] ?? 0),
+                        'sale_price' => $salePrice,
+                        'stock' => (int)($variantData['stock'] ?? 0),
                     ]);
                     
                     // Lưu thuộc tính cho biến thể
@@ -576,12 +582,20 @@ class ProductController extends Controller
                             }
 
                             // Cập nhật thông tin cơ bản
+                            $salePrice = null;
+                            if (isset($variantData['sale_price']) && $variantData['sale_price'] !== '') {
+                                $salePrice = (int)$variantData['sale_price'];
+                            }
+                            
                             $updateData = [
                                 'sku' => $sku,
                                 'regular_price' => $price,
                                 'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
                                 'stock' => $stock,
                             ];
+                            
+                            // Chỉ cập nhật sale_price nếu có giá trị hoặc được set là null
+                            $updateData['sale_price'] = $salePrice;
                             
                             // Xử lý ảnh nếu có
                             if ($request->hasFile("variants_old.{$variantId}.image")) {

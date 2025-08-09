@@ -67,7 +67,6 @@ class BannerRequest extends FormRequest
             'image.image' => 'File phải là hình ảnh',
             'image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp',
             'image.max' => 'Kích thước ảnh không được vượt quá 2MB',
-            'image.dimensions' => 'Ảnh phải có kích thước tối thiểu 800x400 pixel',
             'link.url' => 'Link không đúng định dạng URL',
             'sort_order.integer' => 'Thứ tự phải là số nguyên',
             'sort_order.min' => 'Thứ tự phải lớn hơn hoặc bằng 0',

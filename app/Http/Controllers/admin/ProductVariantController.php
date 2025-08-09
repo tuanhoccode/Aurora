@@ -244,6 +244,137 @@ class ProductVariantController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * Get all images for a variant
+     */
+    public function getImages(Product $product, ProductVariant $variant)
+    {
+        try {
+            $images = $variant->images()->orderBy('is_primary', 'desc')->get();
+            
+            $formattedImages = $images->map(function($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => asset('storage/' . $image->url),
+                    'name' => basename($image->url),
+                    'is_primary' => $image->is_primary,
+                    'created_at' => $image->created_at->format('Y-m-d H:i:s')
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'images' => $formattedImages
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting variant images:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh biến thể.'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Upload images for a variant
+     */
+    public function uploadImages(Request $request, Product $product, ProductVariant $variant)
+    {
+        try {
+            $request->validate([
+                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // Max 10MB per file
+            ]);
+            
+            $uploadedImages = [];
+            
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products/variants', 'public');
+                    
+                    $imageModel = \App\Models\ProductImage::create([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variant->id,
+                        'url' => $path,
+                        'is_primary' => 0
+                    ]);
+                    
+                    $uploadedImages[] = [
+                        'id' => $imageModel->id,
+                        'url' => asset('storage/' . $path),
+                        'name' => basename($path),
+                        'is_primary' => 0,
+                        'created_at' => $imageModel->created_at->format('Y-m-d H:i:s')
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Tải ảnh lên thành công',
+                'images' => $uploadedImages
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error uploading variant images:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh lên: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Xóa ảnh biến thể
+     */
+    public function deleteImage(Request $request, Product $product, ProductVariant $variant, $imageId)
+    {
+        try {
+            $image = \App\Models\ProductImage::where('product_variant_id', $variant->id)
+                ->where('id', $imageId)
+                ->firstOrFail();
+                
+            if ($image->is_primary) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xóa ảnh đại diện từ đây. Vui lòng đặt ảnh khác làm ảnh đại diện trước.'
+                ], 400);
+            }
+            
+            // Xóa file ảnh khỏi storage
+            if (Storage::disk('public')->exists($image->url)) {
+                Storage::disk('public')->delete($image->url);
+            }
+            
+            $image->delete();
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Đã xóa ảnh thành công.'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting variant image:', [
+                'error' => $e->getMessage(),
+                'variant_id' => $variant->id,
+                'image_id' => $imageId
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Có lỗi xảy ra khi xóa ảnh: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Update a specific variant.

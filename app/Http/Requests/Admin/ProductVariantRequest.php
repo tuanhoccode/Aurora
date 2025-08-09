@@ -18,9 +18,9 @@ class ProductVariantRequest extends FormRequest
             'variants.*.sku' => 'nullable|string|max:255|unique:product_variants,sku',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.regular_price' => 'required|numeric|min:0',
-            'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.regular_price',
+            'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.regular_price|required_without:variants.*.regular_price',
             'variants.*.img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'variants.*.attribute_values' => 'required|array|min:2',
+            'variants.*.attribute_values' => 'required|array|min:1',
             'variants.*.attribute_values.*' => 'required|exists:attribute_values,id',
         ];
     }
@@ -44,9 +44,9 @@ class ProductVariantRequest extends FormRequest
             'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc',
             'variants.*.img.image' => 'File phải là hình ảnh',
             'variants.*.img.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
-            'variants.*.attribute_values.required' => 'Vui lòng chọn ít nhất 2 thuộc tính',
+            'variants.*.attribute_values.required' => 'Vui lòng chọn ít nhất 1 thuộc tính',
             'variants.*.attribute_values.array' => 'Dữ liệu thuộc tính không hợp lệ',
-            'variants.*.attribute_values.min' => 'Phải chọn ít nhất 2 thuộc tính',
+            'variants.*.attribute_values.min' => 'Phải chọn ít nhất 1 thuộc tính',
             'variants.*.attribute_values.*.exists' => 'Giá trị thuộc tính không tồn tại',
         ];
     }
