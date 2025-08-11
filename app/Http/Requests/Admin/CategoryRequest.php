@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
@@ -14,7 +15,12 @@ class CategoryRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('categories', 'name')->ignore($this->route('category')?->id),
+            ],
             'parent_id' => ['nullable', 'exists:categories,id'],
             'is_active' => ['required', 'boolean'],
         ];
@@ -25,7 +31,7 @@ class CategoryRequest extends FormRequest
                 'required',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:2048', // 2MB
+                'max:2048', 
             ];
         }
 
@@ -34,7 +40,7 @@ class CategoryRequest extends FormRequest
             $rules['icon'] = [
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:2048', // 2MB
+                'max:2048',
             ];
         }
 
@@ -45,6 +51,7 @@ class CategoryRequest extends FormRequest
     {
         return [
             'name.required' => 'Vui lòng nhập tên danh mục',
+            'name.unique' => 'Tên danh mục đã tồn tại',
             'name.max' => 'Tên danh mục không được vượt quá :max ký tự',
             'parent_id.exists' => 'Danh mục cha không tồn tại',
             'is_active.required' => 'Vui lòng chọn trạng thái',
@@ -55,4 +62,4 @@ class CategoryRequest extends FormRequest
             'icon.max' => 'Kích thước ảnh không được vượt quá 2MB',
         ];
     }
-} 
+}
