@@ -17,9 +17,21 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('created_at', 'desc')->paginate(10);
+        $query = User::orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('fullname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(10)->appends($request->only('search'));
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -106,105 +118,105 @@ class UserController extends Controller
     }
 
 
-public function changeRole(Request $request, User $user)
-{
-    // 1. Không cho user tự thay đổi role chính mình
-    if (Auth::id() === $user->id) {
-        $message = 'Bạn không thể thay đổi vai trò của chính mình.';
+    public function changeRole(Request $request, User $user)
+    {
+        // 1. Không cho user tự thay đổi role chính mình
+        if (Auth::id() === $user->id) {
+            $message = 'Bạn không thể thay đổi vai trò của chính mình.';
 
-        return $request->ajax()
-            ? response()->json(['success' => false, 'message' => $message], 403)
-            : back()->with('error', $message);
-    }
-
-    // 2. Không cho thay đổi role của user đang là admin
-    if ($user->role === 'admin') {
-        $message = 'Không được phép thay đổi vai trò của Admin.';
-
-        return $request->ajax()
-            ? response()->json(['success' => false, 'message' => $message], 403)
-            : back()->with('error', $message);
-    }
-
-    // 3. Validate role gửi lên
-    $validated = $request->validate([
-        'role' => 'required|in:customer,employee,admin',
-    ]);
-
-    try {
-        $user->role = $validated['role'];
-        $user->save();
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Cập nhật vai trò thành công.']);
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $message], 403)
+                : back()->with('error', $message);
         }
 
-        return redirect()
-            ->route('admin.users.index')
-            ->with('success', 'Cập nhật vai trò thành công.');
-    } catch (\Exception $e) {
-        $message = 'Có lỗi khi cập nhật vai trò: ' . $e->getMessage();
+        // 2. Không cho thay đổi role của user đang là admin
+        if ($user->role === 'admin') {
+            $message = 'Không được phép thay đổi vai trò của Admin.';
 
-        return $request->ajax()
-            ? response()->json(['success' => false, 'message' => $message], 500)
-            : back()->with('error', $message);
-    }
-}
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $message], 403)
+                : back()->with('error', $message);
+        }
 
-
-
-
-public function changeStatus(Request $request, User $user)
-{
-    // 1. Chặn admin tự khóa chính họ
-    if (Auth::id() === $user->id) {
-        return back()->with('error', 'Bạn không thể thay đổi trạng thái của chính mình.');
-    }
-
-    // 2. Chặn việc thay đổi trạng thái của tài khoản đã là admin
-    if ($user->role === 'admin') {
-        return back()->with('error', 'Không được phép thay đổi trạng thái của Admin.');
-    }
-
-    try {
-        $request->validate([
-            'status'      => 'required|in:active,inactive',
-            'reason_lock' => 'nullable|string|max:255',
+        // 3. Validate role gửi lên
+        $validated = $request->validate([
+            'role' => 'required|in:customer,employee,admin',
         ]);
 
-        $newStatus = $request->input('status');
-        $user->status = $newStatus;
+        try {
+            $user->role = $validated['role'];
+            $user->save();
 
-        if ($newStatus === 'inactive') {
-            $user->reason_lock = $request->input('reason_lock', 'Không rõ lý do');
-        } else {
-            $user->reason_lock = null;
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Cập nhật vai trò thành công.']);
+            }
+
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', 'Cập nhật vai trò thành công.');
+        } catch (\Exception $e) {
+            $message = 'Có lỗi khi cập nhật vai trò: ' . $e->getMessage();
+
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $message], 500)
+                : back()->with('error', $message);
         }
-
-        $user->save();
-
-        // Nếu vừa chuyển sang inactive thì ép logout
-        if ($newStatus === 'inactive') {
-            DB::table('sessions')->where('user_id', $user->id)->delete();
-        }
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true]);
-        }
-
-        return redirect()
-            ->route('admin.users.index')
-            ->with('success', 'Cập nhật trạng thái thành công.');
-    } catch (\Exception $e) {
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-        return back()->with('error', 'Có lỗi khi cập nhật trạng thái: ' . $e->getMessage());
     }
-}
+
+
+
+
+    public function changeStatus(Request $request, User $user)
+    {
+        // 1. Chặn admin tự khóa chính họ
+        if (Auth::id() === $user->id) {
+            return back()->with('error', 'Bạn không thể thay đổi trạng thái của chính mình.');
+        }
+
+        // 2. Chặn việc thay đổi trạng thái của tài khoản đã là admin
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Không được phép thay đổi trạng thái của Admin.');
+        }
+
+        try {
+            $request->validate([
+                'status'      => 'required|in:active,inactive',
+                'reason_lock' => 'nullable|string|max:255',
+            ]);
+
+            $newStatus = $request->input('status');
+            $user->status = $newStatus;
+
+            if ($newStatus === 'inactive') {
+                $user->reason_lock = $request->input('reason_lock', 'Không rõ lý do');
+            } else {
+                $user->reason_lock = null;
+            }
+
+            $user->save();
+
+            // Nếu vừa chuyển sang inactive thì ép logout
+            if ($newStatus === 'inactive') {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            }
+
+            if ($request->ajax()) {
+                return response()->json(['success' => true]);
+            }
+
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', 'Cập nhật trạng thái thành công.');
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            return back()->with('error', 'Có lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+        }
+    }
 
 
 
@@ -215,58 +227,58 @@ public function changeStatus(Request $request, User $user)
         return view('admin.users.edit', compact('user'));
     }
 
-public function update(UpdateUserRequest $request, $id)
-{
-    // Lấy user cần cập nhật
-    $user = User::findOrFail($id);
+    public function update(UpdateUserRequest $request, $id)
+    {
+        // Lấy user cần cập nhật
+        $user = User::findOrFail($id);
 
-    // ❌ Không cho phép admin tự sửa chính họ
-    if (Auth::id() === $user->id) {
-        return back()->with('error', 'Bạn không thể cập nhật thông tin của chính mình.');
+        // ❌ Không cho phép admin tự sửa chính họ
+        if (Auth::id() === $user->id) {
+            return back()->with('error', 'Bạn không thể cập nhật thông tin của chính mình.');
+        }
+
+        // ❌ Không cho phép cập nhật thông tin Admin khác
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Không được phép cập nhật thông tin của tài khoản Admin.');
+        }
+
+        try {
+            $forceLogout = false;
+
+            // Nếu chuyển từ active → inactive → cần đăng xuất
+            if ($user->status === 'active' && $request->status === 'inactive') {
+                $forceLogout = true;
+            }
+
+            // Nếu người dùng yêu cầu đổi mật khẩu
+            $changePassword = $request->filled('is_change_password') && $request->filled('password');
+            if ($changePassword) {
+                $forceLogout = true;
+            }
+
+            // Cập nhật thông tin người dùng
+            $user->role = $request->role;
+            $user->status = $request->status;
+            $user->reason_lock = $request->reason_lock;
+            $user->is_change_password = $request->input('is_change_password', false);
+
+            // Nếu có yêu cầu đổi mật khẩu thì băm và gán
+            if ($changePassword) {
+                $user->password = Hash::make($request->password);
+            }
+
+            $user->save();
+
+            // Nếu cần đăng xuất thì xóa session
+            if ($forceLogout) {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            }
+
+            return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
+        }
     }
-
-    // ❌ Không cho phép cập nhật thông tin Admin khác
-    if ($user->role === 'admin') {
-        return back()->with('error', 'Không được phép cập nhật thông tin của tài khoản Admin.');
-    }
-
-    try {
-        $forceLogout = false;
-
-        // Nếu chuyển từ active → inactive → cần đăng xuất
-        if ($user->status === 'active' && $request->status === 'inactive') {
-            $forceLogout = true;
-        }
-
-        // Nếu người dùng yêu cầu đổi mật khẩu
-        $changePassword = $request->filled('is_change_password') && $request->filled('password');
-        if ($changePassword) {
-            $forceLogout = true;
-        }
-
-        // Cập nhật thông tin người dùng
-        $user->role = $request->role;
-        $user->status = $request->status;
-        $user->reason_lock = $request->reason_lock;
-        $user->is_change_password = $request->input('is_change_password', false);
-
-        // Nếu có yêu cầu đổi mật khẩu thì băm và gán
-        if ($changePassword) {
-            $user->password = Hash::make($request->password);
-        }
-
-        $user->save();
-
-        // Nếu cần đăng xuất thì xóa session
-        if ($forceLogout) {
-            DB::table('sessions')->where('user_id', $user->id)->delete();
-        }
-
-        return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
-    } catch (\Exception $e) {
-        return back()->with('error', 'Có lỗi xảy ra khi cập nhật người dùng: ' . $e->getMessage());
-    }
-}
 
 
 

@@ -24,26 +24,26 @@ class HomeController extends Controller
         $products = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'stock', 'type', 'brand_id', 'is_active')
             ->with([
                 'brand:id,name',
-                'reviews' => function($q) {
+                'reviews' => function ($q) {
                     $q->select('id', 'product_id', 'rating', 'is_active')
-                      ->where('is_active', 1);
+                        ->where('is_active', 1);
                 },
-                'variants' => function($q) {
+                'variants' => function ($q) {
                     $q->select('id', 'product_id', 'regular_price', 'sale_price')
-                      ->where('stock', '>', 0)
-                      ->inRandomOrder()
-                      ->limit(1);
+                        ->where('stock', '>', 0)
+                        ->inRandomOrder()
+                        ->limit(1);
                 }
             ])
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('stock', '>', 0)
-                  ->orWhere(function($q2) {
-                      $q2->where('type', 'variant')
-                         ->whereHas('variants', function($q3) {
-                             $q3->select('id', 'product_id', 'stock')
-                                ->where('stock', '>', 0);
-                         });
-                  });
+                    ->orWhere(function ($q2) {
+                        $q2->where('type', 'variant')
+                            ->whereHas('variants', function ($q3) {
+                                $q3->select('id', 'product_id', 'stock')
+                                    ->where('stock', '>', 0);
+                            });
+                    });
             })
             ->where('is_active', 1)
             ->latest()
@@ -66,9 +66,9 @@ class HomeController extends Controller
         $categories = Category::select('id', 'name', 'icon', 'is_active')
             ->with(['products' => function ($q) {
                 $q->select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'category_id', 'is_active')
-                  ->where('is_active', 1)
-                  ->latest()
-                  ->take(4);
+                    ->where('is_active', 1)
+                    ->latest()
+                    ->take(4);
             }])
             ->where('is_active', 1)
             ->get();
@@ -78,7 +78,7 @@ class HomeController extends Controller
             ->orderBy('sort_order', 'asc')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         // Debug: Log số lượng banner được lấy
         if (config('app.debug')) {
             \Log::info('Banners loaded: ' . $banners->count());
@@ -98,17 +98,17 @@ class HomeController extends Controller
 
         // Tối ưu query featured products
         $featuredThisWeek = Product::select('id', 'name', 'slug', 'price', 'sale_price', 'thumbnail', 'views', 'is_active', 'type')
-            ->with(['variants' => function($q) {
+            ->with(['variants' => function ($q) {
                 $q->select('id', 'product_id', 'regular_price', 'sale_price')
-                  ->where('stock', '>', 0)
-                  ->inRandomOrder()
-                  ->limit(1);
+                    ->where('stock', '>', 0)
+                    ->inRandomOrder()
+                    ->limit(1);
             }])
             ->where('is_active', 1)
-            ->where('created_at', '>=', Carbon::now()->subWeek())
             ->orderBy('views', 'desc')
             ->take(4)
             ->get();
+
 
         // Xử lý giá cho featured products có biến thể
         $featuredThisWeek->each(function ($product) {
@@ -125,6 +125,3 @@ class HomeController extends Controller
         return view('client.home', compact('products', 'categories', 'topReviews', 'featuredThisWeek', 'banners'));
     }
 }
-
-
-

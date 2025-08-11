@@ -3,6 +3,39 @@
 @section('title', 'Chi tiết Người dùng')
 
 @section('content')
+    <!-- CSS nhanh: bạn có thể chuyển vào file CSS chung nếu muốn -->
+    <style>
+        /* Khoảng cao để hiện ~5 dòng - điều chỉnh nếu cần */
+        .scroll-table {
+            max-height: 260px; /* sửa giá trị này nếu muốn cao/ thấp hơn */
+            overflow-y: auto;
+        }
+
+        /* Giữ header bảng ở trên khi cuộn trong khung */
+        .scroll-table table thead th {
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 2;
+        }
+
+        /* Tối ưu scrollbar (tùy chọn) */
+        .scroll-table::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-table::-webkit-scrollbar-thumb {
+            border-radius: 4px;
+            background: rgba(0,0,0,0.12);
+        }
+
+        /* Mobile: giảm chiều cao nếu cần */
+        @media (max-width: 768px) {
+            .scroll-table {
+                max-height: 220px;
+            }
+        }
+    </style>
+
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0">Chi tiết người dùng</h1>
@@ -61,7 +94,9 @@
             <div class="col-lg-8">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header fw-bold">Đơn hàng ({{ is_countable($orders) ? count($orders) : 0 }})</div>
-                    <div class="table-responsive">
+
+                    <!-- THAY ĐỔI: thêm class scroll-table -->
+                    <div class="table-responsive scroll-table">
                         <table class="table table-hover table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -92,7 +127,9 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-header fw-bold">Đánh giá ({{ is_countable($reviews) ? count($reviews) : 0 }})</div>
-                    <div class="table-responsive">
+
+                    <!-- THAY ĐỔI -->
+                    <div class="table-responsive scroll-table">
                         <table class="table table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -137,7 +174,9 @@
                     <div class="card-header fw-bold">
                         Sản phẩm yêu thích ({{ is_countable($wishlists) ? count($wishlists) : 0 }})
                     </div>
-                    <div class="table-responsive">
+
+                    <!-- THAY ĐỔI -->
+                    <div class="table-responsive scroll-table">
                         <table class="table table-hover table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
