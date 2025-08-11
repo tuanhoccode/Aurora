@@ -46,11 +46,9 @@
                     <div class="col-md-6">
                         <form action="{{ route('admin.attribute_values.index', $attribute->id) }}" method="GET" class="d-flex gap-2">
                             <div class="input-group">
-                                <input type="text" 
-                                       name="search" 
-                                       class="form-control"
-                                       placeholder="Tìm kiếm giá trị..." 
-                                       value="{{ request('search') }}">
+                                <input type="text" name="search" class="form-control"
+                                    placeholder="Tìm kiếm " value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
                             </div>
                             <select name="status" class="form-select" style="width: auto" onchange="this.form.submit()">
                                 <option value="">Tất cả trạng thái</option>

@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
 use App\Models\AttributeValue;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
 
 class AttributeValueController extends Controller
 {
@@ -17,9 +18,10 @@ class AttributeValueController extends Controller
         $query = AttributeValue::where('attribute_id', $attributeId)
             ->withCount('products'); // Đếm số biến thể sản phẩm liên kết
 
-        // Tìm kiếm
-        if ($request->has('search')) {
-            $query->where('value', 'like', '%' . $request->search . '%');
+        // Tìm kiếm theo tên
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where('value', 'like', '%' . $searchTerm . '%');
         }
 
         // Lọc theo trạng thái
@@ -51,11 +53,24 @@ class AttributeValueController extends Controller
     {
         $attribute = Attribute::findOrFail($attributeId);
 
+        // Xác thực dữ liệu
         $request->validate([
             'value' => 'required|string|max:255',
             'is_active' => 'required|boolean',
         ]);
 
+        // Kiểm tra giá trị trùng lặp (không phân biệt chữ hoa/thường)
+        $valueExists = AttributeValue::where('attribute_id', $attributeId)
+            ->whereRaw('LOWER(value) = ?', [strtolower($request->value)])
+            ->exists();
+
+        if ($valueExists) {
+            throw ValidationException::withMessages([
+                'value' => 'Giá trị "' . $request->value . '" đã tồn tại cho thuộc tính này (không phân biệt chữ hoa/thường).',
+            ]);
+        }
+
+        // Tạo AttributeValue
         AttributeValue::create([
             'attribute_id' => $attributeId,
             'value' => $request->value,
