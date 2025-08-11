@@ -36,6 +36,21 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         'password',
         'remember_token',
     ];
+    
+    /**
+     * Kiểm tra người dùng có vai trò cụ thể không
+     *
+     * @param string|array $roles
+     * @return bool
+     */
+    public function hasRole($roles)
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        
+        return $this->role === $roles;
+    }
 
     protected function casts(): array
     {
@@ -68,5 +83,13 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
     public function favoriteProducts()
     {
         return $this->belongsToMany(Product::class, 'wishlists', 'user_id', 'product_id');
+    }
+    
+    /**
+     * Get all blog posts created by this user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(BlogPost::class, 'author_id');
     }
 }

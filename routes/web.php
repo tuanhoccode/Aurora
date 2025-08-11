@@ -35,6 +35,7 @@ use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductGalleryController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -55,7 +56,67 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
 Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
+    // Media Upload Route
+    Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
+    
+    // Blog Comments Routes
+    Route::prefix('blog/comments')->name('blog.comments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BlogCommentController::class, 'index'])->name('index');
+        Route::post('/{comment}/reply', [\App\Http\Controllers\Admin\BlogCommentController::class, 'reply'])->name('reply');
+        Route::patch('/{comment}/approve', [\App\Http\Controllers\Admin\BlogCommentController::class, 'approve'])->name('approve');
+        Route::delete('/{comment}', [\App\Http\Controllers\Admin\BlogCommentController::class, 'destroy'])->name('destroy');
+    });
+
+    // Blog Posts Routes
+    Route::prefix('blog/posts')->name('blog.posts.')->group(function () {
+        // Trash Management - Phải đặt trước các route có tham số {post}
+        Route::get('/trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'trash'])->name('trash');
+        Route::post('/empty-trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'emptyTrash'])->name('empty-trash');
+        
+        // Danh sách và tạo bài viết
+        Route::get('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\BlogPostController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'store'])->name('store');
+        
+        // Các route có tham số {post}
+        Route::prefix('{post}')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'show'])->name('show');
+            Route::get('/edit', [\App\Http\Controllers\Admin\BlogPostController::class, 'edit'])->name('edit');
+            Route::put('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'update'])->name('update');
+            Route::delete('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'destroy'])->name('destroy');
+            Route::patch('/restore', [\App\Http\Controllers\Admin\BlogPostController::class, 'restore'])->name('restore');
+            Route::delete('/force-delete', [\App\Http\Controllers\Admin\BlogPostController::class, 'forceDelete'])->name('force-delete');
+            
+            // Single Post Actions
+            Route::patch('/publish', [\App\Http\Controllers\Admin\BlogPostController::class, 'publish'])->name('publish');
+            Route::patch('/draft', [\App\Http\Controllers\Admin\BlogPostController::class, 'draft'])->name('draft');
+        });
+        
+        // Bulk Actions
+        Route::post('/bulk-publish', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkPublish'])->name('bulk-publish');
+        Route::post('/bulk-draft', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkDraft'])->name('bulk-draft');
+        Route::post('/bulk-delete', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkDelete'])->name('bulk-delete');
+    });
+
+    // Blog Categories Routes
+    Route::prefix('blog/categories')->name('blog.categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'store'])->name('store');
+        Route::get('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'show'])->name('show');
+        Route::get('/{category}/edit', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'destroy'])->name('destroy');
+        Route::get('/trash', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'forceDelete'])->name('force-delete');
+        Route::delete('/trash/empty', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'emptyTrash'])->name('trash.empty');
+    });
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Route cho upload ảnh từ CKEditor
+    Route::post('/upload', [\App\Http\Controllers\Admin\UploadController::class, 'upload'])->name('upload');
     //Coupon routes
     Route::middleware('admin.only')->prefix('coupons')->name('coupons.')->group(function () {
         Route::post('/bulk-delete', [CouponController::class, 'bulkDelete'])->name('bulk-delete');
@@ -309,6 +370,35 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
 //Client
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Blog Routes
+Route::prefix('blog')->name('blog.')->group(function () {
+    // Trang chủ blog
+    Route::get('/', [\App\Http\Controllers\Client\BlogController::class, 'index'])
+        ->name('index');
+        
+    // Xem chi tiết bài viết
+    Route::get('/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'show'])
+        ->name('show');
+        
+    // Bình luận
+    Route::post('/{post}/comments', [\App\Http\Controllers\Client\BlogController::class, 'storeComment'])
+        ->name('comments.store')
+        ->middleware('throttle:3,1'); // Giới hạn 3 request mỗi phút
+        
+    // Danh mục bài viết
+    Route::get('/category/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByCategory'])
+        ->name('category');
+        
+    // Bài viết theo tag
+    Route::get('/tag/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByTag'])
+        ->name('tag');
+        
+    // Lưu trữ bài viết theo tháng/năm
+    Route::get('/archive/{year}/{month?}', [\App\Http\Controllers\Client\BlogController::class, 'archive'])
+        ->where(['year' => '[0-9]{4}', 'month' => '0[1-9]|1[0-2]'])
+        ->name('archive');
+});
 
 // Product routes
 Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');

@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\View\View;
 use App\Models\Order;
+use App\Models\BlogComment;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -47,6 +48,9 @@ class DashboardController extends Controller
             $revenueData[$m] = (float)($revenueByMonth[$m] ?? 0);
         }
 
+        // Lấy số lượng bình luận chờ duyệt
+        $unapprovedCommentsCount = BlogComment::where('is_active', false)->count();
+
         return view('admin.dashboard.index', compact(
             'totalProducts',
             'activeProducts',
@@ -54,6 +58,7 @@ class DashboardController extends Controller
             'totalUsers',
             'activeUsers',
             'revenueData',
+            'unapprovedCommentsCount',
             'currentYear'
         ));
     }

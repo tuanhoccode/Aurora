@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Requests\Admin;
-
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +29,10 @@ class ProductRequest extends FormRequest
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
             'is_sale' => 'nullable|boolean',
-            'variants' => 'required_if:type,variant|array|min:1',
+            // Sửa dòng này:
+            'variants' => ($this->isMethod('POST') && $this->input('type') === 'variant')
+                ? 'required|array|min:1'
+                : 'nullable|array',
             'variants.*.attributes' => 'required|array|min:1',
             'variants.*.attributes.*' => 'required|exists:attribute_values,id',
             'variants.*.image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -39,7 +40,9 @@ class ProductRequest extends FormRequest
 
         // Thêm validation cho biến thể nếu là sản phẩm biến thể và có dữ liệu variants
         if ($this->input('type') === 'variant' && $this->has('variants')) {
-            $rules['variants'] = 'required|array|min:1';
+            $rules['variants'] = ($this->isMethod('POST'))
+                ? 'required|array|min:1'
+                : 'nullable|array';
             // Nếu là PUT (update), ignore id của các biến thể cũ
             if ($this->isMethod('PUT') && $this->has('variants_old')) {
                 foreach ($this->input('variants_old') as $variantId => $variantData) {
@@ -63,10 +66,8 @@ class ProductRequest extends FormRequest
             $rules['variants.*.image'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             $rules['variants.*.gallery_images.*'] = 'nullable|string';
         }
-
         return $rules;
     }
-
 
 
     public function withValidator($validator)
@@ -76,11 +77,11 @@ class ProductRequest extends FormRequest
             if ($this->input('type') === 'variant' && $this->has('variants') && !empty($this->input('variants'))) {
                 $skus = collect($this->input('variants'))->pluck('sku')->filter();
                 $duplicateSkus = $skus->duplicates();
-                
+               
                 if ($duplicateSkus->count() > 0) {
                     $validator->errors()->add('variants', 'Có SKU trùng lặp trong danh sách biến thể: ' . $duplicateSkus->implode(', '));
                 }
-                
+               
                 // Kiểm tra giá khuyến mãi không lớn hơn giá gốc
                 foreach ($this->input('variants') as $index => $variant) {
                     if (!empty($variant['sale_price']) && !empty($variant['price'])) {
@@ -90,12 +91,12 @@ class ProductRequest extends FormRequest
                     }
                 }
             }
-            
+           
             // Kiểm tra SKU trùng lặp cho variants_old (khi cập nhật sản phẩm)
             if ($this->isMethod('PUT') && $this->input('type') === 'variant' && $this->has('variants_old')) {
                 $allSkus = [];
                 $duplicateSkus = [];
-                
+               
                 // Thu thập tất cả SKU từ variants_old
                 foreach ($this->input('variants_old') as $variantId => $variantData) {
                     $sku = $variantData['sku'] ?? null;
@@ -107,7 +108,7 @@ class ProductRequest extends FormRequest
                         }
                     }
                 }
-                
+               
                 // Thu thập SKU từ variants mới (nếu có)
                 if ($this->has('variants') && !empty($this->input('variants'))) {
                     foreach ($this->input('variants') as $variantData) {
@@ -121,7 +122,7 @@ class ProductRequest extends FormRequest
                         }
                     }
                 }
-                
+               
                 // Báo lỗi nếu có SKU trùng lặp
                 if (!empty($duplicateSkus)) {
                     $uniqueDuplicates = array_unique($duplicateSkus);
@@ -160,8 +161,9 @@ class ProductRequest extends FormRequest
             'gallery_images.*.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
             'type.required' => 'Loại sản phẩm là bắt buộc',
             'type.in' => 'Loại sản phẩm không hợp lệ',
-            
+           
             // Messages cho biến thể
+            'variants.required' => 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể',
             'variants.required_if' => 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể',
             'variants.array' => 'Dữ liệu biến thể không hợp lệ',
             'variants.min' => 'Vui lòng tạo ít nhất một biến thể',
@@ -219,4 +221,15 @@ class ProductRequest extends FormRequest
             'is_sale' => 'Giảm giá'
         ];
     }
-} 
+}
+
+
+
+
+
+
+
+
+
+
+
