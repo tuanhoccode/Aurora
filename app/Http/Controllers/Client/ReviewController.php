@@ -21,6 +21,10 @@ class ReviewController extends Controller
         if (!$user) {
             return redirect()->route('login')->with('error', 'Bạn cần đăng nhập.');
         }
+        //Admin không được đánh giá và bình luận 
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Admin không thể tạo đánh giá và bình luận');
+        }
         if ($req->filled('rating')) {
 
             //Kiểm tra người dùng mua sản phẩm chưa

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Requests\admin\RejectCommentRequest;
 use App\Http\Requests\Admin\ReplyRequest;
 use App\Models\Comment;
 use App\Models\Product;
 use App\Models\Review;
+use App\Notifications\AdminRepliedNotification;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -195,6 +197,19 @@ class CommentController extends Controller
             $parent->has_replies = true;
             $parent->save();
         }
+        //Gử thông báo email cho khách hàng viết bình luận và đánh giá
+        if ($type === 'review') {
+            $originalText = $parent->review_text;
+            $user = $parent->user;
+        }else{
+            $originalText = $parent->content;
+            $user = $parent->user;
+        }
+        $replyText = $req->content;
+        if ($user && $user->email) {
+            $user->notify(new AdminRepliedNotification($parent, $originalText, $replyText));
+        }
+        
         return redirect()->back()->with('success', 'Đã trả lời bình luận của khách hàng.');
         } catch (\Exception $e) {
             Log::error('Reply error: Type='. $type . ', ID=' . $id . ',Error=' . $e->getMessage());
