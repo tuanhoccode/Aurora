@@ -4,9 +4,11 @@
 namespace App\Http\Controllers\Admin;
 
 
-use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
+use App\Models\AttributeValue;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 
 
 class AttributeController extends Controller
@@ -139,27 +141,25 @@ class AttributeController extends Controller
     /**
      * Xóa mềm thuộc tính
      */
-    public function destroy($id)
+    public function destroy(Attribute $attribute)
     {
         try {
-            // Tải Attribute cùng với AttributeValues (chưa xóa mềm) và các sản phẩm liên kết
-            $attribute = Attribute::with(['attributeValues' => function ($query) {
-                $query->whereNull('deleted_at'); // Chỉ lấy attribute_values chưa xóa mềm
-            }, 'attributeValues.products'])->findOrFail($id);
-
-            // Kiểm tra xem có AttributeValue nào liên kết với sản phẩm hay không
-            foreach ($attribute->attributeValues as $attributeValue) {
-                if ($attributeValue->products()->exists()) {
-                    return redirect()->back()->with('error', 'Không thể xóa thuộc tính "' . $attribute->name . '" vì có giá trị đang được liên kết với sản phẩm.');
-                }
+            // Kiểm tra nếu thuộc tính có giá trị liên kết
+            $valuesCount = $attribute->values()->count();
+            if ($valuesCount > 0) {
+                return redirect()->route('admin.attributes.index')
+                    ->with('error', "Không thể xóa thuộc tính '{$attribute->name}' vì nó có {$valuesCount} giá trị liên kết.");
             }
 
-            // Xóa mềm Attribute nếu không có liên kết
+            // Xóa thuộc tính (xóa mềm)
             $attribute->delete();
 
-            return redirect()->route('admin.attributes.index')->with('success', 'Thuộc tính đã được xóa mềm.');
+            return redirect()->route('admin.attributes.index')
+                ->with('success', "Xóa thuộc tính '{$attribute->name}' thành công.");
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Không thể xóa thuộc tính: ' . $e->getMessage());
+            Log::error('Lỗi khi xóa thuộc tính: ' . $e->getMessage());
+            return redirect()->route('admin.attributes.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa thuộc tính: ' . $e->getMessage());
         }
     }
     public function trashed(Request $request)
