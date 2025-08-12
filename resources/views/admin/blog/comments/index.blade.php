@@ -3,6 +3,19 @@
 @section('title', 'Quản lý bình luận bài viết')
 
 @section('content')
+<!-- Toast thông báo -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="statusToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Đóng"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Cập nhật trạng thái bình luận thành công!
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -29,14 +42,14 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <form action="{{ route('admin.blog.comments.index') }}" method="GET" class="row g-2">
-                            <div class="col-md-10">
+                            <div class="col-md-11">
                                 <input type="text" name="search" class="form-control" 
                                        placeholder="Tìm kiếm nội dung, tên, email..." 
                                        value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-search me-1"></i> Tìm kiếm
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary w-100 px-4">
+                                    <i class="fas fa-search me-1"></i>
                                 </button>
                             </div>
                         </form>
@@ -72,19 +85,31 @@
                                     </td>
                                     <td>
                                         @if($comment->user)
-                                            {{ $comment->user->name }}
+                                            <div class="fw-medium">{{ $comment->user->fullname ?? $comment->user->name }}</div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope me-1"></i>{{ $comment->user->email }}
+                                            </small>
                                         @else
-                                            {{ $comment->user_name }}<br>
-                                            <small class="text-muted">{{ $comment->user_email }}</small>
+                                            <div class="fw-medium">{{ $comment->user_name }}</div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope me-1"></i>{{ $comment->user_email }}
+                                            </small>
                                         @endif
                                     </td>
-                                    <td>{{ $comment->created_at->diffForHumans() }}</td>
                                     <td>
-                                        @if($comment->is_active)
-                                            <span class="badge bg-success">Đã duyệt</span>
-                                        @else
-                                            <span class="badge bg-warning">Chờ duyệt</span>
-                                        @endif
+                                        <span title="{{ $comment->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i:s d/m/Y') }}">
+                                            {{ $comment->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m/Y') }}
+                                        </span>
+                                        <div class="text-muted small">
+                                            ({{ $comment->created_at->diffForHumans() }})
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input toggle-comment" 
+                                                   data-id="{{ $comment->id }}" 
+                                                   {{ $comment->is_active ? 'checked' : '' }}>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="btn-group">
@@ -152,11 +177,50 @@
 
 @push('scripts')
 <script>
-    // Xử lý xác nhận trước khi xóa
-    document.querySelectorAll('form[onsubmit]').forEach(form => {
-        form.onsubmit = function() {
+    $(document).ready(function() {
+        // Xử lý xác nhận trước khi xóa
+        $('form[onsubmit]').on('submit', function() {
             return confirm('Bạn có chắc chắn muốn xóa bình luận này?');
-        };
+        });
+
+        // Xử lý sự kiện khi bật/tắt trạng thái duyệt bình luận
+        $('.toggle-comment').on('change', function() {
+            const commentId = $(this).data('id');
+            const isActive = $(this).is(':checked') ? 1 : 0;
+            const $toggle = $(this);
+            
+            // Gửi yêu cầu cập nhật trạng thái
+            $.ajax({
+                url: `/admin/blog/comments/${commentId}/toggle-status`,
+                method: 'POST',
+                data: { is_active: isActive },
+                success: function(response) {
+                    if (response.success) {
+                        // Cập nhật giao diện nếu cần
+                        if (isActive) {
+                            $toggle.closest('tr').find('.badge')
+                                .removeClass('bg-warning')
+                                .addClass('bg-success')
+                                .text('Đã duyệt');
+                        } else {
+                            $toggle.closest('tr').find('.badge')
+                                .removeClass('bg-success')
+                                .addClass('bg-warning')
+                                .text('Chờ duyệt');
+                        }
+                    } else {
+                        // Nếu có lỗi, khôi phục lại trạng thái cũ
+                        $toggle.prop('checked', !isActive);
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái bình luận');
+                    }
+                },
+                error: function() {
+                    // Nếu có lỗi, khôi phục lại trạng thái cũ
+                    $toggle.prop('checked', !isActive);
+                    alert('Có lỗi xảy ra khi kết nối đến máy chủ');
+                }
+            });
+        });
     });
 </script>
 @endpush

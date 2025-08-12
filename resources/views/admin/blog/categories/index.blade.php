@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">Quản lý danh mục bài viết</h1>
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.blog.categories.index', ['is_active' => 'trashed']) }}" class="btn btn-outline-secondary">
+        <a href="{{ route('admin.blog.categories.trash') }}" class="btn btn-outline-secondary">
             <i class="bi bi-trash"></i>
             Thùng rác @if($stats['trashed'] > 0)
                 <span class="badge bg-danger">{{ $stats['trashed'] }}</span>
@@ -174,27 +174,7 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         @if($category->trashed())
-                                            <li>
-                                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('restore-form-{{ $category->id }}').submit();">
-                                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Khôi phục
-                                                </a>
-                                                <form id="restore-form-{{ $category->id }}" 
-                                                    action="{{ route('admin.blog.categories.restore', $category) }}" 
-                                                    method="POST" 
-                                                    style="display: none;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                </form>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                   data-id="{{ $category->id }}" 
-                                                   data-name="{{ $category->name }}"
-                                                   data-permanent="true">
-                                                    <i class="bi bi-trash me-2"></i>Xóa vĩnh viễn
-                                                </a>
-                                            </li>
+                                            <li><span class="dropdown-item-text text-muted">Vui lòng vào thùng rác để thao tác</span></li>
                                         @else
                                             <li>
                                                 <a class="dropdown-item" href="{{ route('admin.blog.categories.show', $category) }}">
@@ -206,42 +186,20 @@
                                                     <i class="bi bi-pencil me-2"></i>Chỉnh sửa
                                                 </a>
                                             </li>
-                                            @if($category->is_active)
-                                                <li>
-                                                    <a class="dropdown-item text-warning" href="#" onclick="event.preventDefault(); document.getElementById('deactivate-form-{{ $category->id }}').submit();">
-                                                        <i class="bi bi-eye-slash me-2"></i>Tạm ẩn
-                                                    </a>
-                                                    <form id="deactivate-form-{{ $category->id }}" 
-                                                        action="{{ route('admin.blog.categories.update', $category) }}" 
-                                                        method="POST" 
-                                                        style="display: none;">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="is_active" value="0">
-                                                    </form>
-                                                </li>
-                                            @else
-                                                <li>
-                                                    <a class="dropdown-item text-success" href="#" onclick="event.preventDefault(); document.getElementById('activate-form-{{ $category->id }}').submit();">
-                                                        <i class="bi bi-eye me-2"></i>Kích hoạt
-                                                    </a>
-                                                    <form id="activate-form-{{ $category->id }}" 
-                                                        action="{{ route('admin.blog.categories.update', $category) }}" 
-                                                        method="POST" 
-                                                        style="display: none;">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="is_active" value="1">
-                                                    </form>
-                                                </li>
-                                            @endif
+                                         
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                   data-id="{{ $category->id }}" 
-                                                   data-name="{{ $category->name }}">
+                                                <a href="#" class="dropdown-item text-danger" 
+                                                    onclick="event.preventDefault(); if(confirm('Bạn có chắc chắn muốn chuyển danh mục vào thùng rác?')) { document.getElementById('delete-form-{{ $category->id }}').submit(); }">
                                                     <i class="bi bi-trash me-2"></i>Xóa
                                                 </a>
+                                                <form id="delete-form-{{ $category->id }}" 
+                                                    action="{{ route('admin.blog.categories.destroy', $category) }}" 
+                                                    method="POST" 
+                                                    style="display: none;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
                                             </li>
                                         @endif
                                     </ul>
@@ -300,91 +258,237 @@
 
 @push('scripts')
 <script>
-    // Xử lý modal xóa
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const categoryId = button.getAttribute('data-id');
-            const categoryName = button.getAttribute('data-name');
-            const isPermanent = button.getAttribute('data-permanent') === 'true';
-            
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            const categoryNameElement = deleteModal.querySelector('#categoryName');
-            const deleteForm = deleteModal.querySelector('#deleteForm');
-            const permanentDeleteWarning = deleteModal.querySelector('#permanentDeleteWarning');
-            $('#categoryName').text(name);
-            $('#deleteForm').attr('action', url);
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
-        });
+    // Xử lý xóa danh mục (soft delete)
+    function deleteCategory(id, isPermanent = false, event) {
+        event.preventDefault();
         
-        // Handle restore button click
-        $(document).on('click', '.restore-category', function() {
-            var id = $(this).data('id');
-            var name = $(this).closest('tr').find('td:eq(1)').text().trim();
-            var url = '{{ route("admin.blog.categories.restore", ":id") }}';
-            url = url.replace(':id', id);
+        if (confirm(isPermanent 
+            ? 'Bạn có chắc chắn muốn xóa vĩnh viễn danh mục này? Hành động này không thể hoàn tác!'
+            : 'Bạn có chắc chắn muốn chuyển danh mục vào thùng rác?')) {
             
-            $('#restoreCategoryName').text(name);
-            $('#restoreForm').attr('action', url);
-            var restoreModal = new bootstrap.Modal(document.getElementById('restoreModal'));
-            restoreModal.show();
-        });
+            const url = '{{ url("admin/blog/categories") }}/' + id;
+            const token = '{{ csrf_token() }}';
+            
+            // Gửi yêu cầu xóa bằng AJAX
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _token: token,
+                    _method: 'DELETE'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Ẩn dòng đã xóa
+                        $(`#category-row-${id}`).fadeOut(300, function() {
+                            $(this).remove();
+                            // Kiểm tra nếu không còn dòng nào thì hiển thị thông báo
+                            if ($('tbody tr').length === 0) {
+                                $('tbody').html('<tr><td colspan="7" class="text-center py-4"><div class="text-muted"><i class="fas fa-inbox fa-2x mb-2"></i><p>Không có danh mục nào</p></div></td></tr>');
+                            }
+                        });
+                        
+                        showToast('success', response.message || 'Đã xóa danh mục thành công');
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra khi xóa danh mục');
+                    }
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.message || 'Có lỗi xảy ra khi kết nối đến máy chủ';
+                    showToast('error', errorMessage);
+                }
+            });
+        }
+    }
+    
+    
+    // Hàm hiển thị thông báo
+    function showToast(type, message) {
+        const toast = $(`
+            <div class="toast align-items-center text-white bg-${type} border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `);
         
-        // Handle force delete button click
-        $(document).on('click', '.force-delete-category', function() {
-            var id = $(this).data('id');
-            var name = $(this).data('name');
-            var url = '{{ route("admin.blog.categories.force-delete", ":id") }}';
-            url = url.replace(':id', id);
+        $('body').append(toast);
+        const bsToast = new bootstrap.Toast(toast[0]);
+        bsToast.show();
+        
+        // Tự động ẩn thông báo sau 3 giây
+        setTimeout(() => {
+            bsToast.hide();
+            toast.remove();
+        }, 3000);
+    }
+    
+    // Hàm làm mới bảng
+    function refreshTable(callback) {
+        const $tableBody = $('table tbody');
+        const $pagination = $('.pagination');
+        const currentUrl = window.location.href;
+        
+        // Hiển thị loading
+        $tableBody.html(`
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-2 mb-0">Đang tải dữ liệu...</p>
+                </td>
+            </tr>
+        `);
+        
+        // Lấy lại dữ liệu từ server
+        $.get(currentUrl, function(response) {
+            // Trích xuất nội dung bảng mới từ response
+            const newContent = $(response).find('table tbody').html();
+            const newPagination = $(response).find('.pagination').html() || '';
             
-            $('#forceDeleteCategoryName').text(name);
-            $('#forceDeleteForm').attr('action', url);
-            var forceDeleteModal = new bootstrap.Modal(document.getElementById('forceDeleteModal'));
-            forceDeleteModal.show();
+            // Cập nhật nội dung bảng
+            $tableBody.html(newContent || `
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>Không có danh mục nào</p>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            
+            // Cập nhật phân trang
+            if (newPagination) {
+                $pagination.html(newPagination);
+            } else {
+                $pagination.empty();
+            }
+            
+            // Gọi callback nếu có
+            if (typeof callback === 'function') {
+                callback();
+            }
+        }).fail(function() {
+            showToast('error', 'Không thể tải lại dữ liệu');
+            $tableBody.html(`
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải dữ liệu. Vui lòng thử lại.
+                    </td>
+                </tr>
+            `);
         });
-    };
+    }
+    
+    // Hàm kiểm tra và hiển thị bulk actions
+    function toggleBulkActions() {
+        const anyChecked = $('input[name="ids[]"]:checked').length > 0;
+        $('.bulk-actions').toggle(anyChecked);
+        
+        // Kiểm tra nếu tất cả các checkbox đều được chọn
+        const allChecked = $('input[name="ids[]"]').length === $('input[name="ids[]"]:checked').length;
+        $('#selectAll').prop('checked', allChecked);
+    }
     
     // Xử lý bulk actions
-    const bulkActions = document.querySelector('.bulk-actions');
-    if (bulkActions) {
-        const checkboxes = document.querySelectorAll('input[name="ids[]"]');
-        const selectAllCheckbox = document.getElementById('selectAll');
-        
-        // Handle select all checkbox click
-        selectAllCheckbox.addEventListener('change', function() {
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
+    $(document).ready(function() {
+        // Select all checkbox
+        $('#selectAll').change(function() {
+            $('input[name="ids[]"]').prop('checked', this.checked);
+            toggleBulkActions();
         });
         
-        // Handle bulk action button click
-        const bulkActionButtons = bulkActions.querySelectorAll('.bulk-action');
-        bulkActionButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                const action = button.getAttribute('data-action');
-                const ids = [];
-                checkboxes.forEach(function(checkbox) {
-                    if (checkbox.checked) {
-                        ids.push(checkbox.value);
+        // Toggle bulk actions khi chọn các checkbox
+        $(document).on('change', 'input[name="ids[]"]', function() {
+            toggleBulkActions();
+        });
+        
+        // Hủy chọn tất cả
+        $('.cancel-bulk').click(function() {
+            $('.form-check-input').prop('checked', false);
+            $('.bulk-actions').hide();
+        });
+        
+        // Xử lý bulk actions
+        $('.bulk-action').click(function() {
+            const action = $(this).data('action');
+            const ids = [];
+            
+            $('.form-check-input:checked').not('#selectAll').each(function() {
+                ids.push($(this).val());
+            });
+            
+            if (ids.length === 0) {
+                showToast('warning', 'Vui lòng chọn ít nhất một danh mục');
+                return;
+            }
+            
+            let confirmMessage = '';
+            let url = '';
+            
+            switch (action) {
+                case 'activate':
+                    confirmMessage = 'Bạn có chắc chắn muốn kích hoạt ' + ids.length + ' danh mục đã chọn?';
+                    url = '{{ route("admin.blog.categories.bulk-activate") }}';
+                    break;
+                case 'deactivate':
+                    confirmMessage = 'Bạn có chắc chắn muốn tắt ' + ids.length + ' danh mục đã chọn?';
+                    url = '{{ route("admin.blog.categories.bulk-deactivate") }}';
+                    break;
+                case 'delete':
+                    confirmMessage = 'Bạn có chắc chắn muốn xóa ' + ids.length + ' danh mục đã chọn?';
+                    url = '{{ route("admin.blog.categories.bulk-destroy") }}';
+                    break;
+            }
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Hiển thị loading
+            const $submitButton = $(this);
+            const originalText = $submitButton.html();
+            $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...');
+            
+            // Xác định method dựa trên action
+            const method = (action === 'delete' || action === 'destroy') ? 'DELETE' : 'POST';
+            
+            $.ajax({
+                url: url,
+                type: method,
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ids: ids
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Làm mới bảng bằng cách gọi lại dữ liệu
+                        refreshTable(function() {
+                            showToast('success', response.message || 'Thao tác thành công');
+                        });
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra');
                     }
-                });
-                
-                // Xử lý bulk action
-                switch (action) {
-                    case 'activate':
-                        // Kích hoạt danh mục
-                        break;
-                    case 'deactivate':
-                        // Tạm ẩn danh mục
-                        break;
-                    case 'delete':
-                        // Xóa danh mục
-                        break;
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.message || 'Có lỗi xảy ra khi kết nối đến máy chủ';
+                    showToast('error', errorMessage);
+                },
+                complete: function() {
+                    $submitButton.prop('disabled', false).html(originalText);
+                    // Ẩn bulk actions
+                    $('.bulk-actions').hide();
+                    // Bỏ chọn tất cả checkbox
+                    $('.form-check-input').prop('checked', false);
                 }
             });
         });
-    };
+    });
 </script>
 @endpush

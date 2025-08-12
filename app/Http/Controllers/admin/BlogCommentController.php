@@ -44,6 +44,29 @@ class BlogCommentController extends Controller
         $comment->delete();
         return back()->with('success', 'Đã xóa bình luận thành công');
     }
+    
+    /**
+     * Cập nhật trạng thái bình luận (AJAX)
+     *
+     * @param  \App\Models\BlogComment  $comment
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggleStatus(BlogComment $comment, Request $request)
+    {
+        $request->validate([
+            'is_active' => 'required|boolean'
+        ]);
+
+        $comment->update([
+            'is_active' => $request->is_active
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->is_active ? 'Đã duyệt bình luận thành công' : 'Đã bỏ duyệt bình luận'
+        ]);
+    }
 
     /**
      * Trả lời một bình luận

@@ -383,6 +383,52 @@ class BlogPostController extends Controller
             'message' => 'Đã xóa ' . $count . ' bài viết vào thùng rác'
         ]);
     }
+    
+    /**
+     * Bulk activate posts
+     */
+    public function bulkActivate(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'Không có bài viết nào được chọn']);
+        }
+        
+        $count = BlogPost::whereIn('id', $ids)
+            ->update([
+                'is_active' => true,
+                'updated_at' => now()
+            ]);
+            
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã kích hoạt ' . $count . ' bài viết'
+        ]);
+    }
+    
+    /**
+     * Bulk deactivate posts
+     */
+    public function bulkDeactivate(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'Không có bài viết nào được chọn']);
+        }
+        
+        $count = BlogPost::whereIn('id', $ids)
+            ->update([
+                'is_active' => false,
+                'updated_at' => now()
+            ]);
+            
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã tắt ' . $count . ' bài viết'
+        ]);
+    }
 
     protected function uploadThumbnail($file)
     {

@@ -73,21 +73,6 @@ class BlogCategoryController extends Controller
     }
     
     /**
-     * Hiển thị trang thùng rác
-     */
-    public function trash()
-    {
-        $categories = BlogCategory::onlyTrashed()
-            ->withCount('posts')
-            ->latest('deleted_at')
-            ->paginate(10);
-            
-        $trashedCount = BlogCategory::onlyTrashed()->count();
-            
-        return view('admin.blog.categories.trash', compact('categories', 'trashedCount'));
-    }
-    
-    /**
      * Làm trống thùng rác
      */
     public function emptyTrash()
@@ -285,6 +270,88 @@ class BlogCategoryController extends Controller
         return redirect()
             ->route('admin.blog.categories.index', ['status' => 'trashed'])
             ->with('success', 'Đã khôi phục danh mục thành công');
+    }
+    
+    /**
+     * Kích hoạt nhiều danh mục cùng lúc
+     */
+    public function bulkActivate(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:blog_categories,id'
+        ]);
+
+        $count = BlogCategory::whereIn('id', $request->ids)
+            ->where('is_active', false)
+            ->update(['is_active' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã kích hoạt {$count} danh mục thành công.",
+            'count' => $count
+        ]);
+    }
+
+    /**
+     * Vô hiệu hóa nhiều danh mục cùng lúc
+     */
+    public function bulkDeactivate(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:blog_categories,id'
+        ]);
+
+        $count = BlogCategory::whereIn('id', $request->ids)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã vô hiệu hóa {$count} danh mục thành công.",
+            'count' => $count
+        ]);
+    }
+    
+    /**
+     * Xóa nhiều danh mục cùng lúc
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:blog_categories,id'
+        ]);
+
+        $count = BlogCategory::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã xóa {$count} danh mục vào thùng rác.",
+            'count' => $count
+        ]);
+    }
+
+    /**
+     * Display a listing of trashed categories.
+     */
+    public function trash(Request $request)
+    {
+        // Lấy danh sách các danh mục đã xóa mềm
+        $categories = BlogCategory::onlyTrashed()
+            ->with('parent')
+            ->withCount('posts')
+            ->latest('deleted_at')
+            ->paginate(10);
+
+        // Lấy số lượng danh mục đã xóa
+        $trashedCount = BlogCategory::onlyTrashed()->count();
+        
+        // Lấy danh sách danh mục cha cho dropdown filter
+        $parentCategories = $this->getParentCategories();
+
+        return view('admin.blog.categories.trash', compact('categories', 'trashedCount', 'parentCategories'));
     }
     
     /**

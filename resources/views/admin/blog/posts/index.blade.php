@@ -24,13 +24,13 @@
     {{-- Bulk Actions --}}
     <div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success bulk-action" data-action="publish">
+            <button type="button" class="btn btn-success bulk-action" data-action="activate">
                 <i class="bi bi-check-circle"></i>
-                Xuất bản
+                Hoạt động
             </button>
-            <button type="button" class="btn btn-warning bulk-action" data-action="draft">
-                <i class="bi bi-file-earmark"></i>
-                Lưu nháp
+            <button type="button" class="btn btn-warning bulk-action" data-action="deactivate">
+                <i class="bi bi-x-circle"></i>
+                Không hoạt động
             </button>
             <button type="button" class="btn btn-danger bulk-action" data-action="delete">
                 <i class="bi bi-trash"></i>
@@ -133,7 +133,7 @@
                     </thead>
                     <tbody>
                         @forelse($posts as $post)
-                            <tr>
+                            <tr id="post-row-{{ $post->id }}">
                                 <td>
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input post-checkbox" value="{{ $post->id }}" id="post-{{ $post->id }}">
@@ -183,7 +183,7 @@
                                     </div>
                                 </td>
                                 <td>{{ number_format($post->views) }}</td>
-                                <td>
+                                <td id="post-status-{{ $post->id }}">
                                     @if($post->is_active)
                                         <span class="badge bg-success">
                                             <i class="bi bi-check-circle me-1"></i> Đang hiển thị
@@ -231,13 +231,10 @@
                                                 
                                                 <!-- Xóa -->
                                                 <li>
-                                                    <form action="{{ route('admin.blog.posts.destroy', $post) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này?')">
-                                                            <i class="bi bi-trash me-2"></i>Xóa
-                                                        </button>
-                                                    </form>
+                                                    <a href="#" class="dropdown-item text-danger" 
+                                                       onclick="event.preventDefault(); deleteItem({{ $post->id }}, false);">
+                                                        <i class="bi bi-trash me-2"></i>Xóa
+                                                    </a>
                                                 </li>
                                             @else
                                                 <!-- Khôi phục -->
@@ -323,13 +320,42 @@
 
 @push('scripts')
 <script>
-    function deleteItem(id, isTrashed) {
+    function deleteItem(id, isTrashed, event) {
+        event.preventDefault();
         if (confirm(isTrashed 
             ? 'Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác!'
             : 'Bạn có chắc chắn muốn chuyển bài viết vào thùng rác?')) {
-            document.getElementById('delete-form-' + id).submit();
-        }
             
+            const url = '{{ url("admin/blog/posts") }}/' + id;
+            const token = '{{ csrf_token() }}';
+            
+            // Gửi yêu cầu xóa bằng AJAX
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _token: token,
+                    _method: 'DELETE'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Ẩn dòng đã xóa
+                        $(`#post-row-${id}`).fadeOut(300, function() {
+                            $(this).remove();
+                            // Kiểm tra nếu không còn dòng nào thì hiển thị thông báo
+                            if ($('tbody tr').length === 1) { // Chỉ còn dòng thông báo
+                                $('tbody').html('<tr><td colspan="9" class="text-center">Không có bài viết nào</td></tr>');
+                            }
+                        });
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (response.message || 'Vui lòng thử lại sau'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('Có lỗi xảy ra: ' + (xhr.responseJSON?.message || 'Vui lòng thử lại sau'));
+                }
+            });
+        }
     }
     
     // Delete modal handler
@@ -396,13 +422,13 @@
             let formAction = '';
             
             switch(action) {
-                case 'publish':
-                    confirmMessage = 'Bạn có chắc muốn xuất bản ' + postIds.length + ' bài viết đã chọn?';
-                    formAction = '{{ route("admin.blog.posts.bulk-publish") }}';
+                case 'activate':
+                    confirmMessage = 'Bạn có chắc muốn kích hoạt ' + postIds.length + ' bài viết đã chọn?';
+                    formAction = '{{ route("admin.blog.posts.bulk-activate") }}';
                     break;
-                case 'draft':
-                    confirmMessage = 'Bạn có chắc muốn chuyển ' + postIds.length + ' bài viết đã chọn thành bản nháp?';
-                    formAction = '{{ route("admin.blog.posts.bulk-draft") }}';
+                case 'deactivate':
+                    confirmMessage = 'Bạn có chắc muốn tắt ' + postIds.length + ' bài viết đã chọn?';
+                    formAction = '{{ route("admin.blog.posts.bulk-deactivate") }}';
                     break;
                 case 'delete':
                     confirmMessage = 'Bạn có chắc muốn xóa ' + postIds.length + ' bài viết đã chọn? Hành động này không thể hoàn tác!';
@@ -411,34 +437,38 @@
             }
 
             if (confirm(confirmMessage)) {
-                const form = $('<form>', {
-                    'action': formAction,
-                    'method': 'POST',
-                    'style': 'display: none;'
+                // Gửi yêu cầu AJAX
+                $.ajax({
+                    url: formAction,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        ids: postIds
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Cập nhật giao diện ngay lập tức
+                            postIds.forEach(function(id) {
+                                const statusCell = $(`#post-status-${id}`);
+                                const statusBadge = statusCell.find('.badge');
+                                
+                                if (action === 'activate') {
+                                    statusBadge.removeClass('bg-warning').addClass('bg-success').text('Đang hiển thị');
+                                } else if (action === 'deactivate') {
+                                    statusBadge.removeClass('bg-success').addClass('bg-warning').text('Chưa hiển thị');
+                                }
+                            });
+                            
+                            // Ẩn bulk actions
+                            $('.bulk-actions').slideUp();
+                            // Bỏ chọn tất cả checkbox
+                            $('.post-checkbox, #selectAll').prop('checked', false);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Có lỗi xảy ra: ' + (xhr.responseJSON?.message || 'Vui lòng thử lại sau'));
+                    }
                 });
-                
-                form.append($('<input>', {
-                    'type': 'hidden',
-                    'name': '_token',
-                    'value': '{{ csrf_token() }}'
-                }));
-                
-                form.append($('<input>', {
-                    'type': 'hidden',
-                    'name': '_method',
-                    'value': 'PATCH'
-                }));
-                
-                $.each(postIds, function(index, id) {
-                    form.append($('<input>', {
-                        'type': 'hidden',
-                        'name': 'ids[]',
-                        'value': id
-                    }));
-                });
-                
-                $('body').append(form);
-                form.submit();
             }
         });
     });    
