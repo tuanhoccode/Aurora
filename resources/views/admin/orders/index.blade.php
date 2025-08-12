@@ -88,7 +88,9 @@
                             <th><i class="fas fa-credit-card me-1"></i> TRẠNG THÁI THANH TOÁN</th>
                             <th><i class="fas fa-check-square me-1"></i> TRẠNG THÁI HOÀN THÀNH</th>
                             <th><i class="fas fa-calendar-alt me-1"></i> NGÀY</th>
-                            <th><i class="fas fa-cog me-1"></i> HÀNH ĐỘNG</th>
+                            @if(Auth::user()->role === 'admin')
+                                <th><i class="fas fa-cog me-1"></i> HÀNH ĐỘNG</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -131,28 +133,30 @@
                             </td>
                             <td>{{ $order->created_at->format('d/m/Y, H:i') }}</td>
                             <td>
-                                @if($order->cancel_reason || $order->cancelled_at)
-                                <div class="mb-2">
-                                    <span class="badge bg-danger rounded-pill">
-                                        <i class="fas fa-times-circle me-1"></i>Đã hủy
-                                    </span>
-                                    @if($order->cancel_reason)
-                                    <br>
-                                    <small class="text-muted d-block mt-1">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ Str::limit($order->cancel_reason, 30) }}
-                                    </small>
+                                @if(Auth::user()->role === 'admin')
+                                    @if($order->cancel_reason || $order->cancelled_at)
+                                    <div class="mb-2">
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="fas fa-times-circle me-1"></i>Đã hủy
+                                        </span>
+                                        @if($order->cancel_reason)
+                                        <br>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ Str::limit($order->cancel_reason, 30) }}
+                                        </small>
+                                        @endif
+                                        @if($order->cancelled_at)
+                                        <br>
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-clock me-1"></i>{{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i') }}
+                                        </small>
+                                        @endif
+                                    </div>
                                     @endif
-                                    @if($order->cancelled_at)
-                                    <br>
-                                    <small class="text-muted d-block">
-                                        <i class="fas fa-clock me-1"></i>{{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i') }}
-                                    </small>
-                                    @endif
-                                </div>
+                                    <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-outline-primary btn-sm rounded-circle" title="Xem chi tiết đơn hàng" data-bs-toggle="tooltip" data-bs-placement="top">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                 @endif
-                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-outline-primary btn-sm rounded-circle" title="Xem chi tiết đơn hàng" data-bs-toggle="tooltip" data-bs-placement="top">
-                                    <i class="fas fa-eye"></i>
-                                </a>
                             </td>
                         </tr>
                         @endforeach

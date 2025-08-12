@@ -22,8 +22,16 @@ class ResetPasswordController extends Controller
                 ])->save();
             }
         );
-        return $status ===Password::PASSWORD_RESET
-        ? redirect()->route('login')->with('success','Đặt lại mật khẩu thành công' )
-        : back()->withErrors(['email' => __($status)]);
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()->route('login')->with('success', 'Đặt lại mật khẩu thành công');
+        }
+
+        $messages = [
+            Password::INVALID_TOKEN => 'Email khôi phục mật khẩu không hợp lệ.',
+            Password::INVALID_USER => 'Email không tồn tại trong hệ thống.',
+            Password::RESET_THROTTLED => 'Vui lòng đợi trước khi thử lại.',
+            Password::RESET_LINK_SENT => 'Email đặt lại mật khẩu đã được gửi.',
+        ];
+        return back()->withErrors(['email' => $messages[$status] ?? 'Có lỗi xảy ra vui lòng thử lại']);
     }
 }

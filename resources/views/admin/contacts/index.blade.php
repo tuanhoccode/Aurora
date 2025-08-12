@@ -71,15 +71,17 @@
                                                 <i class="bi bi-eye"></i> Xem
                                             </a>
                                         </li>
-                                        <li>
-                                            <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa liên hệ này?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger">
-                                                    <i class="bi bi-trash"></i> Xóa
-                                                </button>
-                                            </form>
-                                        </li>
+                                        @if(Auth::user()->role === 'admin')
+                                            <li>
+                                                <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa liên hệ này?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </div>
                             </td>

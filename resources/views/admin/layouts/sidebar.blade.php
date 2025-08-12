@@ -118,14 +118,13 @@
                 <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Trang CMS
             </a>
         </li>
-          @if(Auth::user()->role === 'admin')
-    <li>
-        <a class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}"
-            href="{{ route('admin.contacts.index') }}">
-            <span class="nav-icon"><i class="fas fa-address-book"></i></span> Quản lý liên hệ
-        </a>
-    </li>
-@endif
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}"
+                href="{{ route('admin.contacts.index') }}">
+                <span class="nav-icon"><i class="fas fa-address-book"></i></span> Quản lý liên hệ
+            </a>
+        </li>
+
         {{-- <li>
             <a class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
                 href="{{ route('admin.product-images.all') }}">
