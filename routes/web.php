@@ -64,6 +64,10 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     Route::resource('contacts', AdminContactController::class);
     Route::post('contacts/{id}/update-status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
     Route::post('contacts/{id}/reply', [AdminContactController::class, 'reply'])->name('contacts.reply');
+    Route::patch('contacts/{id}/restore', [AdminContactController::class, 'restore'])->name('contacts.restore');
+    Route::delete('contacts/{id}/force-delete', [AdminContactController::class, 'forceDelete'])->name('contacts.forceDelete');
+    Route::get('contacts-trash', [AdminContactController::class, 'trash'])->name('contacts.trash');
+
 
     //Coupon routes
     Route::middleware('admin.only')->prefix('coupons')->name('coupons.')->group(function () {
