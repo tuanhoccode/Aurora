@@ -41,8 +41,9 @@ class AdminRepliedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Phản hồi từ quản trị viên')
-            ->greeting('Xin chào' . ($notifiable->fullname ?? $notifiable->name ?? 'Quý khách'))
-            ->line('Bình luận hoặc đánh giá của bạn về sản phẩm '. optional($this->parent->product)->name ?? 'sản phẩm')
+            ->greeting('Xin chào ' . ($notifiable->fullname ?? 'Quý khách'))
+            ->line('Bình luận hoặc đánh giá của bạn về sản phẩm '
+            . optional($this->parent->product)->name . '. Có tiêu đề là :' ?? 'sản phẩm')
             ->line($this->originalText)
             ->line('Nội dung phản hồi: ')
             ->line($this ->replyText)
