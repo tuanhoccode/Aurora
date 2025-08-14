@@ -41,6 +41,9 @@ class Review extends Model
     public function getHasRepliesAttribute(){
         return $this->replies()->exists();
     }
+    public function images(){
+        return $this->hasMany(ReviewImage::class);
+    }
     //Thêm biến thể ở bình luận 
     public function orderItem(){
         return $this->hasOne(OrderItem::class, 'order_id', 'order_id')

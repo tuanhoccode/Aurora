@@ -46,8 +46,8 @@
                         <div class="col-lg-6 py-lg-5">
                             <div class="d-flex flex-column h-100 justify-content-center">
                                 <div class="auth-logo mb-4">
-                                    <a href="index.html" class="logo-dark">
-                                        <img src="{{asset('assets1/images/logo-dark.png')}}" height="24" alt="logo dark">
+                                    <a href="route('home')" class="logo-dark">
+                                        <img src="{{asset('assets1/images/logo.svg')}}" height="45px" alt="logo dark">
                                     </a>
 
                                     <a href="index.html" class="logo-light">

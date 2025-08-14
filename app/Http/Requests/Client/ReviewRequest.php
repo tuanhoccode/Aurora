@@ -22,21 +22,20 @@ class ReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'rating' => 'required|integer|min:1|max:5',
             'review_text' => 'required|string|max:200',
+            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
     public function messages(): array
     {
         return [
-            // 'rating.required' => 'Vui lòng chọn số sao đánh giá.',
-            // 'rating.integer' => 'Số sao phải là số nguyên.',
-            // 'rating.min' => 'Số sao tối thiểu là 1.',
-            // 'rating.max' => 'Số sao tối đa là 5.',
-
             'review_text.required' => 'Vui lòng nhập nội dung đánh giá.',
             'review_text.string' => 'Nội dung đánh giá không hợp lệ.',
             'review_text.max' => 'Nội dung đánh giá tối đa 200 ký tự.',
+
+            'images.*.image' => 'Tệp tải lên phải là hình ảnh',
+            'images.*.mimes' => 'Ảnh phải có định dạng là jpg,jpeg,png,webp',
+            'images.*.max' => 'Kích thước của ảnh tối đa là 2MB',
         ];
     }
 }

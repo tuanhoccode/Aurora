@@ -331,6 +331,21 @@
         border-color: var(--active-border-color) !important;
         box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
     }
+    /* Css ảnh bình luận */
+    .review-image {
+        width: 100px; 
+        height: 100px; 
+        object-fit: cover; /* cắt ảnh để vừa khung mà không méo */
+        border-radius: 6px; 
+        border: 1px solid #ddd; 
+        transition: transform 0.2s ease-in-out;
+    }
+    .review-image:hover {
+        transform: scale(1.05); /* phóng nhẹ khi hover */
+    }
+    .review-image-link {
+        display: inline-block;
+    }
 </style>
 <main>
     <!-- breadcrumb area start -->
@@ -822,8 +837,7 @@
                                                 </div>
                                             </div>
                                             <div class="tp-product-details-review-list pr-110">
-                                                <h3 id="reviews" class="tp-product-details-review-title">Đánh giá và bình luận của
-                                                    khách hàng</h3>
+                                                <h3 id="reviews" class="tp-product-details-review-title">ĐÁNH GIÁ SẢN PHẨM</h3>
 
 
                                                 <!-- Hiển thị reviews -->
@@ -848,7 +862,9 @@
                                                                 {{ $review->user->fullname }}
                                                             </h3>
                                                             <span
-                                                                class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}</span>
+                                                                class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }} 
+                                                            
+                                                            </span>
                                                             <!-- Hiển thị phân loại đã mua  -->
                                                             @php
                                                                 $orderItem = $review->orderItem;
@@ -859,16 +875,29 @@
                                                             @endphp
                                                             @if(!empty($attrs))
                                                                 <div class="mt-1 text-muted small">
-                                                                    <strong>Phân loại:</strong>
+                                                                    Phân loại hàng:
+                                                                    <strong>
                                                                     @foreach($attrs as $key => $value)
                                                                         {{ucfirst($key)}} : {{$value}}@if(!$loop->last), @endif
                                                                     @endforeach
+                                                                    </strong>
                                                                 </div>
                                                             
                                                             @endif
                                                             <div class="tp-product-details-review-avater-comment mb-1">
-                                                                {{ $review->review_text }}
+                                                                <div class="mt-1 text-muted small">
+                                                                    <strong>{{ $review->review_text }}</strong>
+                                                                </div>
                                                             </div>
+                                                            @if($review ->images->count())
+                                                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                                                    @foreach($review->images as $img)
+                                                                        <a href="{{asset('storage/'. $img->image_path)}}" target="_blank" class="review-image-link">
+                                                                            <img src="{{asset('storage/'. $img->image_path)}}" alt="Review Images" width="80px" class="review-image">
+                                                                        </a>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
                                                             @foreach ($review->replies as $reply)
                                                                 <div
                                                                     class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
@@ -897,21 +926,10 @@
                                     </div> <!-- end col -->
                                     <br><br>
                                     <div class="tp-product-details-review-form">
-                                        <h3 class="tp-product-details-review-form-title">Đánh giá sản phẩm này</h3>
-                                        <form action="{{ route('client.store', $product) }}" method="Post">
+                                        <h3 class="tp-product-details-review-form-title">Đánh giá và bình luận sản phẩm</h3>
+                                        <form action="{{ route('client.store', $product) }}" method="post" enctype="multipart/form-data">   
                                             @csrf
-                                            <!-- Thông tin biêns thể -->
-                                            @if(isset($orderItem))
-                                            <div class="mb-2">
-                                                <strong>Phân loại hàng:</strong> {{ $orderItem->name_variant }}
-                                                @if(!empty($attributes))
-                                                    @foreach($attributes as $key => $value)
-                                                        | {{ ucfirst($key) }}: {{ $value }}
-                                                    @endforeach
-                                                @endif
-                                            </div>
-                                            <input type="hidden" name="order_item_id" value="{{$orderItem->id}}">
-                                            @endif
+            
                                             <div
                                                 class="tp-product-details-review-form-rating d-flex align-items-center">
                                                 <p>Đánh giá của bạn :</p>
@@ -936,10 +954,18 @@
                                                     <div class="tp-product-details-review-input">
                                                         <textarea name="review_text"
                                                             placeholder="Viết đánh giá của bạn...">{{ old('review_text') }}</textarea>
+                                                            @error('review_text')
+                                                                <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
                                                     </div>
-                                                    @error('review_text')
+                                                    <label class="form-label fw-bold mt-2" >Chọn tối đa 5 ảnh</label>
+                                                    <input type="file" name="images[]" id="imageInput" class="form-control" multiple accept="images/*">
+                                                    @error('images.*')
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
+                                                    <!-- Khung preview ảnh -->
+                                                    <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2"></div>
+                                            
                                                     <div class="tp-product-details-review-input-title">
                                                         <label for="msg">Bình luận của bạn</label>
                                                     </div>
@@ -1644,6 +1670,36 @@
         }
     });
 </script>
+<!-- Chọn tối đa 5 ảnh -->
+ <script>
+    document.getElementById('imageInput').addEventListener('change', function (event) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById('imagePreview');
+        previewContainer.innerHTML = ''; // Xóa preview cũ
+
+        if (files.length > 5) {
+            alert('Bạn chỉ được chọn tối đa 5 ảnh');
+            event.target.value = ''; // Reset input
+            return;
+        }
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('rounded', 'border');
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover';
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+ </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>

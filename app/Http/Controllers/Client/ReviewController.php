@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\ReviewImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
@@ -22,9 +23,9 @@ class ReviewController extends Controller
             return redirect()->route('login')->with('error', 'Bạn cần đăng nhập.');
         }
         // Admin không được đánh giá và bình luận 
-        if ($user->role === 'admin' || $user->role === 'employee') {
-            return back()->with('error', 'Admin và nhân viên không thể tạo đánh giá và bình luận');
-        }
+        // if ($user->role === 'admin' || $user->role === 'employee') {
+        //     return back()->with('error', 'Admin và nhân viên không thể tạo đánh giá và bình luận');
+        // }
         if ($req->filled('rating')) {
 
             //Kiểm tra người dùng mua sản phẩm chưa
@@ -54,7 +55,7 @@ class ReviewController extends Controller
                 return back()->with('error', 'Bạn đã đánh giá hết tất cả các lần mua sản phẩm này rồi');
             }
 
-            Review::create([
+            $review = Review::create([
                 'product_id' => $product->id,
                 'order_id' => $orderToReview?->id,
                 'user_id' => $user->id,
@@ -62,6 +63,16 @@ class ReviewController extends Controller
                 'review_text' => $req->review_text,
                 'is_active' =>  0,
             ]);
+            //Lưu ảnh
+            if ($req->hasFile('images')) {
+                foreach($req->file('images') as $file){
+                    $path = $file->store('reviews', 'public');
+                    ReviewImage::create([
+                        'review_id' => $review->id,
+                        'image_path' => $path
+                    ]);
+                }
+            }
             return back()->with('success', 'Đánh giá của bạn đang chờ kiểm duyệt và sẽ hiển thị sau khi được duyệt.');
         } else {
             Comment::create([
