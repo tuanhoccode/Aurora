@@ -26,6 +26,26 @@
             </div>
         @endif
 
+        {{-- Search & Filter --}}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form action="{{ route('admin.coupons.index') }}" method="GET" class="d-flex gap-2">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm mã..."
+               value="{{ request('search') }}">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
+    <select name="status" class="form-select" style="width:auto">
+        <option value="">Tất cả trạng thái</option>
+        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Kích hoạt</option>
+        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Tắt</option>
+    </select>
+</form>
+            </div>
+        </div>
+
         {{-- Table --}}
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body p-4">
@@ -34,7 +54,6 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    {{-- <th>ID</th> --}}
                                     <th>Mã</th>
                                     <th>Giảm</th>
                                     <th>Hạn sử dụng</th>
@@ -46,29 +65,27 @@
                             <tbody>
                                 @foreach ($coupons as $coupon)
                                     <tr>
-                                        {{-- <td>{{ $coupon->id }}</td> --}}
                                         <td>{{ $coupon->code }}</td>
-                                        <td>{{ $coupon->discount_type === 'percent' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}
+                                        <td>
+                                            {{ $coupon->discount_type === 'percent'
+                                                ? $coupon->discount_value . '%'
+                                                : number_format($coupon->discount_value) . 'đ' }}
                                         </td>
                                         <td>{{ $coupon->end_date ? $coupon->end_date->format('d/m/Y') : 'Không có' }}</td>
                                         <td>
-                                            @if($coupon->is_active)
-                                                <span class="badge bg-success">Kích hoạt</span>
-                                            @else
-                                                <span class="badge bg-secondary">Tắt</span>
-                                            @endif
+                                            <span class="badge {{ $coupon->is_active ? 'bg-success' : 'bg-secondary' }}">
+                                                {{ $coupon->is_active ? 'Kích hoạt' : 'Tắt' }}
+                                            </span>
                                         </td>
-                                        <td>
-                                            {{ $coupon->usage_count }}{{ $coupon->usage_limit ? ' / ' . $coupon->usage_limit : '' }}
-                                        </td>
-
+                                        <td>{{ $coupon->usage_count }}{{ $coupon->usage_limit ? ' / ' . $coupon->usage_limit : '' }}</td>
                                         <td class="text-end">
                                             <a href="{{ route('admin.coupons.edit', $coupon->id) }}"
-                                                class="btn btn-warning btn-sm rounded-pill px-3">
+                                               class="btn btn-warning btn-sm rounded-pill px-3">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <form action="{{ route('admin.coupons.destroy', $coupon->id) }}" method="POST"
-                                                class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa mã này?')">
+                                                  class="d-inline-block"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa mã này?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger btn-sm rounded-pill px-3">

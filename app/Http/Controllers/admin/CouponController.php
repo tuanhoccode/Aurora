@@ -9,11 +9,24 @@ use App\Http\Requests\Admin\CouponRequest;
 
 class CouponController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $coupons = Coupon::latest()->paginate(10);
+        $query = Coupon::query();
+
+        if ($request->filled('search')) {
+            $query->where('code', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('status') && in_array($request->status, ['0', '1'])) {
+            $query->where('is_active', $request->status);
+        }
+
+        $coupons = $query->latest()->paginate(10)->withQueryString();
+
         return view('admin.coupons.index', compact('coupons'));
     }
+
+
 
     public function create()
     {
@@ -70,36 +83,36 @@ class CouponController extends Controller
     }
 
     // Xóa hàng loạt
-public function bulkDelete(Request $request)
-{
-    $ids = json_decode($request->input('ids_json'), true);
-    if (!empty($ids)) {
-        Coupon::whereIn('id', $ids)->delete();
-        return back()->with('success', 'Đã xóa các mã giảm giá đã chọn!');
+    public function bulkDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids_json'), true);
+        if (!empty($ids)) {
+            Coupon::whereIn('id', $ids)->delete();
+            return back()->with('success', 'Đã xóa các mã giảm giá đã chọn!');
+        }
+        return back()->with('error', 'Không có mã nào được chọn để xóa.');
     }
-    return back()->with('error', 'Không có mã nào được chọn để xóa.');
-}
 
 
     // Khôi phục hàng loạt
-public function bulkRestore(Request $request)
-{
-    $ids = json_decode($request->input('ids_json'), true);
-    if (!empty($ids)) {
-        Coupon::onlyTrashed()->whereIn('id', $ids)->restore();
-        return back()->with('success', 'Đã khôi phục các mã đã chọn!');
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->input('ids_json'), true);
+        if (!empty($ids)) {
+            Coupon::onlyTrashed()->whereIn('id', $ids)->restore();
+            return back()->with('success', 'Đã khôi phục các mã đã chọn!');
+        }
+        return back()->with('error', 'Không có mã nào được chọn để khôi phục.');
     }
-    return back()->with('error', 'Không có mã nào được chọn để khôi phục.');
-}
 
     // Xóa vĩnh viễn hàng loạt
-public function bulkForceDelete(Request $request)
-{
-    $ids = json_decode($request->input('ids_json'), true);
-    if (!empty($ids)) {
-        Coupon::onlyTrashed()->whereIn('id', $ids)->forceDelete();
-        return back()->with('success', 'Đã xóa vĩnh viễn các mã đã chọn!');
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids_json'), true);
+        if (!empty($ids)) {
+            Coupon::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+            return back()->with('success', 'Đã xóa vĩnh viễn các mã đã chọn!');
+        }
+        return back()->with('error', 'Không có mã nào được chọn để xóa vĩnh viễn.');
     }
-    return back()->with('error', 'Không có mã nào được chọn để xóa vĩnh viễn.');
-}
 }

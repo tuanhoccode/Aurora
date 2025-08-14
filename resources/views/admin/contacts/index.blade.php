@@ -18,14 +18,15 @@
                 <option value="">-- Lọc theo trạng thái --</option>
                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chưa xử lý</option>
                 <option value="replied" {{ request('status') == 'replied' ? 'selected' : '' }}>Đã trả lời</option>
-                {{-- <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Đã đóng</option> --}}
             </select>
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary">Tìm kiếm</button>
         </div>
-        <div class="col-md-1">
-            <a href="{{ route('admin.contacts.index') }}" class="btn btn-secondary">Xóa</a>
+        <div class="col-md-3 text-end">
+            <a href="{{ route('admin.contacts.trash') }}" class="btn btn-outline-danger">
+                <i class="bi bi-trash3"></i> Thùng rác
+            </a>
         </div>
     </form>
 
@@ -53,8 +54,6 @@
                                     <span class="badge bg-warning text-dark">Chưa xử lý</span>
                                 @elseif($contact->status === 'replied')
                                     <span class="badge bg-success">Đã trả lời</span>
-                                @elseif($contact->status === 'closed')
-                                    <span class="badge bg-secondary">Đã đóng</span>
                                 @else
                                     <span class="badge bg-secondary">{{ ucfirst($contact->status) }}</span>
                                 @endif
@@ -62,10 +61,10 @@
                             <td>{{ $contact->created_at->format('d/m/Y H:i') }}</td>
                             <td class="text-center">
                                 <div class="dropdown">
-                                    <button class="btn btn-light btn-sm" type="button" id="actionMenu{{ $contact->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionMenu{{ $contact->id }}">
+                                    <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <a class="dropdown-item" href="{{ route('admin.contacts.show', $contact->id) }}">
                                                 <i class="bi bi-eye"></i> Xem
@@ -88,7 +87,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Không có liên hệ nào</td>
+                            <td colspan="6" class="text-center text-muted">Không có liên hệ nào</td>
                         </tr>
                     @endforelse
                 </tbody>
