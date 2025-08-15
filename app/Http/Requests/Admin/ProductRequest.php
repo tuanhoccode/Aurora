@@ -37,26 +37,21 @@ class ProductRequest extends FormRequest
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
             'is_sale' => 'nullable|boolean',
-            'variants' => 'required_if:type,variant|array|min:1',
-            'variants.*.attributes' => 'required|array|min:1',
-            'variants.*.attributes.*' => 'required|exists:attribute_values,id',
-            'variants.*.image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
 
-
-        // Thêm validation cho biến thể nếu là sản phẩm biến thể và có dữ liệu variants
-        if ($this->input('type') === 'variant' && $this->has('variants')) {
-            $rules['variants'] = 'required|array|min:1';
-            // Nếu là PUT (update), ignore id của các biến thể cũ
-            if ($this->isMethod('PUT') && $this->has('variants_old')) {
-                foreach ($this->input('variants_old') as $variantId => $variantData) {
-                    $rules["variants_old.$variantId.sku"] = [
-                        'nullable',
-                        'string',
-                        'max:50'
-                    ];
-                }
+        // Nếu là sản phẩm biến thể
+        if ($this->input('type') === 'variant') {
+            if ($this->isMethod('POST')) {
+                // Khi tạo mới: bắt buộc phải có variants
+                $rules['variants'] = 'required|array|min:1';
+            } else {
+                // Khi update: chỉ cần variants hoặc variants_old có ít nhất 1 biến thể
+                $rules['variants'] = 'nullable|array';
+                $rules['variants_old'] = 'nullable|array';
             }
+            $rules['variants.*.attributes'] = 'required|array|min:1';
+            $rules['variants.*.attributes.*'] = 'required|exists:attribute_values,id';
+            $rules['variants.*.image'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             $rules['variants.*.sku'] = [
                 'nullable',
                 'string',
@@ -67,12 +62,8 @@ class ProductRequest extends FormRequest
             $rules['variants.*.sale_starts_at'] = 'nullable|date|required_with:sale_price';
             $rules['variants.*.sale_ends_at'] = 'nullable|date|after:sale_starts_at|required_with:sale_price';
             $rules['variants.*.stock'] = 'required|numeric|min:0';
-            $rules['variants.*.attributes'] = 'required|array|min:1';
-            $rules['variants.*.attributes.*'] = 'exists:attribute_values,id';
-            $rules['variants.*.image'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             $rules['variants.*.gallery_images.*'] = 'nullable|string';
         }
-
 
         return $rules;
     }
@@ -85,6 +76,15 @@ class ProductRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            // Khi update sản phẩm biến thể: phải có ít nhất 1 biến thể (cũ hoặc mới)
+            if ($this->input('type') === 'variant' && $this->isMethod('PUT')) {
+                $variants = $this->input('variants', []);
+                $variantsOld = $this->input('variants_old', []);
+                if (empty($variants) && empty($variantsOld)) {
+                    $validator->errors()->add('variants', 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể');
+                }
+            }
+
             // Kiểm tra SKU trùng lặp trong cùng một request cho biến thể (chỉ khi có SKU)
             if ($this->input('type') === 'variant' && $this->has('variants') && !empty($this->input('variants'))) {
                 $skus = collect($this->input('variants'))->pluck('sku')->filter();
