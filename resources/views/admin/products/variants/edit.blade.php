@@ -1,9 +1,11 @@
 // ...existing code...
 
+
 <tbody>
   @foreach($product->variants as $variant)
     {{-- ...render biến thể cũ như hiện tại... --}}
   @endforeach
+
 
   {{-- Thêm đoạn này để render lại biến thể mới từ old('variants') nếu có --}}
   @if(old('variants') && count(old('variants')) > 0)
@@ -40,10 +42,10 @@
           <input type="file" class="form-control mb-2" name="variants[{{ $i }}][image]" accept="image/*">
           <div class="variant-gallery-upload">
             <label class="form-label small text-muted mb-1 d-block">Thư viện ảnh</label>
-            <input type="file" class="form-control variant-gallery-input" 
-                   data-variant-index="{{ $i }}" 
-                   name="variants[{{ $i }}][gallery][]" 
-                   multiple 
+            <input type="file" class="form-control variant-gallery-input"
+                   data-variant-index="{{ $i }}"
+                   name="variants[{{ $i }}][gallery][]"
+                   multiple
                    accept="image/*">
             <div class="variant-gallery-preview mt-2 d-flex flex-wrap gap-2" id="variant-gallery-{{ $i }}">
               <!-- Ảnh sẽ được hiển thị ở đây -->
@@ -58,13 +60,17 @@
   @endif
 </tbody>
 
+
 // ...existing code...@extends('admin.layouts.app')
 
+
 @section('title', 'Chỉnh sửa biến thể sản phẩm')
+
 
 @section('content')
 <div class="container">
     <h3 class="mb-4">Chỉnh sửa biến thể cho sản phẩm: <span class="text-primary">{{ $product->name }}</span></h3>
+
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
@@ -73,12 +79,14 @@
         </div>
     @endif
 
+
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
 
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
@@ -90,6 +98,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
 
     <form action="{{ route('admin.products.variants.update', [$product->id, $variant->id]) }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -112,9 +121,9 @@
                                 <div class="fw-bold mb-1">{{ $attribute->name }}</div>
                                 @foreach($attribute->values as $value)
                                     <div class="form-check">
-                                        <input type="radio" class="form-check-input attribute-radio" 
-                                            name="attribute_values[{{ $attribute->id }}]" 
-                                            value="{{ $value->id }}" 
+                                        <input type="radio" class="form-check-input attribute-radio"
+                                            name="attribute_values[{{ $attribute->id }}]"
+                                            value="{{ $value->id }}"
                                             data-attribute-name="{{ strtolower($attribute->name) }}"
                                             data-value="{{ $value->value }}"
                                             id="attr-{{ $attribute->id }}-{{ $value->id }}"
@@ -134,9 +143,13 @@
                             <label class="fw-bold" for="img">Ảnh sản phẩm</label>
                             <div>
                                 @if(!empty($variant->img))
-                                    <img src="{{ asset('storage/' . $variant->img) }}" alt="Ảnh sản phẩm" class="img-thumbnail mb-2" style="max-width: 150px;">
+                                    <div class="position-relative d-inline-block mb-2">
+                                        <img src="{{ asset('storage/' . $variant->img) }}" alt="Ảnh sản phẩm" class="img-thumbnail" style="max-width: 150px;">
+                                        <span class="badge bg-info position-absolute top-0 start-0">Ảnh hiện tại</span>
+                                    </div>
                                 @endif
-                                <input type="file" class="form-control" id="img" name="img">
+                                <input type="file" class="form-control variant-image-input" id="img" name="img" accept="image/*">
+                                <div class="mt-2 variant-image-preview" id="variant-image-preview-new"></div>
                             </div>
                         </div>
                     </div>
@@ -159,6 +172,16 @@
                             <input type="number" class="form-control" id="sale_price" name="sale_price"
                                 value="{{ old('sale_price', ($variant->sale_price ?? '')) }}" min="0" step="1">
                         </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" for="sale_starts_at">Bắt đầu khuyến mãi</label>
+                            <input type="datetime-local" class="form-control" id="sale_starts_at" name="sale_starts_at"
+                                value="{{ old('sale_starts_at', optional($variant->sale_starts_at)->format('Y-m-d\TH:i')) }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" for="sale_ends_at">Kết thúc khuyến mãi</label>
+                            <input type="datetime-local" class="form-control" id="sale_ends_at" name="sale_ends_at"
+                                value="{{ old('sale_ends_at', optional($variant->sale_ends_at)->format('Y-m-d\TH:i')) }}">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,6 +189,7 @@
         <button type="submit" class="btn btn-success mt-3">Cập nhật biến thể</button>
     </form>
 </div>
+
 
 @push('styles')
 <style>
@@ -199,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const productCode = getProductCode(@json($product->name));
 
+
     function updateSKU() {
         let sku = productCode;
         document.querySelectorAll('.attribute-radio:checked').forEach(cb => {
@@ -231,14 +256,58 @@ document.addEventListener('DOMContentLoaded', function() {
         @endif
     }
 
+
     // Gọi hàm khôi phục khi trang load
     restoreAttributeSelections();
+
 
     document.querySelectorAll('.attribute-radio').forEach(cb => {
         cb.addEventListener('change', updateSKU);
     });
     // Gọi lần đầu để đồng bộ khi load trang
     updateSKU();
+
+
+    // Xử lý preview ảnh cho biến thể
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('variant-image-input')) {
+            const file = e.target.files[0];
+            const previewContainer = document.getElementById('variant-image-preview-new');
+           
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <div class="position-relative d-inline-block">
+                            <img src="${e.target.result}" alt="Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                            <span class="badge bg-success position-absolute top-0 start-0">Ảnh mới</span>
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                    onclick="removeVariantImage()" style="margin: 2px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.innerHTML = '';
+            }
+        }
+    });
+
+
+    // Hàm xóa ảnh preview
+    window.removeVariantImage = function() {
+        const input = document.querySelector('.variant-image-input');
+        const previewContainer = document.getElementById('variant-image-preview-new');
+       
+        if (input) {
+            input.value = '';
+        }
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+        }
+    };
 });
 </script>
 @endpush

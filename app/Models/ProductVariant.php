@@ -17,6 +17,8 @@ class ProductVariant extends Model
         'stock',
         'regular_price',
         'sale_price',
+        "sale_starts_at",
+        "sale_ends_at",
         'img'
     ];
 
@@ -30,6 +32,8 @@ class ProductVariant extends Model
         'regular_price' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'img' => 'string',
+        'sale_starts_at' => 'datetime',
+        'sale_ends_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -63,9 +67,19 @@ class ProductVariant extends Model
         return $this->hasMany(\App\Models\OrderItem::class, 'product_variant_id');
     }
 
-    public function getIsOnSaleAttribute()
+   public function getIsOnSaleAttribute()
     {
-        return $this->sale_price && $this->sale_price < $this->regular_price;
+        if (!$this->sale_price || $this->sale_price >= $this->regular_price) {
+            return false;
+        }
+        $now = now();
+        if ($this->sale_starts_at && $now->lt($this->sale_starts_at)) {
+            return false;
+        }
+        if ($this->sale_ends_at && $now->gt($this->sale_ends_at)) {
+            return false;
+        }
+        return true;
     }
 
     public function getCurrentPriceAttribute()

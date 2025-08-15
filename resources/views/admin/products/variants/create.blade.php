@@ -1,6 +1,8 @@
 @extends('admin.layouts.app')
 
+
 @section('title', 'Tạo biến thể sản phẩm')
+
 
 @section('content')
 <div class="container-fluid">
@@ -19,12 +21,14 @@
                         </div>
                     @endif
 
+
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
+
 
                     @if ($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -37,8 +41,10 @@
                         </div>
                     @endif
 
+
                     <form action="{{ route('admin.products.variants.store', $product) }}" method="POST" enctype="multipart/form-data" id="create-variants-form">
                         @csrf
+
 
                         <!-- Attributes Selection -->
                         <div class="card mb-4">
@@ -77,6 +83,7 @@
                             </div>
                         </div>
 
+
                         <!-- Variants Section -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
@@ -92,6 +99,7 @@
                             </div>
                         </div>
 
+
                         <div class="card-footer bg-white">
                             <button type="submit" class="btn btn-primary">Tạo biến thể</button>
                             <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary">Quay lại</a>
@@ -103,16 +111,19 @@
     </div>
 </div>
 
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded triggered'); // Debug
+
 
     const colorCodes = {
         'đỏ': 'DO', 'xanh': 'XA', 'trắng': 'TR', 'đen': 'DE', 'vàng': 'VA',
         'xanh lá': 'XL', 'xanh dương': 'XD', 'cam': 'CA', 'tím': 'TI',
         'nâu': 'NA', 'hồng': 'HO', 'xám': 'XA'
     };
+
 
     const vietnameseToEnglish = {
         'áo': 'shirt', 'quần': 'pants', 'giày': 'shoes', 'mũ': 'hat', 'túi': 'bag',
@@ -125,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'túi du lịch': 'travelbag', 'túi đeo chéo': 'crossbag'
     };
 
+
     function getEnglishProductCode(productName) {
         let englishName = productName.toLowerCase();
         Object.entries(vietnameseToEnglish).forEach(([vietnamese, english]) => {
@@ -134,9 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return firstWord.substring(0, 2).toUpperCase();
     }
 
+
     const productName = '{{ $product->name }}';
     const productCode = getEnglishProductCode(productName);
     let variantCount = 0;
+
 
     // Hàm tạo tổ hợp từ các mảng giá trị
     function cartesianProduct(arrays) {
@@ -145,20 +159,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }, [[]]);
     }
 
+
     function generateVariants() {
         console.log('Generating variants'); // Debug
         const attributeCheckboxes = document.querySelectorAll('.attribute-checkbox:checked');
         const variantContainer = document.getElementById('variantContainer');
+
 
         if (!variantContainer) {
             console.error('variantContainer not found');
             return;
         }
 
+
         if (attributeCheckboxes.length === 0) {
             alert('Vui lòng chọn ít nhất một giá trị thuộc tính.');
             return;
         }
+
 
         // Nhóm các giá trị theo thuộc tính
         const attributes = {};
@@ -174,6 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+
         // Tạo tổ hợp các giá trị thuộc tính
         const attributeValues = Object.values(attributes);
         if (attributeValues.length === 0) {
@@ -181,9 +200,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const combinations = cartesianProduct(attributeValues);
 
+
         // Xóa các biến thể hiện có
         variantContainer.innerHTML = '';
         variantCount = 0;
+
 
         // Tạo HTML cho mỗi tổ hợp
         combinations.forEach(combination => {
@@ -191,10 +212,12 @@ document.addEventListener('DOMContentLoaded', function() {
             let skuParts = [productCode];
             let variantLabel = [];
 
+
             // Tạo SKU và nhãn từ tổ hợp
             // Chỉ lấy size và màu sắc cho SKU
             let colorValue = null;
             let sizeValue = null;
+
 
             // Tìm size và color trong combination
             combination.forEach(attr => {
@@ -207,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 variantLabel.push(attr.value);
             });
 
+
             // Thêm size trước, color sau vào SKU
             if (sizeValue) {
                 skuParts.push(sizeValue.toUpperCase());
@@ -216,8 +240,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 skuParts.push(code);
             }
 
+
             const sku = skuParts.join('-');
             const label = variantLabel.join(' - ');
+
 
             console.log(`Variant ${variantCount} SKU generation:`, {
                 productCode,
@@ -226,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 sku,
                 label
             });
+
 
             const variantHtml = `
                 <div class="variant-item mb-3 p-3 border rounded" data-index="${variantCount}">
@@ -275,13 +302,27 @@ document.addEventListener('DOMContentLoaded', function() {
                                        step="0.01">
                             </div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Bắt đầu khuyến mãi</label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   name="variants[${variantCount}][sale_starts_at]">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Kết thúc khuyến mãi</label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   name="variants[${variantCount}][sale_ends_at]">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-medium">Hình ảnh biến thể</label>
                         <input type="file"
-                               class="form-control"
+                               class="form-control variant-image-input"
                                name="variants[${variantCount}][img]"
-                               accept="image/*">
+                               accept="image/*"
+                               data-variant-index="${variantCount}">
+                        <div class="mt-2 variant-image-preview" id="variant-image-preview-${variantCount}"></div>
                     </div>
                     ${combination.map(attr => `
                         <input type="hidden"
@@ -292,11 +333,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
 
+
             variantContainer.insertAdjacentHTML('beforeend', variantHtml);
             console.log(`Variant ${variantCount} added: ${label}`); // Debug
             console.log(`Attribute values for variant ${variantCount}:`, combination.map(attr => ({id: attr.id, value: attr.value}))); // Debug
         });
     }
+
 
     // Gắn sự kiện cho nút Tạo các cặp biến thể
     const generateVariantsBtn = document.getElementById('generateVariants');
@@ -309,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('generateVariants button not found');
     }
 
+
     // Gắn sự kiện xóa biến thể
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-variant')) {
@@ -317,15 +361,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
+    // Xử lý preview ảnh cho biến thể
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('variant-image-input')) {
+            const file = e.target.files[0];
+            const variantIndex = e.target.getAttribute('data-variant-index');
+            const previewContainer = document.getElementById(`variant-image-preview-${variantIndex}`);
+           
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <div class="position-relative d-inline-block">
+                            <img src="${e.target.result}" alt="Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                    onclick="removeVariantImage(${variantIndex})" style="margin: 2px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.innerHTML = '';
+            }
+        }
+    });
+
+
+    // Hàm xóa ảnh preview
+    window.removeVariantImage = function(variantIndex) {
+        const input = document.querySelector(`input[data-variant-index="${variantIndex}"]`);
+        const previewContainer = document.getElementById(`variant-image-preview-${variantIndex}`);
+       
+        if (input) {
+            input.value = '';
+        }
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+        }
+    };
+
+
     // Form validation before submit
     document.getElementById('create-variants-form').addEventListener('submit', function(e) {
         const variantItems = document.querySelectorAll('.variant-item');
+
 
         if (variantItems.length === 0) {
             e.preventDefault();
             alert('Vui lòng tạo ít nhất một biến thể trước khi lưu.');
             return false;
         }
+
 
         // Check if all required fields are filled
         let isValid = true;
@@ -336,17 +425,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const attributeValues = item.querySelectorAll('input[name*="[attribute_values][]"]');
             const image = item.querySelector('input[name*="[img]"]').files[0];
 
+
             if (!sku || !stock || !regularPrice || attributeValues.length === 0 || !image) {
                 isValid = false;
                 console.log(`Variant ${index + 1} has missing required fields`);
             }
         });
 
+
         if (!isValid) {
             e.preventDefault();
             alert('Vui lòng điền đầy đủ thông tin cho tất cả biến thể.');
             return false;
         }
+
 
         // Log form data before submit
         console.log('Form data before submit:', {
@@ -356,6 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const regularPrice = item.querySelector('input[name*="[regular_price]"]').value;
                 const salePrice = item.querySelector('input[name*="[sale_price]"]').value;
                 const attributeValues = Array.from(item.querySelectorAll('input[name*="[attribute_values][]"]')).map(input => input.value);
+
 
                 return {
                     sku,

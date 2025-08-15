@@ -164,7 +164,7 @@
                             <td>
                                 @if ($product->type === 'variant' && $product->variants->count() > 0)
                                     @php $variant = $product->variants->first(); @endphp
-                                    @if ($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                    @if ($variant->is_on_sale)
                                         <span class="text-decoration-line-through text-muted">{{ number_format($variant->regular_price) }}đ</span>
                                         <span class="text-danger fw-bold ms-1">{{ number_format($variant->sale_price) }}đ</span>
                                         <span class="badge bg-danger ms-1">-{{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
@@ -172,7 +172,7 @@
                                         <span>{{ number_format($variant->regular_price) }}đ</span>
                                     @endif
                                 @else
-                                    @if ($product->is_sale && $product->sale_price < $product->price)
+                                    @if ($product->is_on_sale)
                                         <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
                                         <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
                                         <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
