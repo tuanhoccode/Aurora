@@ -61,7 +61,7 @@ class CommentController extends Controller
     public function showComment($type, $id)
     {
         if ($type === 'review') {
-            $item = Review::with(['user', 'product'])->findOrFail($id);
+            $item = Review::with(['user', 'product', 'images'])->findOrFail($id);
         } else {
             $item = Comment::with(['user', 'product'])->findOrFail($id);
         }
