@@ -4,7 +4,7 @@ namespace App\Http\Requests\Client;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ForgotPasswordRequest extends FormRequest
+class ImageReviewRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,18 +22,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|max:255|regex:/^[^@]+@[^@]+\.[^@]+$/|exists:users,email',
-
-        ];
-    }
-    public function messages(): array
-    {
-        return [
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'email.exists' => 'Email không tồn tại trong hệ thống.',
-            'email.regex' => 'Email không đúng định dạng.',
-            
+            //
         ];
     }
 }

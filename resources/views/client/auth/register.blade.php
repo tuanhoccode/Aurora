@@ -55,16 +55,6 @@
                               Đăng nhập bằng Google
                            </a>
                         </div>
-                        <!-- <div class="tp-login-option-item">
-                           <a href="#">
-                              <img src="{{asset('assets2/img/icon/login/facebook.svg')}}" alt="">
-                           </a>
-                        </div> -->
-                        <!-- <div class="tp-login-option-item">
-                           <a href="#">
-                              <img class="apple" src="{{asset('assets2/img/icon/login/apple.svg')}}" alt="">
-                           </a>
-                        </div> -->
                      </div>
                      <div class="tp-login-mail text-center mb-40">
                         <p>hoặc Đăng ký với <a href="#">Email</a></p>
@@ -123,10 +113,14 @@
                            @enderror
                         </div>
                      </div>
-                     <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-between mb-20">
-                        <div class="tp-login-remeber">
-                           <input id="remeber" type="checkbox">
-                           <label for="remeber">Tôi chấp nhận các điều khoản của Dịch vụ và<a href="#"> Chính sách bảo mật</a>.</label>
+                     <div class="tp-login-suggetions text-center mb-20">
+                        <label>
+                            Bằng việc đăng ký, bạn đã đồng ý với Aurora về
+                        </label>
+                        <div>
+                            <a href="#" style="color:#007bff; text-decoration:none; font-weight:500;">Điều khoản dịch vụ</a>
+                            và
+                            <a href="#" style="color:#007bff; text-decoration:none; font-weight:500;">Chính sách bảo mật</a>
                         </div>
                      </div>
                      <div class="tp-login-bottom">

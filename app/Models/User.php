@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Mail\CustomResetPasswordMail;
+use App\Mail\CustomVerifyEmail;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Mail ;
+use Illuminate\Support\Facades\Url;
+use Carbon\Carbon;
 
 class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
@@ -59,6 +64,30 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
             'password' => 'hashed',
             'birthday' => 'datetime',
         ];
+    }
+    //Gửi mail đăng ký
+    public function sendEmailVerificationNotification()
+    {
+        $verificationUrl = \URL::temporarySignedRoute(
+            'verification.verify', now()
+            ->addMinutes(60),
+            [
+                'id' => $this->getKey(),
+                'hash' =>sha1($this->getEmailForVerification())
+            ]
+            
+        );
+        Mail::to($this->email)->send(new CustomVerifyEmail($verificationUrl, $this));
+    }
+    //Gửi mail reset password
+    public function sendPasswordResetNotification($token)
+    {
+        $resetUrl = Url::temporarySignedRoute(
+            'password.reset',
+            Carbon::now()->addMinutes(config('auth.passwords.users.expire')),
+            ['token' => $token, 'email' => $this->email]
+        );
+        Mail::to($this->email)->send(new CustomResetPasswordMail($resetUrl, $this));
     }
 
     public function address()

@@ -36,19 +36,35 @@
                                     <td>{{ $comment->product->name }}</td>
                                 </tr>
                                 @if($type === 'review')
-                                <tr>
-                                    <th>Bình luận:</th>
-                                    <td><code>{{$comment->review_text}}</code></td>
-                                </tr>
-                                <tr>
-                                    <th>Số sao: </th>
-                                    <td>{{$comment->rating}}⭐</td>
-                                </tr>
+                                    <tr>
+                                        <th>Bình luận:</th>
+                                        <td><code>{{$comment->review_text}}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số sao: </th>
+                                        <td>{{$comment->rating}}⭐</td>
+                                    </tr>
+                                    @if($type === 'review' && $comment->images && $comment->images->count())
+                                        <tr>
+                                            <th>Ảnh đính kèm:</th>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    @foreach($comment->images as $img)
+                                                        <a href="{{asset('storage/' . $img->image_path)}}" target="_blank" class="d-inline-block">
+                                                            <img src="{{asset('storage/' . $img->image_path)}}" alt="Ảnh đánh giá"
+                                                            class="img-thumbnail" style="width:110px; height:110px; object-fit:cover; border-radius:10px;" >
+                                                        </a>
+                                                    @endforeach
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @else
-                                <tr>
-                                    <th>Bình luận:</th>
-                                    <td><code>{{ $comment->content }}</code></td>
-                                </tr>
+                                    <tr>
+                                        <th>Bình luận:</th>
+                                        <td><code>{{ $comment->content }}</code></td>
+                                    </tr>
                                 @endif
                                 <tr>
                                     <th>Trạng thái:</th>

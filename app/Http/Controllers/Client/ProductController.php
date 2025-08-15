@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -85,6 +87,35 @@ class ProductController extends Controller
             ->take(5)
             ->get();
 
+        // Lấy review kèm biến thể từ order_item
+        $reviews = $product->reviews()->where('is_active', 1)->whereNull('review_id')
+        ->where('rating', '>=', 1)
+        ->with(['user', 'orderItems',  'replies' => function($q){
+            $q->where('is_active', 1);
+        }])
+        ->latest()->paginate(6);
+        $orderIds = $reviews->pluck('order_id')->unique();
+        $orderItems = OrderItem::WhereIn('order_id', $orderIds)
+        ->where('product_id', $product->id)->get();
+
+        foreach($reviews as $review){
+            $review->orderItem = $orderItems->firstWhere(function ($item) use ($review){
+                return $item->order_id == $review->order_id && $item->product_id == $review->product_id;
+            });
+        }
+        //Lấy biến thể đã mua khi user đăng nhập và đã mua
+        $orderItem = null;
+        $attributes = [];
+        if (Auth::check()) {
+            $orderItem = OrderItem::where('product_id', $product->id)
+            ->whereHas('order', function($q){
+                $q->where('user_id', Auth::id())
+                ->where('is_paid', 1);
+            })->latest()->first();
+        }
+        if ($orderItem && $orderItem->attributes_variant) {
+            $attributes = json_decode($orderItem->attributes_variant, true);
+        }
         return view('client.product-detail', [
             'product' => $product,
             'productVariants' => $productVariants,
@@ -94,6 +125,8 @@ class ProductController extends Controller
             'variantsWithImages' => $variantsWithImages,
             'variants' => $productVariants,
             'defaultImages' => $defaultImages,
+            'orderItem' => $orderItem,//Truyền sang view
+            'reviews' => $reviews, //truyền reviews vào view
         ]);
     }
 
