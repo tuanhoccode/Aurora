@@ -537,7 +537,7 @@ Route::middleware('web')->group(function () {
     // Đơn hàng (Order)
     Route::middleware(['auth'])->prefix('client')->group(function () {
         Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
-        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show')->middleware('admin.only');
     });
 
     // Client Category

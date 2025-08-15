@@ -29,7 +29,7 @@ class ContactController extends Controller
                 'nullable',
                 'regex:/^\+?[0-9]{9,15}$/'
             ],
-            'message' => 'required|string|min:10',
+            'message' => 'required|string|min:10|max:255',
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
             'name.min'      => 'Họ và tên phải có ít nhất :min ký tự.',
@@ -43,6 +43,7 @@ class ContactController extends Controller
 
             'message.required' => 'Vui lòng nhập nội dung liên hệ.',
             'message.min'      => 'Nội dung phải có ít nhất :min ký tự.',
+            'message.max'      => 'Nội dung phải có ít nhất :max ký tự.',
         ]);
 
         Contact::create([

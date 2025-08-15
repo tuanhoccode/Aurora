@@ -1,4 +1,3 @@
-```blade
 @extends('admin.layouts.app')
 
 @section('title', 'Chi tiết đơn hàng #' . $order->code)

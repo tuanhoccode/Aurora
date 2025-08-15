@@ -30,6 +30,8 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'token.required' => 'Thiếu mã khôi phục mật khẩu',
+
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không hợp lệ.',
             'email.exists' => 'Email không tồn tại trong hệ thống.',
@@ -39,7 +41,7 @@ class ResetPasswordRequest extends FormRequest
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
             'password.max' => 'Mật khẩu không được quá 255 ký tự.',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
-            'password.confirmed' => 'Mật khẩu phải có ít nhất 1 chữ cái in hoa.',
+            'password.regex' => 'Mật khẩu phải có ít nhất 1 chữ cái in hoa.',
         ];
     }
 }

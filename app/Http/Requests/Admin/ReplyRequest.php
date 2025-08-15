@@ -22,7 +22,7 @@ class ReplyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => 'required|string|min:3|max:200'
+            'content' => 'required|string|min:3|max:255'
         ];
     }
     public function messages(): array
@@ -30,7 +30,7 @@ class ReplyRequest extends FormRequest
         return [
             'content.required' => 'Nội dung phản hồi không được để trống.',
             'content.min' => 'Nội dung phản hồi quá ngắn (tối thiểu 3 ký tự).',
-            'content.max' => 'Nội dung phản hồi quá dài (tối đa 100 ký tự).',
+            'content.max' => 'Nội dung phản hồi quá dài (tối đa 255 ký tự).',
         ];
     }
 }
