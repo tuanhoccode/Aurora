@@ -180,6 +180,22 @@
               @error('sale_price')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label">Bắt đầu khuyến mãi</label>
+                  <input type="datetime-local" class="form-control @error('sale_starts_at') is-invalid @enderror" name="sale_starts_at" value="{{ old('sale_starts_at', optional($product->sale_starts_at)->format('Y-m-d\TH:i')) }}">
+                  @error('sale_starts_at')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Kết thúc khuyến mãi</label>
+                  <input type="datetime-local" class="form-control @error('sale_ends_at') is-invalid @enderror" name="sale_ends_at" value="{{ old('sale_ends_at', optional($product->sale_ends_at)->format('Y-m-d\TH:i')) }}">
+                  @error('sale_ends_at')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+              </div>
               <label class="form-label">Tồn kho (tối đa 100)</label>
               <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0" max="100">
               @error('stock')
@@ -272,7 +288,7 @@
                             <th style="min-width: 200px;">Thuộc tính</th>
                             <th style="min-width: 120px;">SKU</th>
                             <th style="min-width: 120px;">Giá gốc</th>
-                            <th style="min-width: 120px;">Giá khuyến mãi</th>
+                            <th style="min-width: 260px;">Giá KM</th>
                             <th style="min-width: 100px;">Tồn kho</th>
                             <th style="min-width: 150px;">Ảnh</th>
                             <th style="width: 100px;">Thao tác</th>
@@ -292,8 +308,14 @@
                                 <input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ old('variants_old.' . $variant->id . '.price', $variant->regular_price) }}" min="0" placeholder="Giá gốc">
                               </td>
                               <td>
-                                <input type="number" class="form-control variant-sale-price" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ old('variants_old.' . $variant->id . '.sale_price', $variant->sale_price) }}" min="0" placeholder="Giá khuyến mãi">
-                                <small class="text-muted discount-percentage" style="display:none;"></small>
+                                <div class="row g-1">
+                                  <div class="col-12">
+                                    <input type="number" class="form-control variant-sale-price mb-1" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ old('variants_old.' . $variant->id . '.sale_price', $variant->sale_price) }}" min="0" placeholder="Giá khuyến mãi">
+                                    <small class="text-muted discount-percentage" style="display:none;"></small>
+                                    <input type="datetime-local" class="form-control mb-1" name="variants_old[{{ $variant->id }}][sale_starts_at]" value="{{ old('variants_old.' . $variant->id . '.sale_starts_at', optional($variant->sale_starts_at)->format('Y-m-d\TH:i')) }}" title="Bắt đầu KM">
+                                    <input type="datetime-local" class="form-control" name="variants_old[{{ $variant->id }}][sale_ends_at]" value="{{ old('variants_old.' . $variant->id . '.sale_ends_at', optional($variant->sale_ends_at)->format('Y-m-d\TH:i')) }}" title="Kết thúc KM">
+                                  </div>
+                                </div>
                               </td>
                               <td>
                                 <input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ old('variants_old.' . $variant->id . '.stock', $variant->stock) }}" min="0" max="100" placeholder="Tồn kho (tối đa 100)">
@@ -1388,5 +1410,4 @@ $('form').on('submit', function(e) {
   @endif
 </script>
 @endpush
-
 @endsection
