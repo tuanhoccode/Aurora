@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
@@ -23,7 +24,7 @@ class CategoryController extends Controller
             $query->where('is_active', $request->status);
         })
         ->with(['parent']) // Load quan hệ
-        ->withCount('products') // 👈 Thêm dòng này
+        ->withCount('products') //  Thêm dòng này
         ->orderBy($sortBy, $sortDir)
         ->paginate(10);
 
@@ -32,6 +33,9 @@ class CategoryController extends Controller
 
     public function create()
     {
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền Thêm danh mục.');
+        }
         $categories = Category::active()->get();
         return view('admin.categories.create', compact('categories'));
     }
@@ -44,6 +48,9 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa danh mục.');
+            }
             $data = $request->validated();
 
             // Xử lý upload ảnh
@@ -66,6 +73,9 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
+        if (Auth::user()->role !== 'admin') {
+        abort(403, 'Bạn không có quyền xóa danh mục.');
+        }
         $categories = Category::active()
             ->where('id', '!=', $category->id)
             ->get();
@@ -75,6 +85,9 @@ class CategoryController extends Controller
     public function update(CategoryRequest $request, Category $category)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa danh mục.');
+            }
             $data = $request->validated();
 
             // Xử lý upload ảnh mới
@@ -102,14 +115,17 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         try {
-            // ❌ Không cho xóa nếu có sản phẩm
+            if(Auth::user()->role !== 'admin'){
+                abort(403, 'Bạn không có quyền xóa danh mục');
+            }
+            // Không cho xóa nếu có sản phẩm
             if ($category->products()->count() > 0) {
                 return redirect()
                     ->back()
                     ->with('error', 'Không thể xóa vì danh mục đang chứa sản phẩm.');
             }
 
-            // ❌ Không cho xóa nếu có danh mục con
+            // Không cho xóa nếu có danh mục con
             if ($category->children()->count() > 0) {
                 return redirect()
                     ->back()
@@ -131,6 +147,10 @@ class CategoryController extends Controller
 
     public function trash(Request $request)
     {
+        //K cho quyền cho nhân viên 
+        if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa danh mục.');
+        }
         // Lấy tham số sắp xếp từ request
         $sortBy = $request->input('sort_by', 'deleted_at'); // Mặc định sắp xếp theo ngày xóa
         $sortDir = $request->input('sort_dir', 'desc'); // Mặc định sắp xếp giảm dần
@@ -151,6 +171,9 @@ class CategoryController extends Controller
     public function restore($id)
     {
         try {
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa danh mục.');
+            }
             $category = Category::onlyTrashed()->findOrFail($id);
             $category->restore();
 
@@ -167,6 +190,10 @@ class CategoryController extends Controller
     public function forceDelete($id)
     {
         try {
+            //Không cho nhân viên vào
+            if (Auth::user()->role !== 'admin') {
+                abort(403, 'Bạn không có quyền xóa danh mục.');
+            }
             $category = Category::onlyTrashed()->findOrFail($id);
 
             // Xóa ảnh nếu có

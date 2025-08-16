@@ -14,18 +14,124 @@ use Carbon\Carbon;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::where('user_id', Auth::id())
+        $filter = $request->input('filter');
+        $search = $request->input('search');
+        
+        $query = Order::where('user_id', Auth::id())
             ->with([
                 'items.product',
+                'orderItems',
                 'currentOrderStatus.status',
                 'payment'
             ])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
+            
+        // Apply status filter
+        if ($filter = $request->query('filter')) {
+            switch ($filter) {
+                case 'pending_payment':
+                    // Chờ thanh toán
+                    $query->where('is_paid', false)
+                        ->whereHas('statusHistory', function ($q) {
+                            $q->where('is_current', true)
+                              ->whereNotIn('order_status_id', [7, 8]); // Không phải đã hoàn tiền hoặc đã hủy
+                        });
+                    break;
+                case 'processing':
+                    // Đang xử lý (Chờ xác nhận)
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->whereIn('order_status_id', [1]); // Chờ xác nhận
+                    });
+                    break;
+                case 'shipping':
+                    // Đang giao hàng
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->whereIn('order_status_id', [2, 3]); // Chờ lấy hàng, Đang giao
+                    });
+                    break;
+                case 'completed':
+                    // Đã giao hàng
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->where('order_status_id', 4); // Giao hàng thành công
+                    });
+                    break;
+                case 'cancelled':
+                    // Đã hủy
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->where('order_status_id', 8); // Đã hủy
+                    });
+                    break;
+            }
+        }
+        
+        // Apply search
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('code', 'like', '%' . $search . '%')
+                  ->orWhere('id', $search)
+                  ->orWhereHas('items.product', function($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $orders = $query->paginate(10);
+        
+        // Đếm số lượng đơn hàng theo từng trạng thái
+        $allCount = Order::where('user_id', Auth::id())->count();
+        
+        // Đếm đơn chờ thanh toán
+        $pendingPaymentCount = Order::where('user_id', Auth::id())
+            ->where('is_paid', false)
+            ->whereHas('statusHistory', function($q) {
+                $q->where('is_current', true)
+                  ->whereNotIn('order_status_id', [7, 8]);
+            })->count();
+            
+        // Đếm đơn đang xử lý (chờ xác nhận)
+        $processingCount = Order::where('user_id', Auth::id())
+            ->whereHas('statusHistory', function($q) {
+                $q->where('is_current', true)
+                  ->where('order_status_id', 1);
+            })->count();
+            
+        // Đếm đơn đang giao hàng
+        $shippingCount = Order::where('user_id', Auth::id())
+            ->whereHas('statusHistory', function($q) {
+                $q->where('is_current', true)
+                  ->whereIn('order_status_id', [2, 3]);
+            })->count();
+            
+        // Đếm đơn đã giao thành công
+        $completedCount = Order::where('user_id', Auth::id())
+            ->whereHas('statusHistory', function($q) {
+                $q->where('is_current', true)
+                  ->where('order_status_id', 4);
+            })->count();
+            
+        // Đếm đơn đã hủy
+        $cancelledCount = Order::where('user_id', Auth::id())
+            ->whereHas('statusHistory', function($q) {
+                $q->where('is_current', true)
+                  ->where('order_status_id', 8);
+            })->count();
 
-        return view('client.orders.index', compact('orders'));
+        return view('client.orders.index', compact(
+            'orders', 
+            'allCount', 
+            'pendingPaymentCount', 
+            'processingCount', 
+            'completedCount', 
+            'cancelledCount',
+            'shippingCount',
+            'search'
+        ));
     }
 
     public function show(Order $order)
@@ -79,11 +185,17 @@ class OrderController extends Controller
         return view('client.orders.tracking', compact('order', 'orderStatusSteps'));
     }
 
-    public function cancel(Order $order)
+    public function cancel(Request $request, Order $order)
     {
         if ($order->user_id !== Auth::id()) {
             abort(403, 'Không có quyền hủy đơn hàng này');
         }
+
+        // Validate request
+        $request->validate([
+            'cancel_reason' => 'required|string|max:255',
+            'cancel_note' => 'nullable|string|max:500',
+        ]);
 
         $currentStatusRecord = OrderOrderStatus::where('order_id', $order->id)
             ->where('is_current', 1)
@@ -102,23 +214,13 @@ class OrderController extends Controller
 
         $cancelStatusId = $cancelStatus->id;
 
-        $validTransitions = [
-            1 => [2, $cancelStatusId],
-            2 => [9, $cancelStatusId],
-            9 => [3, $cancelStatusId],
-            3 => [4, 5, $cancelStatusId],
-            5 => [6, $cancelStatusId],
-            6 => [7],
-            4 => [7],
-            7 => [],
-            $cancelStatusId => [],
-        ];
-
-        if (!isset($validTransitions[$currentStatusId]) || !in_array($cancelStatusId, $validTransitions[$currentStatusId])) {
+        // Kiểm tra trạng thái hiện tại có thể hủy không
+        $cancelableStatuses = [1, 2, 8]; // Chờ xác nhận, Chờ lấy hàng, Gửi hàng
+        if (!in_array($currentStatusId, $cancelableStatuses)) {
             return redirect()->back()->with('error', 'Không thể hủy đơn hàng ở trạng thái hiện tại!');
         }
 
-        DB::transaction(function () use ($order, $cancelStatusId, $currentStatusRecord) {
+        DB::transaction(function () use ($order, $cancelStatusId, $currentStatusRecord, $request) {
             // Hoàn trả kho cho từng sản phẩm trong đơn hàng
             foreach ($order->items as $item) {
                 // Hoàn trả kho cho biến thể nếu có
@@ -137,6 +239,7 @@ class OrderController extends Controller
                 }
             }
 
+            // Cập nhật trạng thái cũ thành không hiện tại
             DB::table('order_order_status')
                 ->where('order_id', $currentStatusRecord->order_id)
                 ->where('order_status_id', $currentStatusRecord->order_status_id)
@@ -147,11 +250,17 @@ class OrderController extends Controller
                 ->where('is_current', 1)
                 ->update(['is_current' => 0]);
 
+            // Tạo trạng thái mới
+            $cancelNote = "Lý do: {$request->cancel_reason}";
+            if ($request->cancel_note) {
+                $cancelNote .= " - Ghi chú: {$request->cancel_note}";
+            }
+
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => $cancelStatusId,
                 'modified_by' => Auth::id(),
-                'note' => 'Khách hàng tự hủy đơn',
+                'note' => $cancelNote,
                 'created_at' => now(),
                 'updated_at' => now(),
                 'is_current' => 1,
@@ -161,18 +270,21 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'order_status_id' => $cancelStatusId,
                 'modifier_id' => Auth::id(),
-                'note' => 'Khách hàng tự hủy đơn',
+                'note' => $cancelNote,
                 'is_current' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         });
 
+        // Cập nhật thông tin hủy đơn hàng
         $order->update([
-            'note' => 'Khách hàng tự hủy đơn',
+            'cancel_reason' => $request->cancel_reason,
+            'cancel_note' => $request->cancel_note,
+            'cancelled_at' => now(),
         ]);
 
-        return redirect()->route('client.orders.tracking', ['order' => $order->id])
+        return redirect()->route('client.orders')
             ->with('success', 'Đã hủy đơn hàng thành công!');
     }
 

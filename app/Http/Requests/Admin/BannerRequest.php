@@ -24,7 +24,14 @@ class BannerRequest extends FormRequest
         $bannerId = $this->route('banner'); // Lấy ID banner nếu đang edit
         
         $rules = [
-            'title' => 'required|string|max:255',
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+                'min:2',
+                // Đảm bảo tiêu đề không trùng, loại trừ bản ghi hiện tại khi update
+                'unique:banners,title' . ($bannerId ? ',' . $bannerId : ''),
+            ],
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
             'sort_order' => [
@@ -42,9 +49,12 @@ class BannerRequest extends FormRequest
             'is_active' => 'boolean',
         ];
 
-        // Nếu là tạo mới hoặc có upload ảnh
-        if ($this->isMethod('POST') || $this->hasFile('image')) {
-            $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048';
+        // Nếu là tạo mới (POST) thì ảnh bắt buộc
+        if ($this->isMethod('POST')) {
+            $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048|';
+        } else {
+            // Nếu là cập nhật (PUT/PATCH) thì ảnh tùy chọn
+            $rules['image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048|';
         }
 
         return $rules;
@@ -57,7 +67,9 @@ class BannerRequest extends FormRequest
     {
         return [
             'title.required' => 'Tiêu đề banner là bắt buộc',
+            'title.min' => 'Tiêu đề phải có ít nhất 2 ký tự',
             'title.max' => 'Tiêu đề không được vượt quá 255 ký tự',
+            'title.unique' => 'Tiêu đề này đã được sử dụng. Vui lòng chọn tiêu đề khác.',
             'subtitle.max' => 'Dòng chữ nhỏ không được vượt quá 255 ký tự',
             'image.required' => 'Ảnh banner là bắt buộc',
             'image.image' => 'File phải là hình ảnh',
@@ -69,4 +81,4 @@ class BannerRequest extends FormRequest
             'sort_order.unique' => 'Thứ tự này đã được sử dụng bởi banner khác. Vui lòng chọn thứ tự khác.',
         ];
     }
-} 
+}

@@ -469,6 +469,29 @@
                         </div>
                     @endforeach
                 </div>
+                <!-- Thông tin thanh toán -->
+                @php
+                    $currentStatusName = optional(optional($order->currentStatus)->status)->name ?? 'Chờ xác nhận';
+                    $showPaymentStatus = $currentStatusName === 'Giao hàng thành công';
+                @endphp
+                @if($showPaymentStatus)
+                <div class="order-products mt-4">
+                    <div class="order-products-title">
+                        <i class="fas fa-credit-card me-2"></i> Trạng thái thanh toán
+                    </div>
+                    <div class="product-item" style="background: #d4edda; border: 1px solid #c3e6cb;">
+                        <div class="product-info">
+                            <div class="product-name" style="color: #155724; font-weight: 600;">
+                                <i class="fas fa-check-circle me-2"></i>Đã thanh toán
+                            </div>
+                            <div class="product-variant" style="color: #155724;">
+                                Đơn hàng đã được thanh toán thành công
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <!-- Sản phẩm đã mua -->
                 <div class="order-products mt-4">
                     <div class="order-products-title"><i class="fas fa-shopping-bag me-2"></i> Sản phẩm đã mua</div>

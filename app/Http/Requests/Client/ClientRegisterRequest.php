@@ -22,7 +22,7 @@ class ClientRegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fullname' => 'required|string|max:100',
+            'fullname' => 'required|string|min:3|max:100',
             'email' => 'required|email|max:255|regex:/^[^@]+@[^@]+\.[^@]+$/|unique:users,email',
             'password' => 'required|string|min:6|max:255|regex:/[A-Z]/'
         ];
@@ -34,6 +34,7 @@ class ClientRegisterRequest extends FormRequest
                 'fullname.required' => 'Vui lòng nhập lại tên',
                 'fullname.string' => 'Họ tên không hợp lệ',
                 'fullname.max' => 'Họ tên tối đa 100 ký tự',
+                'fullname.min' => 'Họ tên phải lớn hơn 3 ký tự',
 
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',

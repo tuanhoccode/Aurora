@@ -1,7 +1,11 @@
 <?php
 
 
+
+
 namespace App\Http\Controllers\Admin;
+
+
 
 
 use App\Http\Controllers\Controller;
@@ -14,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\ProductVariantStoreRequest;
+
 
 /**
  * Class ProductVariantController
@@ -33,6 +38,8 @@ class ProductVariantController extends Controller
     }
 
 
+
+
     /**
      * Store new variants for a product.
      */
@@ -41,20 +48,30 @@ class ProductVariantController extends Controller
         try {
             $validatedData = $request->validated();
 
+
             foreach ($validatedData['variants'] as $variantData) {
                 $variant = new ProductVariant([
                     'sku' => $variantData['sku'],
                     'stock' => $variantData['stock'],
                     'regular_price' => $variantData['regular_price'],
                     'sale_price' => $variantData['sale_price'] ?? null,
+                    'sale_starts_at' => $variantData['sale_starts_at'] ?? null,
+                    'sale_ends_at' => $variantData['sale_ends_at'] ?? null,
                 ]);
+
 
                 // Không lưu ảnh chính vào trường img nữa, chỉ lưu vào bảng product_images
                 $product->variants()->save($variant);
 
-                if (isset($variantData['attribute_values'])) {
+
+                if (isset($variantData['attribute_values']) && !empty($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
+                } else {
+                    // Nếu không có thuộc tính, xóa biến thể vừa tạo và báo lỗi
+                    $variant->delete();
+                    throw new \Exception("Bạn chưa thêm thuộc tính cho biến thể.");
                 }
+
 
                 // Lưu nhiều ảnh vào bảng product_images
                 if (isset($variantData['images']) && is_array($variantData['images'])) {
@@ -71,6 +88,7 @@ class ProductVariantController extends Controller
                 }
             }
 
+
             return redirect()->route('admin.products.edit', $product)
                 ->with('success', 'Đã tạo biến thể thành công');
         } catch (\Exception $e) {
@@ -80,11 +98,14 @@ class ProductVariantController extends Controller
                 'data' => $request->all()
             ]);
 
+
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Đã xảy ra lỗi khi tạo biến thể']);
         }
     }
+
+
 
 
     /**
@@ -97,8 +118,12 @@ class ProductVariantController extends Controller
         }])->where('is_active', 1)->get();
 
 
+
+
         // Thêm dòng này để truyền $selectedValues cho view
         $selectedValues = $variant->attributeValues->pluck('id')->toArray();
+
+
 
 
         if (request()->has('modal')) {
@@ -107,8 +132,11 @@ class ProductVariantController extends Controller
         }
 
 
+
+
         return view('admin.products.variants.edit', compact('product', 'variant', 'attributes', 'selectedValues'));
     }
+
 
     /**
      * Get all images for a variant
@@ -241,6 +269,7 @@ class ProductVariantController extends Controller
         }
     }
 
+
     /**
      * Update a specific variant.
      */
@@ -252,10 +281,22 @@ class ProductVariantController extends Controller
             'stock' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'sale_starts_at' => 'nullable|date',
+            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
+        ], [
+            'img.required' => 'Bạn cần chọn ảnh cho sản phẩm biến thể',
+            'img.image' => 'File phải là hình ảnh',
+            'img.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif',
+            'img.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
+            'attribute_values.required' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.array' => 'Dữ liệu thuộc tính không hợp lệ',
+            'attribute_values.min' => 'Bạn chưa thêm thuộc tính cho biến thể',
+            'attribute_values.*.exists' => 'Giá trị thuộc tính không tồn tại',
         ]);
+
 
         // Kiểm tra giá khuyến mãi không được lớn hơn giá gốc
         if (isset($validated['sale_price']) && $validated['sale_price'] !== null && $validated['sale_price'] > $validated['regular_price']) {
@@ -263,14 +304,20 @@ class ProductVariantController extends Controller
         }
 
 
+
+
         try {
             DB::beginTransaction();
+
+
 
 
             Log::info('Attempting to update variant:', [
                 'variant_id' => $variant->id,
                 'validated_data' => $validated,
             ]);
+
+
 
 
             // Check for duplicate attribute combinations (excluding current variant)
@@ -283,9 +330,13 @@ class ProductVariantController extends Controller
             })->toArray();
 
 
+
+
             if (in_array($attributeValueIds, $existingCombinations)) {
                 throw new \Exception("Tổ hợp thuộc tính này đã tồn tại trong một biến thể khác.");
             }
+
+
 
 
             // Handle image upload
@@ -296,6 +347,8 @@ class ProductVariantController extends Controller
                 }
                 $imgPath = $request->file('img')->store('products/variants', 'public');
             }
+
+
 
 
             // Generate unique SKU if needed
@@ -310,24 +363,36 @@ class ProductVariantController extends Controller
             }
 
 
+
+
             // Update variant
             $variant->update([
                 'sku' => $sku,
                 'stock' => $validated['stock'],
                 'regular_price' => $validated['regular_price'],
                 'sale_price' => $validated['sale_price'] ?? null,
+                'sale_starts_at' => $validated['sale_starts_at'] ?? null,
+                'sale_ends_at' => $validated['sale_ends_at'] ?? null,
                 'img' => $imgPath,
             ]);
+
+
 
 
             // Sync attribute values
             $variant->attributeValues()->sync($validated['attribute_values']);
 
 
+
+
             Log::info('Variant updated:', ['variant_id' => $variant->id]);
 
 
+
+
             DB::commit();
+
+
 
 
             return redirect()->route('admin.products.edit', $product)
@@ -342,6 +407,7 @@ class ProductVariantController extends Controller
                 ->with('error', 'Có lỗi xảy ra khi cập nhật biến thể: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Delete the default image of a variant.
@@ -364,6 +430,7 @@ class ProductVariantController extends Controller
         }
     }
 
+
     /**
      * Upload gallery images for a variant.
      * Có thể được gọi từ cả trang tạo mới và chỉnh sửa sản phẩm.
@@ -378,9 +445,11 @@ class ProductVariantController extends Controller
                 'gallery.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
 
+
             $variantId = $request->variant_id;
             $variantIndex = $request->variant_index;
             $productId = $request->product_id; // Có thể cần cho trường hợp tạo mới
+
 
             // Kiểm tra xem có ảnh nào được tải lên không
             if (!$request->hasFile('gallery')) {
@@ -390,8 +459,10 @@ class ProductVariantController extends Controller
                 ], 400);
             }
 
+
             $uploadedImages = [];
             $temporaryImages = [];
+
 
             // Tạo thư mục tạm nếu chưa tồn tại
             $tempDir = 'products/variants/temp';
@@ -399,13 +470,16 @@ class ProductVariantController extends Controller
                 Storage::disk('public')->makeDirectory($tempDir, 0755, true);
             }
 
+
             foreach ($request->file('gallery') as $file) {
                 // Tạo tên file duy nhất
                 $fileName = 'temp_' . ($variantId ?? 'new') . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
+
                 if ($variantId) {
                     // Nếu có variant_id (trường hợp chỉnh sửa)
                     $path = $file->storeAs('products/variants', $fileName, 'public');
+
 
                     // Tạo bản ghi trong database
                     $image = new \App\Models\ProductImage([
@@ -415,7 +489,9 @@ class ProductVariantController extends Controller
                         'is_default' => false
                     ]);
 
+
                     $image->save();
+
 
                     $uploadedImages[] = [
                         'id' => $image->id,
@@ -424,6 +500,7 @@ class ProductVariantController extends Controller
                 } else {
                     // Nếu không có variant_id (trường hợp tạo mới)
                     $path = $file->storeAs($tempDir, $fileName, 'public');
+
 
                     // Lưu thông tin ảnh tạm để trả về
                     $uploadedImages[] = [
@@ -435,11 +512,13 @@ class ProductVariantController extends Controller
                 }
             }
 
+
             return response()->json([
                 'success' => true,
                 'message' => 'Tải lên ảnh thành công',
                 'images' => $uploadedImages
             ]);
+
 
         } catch (\Exception $e) {
             Log::error('Error uploading variant gallery images:', [
@@ -449,12 +528,14 @@ class ProductVariantController extends Controller
                 'variant_index' => $request->variant_index ?? null
             ]);
 
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải lên ảnh: ' . $e->getMessage()
             ], 500);
         }
     }
+
 
     /**
      * Delete a specific image from product_images.
@@ -477,6 +558,7 @@ class ProductVariantController extends Controller
         }
     }
 
+
     /**
      * Delete a gallery image of a variant.
      */
@@ -491,13 +573,16 @@ class ProductVariantController extends Controller
                 ], 403);
             }
 
+
             // Xóa file ảnh từ storage
             if (Storage::disk('public')->exists($image->url)) {
                 Storage::disk('public')->delete($image->url);
             }
 
+
             // Xóa bản ghi trong database
             $image->delete();
+
 
             return response()->json([
                 'success' => true,
@@ -511,12 +596,14 @@ class ProductVariantController extends Controller
                 'product_id' => $product->id
             ]);
 
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi xóa ảnh.'
             ], 500);
         }
     }
+
 
     /**
      * Delete a specific variant.
@@ -533,24 +620,31 @@ class ProductVariantController extends Controller
         try {
             DB::beginTransaction();
 
+
             Log::info('Attempting to delete variant:', ['variant_id' => $variant->id]);
+
 
             // Delete image if exists
             if ($variant->img && Storage::disk('public')->exists($variant->img)) {
                 Storage::disk('public')->delete($variant->img);
             }
 
+
             // Delete attribute value associations
             DB::table('attribute_value_product_variant')
                 ->where('product_variant_id', $variant->id)
                 ->delete();
 
+
             // Delete variant
             $variant->delete();
 
+
             Log::info('Variant deleted:', ['variant_id' => $variant->id]);
 
+
             DB::commit();
+
 
             return redirect()->route('admin.products.edit', $product)
                 ->with('success', 'Biến thể đã được xóa thành công.');
@@ -565,6 +659,8 @@ class ProductVariantController extends Controller
     }
 
 
+
+
     /**
      * Display details of a product and its variants.
      */
@@ -574,3 +670,4 @@ class ProductVariantController extends Controller
         return view('admin.products.show', compact('product'));
     }
 }
+

@@ -248,6 +248,10 @@
          <div class="tp-slider-active-2 swiper-container">
             <div class="swiper-wrapper">
                @forelse($banners as $banner)
+               {{-- Debug: Hiển thị thông tin banner --}}
+               @if(config('app.debug'))
+               <!-- Debug: Banner ID: {{ $banner->id }}, Title: {{ $banner->title }}, Active: {{ $banner->is_active ? 'Yes' : 'No' }}, Sort Order: {{ $banner->sort_order }}, Created: {{ $banner->created_at }}, Image: {{ $banner->image_url }}, Raw Image: {{ $banner->image }}, Count: {{ $loop->iteration }}, Total: {{ $banners->count() }}, Loop Index: {{ $loop->index }} -->
+               @endif
                <div class="tp-slider-item-2 tp-slider-height-2 p-relative swiper-slide grey-bg-5 d-flex align-items-end">
                   <div class="tp-slider-2-shape">
                      <img class="tp-slider-2-shape-1" src="{{asset('assets2/img/slider/2/shape/shape-1.png')}}" alt="">
@@ -506,7 +510,7 @@
                <div class="col-xl-12">
                   <div class="tp-section-title-wrapper-2 mb-50">
                      <span class="tp-section-title-pre-2">
-                        {{-- Bán chạy tuần này --}}
+                        <!-- Sản phẩm nổi bật -->
                         <svg width="82" height="22" viewBox="0 0 82 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                            <path d="M81 14.5798C0.890564 -8.05914 -5.81154 0.0503902 5.00322 21" stroke="currentColor"
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />

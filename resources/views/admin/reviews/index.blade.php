@@ -17,14 +17,16 @@
             <h1 class="h3 mb-0 fw-bold text-gray-800">Quản lý bình luận</h1>
             <p class="text-muted mt-1">Quản lý các bình luận, đánh giá sản phẩm trong hệ thống</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
-                <i class="bi bi-trash"></i> Thùng rác
-                @if ($trashComments > 0)
-                    <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
-                @endif
-            </a>
-        </div>
+        @if(Auth::user()->role === 'admin')
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.reviews.trashComments') }}" class="btn btn-outline-danger rounded-pill px-4">
+                    <i class="bi bi-trash"></i> Thùng rác
+                    @if ($trashComments > 0)
+                        <span class="badge bg-danger ms-1">{{ $trashComments }}</span>
+                    @endif
+                </a>
+            </div>
+        @endif
     </div>
     <div class="card shadow-sm rounded-3 border-0 mb-4">
         <div class="card-body p-4">

@@ -22,7 +22,7 @@ class RejectCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reason' => 'required|string|max:100|min:3',
+            'reason' => 'required|string|max:255|min:3',
         ];
     }
 
@@ -31,7 +31,7 @@ class RejectCommentRequest extends FormRequest
         return [
             'reason.required' => 'Vui lòng nhập lý do không duyệt.',
             'reason.string' => 'Lý do không hợp lệ.',
-            'reason.max' => 'Lý do không được vượt quá 100 ký tự.',
+            'reason.max' => 'Lý do không được vượt quá 255 ký tự.',
             'reason.min' => 'Lý do phải lớn hơn 3 ký tự.',
         ];
     }

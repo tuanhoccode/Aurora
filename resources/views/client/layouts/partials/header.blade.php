@@ -93,6 +93,7 @@
                                             </ul>
                                         </li>
                                         <li><a href="{{ route('contact') }}">Liên hệ</a></li>
+                                        <li><a href="{{ route('blog.index') }}">Blog</a></li>
                                     </ul>
                                 </nav>
                             </div>
@@ -185,7 +186,7 @@
                                                 <li class="tp-account-menu-header">
                                                     <span class="tp-account-menu-name">{{ Auth::user()->fullname }}</span>
                                                 </li>
-                                                @if (Auth::user()->role === 'admin')
+                                                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'employee')
                                                     <li><a href="{{ route('admin.dashboard') }}"><i
                                                                 class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a>
                                                     </li>

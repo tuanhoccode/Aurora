@@ -22,7 +22,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email|max:255|regex:/^[^@]+@[^@]+\.[^@]+$/|exists:users,email',
 
         ];
     }
@@ -32,6 +32,7 @@ class ForgotPasswordRequest extends FormRequest
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không hợp lệ.',
             'email.exists' => 'Email không tồn tại trong hệ thống.',
+            'email.regex' => 'Email không đúng định dạng.',
             
         ];
     }

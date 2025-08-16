@@ -3,29 +3,58 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contact;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ContactController extends Controller
 {
+    // Hiển thị form liên hệ
+    public function index()
+    {
+        return view('client.contact');
+    }
+
+    // Xử lý gửi liên hệ
     public function send(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'nullable|string|max:20',
-            'message' => 'required|string',
+        $request->validate([
+            'name'    => 'required|string|min:3|max:255',
+            'email'   => [
+                'required',
+                'max:255',
+                'regex:/^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$/'
+            ],
+            'phone'   => [
+                'nullable',
+                'regex:/^\+?[0-9]{9,15}$/'
+            ],
+            'message' => 'required|string|min:10|max:255',
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'name.min'      => 'Họ và tên phải có ít nhất :min ký tự.',
+            'name.max'      => 'Họ và tên không được vượt quá :max ký tự.',
+
+            'email.required' => 'Vui lòng nhập email.',
+            'email.regex'    => 'Email không hợp lệ. Vui lòng nhập đúng định dạng (ví dụ: ten@domain.com).',
+            'email.max'      => 'Email không được vượt quá :max ký tự.',
+
+            'phone.regex' => 'Số điện thoại không hợp lệ. Vui lòng nhập từ 9 đến 15 chữ số, có thể bắt đầu bằng +.',
+
+            'message.required' => 'Vui lòng nhập nội dung liên hệ.',
+            'message.min'      => 'Nội dung phải có ít nhất :min ký tự.',
+            'message.max'      => 'Nội dung phải có ít nhất :max ký tự.',
         ]);
 
-        // Nếu muốn gửi email, có thể dùng Mail::to(...)->send(...)
-        // Ở đây chỉ log lại nội dung liên hệ
-        try {
-            Log::info('Contact form submitted', $validated);
-            // Mail::to('info@yourdomain.com')->send(new ContactMail($validated));
-            return back()->with('success', 'Gửi liên hệ thành công! Chúng tôi sẽ phản hồi sớm nhất.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Đã có lỗi xảy ra. Vui lòng thử lại sau.');
-        }
+        Contact::create([
+            'user_id' => Auth::id(),
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'message' => $request->message,
+            'status'  => 'pending',
+        ]);
+
+        return redirect()->route('contact')->with('success', 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm!');
     }
-} 
+}

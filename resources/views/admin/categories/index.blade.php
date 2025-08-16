@@ -8,14 +8,16 @@
                 <h1 class="h3 mb-0 fw-bold text-gray-800">Danh sách danh mục</h1>
                 <p class="text-muted mt-1">Quản lý thông tin các danh mục trong hệ thống</p>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('admin.categories.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
-                    <i class="bi bi-plus-circle me-1"></i> Thêm mới
-                </a>
-                <a href="{{ route('admin.categories.trash') }}" class="btn btn-outline-danger shadow-sm rounded-pill px-4">
-                    <i class="bi bi-trash3 me-1"></i> Thùng rác
-                </a>
-            </div>
+            @if(Auth::user()->role === 'admin')
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.categories.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm mới
+                    </a>
+                    <a href="{{ route('admin.categories.trash') }}" class="btn btn-outline-danger shadow-sm rounded-pill px-4">
+                        <i class="bi bi-trash3 me-1"></i> Thùng rác
+                    </a>
+                </div>
+            @endif
         </div>
 
         {{-- Alert Messages --}}
@@ -218,22 +220,24 @@
                                                             <i class="bi bi-eye text-primary"></i> <span>Xem chi tiết</span>
                                                         </a>
                                                     </li>
-                                                    <li>
-                                                        <a href="{{ route('admin.categories.edit', $category->id) }}" class="dropdown-item d-flex align-items-center gap-2">
-                                                            <i class="bi bi-pencil-square text-warning"></i> <span>Chỉnh sửa</span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        @if($category->products_count > 0)
+                                                    @if(Auth::user()->role === 'admin')
+                                                        <li>
+                                                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                                                <i class="bi bi-pencil-square text-warning"></i> <span>Chỉnh sửa</span>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            @if($category->products_count > 0)
                                                             <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-muted" disabled>
                                                                 <i class="bi bi-trash"></i> <span>Xóa</span>
                                                             </button>
-                                                        @else
+                                                            @else
                                                             <button type="button" class="dropdown-item d-flex align-items-center gap-2 text-danger" onclick="confirmDelete('{{ $category->id }}', '{{ $category->name }}')">
                                                                 <i class="bi bi-trash"></i> <span>Xóa</span>
                                                             </button>
-                                                        @endif
-                                                    </li>
+                                                            @endif
+                                                        </li>
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </td>

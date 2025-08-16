@@ -240,7 +240,7 @@ class CheckoutController extends Controller
         }
     }
 
-    public function applyCoupon(Request $request)
+        public function applyCoupon(Request $request)
     {
         try {
             $request->validate([
@@ -627,6 +627,7 @@ class CheckoutController extends Controller
             'note' => $orderData['note'],
             'total_amount' => $orderData['total_amount'],
             'shipping_type' => $orderData['shipping_type'],
+            'shipping_fee' => $orderData['shipping_fee'] ?? 0,
             'is_paid' => $orderData['payment_method'] === 'cod' ? 0 : 1,
             'is_refunded' => 0,
             'coupon_id' => $orderData['coupon_id'],

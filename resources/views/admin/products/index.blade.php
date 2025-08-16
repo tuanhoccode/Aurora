@@ -5,18 +5,20 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Quản lý sản phẩm</h1>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.products.trash') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-trash"></i>
-                Thùng rác @if ($trashedCount > 0)
-                    <span class="badge bg-danger">{{ $trashedCount }}</span>
-                @endif
-            </a>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                Thêm sản phẩm
-            </a>
-        </div>
+        @if(Auth::user()->role === 'admin')
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.products.trash') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i>
+                    Thùng rác @if ($trashedCount > 0)
+                        <span class="badge bg-danger">{{ $trashedCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Thêm sản phẩm
+                </a>
+            </div>
+        @endif
     </div>
 
     {{-- Bulk Actions --}}
@@ -162,7 +164,7 @@
                             <td>
                                 @if ($product->type === 'variant' && $product->variants->count() > 0)
                                     @php $variant = $product->variants->first(); @endphp
-                                    @if ($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                    @if ($variant->is_on_sale)
                                         <span class="text-decoration-line-through text-muted">{{ number_format($variant->regular_price) }}đ</span>
                                         <span class="text-danger fw-bold ms-1">{{ number_format($variant->sale_price) }}đ</span>
                                         <span class="badge bg-danger ms-1">-{{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
@@ -170,7 +172,7 @@
                                         <span>{{ number_format($variant->regular_price) }}đ</span>
                                     @endif
                                 @else
-                                    @if ($product->is_sale && $product->sale_price < $product->price)
+                                    @if ($product->is_on_sale)
                                         <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
                                         <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
                                         <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
@@ -226,8 +228,10 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" href="{{ route('admin.products.show', $product->id) }}"><i class="bi bi-eye me-2"></i>Xem</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('admin.products.edit', $product->id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item text-danger delete-product @if($product->hasOrders) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($product->hasOrders) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
+                                        @if(Auth::user()->role === 'admin')
+                                            <li><a class="dropdown-item" href="{{ route('admin.products.edit', $product->id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
+                                            <li><a class="dropdown-item text-danger delete-product @if($product->hasOrders) locked-delete @endif" href="#" data-id="{{ $product->id }}" data-name="{{ $product->name }}" @if($product->hasOrders) data-locked="1" @endif><i class="bi bi-trash me-2"></i>Xóa</a></li>
+                                        @endif
                                     </ul>
                                 </div>
                             </td>

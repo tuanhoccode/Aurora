@@ -36,17 +36,19 @@
                 <span class="nav-icon"><i class="fas fa-tags"></i></span> Danh mục
             </a>
         </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
-                href="{{ route('admin.brands.index') }}">
-                <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
-            </a>
-        </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
-                <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
-            </a>
-        </li>
+        @if(Auth::user()->role === 'admin')
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}"
+                    href="{{ route('admin.brands.index') }}">
+                    <span class="nav-icon"><i class="fas fa-trademark"></i></span> Thương hiệu
+                </a>
+            </li>
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
+                    <span class="nav-icon"><i class="fas fa-list-alt"></i></span> Thuộc tính sản phẩm
+                </a>
+            </li>
+        @endif
 
         <hr>
 
@@ -84,6 +86,7 @@
                 </a>
             </li>
 
+        @endif
             <hr>
 
             {{-- Nội dung --}}
@@ -98,23 +101,114 @@
                             </span>
                         @endif
                     </span>
+                    <style>
+                        .sidebar {
+                            /* Các style hiện tại */
+                        }
+                        
+                        /* Hiệu ứng chuyển động mượt mà cho submenu */
+                        .submenu {
+                            max-height: 0;
+                            overflow: hidden;
+                            transition: max-height 0.3s ease-in-out;
+                            list-style: none;
+                            margin: 0;
+                            padding: 0 0 0 1.5rem;
+                        }
+                        
+                        .has-submenu.open > .submenu {
+                            max-height: 200px; /* Điều chỉnh theo chiều cao thực tế của menu con */
+                        }
+                        
+                        /* Hiệu ứng mượt mà cho icon */
+                        .fa-chevron-down, .fa-chevron-up {
+                            transition: transform 0.3s ease-in-out;
+                        }
+                        
+                        .has-submenu.open .fa-chevron-down {
+                            transform: rotate(180deg);
+                        }
+                        
+                        .has-submenu .fa-chevron-up {
+                            transform: rotate(180deg);
+                        }
+                        
+                        .has-submenu.open .fa-chevron-up {
+                            transform: rotate(0);
+                        }
+                        
+                        /* Đảm bảo không bị giật khi chuyển đổi */
+                        .submenu > li {
+                            opacity: 0;
+                            transform: translateY(-10px);
+                            transition: opacity 0.3s ease, transform 0.3s ease;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        .has-submenu.open .submenu > li {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                        
+                        /* Thêm delay cho từng mục con */
+                        .has-submenu.open .submenu > li:nth-child(1) { transition-delay: 0.1s; }
+                        .has-submenu.open .submenu > li:nth-child(2) { transition-delay: 0.15s; }
+                        .has-submenu.open .submenu > li:nth-child(3) { transition-delay: 0.2s; }
+                    </style>
                      Đánh giá sản phẩm
                 </a>
             </li>
+        @if(Auth::user()->role === 'admin')
+            <li>
+                <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
+                    href="{{ route('admin.banners.index') }}">
+                    <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
+                </a>
+            </li>
         @endif
+        <li class="has-submenu {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+            <a href="#" class="nav-link d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="nav-icon"><i class="fas fa-newspaper"></i></span> 
+                    <span>Quản lý bài viết</span>
+                </div>
+                <i class="fas fa-chevron-{{ request()->routeIs('admin.blog.*') ? 'up' : 'down' }} small ms-2"></i>
+            </a>
+            <ul class="submenu {{ request()->routeIs('admin.blog.*') ? 'show' : '' }}">
+                <li class="mb-1">
+                    <a class="nav-link {{ request()->routeIs('admin.blog.posts.*') ? 'active' : '' }}" 
+                       href="{{ route('admin.blog.posts.index') }}">
+                        <i class="fas fa-list-ul me-2"></i> Tất cả bài viết
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a class="nav-link {{ request()->routeIs('admin.blog.comments.*') ? 'active' : '' }}"
+                        href="{{ route('admin.blog.comments.index') }}">
+                        <i class="fas fa-comments me-2"></i> Bình luận bài viết
+                        @if($unapprovedCommentsCount ?? 0 > 0)
+                            <span class="badge bg-danger ms-2">{{ $unapprovedCommentsCount }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link {{ request()->routeIs('admin.blog.categories.*') ? 'active' : '' }}"
+                        href="{{ route('admin.blog.categories.index') }}">
+                        <i class="fas fa-folder-open me-2"></i> Quản lý danh mục
+                    </a>
+                </li>
+            </ul>
+        </li>
+        
+        @if(Auth::user()->role === 'admin')
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
+            <a class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}"
+                href="{{ route('admin.contacts.index') }}">
+                <span class="nav-icon"><i class="fas fa-address-book"></i></span> Quản lý liên hệ
             </a>
         </li>
-
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Trang CMS
-            </a>
-        </li>
+        @endif
+      
         {{-- <li>
             <a class="nav-link {{ request()->routeIs('admin.product-images.all') ? 'active' : '' }}"
                 href="{{ route('admin.product-images.all') }}">
@@ -150,3 +244,57 @@
 
     </ul>
 </aside>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Lấy tất cả các menu có class has-submenu
+    const submenuToggles = document.querySelectorAll('.has-submenu > a');
+    
+    // Hàm đóng tất cả menu khác
+    function closeOtherMenus(currentMenu) {
+        document.querySelectorAll('.has-submenu').forEach(menu => {
+            if (menu !== currentMenu && menu.classList.contains('open')) {
+                menu.classList.remove('open');
+            }
+        });
+    }
+    
+    submenuToggles.forEach(toggle => {
+        // Bỏ sự kiện click mặc định
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Lấy phần tử cha li
+            const parentLi = this.parentElement;
+            
+            // Nếu menu đang mở thì đóng lại và dừng
+            if (parentLi.classList.contains('open')) {
+                parentLi.classList.remove('open');
+                return;
+            }
+            
+            // Đóng tất cả các menu khác
+            closeOtherMenus(parentLi);
+            
+            // Mở menu hiện tại
+            parentLi.classList.add('open');
+        });
+    });
+    
+    // Đóng menu khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.has-submenu')) {
+            closeOtherMenus();
+        }
+    });
+    
+    // Mở menu hiện tại nếu đang ở trang con
+    const currentMenu = document.querySelector('.has-submenu.active');
+    if (currentMenu) {
+        currentMenu.classList.add('open');
+    }
+});
+</script>
+@endpush

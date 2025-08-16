@@ -18,14 +18,24 @@ class Order extends Model
         'total_amount',
         'discount_amount',
         'shipping_type',
+        'shipping_fee',
         'is_paid',
         'is_refunded',
         'is_refunded_canceled',
         'check_refunded_canceled',
         'img_refunded_money',
+        'cancel_reason',
+        'cancel_note',
+        'cancelled_at',
     ];
 
     public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+    
+    // Alias for items() for compatibility
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -33,6 +43,11 @@ class Order extends Model
     public function payment()
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function user()
@@ -101,5 +116,29 @@ class Order extends Model
             'nhanh'  => 'Giao hàng nhanh',
             default  => 'Không rõ hình thức',
         };
+    }
+
+    /**
+     * Kiểm tra xem đơn hàng có thể hủy được không
+     */
+    public function canBeCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        // Nếu không có trạng thái, mặc định cho phép hủy
+        return $currentStatusName === 'Chờ xác nhận' || is_null($currentStatusName);
+    }
+
+    /**
+     * Kiểm tra xem đơn hàng đã bị hủy chưa
+     */
+    public function isCancelled()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        return $currentStatusName === 'Đã hủy';
+    }
+
+    public function getShippingFeeFormattedAttribute()
+    {
+        return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
     }
 }

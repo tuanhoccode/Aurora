@@ -30,5 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            if ($e->getStatusCode() === 403) {
+                return response()->view('admin.errors.403', [], 403);
+            }
+        });
+    })
+    ->create();
