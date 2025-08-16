@@ -11,9 +11,9 @@ class OrderStatus extends Model
     protected $fillable = [
         'name',
     ];
-
-   public function orders()
-{
-    return $this->hasMany(Order::class);
-}
+    protected $guarded = [];
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

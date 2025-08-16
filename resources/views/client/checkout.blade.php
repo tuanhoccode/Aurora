@@ -121,27 +121,7 @@
         border-radius: 3px;
     }
 
-    /* User Info & Address */
-    .checkout__user-info p,
-    .checkout__address-info p {
-        margin-bottom: 1rem;
-        font-size: 1rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        padding: 1rem;
-        background: var(--border-light);
-        border-radius: var(--radius-sm);
-        transition: var(--transition);
-        border-left: 4px solid transparent;
-    }
-
-    .checkout__user-info strong {
-        color: var(--text-dark);
-        font-weight: 600;
-        display: inline-block;
-        min-width: 120px;
-    }
-
+    /* Address */
     .checkout__address-selection {
         display: flex;
         justify-content: space-between;
@@ -257,8 +237,9 @@
         background: #fff;
     }
 
-    /* Shipping Method */
-    .checkout__shipping-method .form-check {
+    /* Shipping & Payment Methods */
+    .checkout__shipping-method .form-check,
+    .checkout__payment-method .form-check {
         border-radius: var(--radius);
         border: 2px solid var(--border);
         padding: 1.5rem;
@@ -273,13 +254,16 @@
     }
 
     .checkout__shipping-method .form-check:hover,
-    .checkout__shipping-method .form-check.selected {
+    .checkout__shipping-method .form-check.selected,
+    .checkout__payment-method .form-check:hover,
+    .checkout__payment-method .form-check.selected {
         border-color: var(--primary);
         box-shadow: var(--shadow);
         background: var(--primary-light);
     }
 
-    .checkout__shipping-method .form-check-input {
+    .checkout__shipping-method .form-check-input,
+    .checkout__payment-method .form-check-input {
         width: 22px;
         height: 22px;
         margin: 0.3rem 0.8rem 0 0;
@@ -289,13 +273,15 @@
         transition: var(--transition);
     }
 
-    .checkout__shipping-method .form-check-input:checked {
+    .checkout__shipping-method .form-check-input:checked,
+    .checkout__payment-method .form-check-input:checked {
         background-color: var(--primary);
         border-color: var(--primary);
         box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
     }
 
-    .checkout__shipping-method .form-check-label {
+    .checkout__shipping-method .form-check-label,
+    .checkout__payment-method .form-check-label {
         font-size: 1.1rem;
         font-weight: 700;
         color: var(--text-dark);
@@ -303,45 +289,15 @@
         margin-bottom: 0.5rem;
     }
 
-    .checkout__shipping-method .form-check p {
+    .checkout__shipping-method p,
+    .checkout__payment-method p {
         margin: 0.4rem 0 0;
         font-size: 0.9rem;
         color: var(--text-muted);
         line-height: 1.5;
     }
 
-    /* Payment Method */
-    .checkout__payment-method {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1.5rem;
-        background: linear-gradient(135deg, var(--primary-light) 0%, #f8fafc 100%);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        border: 2px solid var(--border);
-        transition: var(--transition);
-        margin-bottom: 1rem;
-    }
-
-    .checkout__payment-method:hover {
-        border-color: var(--primary);
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
-    }
-
-    .checkout__payment-method label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-dark);
-    }
-
-    .checkout__payment-method img {
-        width: 50px;
-        vertical-align: middle;
-        border-radius: var(--radius-sm);
-    }
-
-    /* Coupon Section - Enhanced Design */
+    /* Coupon Section */
     .coupon-section {
         background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
         border: 2px solid #e9d5ff;
@@ -802,33 +758,6 @@
         box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
     }
 
-    /* Payment Modal Specific */
-    .payment-item {
-        border-color: #dee2e6 !important;
-        transition: all 0.3s ease;
-    }
-
-    .payment-item:hover {
-        border-color: #6366f1 !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .payment-item .form-check-input {
-        width: 14px !important;
-        height: 14px !important;
-        margin-top: 0.1rem;
-    }
-
-    .payment-item .form-check-input:checked {
-        background-color: #6366f1 !important;
-        border-color: #6366f1 !important;
-    }
-
-    .payment-item .form-check-input:focus {
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
-    }
-
     /* Utility Classes */
     .text-danger {
         color: var(--danger) !important;
@@ -876,8 +805,6 @@
         transform: translateY(-1px);
     }
 
-
-
     /* Enhanced Coupon Card Styles */
     .coupon-card.applied {
         background: linear-gradient(135deg, var(--success-light) 0%, #d1fae5 100%);
@@ -906,7 +833,7 @@
         color: var(--success);
     }
 
-    /* Coupon Modal Styles - Simplified */
+    /* Coupon Modal Styles */
     .bg-gradient-primary {
         background: #6366f1 !important;
     }
@@ -1205,7 +1132,6 @@
             flex-direction: column;
             align-items: stretch;
         }
-        .checkout__payment-method,
         .checkout__address-selection {
             flex-direction: column;
             align-items: flex-start;
@@ -1224,34 +1150,13 @@
         .checkout__cart-item span:nth-child(4) {
             display: none;
         }
-
-
     }
 </style>
 
 <section class="checkout__section">
     <div class="checkout__container">
         <div class="checkout__left-column">
-            <!-- 1. Thông tin khách hàng -->
-            <div class="checkout__block">
-                <div class="checkout__block-title">👤 Thông tin khách hàng</div>
-                <div class="checkout__user-info">
-                    @if (auth()->check())
-                        <p><strong>Họ và tên:</strong> {{ $user->fullname }}</p>
-                        <p><strong>Email:</strong> {{ $user->email }}</p>
-                        <p><strong>Số điện thoại:</strong> {{ $user->phone_number ?? 'Chưa cung cấp' }}</p>
-                        @if ($user->avatar)
-                            <p><strong>Avatar:</strong> <img src="{{ asset($user->avatar) }}" alt="Avatar" width="40" style="border-radius:50%;border:1px solid #e3e6ea;"></p>
-                        @else
-                            <p class="text-muted">Avatar: Chưa có</p>
-                        @endif
-                    @else
-                        <p class="text-muted">Vui lòng đăng nhập để xem thông tin khách hàng.</p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- 2. Địa chỉ nhận hàng -->
+            <!-- 1. Địa chỉ nhận hàng -->
             <div class="checkout__block">
                 <div class="checkout__block-title">📍 Địa chỉ nhận hàng</div>
                 <div class="checkout__address-selection">
@@ -1277,7 +1182,7 @@
                 @enderror
             </div>
 
-            <!-- 3. Sản phẩm đã chọn -->
+            <!-- 2. Sản phẩm đã chọn -->
             <div class="checkout__block">
                 <div class="checkout__block-title">🛍️ Sản phẩm đã chọn ({{ $cartItems->sum('quantity') }} sản phẩm)</div>
                 <ul class="checkout__cart-list">
@@ -1370,9 +1275,30 @@
         </div>
 
         <div class="checkout__right-column">
-            <!-- 4. Phương thức vận chuyển -->
+            <!-- 3. Phương thức vận chuyển -->
             <div class="checkout__block checkout__shipping-method">
                 <div class="checkout__block-title">🚚 Phương thức vận chuyển</div>
+                @php
+                    // Danh sách tỉnh lân cận Hà Nội
+                    $nearbyProvinces = ['Hà Nội', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Hải Phòng', 'Quảng Ninh'];
+                    $centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận'];
+                    $southProvinces = ['TP Hồ Chí Minh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau'];
+
+                    $shopProvince = 'Hà Nội';
+                    $destinationProvince = $selectedAddress->province ?? 'Hà Nội';
+
+                    // Logic phí vận chuyển
+                    $normalShippingFee = 16500; // Giao thường: 16.500 VNĐ cho tất cả khu vực
+                    $fastShippingFee = in_array($destinationProvince, $nearbyProvinces) ? 50000 :
+                                      (in_array($destinationProvince, $centralProvinces) || in_array($destinationProvince, $southProvinces) ? 50000 : 60000);
+
+                    // Logic thời gian giao hàng
+                    $normalShippingDates = \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y');
+                    $fastShippingDates = in_array($destinationProvince, $nearbyProvinces) ? 'Trong 4 giờ nếu đặt trước 16:00' :
+                                        \Carbon\Carbon::today()->addDays(1)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(2)->format('d/m/Y');
+
+                    $shippingFee = old('shipping_type', session('shipping_type', 'thường')) === 'thường' ? $normalShippingFee : $fastShippingFee;
+                @endphp
                 <form action="{{ route('checkout.update') }}" method="POST" id="shippingForm">
                     @csrf
                     <div
@@ -1383,16 +1309,10 @@
                             onchange="this.form.submit()" required>
                         <div>
                             <label class="form-check-label" for="normal_shipping">
-                                Giao hàng thường - ₫16.500
+                                Giao hàng thường - ₫{{ number_format($normalShippingFee) }}
                             </label>
                             <p class="text-muted small">
-                                Dự kiến giao hàng từ
-                                <strong>{{ \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') }}</strong>
-                                đến <strong>{{ \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}</strong>
-                            </p>
-                            <p class="text-muted small">
-                                Nhận Voucher <strong>₫15.000</strong> nếu giao hàng sau
-                                <strong>{{ \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}</strong>
+                                Dự kiến: {{ $normalShippingDates }}
                             </p>
                         </div>
                     </div>
@@ -1404,10 +1324,10 @@
                             onchange="this.form.submit()">
                         <div>
                             <label class="form-check-label" for="fast_shipping">
-                                Giao hàng nhanh - ₫30.000
+                                Giao hàng nhanh - ₫{{ number_format($fastShippingFee) }}
                             </label>
                             <p class="text-muted small">
-                                Dự kiến giao hàng trong vòng <strong>4 giờ</strong> nếu đặt trước 16:00 hôm nay
+                                Dự kiến: {{ $fastShippingDates }}
                             </p>
                             <p class="text-muted small">
                                 Hỗ trợ <strong>đồng kiểm</strong> (kiểm tra hàng trước khi nhận)
@@ -1420,27 +1340,48 @@
                 </form>
             </div>
 
-            <!-- 5. Phương thức thanh toán -->
-            <div class="checkout__block">
+            <!-- 4. Phương thức thanh toán -->
+            <div class="checkout__block checkout__payment-method">
                 <div class="checkout__block-title">💳 Phương thức thanh toán</div>
-                <div class="checkout__payment-method">
-                    <div>
-                        <label id="payment_method_label">
-                            @if (old('payment_method', session('payment_method', 'cod')) === 'cod')
-                                💵 Thanh toán khi nhận hàng
-                            @else
-                                🏦 VNPay
-                            @endif
-                        </label>
+                <form action="{{ route('checkout.update') }}" method="POST" id="paymentForm">
+                    @csrf
+                    <div
+                        class="form-check {{ old('payment_method', session('payment_method', 'cod')) === 'cod' ? 'selected' : '' }}">
+                        <input class="form-check-input" type="radio" id="cod_payment" name="payment_method"
+                            value="cod"
+                            {{ old('payment_method', session('payment_method', 'cod')) === 'cod' ? 'checked' : '' }}
+                            onchange="this.form.submit()" required>
+                        <div>
+                            <label class="form-check-label" for="cod_payment">
+                                Thanh toán khi nhận hàng
+                            </label>
+                            <p class="text-muted small">
+                                Thanh toán bằng tiền mặt khi nhận hàng
+                            </p>
+                        </div>
                     </div>
-                    <button class="checkout__btn-main" data-bs-toggle="modal" data-bs-target="#paymentModal">Thay đổi</button>
-                </div>
-                @error('payment_method')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+                    <div
+                        class="form-check {{ old('payment_method', session('payment_method', 'cod')) === 'vnpay' ? 'selected' : '' }}">
+                        <input class="form-check-input" type="radio" id="vnpay_payment" name="payment_method"
+                            value="vnpay"
+                            {{ old('payment_method', session('payment_method', 'cod')) === 'vnpay' ? 'checked' : '' }}
+                            onchange="this.form.submit()">
+                        <div>
+                            <label class="form-check-label" for="vnpay_payment">
+                                VNPay
+                            </label>
+                            <p class="text-muted small">
+                                Thanh toán trực tuyến qua VNPay
+                            </p>
+                        </div>
+                    </div>
+                    @error('payment_method')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </form>
             </div>
 
-            <!-- 6. Mã giảm giá -->
+            <!-- 5. Mã giảm giá -->
             <div class="checkout__block coupon-section">
                 <div class="checkout__block-title">🎫 Mã giảm giá</div>
 
@@ -1476,11 +1417,11 @@
                         <i class="fa fa-tag"></i>
                         Nhập mã giảm giá
                     </div>
-                <form action="{{ route('checkout.apply-coupon') }}" method="POST" class="checkout__coupon-group">
-                    @csrf
+                    <form action="{{ route('checkout.apply-coupon') }}" method="POST" class="checkout__coupon-group">
+                        @csrf
                         <input type="text" name="coupon_code" class="form-control"
-                               placeholder="Nhập mã giảm giá của bạn..."
-                        value="{{ old('coupon_code') }}">
+                            placeholder="Nhập mã giảm giá của bạn..."
+                            value="{{ old('coupon_code') }}">
                         <button type="submit" class="btn">
                             <i class="fa fa-check me-1"></i>Áp dụng
                         </button>
@@ -1509,7 +1450,7 @@
                 @endif
             </div>
 
-            <!-- 7. Tổng thanh toán -->
+            <!-- 6. Tổng thanh toán -->
             <div class="checkout__block">
                 <div class="checkout__block-title">💰 Tổng thanh toán</div>
                 <ul class="checkout__summary-list">
@@ -1646,94 +1587,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
-    <div class="modal fade" id="paymentModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold">
-                        <i class="fa fa-credit-card me-2"></i>
-                        Chọn phương thức thanh toán
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="{{ route('checkout.update') }}" method="POST">
-                    @csrf
-                    <div class="modal-body p-4">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="card border-2 h-100 payment-item" style="cursor: pointer; transition: all 0.3s ease;">
-                                    <div class="card-body p-3">
-                                        <div class="row align-items-center">
-                                            <div class="col-auto">
-                                                <div class="form-check">
-                                                    <input type="radio" id="cod_modal" name="payment_method" value="cod"
-                                                        class="form-check-input"
-                                                        {{ old('payment_method', session('payment_method', 'cod')) === 'cod' ? 'checked' : '' }}>
-                                                </div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 fw-bold text-dark me-2">
-                                                        💵 Thanh toán khi nhận hàng
-                                                    </h6>
-                                                </div>
-                                                <p class="text-muted mb-0 small">
-                                                    Thanh toán bằng tiền mặt khi nhận hàng
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="card border-2 h-100 payment-item" style="cursor: pointer; transition: all 0.3s ease;">
-                                    <div class="card-body p-3">
-                                        <div class="row align-items-center">
-                                            <div class="col-auto">
-                                                <div class="form-check">
-                                                    <input type="radio" id="vnpay_modal" name="payment_method" value="vnpay"
-                                                        class="form-check-input"
-                                                        {{ old('payment_method', session('payment_method', 'cod')) === 'vnpay' ? 'checked' : '' }}>
-                                                </div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 fw-bold text-dark me-2">
-                                                        🏦 VNPay
-                                                    </h6>
-                                                </div>
-                                                <p class="text-muted mb-0 small">
-                                                    Thanh toán trực tuyến qua VNPay
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @error('payment_method')
-                            <div class="alert alert-danger mt-3">
-                                <i class="fa fa-exclamation-circle me-2"></i>
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fa fa-times me-1"></i>
-                            Hủy
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-check me-1"></i>
-                            Xác nhận
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Coupon Modal -->
     <div class="modal fade" id="couponModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1815,6 +1668,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle shipping method selection
         const shippingOptions = document.querySelectorAll('.checkout__shipping-method .form-check');
         shippingOptions.forEach(option => {
             const radio = option.querySelector('input[type="radio"]');
@@ -1824,16 +1678,16 @@
             option.addEventListener('click', function(e) {
                 if (e.target !== radio) {
                     radio.checked = true;
-                    updateSelectedState();
+                    updateShippingState();
                     radio.form.submit();
                 }
             });
             radio.addEventListener('change', function() {
-                updateSelectedState();
+                updateShippingState();
             });
         });
 
-        function updateSelectedState() {
+        function updateShippingState() {
             shippingOptions.forEach(option => {
                 const radio = option.querySelector('input[type="radio"]');
                 if (radio.checked) {
@@ -1843,7 +1697,38 @@
                 }
             });
         }
+
+        // Handle payment method selection
+        const paymentOptions = document.querySelectorAll('.checkout__payment-method .form-check');
+        paymentOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if (radio.checked) {
+                option.classList.add('selected');
+            }
+            option.addEventListener('click', function(e) {
+                if (e.target !== radio) {
+                    radio.checked = true;
+                    updatePaymentState();
+                    radio.form.submit();
+                }
+            });
+            radio.addEventListener('change', function() {
+                updatePaymentState();
+            });
+        });
+
+        function updatePaymentState() {
+            paymentOptions.forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
     });
+
     function applySelectedCoupon(couponId) {
         if (!couponId) {
             const form = document.createElement('form');
