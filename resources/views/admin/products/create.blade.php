@@ -1,11 +1,7 @@
 @extends('admin.layouts.app')
 
 
-
-
 @section('title', 'Thêm sản phẩm mới')
-
-
 
 
 @section('content')
@@ -130,10 +126,14 @@
               @enderror
               <div id="gallery-upload-wrapper" style="display: block;">
                 <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" id="gallery-input" name="gallery_images[]" accept="image/*" multiple>
                 @error('gallery_images')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                <!-- Preview ảnh gallery -->
+                <div id="gallery-preview-container" class="mt-3 d-flex flex-wrap gap-2">
+                  <!-- Ảnh preview sẽ hiển thị ở đây -->
+                </div>
               </div>
             </div>
           </div>
@@ -174,7 +174,7 @@
                   @enderror
                 </div>
               </div>
-              <label class="form-label">Tồn kho (tối đa 100)</label>
+              <label class="form-label">Tồn kho</label>
               <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0" max="100">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -316,6 +316,42 @@
   background-color: #e4e4e4 !important;
   color: #333 !important;
 }
+
+
+/* Style for gallery image preview */
+#gallery-preview-container .position-relative,
+.variant-gallery-preview .position-relative {
+  transition: transform 0.2s ease;
+}
+
+
+#gallery-preview-container .position-relative:hover,
+.variant-gallery-preview .position-relative:hover {
+  transform: scale(1.05);
+}
+
+
+.remove-gallery-image,
+.remove-variant-gallery-image {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+
+.remove-gallery-image:hover,
+.remove-variant-gallery-image:hover {
+  opacity: 1;
+}
+
+
+/* Responsive gallery */
+@media (max-width: 576px) {
+  #gallery-preview-container .position-relative img,
+  .variant-gallery-preview .position-relative img {
+    width: 60px !important;
+    height: 60px !important;
+  }
+}
 </style>
 @endpush
 @push('scripts')
@@ -335,12 +371,20 @@
 
 
 
+
+
+
+
   $('.variant-attribute-select').select2({
     theme: 'bootstrap-5',
     width: '100%',
     placeholder: 'Chọn thuộc tính',
     allowClear: true
   });
+
+
+
+
 
 
 
@@ -372,6 +416,10 @@
 
 
 
+
+
+
+
   function viToEnConvert(str) {
     let lower = str.toLowerCase().trim();
     if (viToEn[lower]) return viToEn[lower];
@@ -387,9 +435,17 @@
 
 
 
+
+
+
+
   function removeVietnameseTones(str) {
     return str.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
   }
+
+
+
+
 
 
 
@@ -403,6 +459,10 @@
 
 
 
+
+
+
+
   const colorMap = {
     'Đỏ': 'DO',
     'Vàng': 'VANG',
@@ -412,6 +472,10 @@
     'Xanh': 'XA',
     // ... bổ sung nếu có thêm màu
   };
+
+
+
+
 
 
 
@@ -439,10 +503,18 @@
 
 
 
+
+
+
+
   // Tính toán khi thay đổi thuộc tính
   $('.variant-attribute-select').on('change', function() {
     calculateVariantCount();
   });
+
+
+
+
 
 
 
@@ -464,10 +536,18 @@
 
 
 
+
+
+
+
   // Khi thay đổi size hoặc màu (nếu có input riêng cho sản phẩm đơn giản)
   $('input[name="size"], input[name="color"]').on('input', function() {
     $('input[name="name"]').trigger('input');
   });
+
+
+
+
 
 
 
@@ -529,6 +609,10 @@
 
 
 
+
+
+
+
   // Gọi hàm khôi phục khi trang load
   restoreVariantData();
  
@@ -538,6 +622,10 @@
       $('#list-tab').tab('show');
     }, 200);
   @endif
+
+
+
+
 
 
 
@@ -563,10 +651,18 @@
 
 
 
+
+
+
+
     // Lấy tên sản phẩm
     let productName = $('input[name="name"]').val();
     let skuPrefix = getSkuPrefix(productName);
     if (!skuPrefix) skuPrefix = 'SP'; // fallback nếu tên sản phẩm rỗng
+
+
+
+
 
 
 
@@ -577,6 +673,10 @@
         return a.flatMap(d => b.values.map(e => d.concat([{attr: b.name, value: e, attr_id: b.id, value_id: b.valueIds[b.values.indexOf(e)]}])));
       }, [[]]);
     }
+
+
+
+
 
 
 
@@ -639,6 +739,8 @@
       const oldEnd = (typeof oldVariants !== 'undefined' && oldVariants && oldVariants[idx] && oldVariants[idx].sale_ends_at) ? oldVariants[idx].sale_ends_at : '';
 
 
+
+
       tbody += `<tr>
         <td>${attrStr}</td>
         <td><input type="text" class="form-control form-control-sm" name="variants[${idx}][sku]" value="${oldSku || sku}" placeholder="Để trống để tự tạo"></td>
@@ -681,9 +783,17 @@
 
 
 
+
+
+
+
     if (duplicateCombos.length > 0) {
       alert('Đã bỏ qua các biến thể bị trùng thuộc tính!');
     }
+
+
+
+
 
 
 
@@ -705,6 +815,10 @@
 
 
 
+
+
+
+
     // Xóa dòng biến thể
     $('#variantTable').off('click', '.remove-variant-row').on('click', '.remove-variant-row', function() {
       $(this).closest('tr').remove();
@@ -714,6 +828,10 @@
         $('#noVariantsMessage').show();
       }
     });
+
+
+
+
 
 
 
@@ -753,76 +871,70 @@
 
 
 
+
+
+
+
   // Xử lý khi chọn ảnh gallery cho biến thể (tạo mới)
   $(document).on('change', '.variant-gallery-input', function() {
     const variantIndex = $(this).data('variant-index');
     const files = this.files;
     const galleryContainer = $(`#variant-gallery-${variantIndex}`);
-    const token = $('meta[name="csrf-token"]').attr('content');
    
-    // Tạo form data để gửi file
-    const formData = new FormData();
-    formData.append('_token', token);
-    formData.append('variant_index', variantIndex);
+    // Xóa preview cũ
+    galleryContainer.empty();
    
-    // Thêm từng file vào form data
-    for (let i = 0; i < files.length; i++) {
-      formData.append('gallery[]', files[i]);
-    }
-   
-    // Hiển thị loading
-    const loadingHtml = `
-      <div class="position-relative d-inline-block me-2 mb-2">
-        <div class="spinner-border spinner-border-sm" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <span class="ms-2">Đang tải lên...</span>
-      </div>`;
-   
-    const $loading = $(loadingHtml);
-    galleryContainer.append($loading);
-   
-    // Gửi yêu cầu upload ảnh lên server
-    $.ajax({
-      url: '{{ route("admin.products.variants.upload-gallery") }}',
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function(response) {
-        // Xóa thông báo loading
-        $loading.remove();
-       
-        if (response.success && response.images && response.images.length > 0) {
-          // Xử lý từng ảnh đã upload thành công
-          response.images.forEach(function(image) {
-            const imgPreview = `
-              <div class="position-relative d-inline-block me-2 mb-2">
-                <img src="${image.url}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
-                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0"
-                        style="width: 20px; height: 20px; line-height: 18px;"
-                        onclick="$(this).closest('.position-relative').remove();">
-                  <i class="fas fa-times"></i>
-                </button>
-                <input type="hidden" name="variants[${variantIndex}][gallery_images][]" value="${image.id}">
-              </div>`;
-           
-            galleryContainer.append(imgPreview);
-          });
+    if (files.length > 0) {
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const imgPreview = `
+            <div class="position-relative d-inline-block me-2 mb-2" data-file-index="${index}">
+              <img src="${ev.target.result}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+              <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 remove-variant-gallery-image"
+                      style="width: 20px; height: 20px; line-height: 18px; font-size: 10px;"
+                      data-variant-index="${variantIndex}"
+                      data-file-index="${index}"
+                      title="Xóa ảnh">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>`;
          
-          toastr.success('Tải lên ảnh thành công');
-        } else {
-          toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
-        }
-      },
-      error: function(xhr) {
-        $loading.remove();
-        const response = xhr.responseJSON || {};
-        toastr.error(response.message || 'Có lỗi xảy ra khi tải lên ảnh');
-        console.error('Error uploading images:', xhr.responseText);
+          galleryContainer.append(imgPreview);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  });
+ 
+  // Xóa ảnh khỏi gallery của biến thể
+  $(document).on('click', '.remove-variant-gallery-image', function() {
+    const variantIndex = parseInt($(this).data('variant-index'));
+    const fileIndex = parseInt($(this).data('file-index'));
+    const input = $(`.variant-gallery-input[data-variant-index="${variantIndex}"]`)[0];
+    const galleryContainer = $(`#variant-gallery-${variantIndex}`);
+   
+    // Xóa ảnh preview
+    $(this).closest('.position-relative').remove();
+   
+    // Tạo FileList mới không bao gồm file bị xóa
+    const dt = new DataTransfer();
+    Array.from(input.files).forEach((file, index) => {
+      if (index !== fileIndex) {
+        dt.items.add(file);
       }
     });
+    input.files = dt.files;
+   
+    // Cập nhật lại preview nếu còn ảnh
+    if (input.files.length > 0) {
+      $(`.variant-gallery-input[data-variant-index="${variantIndex}"]`).trigger('change');
+    }
   });
+
+
+
+
 
 
 
@@ -856,34 +968,71 @@
 
 
 
+
+
+
+
     // Preview thư viện ảnh
-    $('input[name="gallery_images[]"]').on('change', function(e) {
-      $('#gallery-preview').remove();
+    $('#gallery-input').on('change', function(e) {
       const files = this.files;
+      const container = $('#gallery-preview-container');
+     
+      // Xóa preview cũ
+      container.empty();
+     
       if (files.length > 0) {
-        const $wrapper = $('<div id="gallery-preview" class="d-flex flex-wrap mt-2"></div>');
-        Array.from(files).forEach(file => {
+        Array.from(files).forEach((file, index) => {
           const reader = new FileReader();
           reader.onload = function(ev) {
-            $('<img>')
-              .attr('src', ev.target.result)
-              .css({
-                width: '80px',
-                height: '80px',
-                objectFit: 'cover',
-                marginRight: '8px',
-                marginBottom: '8px',
-                borderRadius: '6px',
-                border: '1px solid #eee'
-              })
-              .appendTo($wrapper);
+            const imagePreview = $(`
+              <div class="position-relative d-inline-block" data-file-index="${index}">
+                <img src="${ev.target.result}"
+                     class="img-thumbnail"
+                     style="width: 80px; height: 80px; object-fit: cover;">
+                <button type="button"
+                        class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 remove-gallery-image"
+                        style="width: 20px; height: 20px; line-height: 18px; font-size: 10px;"
+                        data-file-index="${index}"
+                        title="Xóa ảnh">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            `);
+            container.append(imagePreview);
           };
           reader.readAsDataURL(file);
         });
-        $(this).after($wrapper);
+      }
+    });
+   
+    // Xóa ảnh khỏi gallery
+    $(document).on('click', '.remove-gallery-image', function() {
+      const fileIndex = parseInt($(this).data('file-index'));
+      const input = $('#gallery-input')[0];
+      const container = $('#gallery-preview-container');
+     
+      // Xóa ảnh preview
+      $(this).closest('.position-relative').remove();
+     
+      // Tạo FileList mới không bao gồm file bị xóa
+      const dt = new DataTransfer();
+      Array.from(input.files).forEach((file, index) => {
+        if (index !== fileIndex) {
+          dt.items.add(file);
+        }
+      });
+      input.files = dt.files;
+     
+      // Cập nhật lại preview nếu còn ảnh
+      if (input.files.length > 0) {
+        $('#gallery-input').trigger('change');
       }
     });
   });
+
+
+
+
 
 
 
@@ -967,6 +1116,10 @@ ClassicEditor.create(document.querySelector('#ckeditor-description'))
       editor.setData(@json(old('description')));
     @endif
   });
+
+
+
+
 
 
 

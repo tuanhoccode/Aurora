@@ -180,23 +180,30 @@
               @error('sale_price')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <div class="row g-2">
+              
+              <!-- Thời gian khuyến mãi -->
+              <div class="row g-2 mb-2">
                 <div class="col-6">
                   <label class="form-label">Bắt đầu khuyến mãi</label>
-                  <input type="datetime-local" class="form-control @error('sale_starts_at') is-invalid @enderror" name="sale_starts_at" value="{{ old('sale_starts_at', optional($product->sale_starts_at)->format('Y-m-d\TH:i')) }}">
+                  <input type="datetime-local" class="form-control @error('sale_starts_at') is-invalid @enderror" name="sale_starts_at" value="{{ old('sale_starts_at', $product->sale_starts_at ? \Carbon\Carbon::parse($product->sale_starts_at)->format('Y-m-d\TH:i') : '') }}">
                   @error('sale_starts_at')
                     <div class="invalid-feedback">{{ $message }}</div>
                   @enderror
                 </div>
                 <div class="col-6">
                   <label class="form-label">Kết thúc khuyến mãi</label>
-                  <input type="datetime-local" class="form-control @error('sale_ends_at') is-invalid @enderror" name="sale_ends_at" value="{{ old('sale_ends_at', optional($product->sale_ends_at)->format('Y-m-d\TH:i')) }}">
+                  <input type="datetime-local" class="form-control @error('sale_ends_at') is-invalid @enderror" name="sale_ends_at" value="{{ old('sale_ends_at', $product->sale_ends_at ? \Carbon\Carbon::parse($product->sale_ends_at)->format('Y-m-d\TH:i') : '') }}">
                   @error('sale_ends_at')
                     <div class="invalid-feedback">{{ $message }}</div>
                   @enderror
                 </div>
               </div>
-              <label class="form-label">Tồn kho (tối đa 100)</label>
+              <small class="text-muted mb-2 d-block">
+                <i class="fas fa-info-circle me-1"></i>
+                Để trống nếu không cần khuyến mãi theo thời gian
+              </small>
+
+              <label class="form-label">Tồn kho</label>
               <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0" max="100">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -288,7 +295,7 @@
                             <th style="min-width: 200px;">Thuộc tính</th>
                             <th style="min-width: 120px;">SKU</th>
                             <th style="min-width: 120px;">Giá gốc</th>
-                            <th style="min-width: 260px;">Giá KM</th>
+                            <th style="min-width: 200px;">Giá khuyến mãi & Thời gian</th>
                             <th style="min-width: 100px;">Tồn kho</th>
                             <th style="min-width: 150px;">Ảnh</th>
                             <th style="width: 100px;">Thao tác</th>
@@ -308,14 +315,10 @@
                                 <input type="number" class="form-control variant-price" name="variants_old[{{ $variant->id }}][price]" value="{{ old('variants_old.' . $variant->id . '.price', $variant->regular_price) }}" min="0" placeholder="Giá gốc">
                               </td>
                               <td>
-                                <div class="row g-1">
-                                  <div class="col-12">
-                                    <input type="number" class="form-control variant-sale-price mb-1" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ old('variants_old.' . $variant->id . '.sale_price', $variant->sale_price) }}" min="0" placeholder="Giá khuyến mãi">
-                                    <small class="text-muted discount-percentage" style="display:none;"></small>
-                                    <input type="datetime-local" class="form-control mb-1" name="variants_old[{{ $variant->id }}][sale_starts_at]" value="{{ old('variants_old.' . $variant->id . '.sale_starts_at', optional($variant->sale_starts_at)->format('Y-m-d\TH:i')) }}" title="Bắt đầu KM">
-                                    <input type="datetime-local" class="form-control" name="variants_old[{{ $variant->id }}][sale_ends_at]" value="{{ old('variants_old.' . $variant->id . '.sale_ends_at', optional($variant->sale_ends_at)->format('Y-m-d\TH:i')) }}" title="Kết thúc KM">
-                                  </div>
-                                </div>
+                                <input type="number" class="form-control variant-sale-price mb-1" name="variants_old[{{ $variant->id }}][sale_price]" value="{{ old('variants_old.' . $variant->id . '.sale_price', $variant->sale_price) }}" min="0" placeholder="Giá khuyến mãi">
+                                <input type="datetime-local" class="form-control form-control-sm mb-1" name="variants_old[{{ $variant->id }}][sale_starts_at]" value="{{ old('variants_old.' . $variant->id . '.sale_starts_at', $variant->sale_starts_at ? \Carbon\Carbon::parse($variant->sale_starts_at)->format('Y-m-d\TH:i') : '') }}" title="Bắt đầu KM">
+                                <input type="datetime-local" class="form-control form-control-sm" name="variants_old[{{ $variant->id }}][sale_ends_at]" value="{{ old('variants_old.' . $variant->id . '.sale_ends_at', $variant->sale_ends_at ? \Carbon\Carbon::parse($variant->sale_ends_at)->format('Y-m-d\TH:i') : '') }}" title="Kết thúc KM">
+                                <small class="text-muted discount-percentage" style="display:none;"></small>
                               </td>
                               <td>
                                 <input type="number" class="form-control" name="variants_old[{{ $variant->id }}][stock]" value="{{ old('variants_old.' . $variant->id . '.stock', $variant->stock) }}" min="0" max="100" placeholder="Tồn kho (tối đa 100)">
@@ -327,7 +330,6 @@
                                     <img src="{{ asset('storage/' . $variant->img) }}" class="img-thumbnail" style="max-width: 60px;">
                                   </div>
                                 @endif
-                                <!-- Gallery images for this variant -->
                                 <div class="variant-gallery mt-2" id="variant-gallery-{{ $variant->id }}">
                                   @foreach($variant->images as $image)
                                     <div class="position-relative d-inline-block me-2 mb-2">
@@ -372,7 +374,9 @@
                                   <input type="number" class="form-control variant-price" name="variants[{{ $i }}][price]" value="{{ $variant['price'] ?? '' }}" min="0" placeholder="Giá gốc">
                                 </td>
                                 <td>
-                                  <input type="number" class="form-control variant-sale-price" name="variants[{{ $i }}][sale_price]" value="{{ $variant['sale_price'] ?? '' }}" min="0" placeholder="Giá khuyến mãi">
+                                  <input type="number" class="form-control variant-sale-price mb-1" name="variants[{{ $i }}][sale_price]" value="{{ $variant['sale_price'] ?? '' }}" min="0" placeholder="Giá khuyến mãi">
+                                  <input type="datetime-local" class="form-control form-control-sm mb-1" name="variants[{{ $i }}][sale_starts_at]" value="{{ $variant['sale_starts_at'] ?? '' }}" title="Bắt đầu KM">
+                                  <input type="datetime-local" class="form-control form-control-sm" name="variants[{{ $i }}][sale_ends_at]" value="{{ $variant['sale_ends_at'] ?? '' }}" title="Kết thúc KM">
                                   <small class="text-muted discount-percentage" style="display:none;"></small>
                                 </td>
                                 <td>
@@ -441,6 +445,44 @@
 .badge.bg-secondary {
   background-color: #e4e4e4 !important;
   color: #333 !important;
+}
+
+/* Style for variant sale date inputs */
+.variant-sale-price + input[type="datetime-local"] {
+  margin-top: 0.25rem;
+}
+
+/* Responsive table for variants */
+@media (max-width: 768px) {
+  #variantTable th,
+  #variantTable td {
+    min-width: auto;
+    font-size: 0.875rem;
+  }
+  
+  #variantTable input[type="datetime-local"] {
+    font-size: 0.75rem;
+  }
+}
+
+/* Style for sale date inputs in simple products */
+#priceStockCard input[type="datetime-local"] {
+  font-size: 0.875rem;
+}
+
+/* Responsive sale date inputs */
+@media (max-width: 576px) {
+  #priceStockCard .row.g-2 {
+    margin: 0;
+  }
+  
+  #priceStockCard .col-6 {
+    padding: 0 0.25rem;
+  }
+  
+  #priceStockCard input[type="datetime-local"] {
+    font-size: 0.8rem;
+  }
 }
 </style>
 @endpush
@@ -658,6 +700,8 @@
                 oldPrice = oldVariants[idx].price || '';
                 oldSalePrice = oldVariants[idx].sale_price || '';
                 oldStock = oldVariants[idx].stock || '';
+                oldSaleStartsAt = oldVariants[idx].sale_starts_at || '';
+                oldSaleEndsAt = oldVariants[idx].sale_ends_at || '';
               }
               
               let attrStr = combo.map(c => `<input type=\"hidden\" name=\"variants[${currentRows+idx}][attributes][${c.attr_id}]\" value=\"${c.value_id}\"><span class='badge bg-secondary me-1'>${c.attr}: ${c.value}</span>`).join(' ');
@@ -683,7 +727,9 @@
                 <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${oldSku || sku}\" readonly></td>
                 <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\" value=\"${oldPrice}\"></td>
                 <td>
-                  <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
+                  <input type=\"number\" class=\"form-control variant-sale-price mb-1\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
+                  <input type=\"datetime-local\" class=\"form-control form-control-sm mb-1\" name=\"variants[${currentRows+idx}][sale_starts_at]\" value=\"${oldSaleStartsAt}\" placeholder=\"Bắt đầu KM\" title=\"Bắt đầu khuyến mãi\">
+                  <input type=\"datetime-local\" class=\"form-control form-control-sm\" name=\"variants[${currentRows+idx}][sale_ends_at]\" value=\"${oldSaleEndsAt}\" placeholder=\"Kết thúc KM\" title=\"Kết thúc khuyến mãi\">
                   <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
                 </td>
                 <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\" value=\"${oldStock}\"></td>
@@ -882,6 +928,8 @@
       let oldPrice = '';
       let oldSalePrice = '';
       let oldStock = '';
+      let oldSaleStartsAt = '';
+      let oldSaleEndsAt = '';
       
       @if(old('variants'))
         let oldVariants = @json(old('variants'));
@@ -890,6 +938,8 @@
           oldPrice = oldVariants[idx].price || '';
           oldSalePrice = oldVariants[idx].sale_price || '';
           oldStock = oldVariants[idx].stock || '';
+          oldSaleStartsAt = oldVariants[idx].sale_starts_at || '';
+          oldSaleEndsAt = oldVariants[idx].sale_ends_at || '';
         }
       @endif
       
@@ -915,7 +965,9 @@
         <td><input type=\"text\" class=\"form-control\" name=\"variants[${currentRows+idx}][sku]\" value=\"${oldSku || sku}\" readonly></td>
         <td><input type=\"number\" class=\"form-control variant-price\" name=\"variants[${currentRows+idx}][price]\" min=\"0\" placeholder=\"Giá gốc\" value=\"${oldPrice}\"></td>
         <td>
-          <input type=\"number\" class=\"form-control variant-sale-price\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
+          <input type=\"number\" class=\"form-control variant-sale-price mb-1\" name=\"variants[${currentRows+idx}][sale_price]\" min=\"0\" placeholder=\"Giá khuyến mãi\" value=\"${oldSalePrice}\">
+          <input type=\"datetime-local\" class=\"form-control form-control-sm mb-1\" name=\"variants[${currentRows+idx}][sale_starts_at]\" value=\"${oldSaleStartsAt}\" placeholder=\"Bắt đầu KM\" title=\"Bắt đầu khuyến mãi\">
+          <input type=\"datetime-local\" class=\"form-control form-control-sm\" name=\"variants[${currentRows+idx}][sale_ends_at]\" value=\"${oldSaleEndsAt}\" placeholder=\"Kết thúc KM\" title=\"Kết thúc khuyến mãi\">
           <small class=\"text-muted discount-percentage\" style=\"display:none;\"></small>
         </td>
         <td><input type=\"number\" class=\"form-control\" name=\"variants[${currentRows+idx}][stock]\" min=\"0\" max=\"100\" placeholder=\"Tồn kho (tối đa 100)\" value=\"${oldStock}\"></td>
@@ -1410,4 +1462,6 @@ $('form').on('submit', function(e) {
   @endif
 </script>
 @endpush
+
 @endsection
+
