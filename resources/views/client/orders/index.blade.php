@@ -306,37 +306,43 @@
                 <li class="nav-item">
                     <a class="nav-link {{ !request('filter') ? 'active' : '' }}" 
                        href="{{ route('client.orders') }}">
-                        <i class="fas fa-list me-1"></i> Tất cả ({{ $allCount ?? 0 }})
+                        <i class="fas fa-list me-1"></i> Tất cả ({{ $statusCounts['all'] ?? 0 }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request('filter') === 'pending_payment' ? 'active' : '' }}" 
                        href="{{ route('client.orders', ['filter' => 'pending_payment']) }}">
-                        <i class="fas fa-money-bill-wave me-1"></i> Chờ thanh toán ({{ $pendingPaymentCount ?? 0 }})
+                        <i class="fas fa-money-bill-wave me-1"></i> Chờ thanh toán ({{ $statusCounts['pending_payment'] ?? 0 }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request('filter') === 'processing' ? 'active' : '' }}" 
                        href="{{ route('client.orders', ['filter' => 'processing']) }}">
-                        <i class="fas fa-tasks me-1"></i> Đang xử lý ({{ $processingCount ?? 0 }})
+                        <i class="fas fa-tasks me-1"></i> Đang xử lý ({{ $statusCounts['processing'] ?? 0 }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request('filter') === 'shipping' ? 'active' : '' }}" 
                        href="{{ route('client.orders', ['filter' => 'shipping']) }}">
-                        <i class="fas fa-truck me-1"></i> Đang giao hàng ({{ $shippingCount ?? 0 }})
+                        <i class="fas fa-truck me-1"></i> Đang giao hàng ({{ $statusCounts['shipping'] ?? 0 }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request('filter') === 'delivered' ? 'active' : '' }}" 
+                       href="{{ route('client.orders', ['filter' => 'delivered']) }}">
+                        <i class="fas fa-truck-arrow-right me-1"></i> Giao thành công ({{ $statusCounts['delivered'] ?? 0 }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request('filter') === 'completed' ? 'active' : '' }}" 
                        href="{{ route('client.orders', ['filter' => 'completed']) }}">
-                        <i class="fas fa-check-circle me-1"></i> Đã giao hàng ({{ $completedCount ?? 0 }})
+                        <i class="fas fa-check-circle me-1"></i> Đã hoàn thành ({{ $statusCounts['completed'] ?? 0 }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request('filter') === 'cancelled' ? 'active' : '' }}" 
                        href="{{ route('client.orders', ['filter' => 'cancelled']) }}">
-                        <i class="fas fa-ban me-1"></i> Đã hủy ({{ $cancelledCount ?? 0 }})
+                        <i class="fas fa-ban me-1"></i> Đã hủy ({{ $statusCounts['cancelled'] ?? 0 }})
                     </a>
                 </li>
             </ul>
@@ -431,16 +437,33 @@
                                        
                                     </div>
                                     <div class="d-flex gap-2">
-                                    @if($order->canBeCancelled())
-                                            <button type="button" 
-                                                    class="btn btn-cancel-order btn-danger"
-                                                    onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
-                                                <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                                    @php
+                                        $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
+                                        $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                    @endphp
+                                    
+                                    @if($isDelivered)
+                                        <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
+                                            @csrf
+                                            @method('POST')
+                                            <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
+                                                <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
                                             </button>
-                                        @elseif($order->isCancelled())
-                                            <button type="button" class="btn btn-danger">
-                                                <i class="fas fa-ban me-1"></i> Đã hủy
-                                            </button>
+                                        </form>
+                                    @elseif($isCompleted)
+                                        <button type="button" class="btn btn-success" disabled>
+                                            <i class="fas fa-check-double me-1"></i> Đã xác nhận nhận hàng
+                                        </button>
+                                    @elseif($order->canBeCancelled())
+                                        <button type="button" 
+                                                class="btn btn-cancel-order btn-danger"
+                                                onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
+                                            <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                                        </button>
+                                    @elseif($order->isCancelled())
+                                        <button type="button" class="btn btn-danger">
+                                            <i class="fas fa-ban me-1"></i> Đã hủy
+                                        </button>
                                         @endif
                                         <a href="{{ route('client.orders.show', $order->id) }}" class="btn btn-detail btn-primary">
                                             <i class="fas fa-eye me-1"></i> Xem chi tiết
@@ -721,6 +744,8 @@ document.getElementById('cancelOrderModal').addEventListener('hidden.bs.modal', 
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // Khởi tạo tooltip
     document.addEventListener('DOMContentLoaded', function() {
@@ -798,5 +823,68 @@ document.getElementById('cancelOrderModal').addEventListener('hidden.bs.modal', 
             modal.show();
         }
     }
+    
+    // Xử lý form xác nhận đã nhận hàng
+    $(document).on('submit', 'form.confirm-delivery-form', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const button = form.find('button[type="submit"]');
+        const originalButtonText = button.html();
+        
+        // Vô hiệu hóa nút để tránh submit nhiều lần
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+        
+        // Gửi form bằng AJAX
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    // Hiển thị thông báo thành công
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#28a745'
+                    }).then((result) => {
+                        // Lọc lại danh sách đơn hàng theo trạng thái đã hoàn thành
+                        if (response.filter) {
+                            window.location.href = '{{ route("client.orders") }}?filter=' + response.filter;
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: response.message || 'Có lỗi xảy ra, vui lòng thử lại sau',
+                        icon: 'error',
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại sau';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#dc3545'
+                });
+            },
+            complete: function() {
+                // Kích hoạt lại nút sau khi hoàn thành
+                button.prop('disabled', false).html(originalButtonText);
+            }
+        });
+    });
 </script>
 @endpush

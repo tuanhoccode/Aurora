@@ -561,6 +561,10 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     // Hủy đơn hàng
     Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
+    
+    // Xác nhận đã nhận hàng
+    Route::post('/orders/{order}/confirm-delivery', [\App\Http\Controllers\Client\OrderController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
+    
     //Đánh giá sản phẩm
     Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
 });

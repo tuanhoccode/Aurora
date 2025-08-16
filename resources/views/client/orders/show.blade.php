@@ -354,13 +354,13 @@
             $statusText = '';
             
             // Map status to display text
-            if (in_array($currentStatusName, ['Đã giao hàng', 'Hoàn thành', 'Giao hàng thành công'])) {
+            if ($currentStatusName === 'Đã giao hàng' || $currentStatusName === 'Nhận hàng thành công') {
                 $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
             } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
                 $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
             } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
                 $statusText = 'ĐANG GIAO HÀNG';
-            } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Đang đóng gói', 'Đã xác nhận đơn hàng'])) {
+            } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Đã xác nhận đơn hàng', 'Đã xác nhận thanh toán'])) {
                 $statusText = 'ĐANG XỬ LÝ';
             } else {
                 $statusText = 'CHỜ XÁC NHẬN';
@@ -368,7 +368,6 @@
         @endphp
         <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
     </div>
-
 
 
     <!-- Timeline -->

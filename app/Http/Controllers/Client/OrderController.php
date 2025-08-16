@@ -36,7 +36,7 @@ class OrderController extends Controller
                     $query->where('is_paid', false)
                         ->whereHas('statusHistory', function ($q) {
                             $q->where('is_current', true)
-                              ->whereNotIn('order_status_id', [7, 8]); // Không phải đã hoàn tiền hoặc đã hủy
+                              ->whereNotIn('order_status_id', [4, 7, 8]); // Không phải đã giao, đã hoàn tiền hoặc đã hủy
                         });
                     break;
                 case 'processing':
@@ -53,11 +53,21 @@ class OrderController extends Controller
                           ->whereIn('order_status_id', [2, 3]); // Chờ lấy hàng, Đang giao
                     });
                     break;
-                case 'completed':
-                    // Đã giao hàng
+                case 'delivered':
+                    // Giao hàng thành công (chưa xác nhận)
                     $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 4); // Giao hàng thành công
+                          ->where('order_status_id', 4) // Giao hàng thành công
+                          ->whereDoesntHave('order.statusHistory', function($q) {
+                              $q->where('order_status_id', 10); // Chưa chuyển sang trạng thái Hoàn thành (10)
+                          });
+                    });
+                    break;
+                case 'completed':
+                    // Đã hoàn thành (đã xác nhận nhận hàng)
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->where('order_status_id', 10); // Hoàn thành (10)
                     });
                     break;
                 case 'cancelled':
@@ -84,54 +94,75 @@ class OrderController extends Controller
         $orders = $query->paginate(10);
         
         // Đếm số lượng đơn hàng theo từng trạng thái
-        $allCount = Order::where('user_id', Auth::id())->count();
+        $user = Auth::user();
         
-        // Đếm đơn chờ thanh toán
-        $pendingPaymentCount = Order::where('user_id', Auth::id())
-            ->where('is_paid', false)
-            ->whereHas('statusHistory', function($q) {
-                $q->where('is_current', true)
-                  ->whereNotIn('order_status_id', [7, 8]);
-            })->count();
+        // Lấy tất cả đơn hàng của user
+        $allOrders = $user->orders()->with('statusHistory')->get();
+        
+// Khởi tạo các biến đếm
+        $allCount = $allOrders->count();
+        $pendingPaymentCount = 0;
+        $processingCount = 0;
+        $shippingCount = 0;
+        $deliveredCount = 0;
+        $completedCount = 0;
+        $cancelledCount = 0;
+        
+        // Đếm số lượng đơn hàng theo từng trạng thái
+        foreach ($allOrders as $order) {
+            $currentStatus = $order->statusHistory->where('is_current', true)->first();
             
-        // Đếm đơn đang xử lý (chờ xác nhận)
-        $processingCount = Order::where('user_id', Auth::id())
-            ->whereHas('statusHistory', function($q) {
-                $q->where('is_current', true)
-                  ->where('order_status_id', 1);
-            })->count();
+            if (!$currentStatus) {
+                continue;
+            }
             
-        // Đếm đơn đang giao hàng
-        $shippingCount = Order::where('user_id', Auth::id())
-            ->whereHas('statusHistory', function($q) {
-                $q->where('is_current', true)
-                  ->whereIn('order_status_id', [2, 3]);
-            })->count();
+            $statusId = $currentStatus->order_status_id;
             
-        // Đếm đơn đã giao thành công
-        $completedCount = Order::where('user_id', Auth::id())
-            ->whereHas('statusHistory', function($q) {
-                $q->where('is_current', true)
-                  ->where('order_status_id', 4);
-            })->count();
+            // Xử lý từng trạng thái đơn hàng
+            switch (true) {
+                case $statusId == 1:
+                    $processingCount++;
+                    break;
+                    
+                case in_array($statusId, [2, 3]):
+                    $shippingCount++;
+                    break;
+                    
+                case $statusId == 4:
+                    // Kiểm tra xem đã có trạng thái hoàn thành (10) chưa
+                    $hasCompleted = $order->statusHistory->contains('order_status_id', 10);
+                    if (!$hasCompleted) {
+                        $deliveredCount++;
+                    }
+                    break;
+                    
+                case $statusId == 10:
+                    $completedCount++;
+                    break;
+                    
+                case $statusId == 8:
+                    $cancelledCount++;
+                    break;
+            }
             
-        // Đếm đơn đã hủy
-        $cancelledCount = Order::where('user_id', Auth::id())
-            ->whereHas('statusHistory', function($q) {
-                $q->where('is_current', true)
-                  ->where('order_status_id', 8);
-            })->count();
+            // Đếm đơn hàng chờ thanh toán
+            if (!$order->is_paid && !in_array($statusId, [4, 7, 8, 10])) {
+                $pendingPaymentCount++;
+            }
+        }
 
-        return view('client.orders.index', compact(
-            'orders', 
-            'allCount', 
-            'pendingPaymentCount', 
-            'processingCount', 
-            'completedCount', 
-            'cancelledCount',
-            'shippingCount',
-            'search'
-        ));
+        // Tạo mảng kết quả để truyền vào view
+        $statusCounts = [
+            'all' => $allCount,
+            'pending_payment' => $pendingPaymentCount,
+            'processing' => $processingCount,
+            'shipping' => $shippingCount,
+            'delivered' => $deliveredCount,
+            'completed' => $completedCount,
+            'cancelled' => $cancelledCount
+        ];
+        
+        return view('client.orders.index', compact('orders', 'statusCounts', 'search'));
     }
 
     public function show(Order $order)
@@ -312,5 +343,69 @@ class OrderController extends Controller
         }
 
         return redirect()->back()->with('success', 'Đã cập nhật trạng thái cho các đơn hàng cũ thành công!');
+    }
+    
+    /**
+     * Xác nhận đã nhận hàng
+     */
+    public function confirmDelivery(Order $order)
+    {
+        // Kiểm tra quyền truy cập
+        if ($order->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn hàng này');
+        }
+        
+        $deliveredStatusId = 4; // ID cho trạng thái Giao hàng thành công
+        $completedStatusId = 10; // ID cho trạng thái Hoàn thành
+        
+        // Kiểm tra xem đơn hàng đã ở trạng thái giao hàng thành công chưa
+        $currentStatus = $order->statusHistory()
+            ->where('is_current', 1)
+            ->first();
+            
+        if (!$currentStatus || $currentStatus->order_status_id !== $deliveredStatusId) {
+            return redirect()->back()->with('error', 'Chỉ có thể xác nhận đơn hàng đã được giao thành công');
+        }
+        
+        DB::beginTransaction();
+        try {
+            // Cập nhật trạng thái cũ
+            $order->statusHistory()
+                ->where('is_current', 1)
+                ->update(['is_current' => 0]);
+                
+            // Tạo trạng thái mới là Hoàn thành (10)
+            OrderOrderStatus::create([
+                'order_id' => $order->id,
+                'order_status_id' => $completedStatusId, // Sử dụng ID 10 cho trạng thái Hoàn thành
+                'modified_by' => Auth::id(),
+                'note' => 'Khách hàng đã xác nhận nhận hàng',
+                'is_current' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'order_status_id' => $completedStatusId, // Sử dụng ID 10 cho trạng thái Hoàn thành
+                'modifier_id' => Auth::id(),
+                'note' => 'Khách hàng đã xác nhận nhận hàng',
+                'is_current' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            DB::commit();
+            
+            return redirect()->route('client.orders.index')->with('success', 'Đã xác nhận nhận hàng thành công');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xác nhận nhận hàng: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
