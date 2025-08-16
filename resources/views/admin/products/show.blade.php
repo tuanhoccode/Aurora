@@ -1,6 +1,8 @@
 @extends('admin.layouts.app')
 
+
 @section('title', 'Chi tiết sản phẩm')
+
 
 @push('styles')
 <style>
@@ -29,6 +31,7 @@
 </style>
 @endpush
 
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -53,6 +56,7 @@
             </div>
         @endif
     </div>
+
 
     <!-- Hàng đầu tiên: Thông tin sản phẩm và hình ảnh -->
     <div class="row">
@@ -148,6 +152,7 @@
                 </div>
             </div>
 
+
             <!-- Mô tả -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3">
@@ -167,6 +172,7 @@
                 </div>
             </div>
 
+
             <!-- Thông tin giá -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3">
@@ -179,7 +185,7 @@
                             <td>
                                 @if($product->type === 'variant' && $product->variants->count() > 0)
                                     @php $variant = $product->variants->first(); @endphp
-                                    @if($variant->sale_price > 0 && $variant->sale_price < $variant->regular_price)
+                                    @if($variant->is_on_sale)
                                         <div class="d-flex flex-column">
                                             <span class="price-original">Giá gốc: {{ number_format($variant->regular_price) }}đ</span>
                                             <span class="price-sale">Giá khuyến mãi: {{ number_format($variant->sale_price) }}đ</span>
@@ -189,7 +195,7 @@
                                         <span class="fw-bold">{{ number_format($variant->regular_price) }}đ</span>
                                     @endif
                                 @else
-                                    @if($product->is_sale && $product->sale_price < $product->price)
+                                    @if($product->is_on_sale)
                                         <div class="d-flex flex-column">
                                             <span class="price-original">Giá gốc: {{ number_format($product->price) }}đ</span>
                                             <span class="price-sale">Giá khuyến mãi: {{ number_format($product->sale_price) }}đ</span>
@@ -201,6 +207,49 @@
                                 @endif
                             </td>
                         </tr>
+                        @if($product->sale_price)
+                        <tr>
+                            <th>Thời gian khuyến mãi:</th>
+                            <td>
+                                @if(!empty($product->sale_starts_at))
+                                    Bắt đầu: {{ \Carbon\Carbon::parse($product->sale_starts_at)->format('d/m/Y H:i') }}
+                                @else
+                                    Bắt đầu: <span class="text-muted">Không đặt</span>
+                                @endif
+                                <br>
+                                @if(!empty($product->sale_ends_at))
+                                    Kết thúc: {{ \Carbon\Carbon::parse($product->sale_ends_at)->format('d/m/Y H:i') }}
+                                @else
+                                    Kết thúc: <span class="text-muted">Không đặt</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endif
+                        @if($product->type === 'variant' && $product->variants->count() > 0)
+                        <tr>
+                            <th>Thời gian khuyến mãi biến thể:</th>
+                            <td>
+                                @foreach($product->variants as $variant)
+                                    @if($variant->sale_price)
+                                        <div class="mb-2">
+                                            <strong>{{ $variant->sku }}:</strong><br>
+                                            @if(!empty($variant->sale_starts_at))
+                                                Bắt đầu: {{ \Carbon\Carbon::parse($variant->sale_starts_at)->format('d/m/Y H:i') }}
+                                            @else
+                                                Bắt đầu: <span class="text-muted">Không đặt</span>
+                                            @endif
+                                            <br>
+                                            @if(!empty($variant->sale_ends_at))
+                                                Kết thúc: {{ \Carbon\Carbon::parse($variant->sale_ends_at)->format('d/m/Y H:i') }}
+                                            @else
+                                                Kết thúc: <span class="text-muted">Không đặt</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </td>
+                        </tr>
+                        @endif
                         @if($product->type === 'simple')
                         <tr>
                             <th>Kho hàng:</th>
@@ -217,8 +266,10 @@
                 </div>
             </div>
 
-          
+
+         
         </div>
+
 
         <!-- Sidebar -->
         <div class="col-12 col-lg-4">
@@ -234,6 +285,7 @@
                          alt="{{ $product->name }}">
                     @endif
 
+
                     @if($product->type === 'simple' && $product->images && $product->images->count())
                     <div class="row g-2">
                         @foreach($product->images as $image)
@@ -246,6 +298,7 @@
                     </div>
                     @endif
 
+
                     @if(!$product->thumbnail && (!$product->images || $product->images->count() === 0))
                     <div class="text-center py-4">
                         <div class="text-muted mb-2">
@@ -256,6 +309,7 @@
                     @endif
                 </div>
             </div>
+
 
             <!-- Thông tin thêm -->
             <div class="card shadow-sm mb-4">
@@ -286,6 +340,7 @@
         </div>
     </div>
 
+
     <!-- Hàng thứ hai: Danh sách biến thể full width -->
     <div class="row mt-4">
         <div class="col-12">
@@ -305,12 +360,13 @@
                                     <th>SKU</th>
                                     <th>Giá gốc</th>
                                     <th>Giá khuyến mãi</th>
-                                    <th>% giảm</th>
+                                    <th>Giảm giá</th>
                                     <th>Tồn kho</th>
                                     <th>Ảnh chính</th>
                                     <th>Thư viện ảnh</th>
                                     <th>Lượt mua</th>
-                                    
+                                    <th>Bắt đầu KM</th>
+                                    <th>Kết thúc KM</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -319,7 +375,7 @@
                                     $purchaseCount = $variant->orderItems()->whereHas('order.currentOrderStatus', function($q) {
                                         $q->where('order_status_id', 4)->where('is_current', 1);
                                     })->sum('quantity');
-                                    $hasDiscount = $variant->sale_price > 0 && $variant->sale_price < $variant->regular_price;
+                                    $hasDiscount = $variant->is_on_sale;
                                     $discountPercent = $hasDiscount ? round((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) : 0;
                                 @endphp
                                 <tr>
@@ -330,7 +386,7 @@
                                     </td>
                                     <td>{{ $variant->sku }}</td>
                                     <td>{{ number_format($variant->regular_price) }}đ</td>
-                                    <td>{{ $variant->sale_price ? number_format($variant->sale_price) . 'đ' : '' }}</td>
+                                    <td>{{ $variant->is_on_sale ? number_format($variant->sale_price) . 'đ' : '' }}</td>
                                     <td>
                                         @if($hasDiscount)
                                             <span class="badge bg-danger">-{{ $discountPercent }}%</span>
@@ -348,8 +404,8 @@
                                         <div class="d-flex flex-wrap gap-2">
                                             @forelse($variant->images as $image)
                                                 <div class="position-relative" style="width: 60px; height: 60px;">
-                                                    <img src="{{ asset('storage/' . $image->url) }}" 
-                                                         class="img-thumbnail h-100 w-100" 
+                                                    <img src="{{ asset('storage/' . $image->url) }}"
+                                                         class="img-thumbnail h-100 w-100"
                                                          style="object-fit: cover; cursor: pointer;"
                                                          alt="Variant image"
                                                          onclick="showVariantImages({{ $variant->id }}, {{ json_encode($variant->images->pluck('url')->toArray()) }})"
@@ -365,6 +421,21 @@
                                             <i class="fas fa-shopping-cart me-1"></i>{{ number_format($purchaseCount) }}
                                         </span>
                                     </td>
+                                    <td>
+                                        @if(!empty($variant->sale_starts_at))
+                                            {{ \Carbon\Carbon::parse($variant->sale_starts_at)->format('d/m/Y H:i') }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($variant->sale_ends_at))
+                                            {{ \Carbon\Carbon::parse($variant->sale_ends_at)->format('d/m/Y H:i') }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+
 
                                 </tr>
                                 @endforeach
@@ -383,6 +454,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Modal hiển thị ảnh biến thể -->
 <div class="modal fade" id="variantImagesModal" tabindex="-1" aria-labelledby="variantImagesModalLabel" aria-hidden="true">
@@ -404,6 +476,7 @@
     </div>
 </div>
 
+
 @push('scripts')
 <script>
 // Hàm xóa ảnh biến thể
@@ -412,19 +485,20 @@ function deleteVariantImage(productId, variantId, imageId) {
         return false;
     }
 
+
     // Tìm phần tử ảnh tương ứng
     const imageElement = document.querySelector(`img[src*="${imageId}"]`);
     const imageContainer = imageElement ? imageElement.closest('.position-relative') : null;
-    
+   
     // Nếu không tìm thấy phần tử ảnh, thoát
     (!imageContainer) return;
-    
+   
     // Thêm lớp loading
     const deleteButton = imageContainer.querySelector('button');
     const originalContent = deleteButton.innerHTML;
     deleteButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
     deleteButton.disabled = true;
-    
+   
     // Gọi API xóa ảnh
     fetch(`/admin/products/${productId}/variants/${variantId}/images/${imageId}`, {
         method: 'DELETE',
@@ -456,36 +530,39 @@ function deleteVariantImage(productId, variantId, imageId) {
     });
 }
 
+
 // Khởi tạo tooltip
 $(document).ready(function() {
     $('[data-bs-toggle="tooltip"]').tooltip();
 });
 
+
 // Hàm hiển thị ảnh biến thể trong modal
 function showVariantImages(variantId, imageUrls) {
     const container = document.getElementById('variantImagesContainer');
     container.innerHTML = '';
-    
+   
     imageUrls.forEach(function(url) {
         const col = document.createElement('div');
         col.className = 'col-md-4 col-sm-6';
         col.innerHTML = `
             <div class="text-center">
-                <img src="/storage/${url}" 
-                     class="img-fluid rounded shadow-sm" 
+                <img src="/storage/${url}"
+                     class="img-fluid rounded shadow-sm"
                      style="max-height: 300px; object-fit: cover;"
                      alt="Variant image">
             </div>
         `;
         container.appendChild(col);
     });
-    
+   
     // Hiển thị modal
     const modal = new bootstrap.Modal(document.getElementById('variantImagesModal'));
     modal.show();
 }
 </script>
 @endpush
+
 
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">

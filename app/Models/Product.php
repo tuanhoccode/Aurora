@@ -1,6 +1,8 @@
 <?php
 
+
 namespace App\Models;
+
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,9 +11,11 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class Product extends Model
 {
     use HasFactory, SoftDeletes;
+
 
     protected $fillable = [
         'name',
@@ -22,6 +26,8 @@ class Product extends Model
         'sku',
         'price',
         'sale_price',
+        'sale_starts_at',
+        'sale_ends_at',
         'type',
         'thumbnail',
         'is_active',
@@ -31,23 +37,29 @@ class Product extends Model
         'digital_file',
     ];
 
+
     protected $casts = [
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'sale_starts_at' => 'datetime',
+        'sale_ends_at' => 'datetime',
         'is_sale' => 'boolean',
         'is_active' => 'boolean',
         'views' => 'integer',
         'stock' => 'integer',
     ];
 
+
     public function galleries()
     {
         return $this->hasMany(ProductImage::class);
     }
 
+
     protected static function boot()
     {
         parent::boot();
+
 
         // Tạo slug khi tạo mới sản phẩm
         static::creating(function ($product) {
@@ -62,11 +74,13 @@ class Product extends Model
             }
         });
 
+
         // Cập nhật slug khi tên sản phẩm thay đổi
         static::updating(function ($product) {
             if ($product->isDirty('name')) {
                 $originalSlug = $product->getOriginal('slug');
                 $newSlug = Str::slug($product->name);
+
 
                 // Kiểm tra xem slug đã tồn tại chưa
                 $count = 1;
@@ -75,9 +89,11 @@ class Product extends Model
                     $count++;
                 }
 
+
                 $product->slug = $newSlug;
             }
         });
+
 
         // Đảm bảo không xóa mềm sản phẩm khi cập nhật
         static::updating(function ($product) {
@@ -85,6 +101,7 @@ class Product extends Model
                 $product->restore();
             }
         });
+
 
         // Ngăn chặn xóa mềm khi cập nhật
         static::updated(function ($product) {
@@ -94,30 +111,36 @@ class Product extends Model
         });
     }
 
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
+
 
     public function categories()
     {
         return $this->belongsToMany(Category::class);
     }
 
+
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
     }
+
 
     public function stocks()
     {
         return $this->hasMany(Stock::class);
     }
 
+
     public function attributeValues()
     {
         return $this->belongsToMany(AttributeValue::class, 'attribute_value_product');
     }
+
 
     public function attributes()
     {
@@ -126,20 +149,35 @@ class Product extends Model
             ->withTimestamps();
     }
 
+
     public function orderItems()
     {
         return $this->hasMany(\App\Models\OrderItem::class, 'product_id');
     }
 
+
     public function getIsOnSaleAttribute()
     {
-        return $this->sale_price && $this->sale_price < $this->price;
+        // On sale only if sale_price is valid and current time is within optional window
+        if (!$this->sale_price || $this->sale_price >= $this->price) {
+            return false;
+        }
+        $now = now();
+        if ($this->sale_starts_at && $now->lt($this->sale_starts_at)) {
+            return false;
+        }
+        if ($this->sale_ends_at && $now->gt($this->sale_ends_at)) {
+            return false;
+        }
+        return true;
     }
+
 
     public function getCurrentPriceAttribute()
     {
         return $this->is_on_sale ? $this->sale_price : $this->price;
     }
+
 
     public function getDiscountPercentAttribute()
     {
@@ -149,15 +187,18 @@ class Product extends Model
         return 0;
     }
 
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+
     public function scopeInStock($query)
     {
         return $query->where('stock', '>', 0);
     }
+
 
     public function scopeLowStock($query, $threshold = 10)
     {
@@ -165,15 +206,25 @@ class Product extends Model
                     ->where('stock', '>', 0);
     }
 
+
     public function scopeOutOfStock($query)
     {
         return $query->where('stock', 0);
     }
 
+
     public function scopeOnSale($query)
     {
-        return $query->where('is_sale', true);
+        $now = now();
+        return $query->where('is_sale', true)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('sale_starts_at')->orWhere('sale_starts_at', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('sale_ends_at')->orWhere('sale_ends_at', '>=', $now);
+            });
     }
+
 
     public function getImageUrlAttribute()
     {
@@ -191,20 +242,25 @@ class Product extends Model
         return asset('storage/products/' . $this->thumbnail);
     }
 
+
     public function reviews()
     {
         return $this->hasMany(Review::class)->where('is_active', 1);
     }
+
 
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
 
+
     public function comments()
     {
         return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
     }
+
+
 
 
     public function getDefaultVariantIdAttribute()
@@ -217,12 +273,14 @@ class Product extends Model
         return $variant ? $variant->id : null;
     }
 
+
     public function getSuccessfulOrderItems()
     {
         return $this->orderItems()->whereHas('order.currentOrderStatus', function($q) {
             $q->where('order_status_id', 4)->where('is_current', 1);
         });
     }
+
 
     public function relatedProducts($limit = 10)
     {
@@ -237,6 +295,7 @@ class Product extends Model
             ->take($limit)
             ->get();
 
+
         if ($related->count() < $limit) {
             $more = Product::where('id', '!=', $this->id)
                 ->where('is_active', 1)
@@ -249,6 +308,7 @@ class Product extends Model
         }
         return $related;
     }
+
 
     /**
      * Lấy sản phẩm thay thế cho sản phẩm ngừng kinh doanh
@@ -263,6 +323,7 @@ class Product extends Model
             'max' => $this->price * 1.3  // 130% giá gốc
         ];
 
+
         // Ưu tiên 1: Cùng thương hiệu, cùng danh mục, giá tương đương
         $replacement = Product::where('id', '!=', $this->id)
             ->where('is_active', 1)
@@ -275,6 +336,7 @@ class Product extends Model
             ->orderBy('price', 'asc')
             ->take($limit)
             ->get();
+
 
         // Nếu chưa đủ, ưu tiên 2: Cùng thương hiệu, giá tương đương
         if ($replacement->count() < $limit) {
@@ -289,6 +351,7 @@ class Product extends Model
                 ->get();
             $replacement = $replacement->concat($more);
         }
+
 
         // Nếu chưa đủ, ưu tiên 3: Cùng danh mục, giá tương đương
         if ($replacement->count() < $limit) {
@@ -306,6 +369,7 @@ class Product extends Model
             $replacement = $replacement->concat($more);
         }
 
+
         // Nếu chưa đủ, ưu tiên 4: Cùng thương hiệu
         if ($replacement->count() < $limit) {
             $more = Product::where('id', '!=', $this->id)
@@ -318,6 +382,7 @@ class Product extends Model
                 ->get();
             $replacement = $replacement->concat($more);
         }
+
 
         // Nếu chưa đủ, ưu tiên 5: Cùng danh mục
         if ($replacement->count() < $limit) {
@@ -334,6 +399,7 @@ class Product extends Model
             $replacement = $replacement->concat($more);
         }
 
+
         // Cuối cùng, lấy bất kỳ sản phẩm nào còn hoạt động và có hàng
         if ($replacement->count() < $limit) {
             $more = Product::where('id', '!=', $this->id)
@@ -346,8 +412,10 @@ class Product extends Model
             $replacement = $replacement->concat($more);
         }
 
+
         return $replacement;
     }
+
 
     //đổ sao trung bình ra home
     public function getAverageRatingAttribute(){
@@ -358,4 +426,8 @@ class Product extends Model
     return $this->hasMany(Wishlist::class);
 }
 
+
 }
+
+
+

@@ -110,7 +110,7 @@
                                     @error('image')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Để trống nếu không thay đổi ảnh. Định dạng: JPG, PNG, GIF, WEBP. Tối đa 2MB. Kích thước tối thiểu: 800x400px.</div>
+                                    <div class="form-text">Để trống nếu không thay đổi ảnh. Định dạng: JPG, PNG, GIF, WEBP. Tối đa 2MB.</div>
                                 </div>
 
                                 <div class="mb-3">

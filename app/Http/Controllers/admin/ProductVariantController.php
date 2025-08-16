@@ -55,6 +55,8 @@ class ProductVariantController extends Controller
                     'stock' => $variantData['stock'],
                     'regular_price' => $variantData['regular_price'],
                     'sale_price' => $variantData['sale_price'] ?? null,
+                    'sale_starts_at' => $variantData['sale_starts_at'] ?? null,
+                    'sale_ends_at' => $variantData['sale_ends_at'] ?? null,
                 ]);
 
 
@@ -144,7 +146,6 @@ class ProductVariantController extends Controller
         try {
             $images = $variant->images()->orderBy('is_primary', 'desc')->get();
 
-
             $formattedImages = $images->map(function($image) {
                 return [
                     'id' => $image->id,
@@ -155,12 +156,10 @@ class ProductVariantController extends Controller
                 ];
             });
 
-
             return response()->json([
                 'success' => true,
                 'images' => $formattedImages
             ]);
-
 
         } catch (\Exception $e) {
             \Log::error('Error getting variant images:', [
@@ -168,14 +167,12 @@ class ProductVariantController extends Controller
                 'variant_id' => $variant->id
             ]);
 
-
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải ảnh biến thể.'
             ], 500);
         }
     }
-
 
     /**
      * Upload images for a variant
@@ -187,14 +184,11 @@ class ProductVariantController extends Controller
                 'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // Max 10MB per file
             ]);
 
-
             $uploadedImages = [];
-
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('products/variants', 'public');
-
 
                     $imageModel = \App\Models\ProductImage::create([
                         'product_id' => $product->id,
@@ -202,7 +196,6 @@ class ProductVariantController extends Controller
                         'url' => $path,
                         'is_primary' => 0
                     ]);
-
 
                     $uploadedImages[] = [
                         'id' => $imageModel->id,
@@ -214,13 +207,11 @@ class ProductVariantController extends Controller
                 }
             }
 
-
             return response()->json([
                 'success' => true,
                 'message' => 'Tải ảnh lên thành công',
                 'images' => $uploadedImages
             ]);
-
 
         } catch (\Exception $e) {
             \Log::error('Error uploading variant images:', [
@@ -228,14 +219,12 @@ class ProductVariantController extends Controller
                 'variant_id' => $variant->id
             ]);
 
-
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi tải ảnh lên: ' . $e->getMessage()
             ], 500);
         }
     }
-
 
     /**
      * Xóa ảnh biến thể
@@ -247,7 +236,6 @@ class ProductVariantController extends Controller
                 ->where('id', $imageId)
                 ->firstOrFail();
 
-
             if ($image->is_primary) {
                 return response()->json([
                     'success' => false,
@@ -255,21 +243,17 @@ class ProductVariantController extends Controller
                 ], 400);
             }
 
-
             // Xóa file ảnh khỏi storage
             if (Storage::disk('public')->exists($image->url)) {
                 Storage::disk('public')->delete($image->url);
             }
 
-
             $image->delete();
-
 
             return response()->json([
                 'success' => true,
                 'message' => 'Đã xóa ảnh thành công.'
             ]);
-
 
         } catch (\Exception $e) {
             \Log::error('Error deleting variant image:', [
@@ -277,7 +261,6 @@ class ProductVariantController extends Controller
                 'variant_id' => $variant->id,
                 'image_id' => $imageId
             ]);
-
 
             return response()->json([
                 'success' => false,
@@ -298,6 +281,8 @@ class ProductVariantController extends Controller
             'stock' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
+            'sale_starts_at' => 'nullable|date',
+            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
             'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'required|exists:attribute_values,id',
@@ -386,6 +371,8 @@ class ProductVariantController extends Controller
                 'stock' => $validated['stock'],
                 'regular_price' => $validated['regular_price'],
                 'sale_price' => $validated['sale_price'] ?? null,
+                'sale_starts_at' => $validated['sale_starts_at'] ?? null,
+                'sale_ends_at' => $validated['sale_ends_at'] ?? null,
                 'img' => $imgPath,
             ]);
 
