@@ -232,9 +232,16 @@
                                                 <!-- Xóa -->
                                                 <li>
                                                     <a href="#" class="dropdown-item text-danger" 
-                                                       onclick="event.preventDefault(); deleteItem({{ $post->id }}, false);">
+                                                       onclick="event.preventDefault(); if(confirm('Bạn có chắc chắn muốn chuyển bài viết vào thùng rác?')) { document.getElementById('delete-form-{{ $post->id }}').submit(); }">
                                                         <i class="bi bi-trash me-2"></i>Xóa
                                                     </a>
+                                                    <form id="delete-form-{{ $post->id }}" 
+                                                          action="{{ route('admin.blog.posts.destroy', $post) }}" 
+                                                          method="POST" 
+                                                          style="display: none;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                    </form>
                                                 </li>
                                             @else
                                                 <!-- Khôi phục -->
