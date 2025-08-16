@@ -1,7 +1,7 @@
 <?php
 
 
-use App\Http\Controllers\Admin\BannerController;
+use Dom\Comment;
 
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -15,44 +15,45 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ShopController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Client\ErrorController;
+use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\ProfileController;
+
+
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\GoogleController;
-use App\Http\Controllers\Client\ContactController as ClientContactController;
-
-
-use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
-use App\Http\Controllers\admin\CommentController;
-use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\ProductGalleryController;
-use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Client\Auth\RegisterController;
+
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
-
-use App\Http\Controllers\Client\WishlistController;
+use App\Http\Controllers\Client\Auth\LoginHistoryController;
 use App\Http\Controllers\Client\Auth\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\ForgotPasswordController;
-use App\Http\Controllers\Client\Auth\LoginHistoryController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
+use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
-use App\Http\Controllers\Client\ReviewController;
-use App\Http\Controllers\Client\ShopController;
-use Dom\Comment;
 //Auth Admin
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('showLoginForm');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
@@ -61,7 +62,9 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
     // Media Upload Route
     Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
-    
+
+    Route::get('refunds', [RefundController::class, 'index'])->name('refunds.index');
+    Route::patch('refunds/{refund}', [RefundController::class, 'update'])->name('refunds.update');
     // Blog Comments Routes
     Route::prefix('blog/comments')->name('blog.comments.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BlogCommentController::class, 'index'])->name('index');
@@ -76,12 +79,12 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         // Trash Management - Phải đặt trước các route có tham số {post}
         Route::get('/trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'trash'])->name('trash');
         Route::post('/empty-trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'emptyTrash'])->name('empty-trash');
-        
+
         // Danh sách và tạo bài viết
         Route::get('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Admin\BlogPostController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'store'])->name('store');
-        
+
         // Các route có tham số {post}
         Route::prefix('{post}')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'show'])->name('show');
@@ -90,12 +93,12 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
             Route::delete('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'destroy'])->name('destroy');
             Route::patch('/restore', [\App\Http\Controllers\Admin\BlogPostController::class, 'restore'])->name('restore');
             Route::delete('/force-delete', [\App\Http\Controllers\Admin\BlogPostController::class, 'forceDelete'])->name('force-delete');
-            
+
             // Single Post Actions
             Route::patch('/publish', [\App\Http\Controllers\Admin\BlogPostController::class, 'publish'])->name('publish');
             Route::patch('/draft', [\App\Http\Controllers\Admin\BlogPostController::class, 'draft'])->name('draft');
         });
-        
+
         // Bulk Actions
         Route::post('/bulk-activate', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkActivate'])->name('bulk-activate');
         Route::post('/bulk-deactivate', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkDeactivate'])->name('bulk-deactivate');
@@ -107,22 +110,22 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::get('/', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'store'])->name('store');
-        
+
         // Trash management routes - must come before {category} routes
         Route::get('/trash', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'trash'])->name('trash');
         Route::delete('/trash/empty', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'emptyTrash'])->name('trash.empty');
-        
+
         // Category routes with parameters
         Route::get('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'show'])->name('show');
         Route::get('/{category}/edit', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'edit'])->name('edit');
         Route::put('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'destroy'])->name('destroy');
-        
+
         // Bulk actions
         Route::post('/bulk-activate', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkActivate'])->name('bulk-activate');
         Route::post('/bulk-deactivate', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkDeactivate'])->name('bulk-deactivate');
         Route::post('/bulk-destroy', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkDestroy'])->name('bulk-destroy');
-        
+
         // Restore and force delete routes
         Route::patch('/{id}/restore', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'forceDelete'])->name('force-delete');
@@ -136,7 +139,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     Route::post('contacts/{id}/reply', [AdminContactController::class, 'reply'])->name('contacts.reply');
 
     // Route cho upload ảnh từ CKEditor
-    Route::post('/upload', [\App\Http\Controllers\Admin\UploadController::class, 'upload'])->name('upload');
+    // Route::post('/upload', [UploadController::class, 'upload'])->name('upload');
     Route::patch('contacts/{id}/restore', [AdminContactController::class, 'restore'])->name('contacts.restore');
     Route::delete('contacts/{id}/force-delete', [AdminContactController::class, 'forceDelete'])->name('contacts.forceDelete');
     Route::get('contacts-trash', [AdminContactController::class, 'trash'])->name('contacts.trash');
@@ -402,24 +405,24 @@ Route::prefix('blog')->name('blog.')->group(function () {
     // Trang chủ blog
     Route::get('/', [\App\Http\Controllers\Client\BlogController::class, 'index'])
         ->name('index');
-        
+
     // Xem chi tiết bài viết
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'show'])
         ->name('show');
-        
+
     // Bình luận
     Route::post('/{post}/comments', [\App\Http\Controllers\Client\BlogController::class, 'storeComment'])
         ->name('comments.store')
         ->middleware('throttle:3,1'); // Giới hạn 3 request mỗi phút
-        
+
     // Danh mục bài viết
     Route::get('/category/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByCategory'])
         ->name('category');
-        
+
     // Bài viết theo tag
     Route::get('/tag/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByTag'])
         ->name('tag');
-        
+
     // Lưu trữ bài viết theo tháng/năm
     Route::get('/archive/{year}/{month?}', [\App\Http\Controllers\Client\BlogController::class, 'archive'])
         ->where(['year' => '[0-9]{4}', 'month' => '0[1-9]|1[0-2]'])
@@ -500,7 +503,7 @@ Route::middleware('web')->group(function () {
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
-    //changepassword
+    //change password
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
@@ -524,7 +527,8 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/clear-coupon-session', action: [CheckoutController::class, 'clearCouponSession'])->name('checkout.clear-coupon-session');
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
-    });
+    Route::get('/checkout/retry-payment/{order_code}', [CheckoutController::class, 'retryPendingPayment'])->name('checkout.retry-payment');
+    Route::get('/checkout/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('checkout.vnpay-return');
     // Address Management
     Route::get('/address/create', [CheckoutController::class, 'createAddress'])->name('address.create');
     Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
@@ -540,12 +544,13 @@ Route::middleware('web')->group(function () {
         Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
         Route::get('/orders/show', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show')->middleware('admin.only');
     });
-
+    Route::post('/refund', [RefundController::class, 'store'])->name('client.refund.store');
     // Client Category
     Route::prefix('categories')->name('client.categories.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Client\CategoryController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
+});
 });
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
