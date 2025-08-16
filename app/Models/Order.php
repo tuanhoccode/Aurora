@@ -33,6 +33,12 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+    
+    // Alias for items() for compatibility
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     public function payment()
     {
