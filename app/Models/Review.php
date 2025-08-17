@@ -12,6 +12,7 @@ class Review extends Model
         'product_id',
         'order_id',
         'user_id',
+        'order_item_id',
         'rating',
         'review_text',
         'review_id',
@@ -40,6 +41,13 @@ class Review extends Model
     }
     public function getHasRepliesAttribute(){
         return $this->replies()->exists();
+    }
+    public function order(){
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+    public function orderItemId()
+    {
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
     public function images(){
         return $this->hasMany(ReviewImage::class);

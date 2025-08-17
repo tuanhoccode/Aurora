@@ -539,7 +539,9 @@
                                                 : $item->variant->attributeValues()->with('attribute')->get();
                                             $variantText = $vals->pluck('value')->filter()->implode(' / ');
                                         }
-                                    @endphp
+
+                                        @endphp
+                                       
 
                                     <div class="sp-row">
                                         <img class="sp-thumb" src="{{ $img }}" alt="{{ $item->product->name }}">
@@ -549,6 +551,29 @@
                                                 <div class="sp-variant">Phân loại hàng: {{ $variantText }}</div>
                                             @endif
                                             <div class="sp-qty">x{{ $item->quantity }}</div>
+                                              {{-- Nút đánh giá --}}
+        @if ($statusId == 4)
+            @if ($item->review)
+                <div class="mt-2">
+                    <button class="btn btn-secondary btn-sm" disabled>Đã đánh giá</button>
+                    <div class="small text-muted">
+                        Bạn đã đánh giá: {{ $item->review->rating }} ★ 
+                        — "{{ Str::limit($item->review->review_text, 80) }}"
+                    </div>
+                </div>
+            @else
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reviewModal"
+                        data-product-id="{{ $item->product->id }}"
+                        data-order-item-id="{{ $item->id }}">
+                        Đánh giá sản phẩm
+                    </button>
+                </div>
+            @endif
+        @endif
+
                                         </div>
                                         <div class="sp-price">
                                             @if ($showOld)
@@ -705,6 +730,111 @@
             document.getElementById('cancel_note').value = '';
         });
     </script>
+    <!-- Modal đánh giá sp -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="reviewForm" action="{{ route('client.store', ['product' => $item->product->id]) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                 <input type="hidden" name="product_id" value="{{ $item->product->id }}">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Đánh giá sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Đánh giá của bạn:</label>
+                        <div class="d-flex gap-1 rating-group">
+    @for ($i = 1; $i <= 5; $i++)
+        <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}" class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
+        <label for="star{{ $i }}" class="star-label" data-index="{{ $i }}">
+            <i class="fa-regular fa-star" style="color: #ccc;"></i>
+        </label>
+    @endfor
+</div>
+@error('rating')
+    <span class="text-danger">{{ $message }}</span>
+@enderror
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="review_text" class="form-control" placeholder="Viết đánh giá của bạn..."></textarea>
+                    </div>
+                    @error('review_text')
+                                                                <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
+                    <div class="mb-3">
+                        <input type="file" name="images[]" multiple accept="images/*" class="form-control">
+                    </div>
+                    @error('images.*')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gán product_id khi mở modal
+    const reviewModal = document.getElementById('reviewModal');
+    reviewModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+        document.getElementById('review_product_id').value = productId;
+    });
+
+    //màu sao
+    document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.rating-group').forEach(group => {
+        const radios = group.querySelectorAll('input[name="rating"]');
+        const labels = group.querySelectorAll('.star-label');
+
+        labels.forEach((label, idx) => {
+            label.addEventListener('click', () => {
+                // Check radio tương ứng
+                radios[idx].checked = true;
+
+                // Update màu sao
+                labels.forEach((lbl, i) => {
+                    const icon = lbl.querySelector('i');
+                    if(i <= idx){
+                        icon.classList.remove('fa-regular');
+                        icon.classList.add('fa-solid');
+                        icon.style.color = '#ffc107';
+                    } else {
+                        icon.classList.remove('fa-solid');
+                        icon.classList.add('fa-regular');
+                        icon.style.color = '#ccc';
+                    }
+                });
+            });
+        });
+
+        // Giữ màu nếu form validation fail
+        const checkedRadio = group.querySelector('input[name="rating"]:checked');
+        if(checkedRadio){
+            const idx = Array.from(radios).indexOf(checkedRadio);
+            labels.forEach((lbl, i) => {
+                const icon = lbl.querySelector('i');
+                if(i <= idx){
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                    icon.style.color = '#ffc107';
+                } else {
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                    icon.style.color = '#ccc';
+                }
+            });
+        }
+    });
+});
+
+</script>
 
 @endsection
 
@@ -883,6 +1013,25 @@
             background-color: #e2e3e5;
             color: #383d41;
         }
+
+        /* Màu sao */
+    .star-label {
+        cursor: pointer;
+        font-size: 24px;
+    }
+    .star-label i {
+        transition: color 0.2s;
+    }
+    /* hover màu vàng */
+    .star-label:hover ~ .star-label i,
+    .star-label:hover i {
+        color: #ffc107 !important;
+    }
+    /* sao được chọn */
+    input[type="radio"]:checked ~ label i {
+        color: #ffc107 !important;
+    }
+
     </style>
 @endpush
 
@@ -966,4 +1115,5 @@
             }
         }
     </script>
+    
 @endpush

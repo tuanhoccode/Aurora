@@ -15,73 +15,53 @@ use Illuminate\Support\Facades\Redis;
 
 class ReviewController extends Controller
 {
-    public function store(ReviewRequest $req, Product $product)
-    {
+   public function store(ReviewRequest $req,  $productId)
+{
+       $user = Auth::user();
 
-        $user = Auth::user();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Bạn cần đăng nhập.');
-        }
-        // Admin không được đánh giá và bình luận 
-        if ($user->role === 'admin' || $user->role === 'employee') {
-            return back()->with('error', 'Admin và nhân viên không thể tạo đánh giá và bình luận');
-        }
-        if ($req->filled('rating')) {
+    // Tìm đơn hàng chứa sản phẩm này và trạng thái hiện tại là "Giao hàng thành công"
+    $order = Order::where('user_id', $user->id)
+    ->whereHas('items', fn($q) => $q->where('product_id', $productId))
+    ->whereHas('currentStatus.status', fn($q) => 
+        $q->where('name', 'Giao hàng thành công')
+    )
+    ->first();
+//     dd(
+//     Order::where('user_id', $user->id)
+//         ->whereHas('items', fn($q) => $q->where('product_id', $productId))
+//         ->with(['orderStatuses' => fn($q) => $q->where('is_current', 1)->with('status')])
+//         ->get()
+//         ->toArray()
+// );
 
-            //Kiểm tra người dùng mua sản phẩm chưa
-            $orders = Order::where('user_id', $user->id)
-                 ->whereHas('currentStatus', function ($q) {
-            $q->where('order_status_id', 4); 
-            })
-                ->whereHas('orderDetail', function ($q) use ($product) {
-                    $q->where('product_id', $product->id);
-                })->get();
-            if ($orders->isEmpty()) {
-                return back()->with('error', 'Bạn chỉ có thể đánh giá khi bạn đã mua sản phẩm và nhận hàng thành công.');
-            }
+    if (!$order) {
+        return back()->with('error', 'Đơn hàng không tồn tại hoặc chưa được giao, bạn chưa thể đánh giá.');
+    }
 
-            //Lấy danh sách order_id user đã đánh giá cho sản phẩm này
-            $reviewedOrderIds = Review::where('user_id', $user->id)
-            -> where('product_id', $product->id)
-            ->pluck('order_id')
-            ->toArray();
+    // Kiểm tra đã đánh giá chưa theo order_item
+$orderItem = $order->items()->where('product_id', $productId)->first();
 
-            //Tìm xem ddown hàng nào chưa được đánh giá
-            $orderToReview = $orders->first(function ($order) use ($reviewedOrderIds){
-                return !in_array($order->id, $reviewedOrderIds);
-            });
+$exists = Review::where('user_id', $user->id)
+    ->where('product_id', $productId)
+    ->where('order_id', $order->id)
+    ->where('order_item_id', $orderItem->id ?? null) // cần thêm cột order_item_id trong reviews
+    ->exists();
 
-            if (!$orderToReview) {
-                return back()->with('error', 'Bạn đã đánh giá hết tất cả các lần mua sản phẩm này rồi');
-            }
+    if ($exists) {
+        return back()->with('error', 'Bạn đã đánh giá sản phẩm này trong đơn hàng này rồi.');
+    }
 
-            $review = Review::create([
-                'product_id' => $product->id,
-                'order_id' => $orderToReview?->id,
-                'user_id' => $user->id,
-                'rating' => $req->rating,
-                'review_text' => $req->review_text,
-                'is_active' =>  0,
-            ]);
-            //Lưu ảnh
-            if ($req->hasFile('images')) {
-                foreach($req->file('images') as $file){
-                    $path = $file->store('reviews', 'public');
-                    ReviewImage::create([
-                        'review_id' => $review->id,
-                        'image_path' => $path
-                    ]);
-                }
-            }
-            return back()->with('success', 'Đánh giá của bạn đang chờ kiểm duyệt và sẽ hiển thị sau khi được duyệt.');
-        } else {
-            Comment::create([
-                'product_id' => $product->id,
-                'user_id' => $user->id,
-                'content' => $req->review_text,
-                'is_active' =>  0,
-            ]);
-        }
-        return back()-> with('success', 'Bình luận của bạn đang chờ kiểm duyệt và sẽ được trả lời trong vài giờ.');
-    }   
+    // Lưu đánh giá
+    Review::create([
+        'user_id'     => $user->id,
+        'product_id'  => $productId,
+        'order_id'    => $order->id,
+        'order_item_id' => $orderItem->id ?? null,
+        'rating'      => $req->rating,
+        'review_text' => $req->review_text,
+    ]);
+
+    return back()->with('success', 'Đánh giá của bạn đã được gửi thành công.');
+    
+} 
 }
