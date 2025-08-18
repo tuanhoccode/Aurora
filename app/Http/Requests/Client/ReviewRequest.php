@@ -22,6 +22,7 @@ class ReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'rating' => 'required|integer|min:1|max:5',
             'review_text' => 'required|string|max:200',
             'images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];

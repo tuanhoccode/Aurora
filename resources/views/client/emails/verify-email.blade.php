@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác thực email Aurora</title>
 </head>
-<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px;">
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px; text-align: center;">
     <div style="max-width: 600px; margin: auto; background:white; border-radius: 8px; padding: 20px;">
         <h2>Aurora xin chào {{$user->fullname ?? 'Quý khách'}}</h2>
         <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Aurora</strong>. </p>

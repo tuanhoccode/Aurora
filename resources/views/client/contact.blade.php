@@ -85,7 +85,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-7">
                 <div class="contact__form">
-                    <h3 class="mb-4 text-center">Liên hệ với chúng tôi</h3>
+                    <h3 class="mb-4 text-center" style="color: #A67B5B;">Liên hệ với chúng tôi</h3>
                     @if(session('success'))
                         <div class="alert alert-success">{{ session('success') }}</div>
                     @elseif(session('error'))
@@ -123,7 +123,7 @@
                                 </div>
                             </div>
                             <div class="col-12 text-center">
-                                <button type="submit" class="tp-btn">Gửi liên hệ</button>
+                                <button type="submit" class="btn btn-primary ">Gửi liên hệ</button>
                             </div>
                         </div>
                     </form>
@@ -131,7 +131,7 @@
             </div>
             <div class="col-lg-5 mt-5 mt-lg-0">
                 <div class="contact__info mb-4">
-                    <h4 class="mb-3">Thông tin liên hệ</h4>
+                    <h4 class="mb-3" style="color: #A67B5B;">Thông tin liên hệ</h4>
                     <ul class="list-unstyled mb-0">
                         <li><i class="fa fa-map-marker-alt"></i>Tòa nhà FPT Polytechnic, Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội.</li>
                         <li><i class="fa fa-envelope"></i> aurora@support.com</li>

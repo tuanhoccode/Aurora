@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đặt lại mật khẩu</title>
 </head>
-<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px;">
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px; text-align: center;">
     <div style="max-width: 600px; margin: auto; background:white; border-radius: 8px; padding: 20px;">
         <p>Aurora xin chào {{$user->fullname ?? 'Quý khách'}}</p>
         <p>Bạn vừa yêu cầu đặt lại mật kẩu cho tài khoảng của mình </p>

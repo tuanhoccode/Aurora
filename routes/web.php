@@ -434,7 +434,7 @@ Route::prefix('blog')->name('blog.')->group(function () {
 Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');
 
 // Yêu thích
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
@@ -498,12 +498,13 @@ Route::middleware('web')->group(function () {
 
     //Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
-
+    //Xác thực email mới được vào tk
+    Route::middleware(['auth', 'verified'])->group(function(){
     //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
-    //changepassword
+    //change password
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
@@ -554,23 +555,27 @@ Route::middleware('web')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
 });
+});
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     // Shopping Cart Routes
-    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
-    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
-    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
-    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index')->middleware(['auth', 'verified']);
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add')->middleware(['auth', 'verified']);
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove')->middleware(['auth', 'verified']);
+    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete')->middleware(['auth', 'verified']);
 
-    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
-    Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-    // Tracking đơn hàng
-    Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
-    // Hủy đơn hàng
-    Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
-    Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
-    //Đánh giá sản phẩm
-    Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
+    Route::middleware(['auth', 'verified'])->group(function(){
+        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
+        Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+        //Tracking đơn hàng
+        Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
+        //Hủy đơn hàng
+        Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
+        //Đánh giá sản phẩm
+        Route::post('/review}', [ReviewController::class, 'store'])->name('store');
+
+    });
 });
 
 

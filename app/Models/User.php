@@ -13,6 +13,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Mail ;
 use Illuminate\Support\Facades\Url;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
@@ -48,6 +49,15 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
      * @param string|array $roles
      * @return bool
      */
+
+    protected static function booted()
+    {
+        static::deleting(function ($user){
+            DB::table('password_reset_tokens')
+            ->where('email', $user->email)
+            ->delete();
+        });
+    }
     public function hasRole($roles)
     {
         if (is_array($roles)) {
