@@ -53,12 +53,9 @@ class Review extends Model
         return $this->hasMany(ReviewImage::class);
     }
     //Thêm biến thể ở bình luận 
-    public function orderItem(){
-        return $this->hasOne(OrderItem::class, 'order_id', 'order_id')
-        ->where('product_id', $this->product_id);
-        
+    public function orderItem()
+    {
+        return $this->belongsTo(OrderItem::class, 'order_item_id', 'id');
     }
-    public function orderItems(){
-        return $this->hasOne(OrderItem::class, 'order_id', 'order_id');
-    }
+    
 }

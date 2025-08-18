@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewRequest;
 use App\Models\Comment;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\ReviewImage;
@@ -15,53 +16,59 @@ use Illuminate\Support\Facades\Redis;
 
 class ReviewController extends Controller
 {
-   public function store(ReviewRequest $req,  $productId)
+   public function store(ReviewRequest $req)
 {
-       $user = Auth::user();
-
-    // Tìm đơn hàng chứa sản phẩm này và trạng thái hiện tại là "Giao hàng thành công"
-    $order = Order::where('user_id', $user->id)
-    ->whereHas('items', fn($q) => $q->where('product_id', $productId))
-    ->whereHas('currentStatus.status', fn($q) => 
-        $q->where('name', 'Giao hàng thành công')
-    )
-    ->first();
-//     dd(
-//     Order::where('user_id', $user->id)
-//         ->whereHas('items', fn($q) => $q->where('product_id', $productId))
-//         ->with(['orderStatuses' => fn($q) => $q->where('is_current', 1)->with('status')])
-//         ->get()
-//         ->toArray()
-// );
-
-    if (!$order) {
-        return back()->with('error', 'Đơn hàng không tồn tại hoặc chưa được giao, bạn chưa thể đánh giá.');
+    $productId = $req->product_id;
+    $user = Auth::user();
+    //Lấy tất cả đơn hàng của user với sản phẩm này đã được giao
+    $orders = Order::where('user_id', $user->id)
+        ->whereHas('items', fn($q)=>$q->where('product_id', $productId))
+        ->whereHas('currentStatus.status', fn($q)
+        => $q->where('name', 'Giao hàng thành công'))
+        ->get();
+    
+    if($orders->isEmpty()){
+        return back()->with('error', 'Bạn chưa mua hoặc chưa nhận được sản phẩm này, không thể đánh giá');
     }
-
-    // Kiểm tra đã đánh giá chưa theo order_item
-$orderItem = $order->items()->where('product_id', $productId)->first();
-
-$exists = Review::where('user_id', $user->id)
+    //Kiểm tra xem đon hàng này đã được đánh giá chưa 
+    $reviewedOrderItemIds  = Review::where('user_id', $user->id)
     ->where('product_id', $productId)
-    ->where('order_id', $order->id)
-    ->where('order_item_id', $orderItem->id ?? null) // cần thêm cột order_item_id trong reviews
-    ->exists();
+    ->pluck('order_item_id')->toArray();
 
-    if ($exists) {
-        return back()->with('error', 'Bạn đã đánh giá sản phẩm này trong đơn hàng này rồi.');
+    //Lấy order_item nào chưa được đánh giá 
+    $orderItem = null;
+    foreach($orders as $order){
+        foreach($order->items as $item){
+            if (!in_array($item -> id, $reviewedOrderItemIds)) {
+                $orderItem = $item;
+                break 2; //Tìm thấy là break luôn 
+            }
+        }
+    }
+    if (!$orderItem) {
+        return back()->with('error', 'Bạn đánh giá tất cả các đơn hàng trước của sản phẩm này');
     }
 
-    // Lưu đánh giá
-    Review::create([
-        'user_id'     => $user->id,
-        'product_id'  => $productId,
-        'order_id'    => $order->id,
-        'order_item_id' => $orderItem->id ?? null,
-        'rating'      => $req->rating,
-        'review_text' => $req->review_text,
+    // Tạo review mới
+    $review = Review::create([
+        'user_id'      => $user->id,
+        'product_id'   => $productId,
+        'order_id'     => $orderItem->order_id,
+        'order_item_id'=> $orderItem->id,
+        'rating'       => $req->rating,
+        'review_text'  => $req->review_text,
     ]);
+    //upload ảnh 
+    if ($req->hasFile('images')) {
+        foreach ($req->file('images') as $file){
+            $path = $file->store('reviews', 'public');
+            ReviewImage::create([
+                'review_id' => $review->id,
+                'image_path' => $path,
+            ]);
+        }
+    }
 
     return back()->with('success', 'Đánh giá của bạn đã được gửi thành công.');
-    
-} 
+}
 }

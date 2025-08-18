@@ -161,4 +161,36 @@ class Order extends Model
 
         return $this->is_paid || ($this->payment && $this->payment->name == 'COD');
     }
+    //Khai báo quan hệ review với order
+    public function reviews(){
+        //review gắn trực tiếp với Order(order_id trong bảng review)
+        return $this->hasMany(Review::class, 'order_id', 'id');
+    }
+    public function itemReviews(){
+        return $this->hasManyThrough(
+            Review::class,  
+            OrderItem::class,  
+            'order_id',//foreign key trên bảng order_items
+            'order_item_id',//foreign key trên bảng reviews
+            'id',//key trên bảng orders
+            'id',//key trên bảng order_item
+        );
+    }
+
+    public function canReview()
+    {
+        // Giả sử status 4 là "Đã giao hàng"
+        $deliveredStatus = $this->statusHistory()
+        ->where('order_status_id', 4)
+        ->latest()
+        ->first();
+
+        if (!$deliveredStatus) {
+            return false; // chưa giao thì không review
+        }
+
+        //Tính thời gian hết hạn review
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(2);  
+        return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
+    }
 }

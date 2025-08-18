@@ -569,7 +569,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
         Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
         Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
         //Đánh giá sản phẩm
-        Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
+        Route::post('/review}', [ReviewController::class, 'store'])->name('store');
 
     });
 });

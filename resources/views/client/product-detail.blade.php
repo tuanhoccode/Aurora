@@ -843,80 +843,73 @@
                                                 <!-- Hiển thị reviews -->
 
                                                 @forelse ($reviews as $review)
-                                                <div class="review-item border-bottom pb-3 mb-3">
-                                                    <div
-                                                        class="tp-product-details-review-avater d-flex align-items-start mb-4">
-                                                        <div class="tp-product-details-review-avater-thumb me-3">
-                                                            <a href="#">
-                                                                <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
-                                                                    alt="avatar" width="50">
-                                                            </a>
-                                                        </div>
-                                                        <div class="tp-product-details-review-avater-content">
-                                                            <div
-                                                                class="tp-product-details-review-avater-rating text-warning mb-1">
-                                                                {!! str_repeat('<i class="fa-solid fa-star"> </i>', $review->rating) !!}
-                                                                {!! str_repeat('<i class="fa-regular fa-star"> </i>', 5 - $review->rating) !!}
+                                                    <div class="review-item border-bottom pb-3 mb-3">
+                                                        <div
+                                                            class="tp-product-details-review-avater d-flex align-items-start mb-4">
+                                                            <div class="tp-product-details-review-avater-thumb me-3">
+                                                                <a href="#">
+                                                                    <img src="{{ $review->user->avatar ? asset('storage/' . $review->user->avatar) : asset('assets2/img/users/avatars.png') }}"
+                                                                        alt="avatar" width="50">
+                                                                </a>
                                                             </div>
-                                                            <h3 class="tp-product-details-review-avater-title mb-1">
-                                                                {{ $review->user->fullname }}
-                                                            </h3>
-                                                            <span
-                                                                class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }} 
-                                                            
-                                                            </span>
-                                                            <!-- Hiển thị phân loại đã mua  -->
-                                                            @php
-                                                                $orderItem = $review->orderItem;
-                                                                $attrs = [];
-                                                                if($orderItem && $orderItem->attributes_variant){
-                                                                    $attrs = json_decode($orderItem->attributes_variant, true);
-                                                                }
-                                                            @endphp
-                                                            @if(!empty($attrs))
-                                                                <div class="mt-1 text-muted small">
-                                                                    Phân loại hàng:
-                                                                    <strong>
-                                                                    @foreach($attrs as $key => $value)
-                                                                        {{ucfirst($key)}} : {{$value}}@if(!$loop->last), @endif
-                                                                    @endforeach
-                                                                    </strong>
-                                                                </div>
-                                                            
-                                                            @endif
-                                                            <div class="tp-product-details-review-avater-comment mb-1">
-                                                                <div class="mt-1 text-muted small">
-                                                                    <strong>{{ $review->review_text }}</strong>
-                                                                </div>
-                                                            </div>
-                                                            @if($review ->images->count())
-                                                                <div class="mt-2 d-flex flex-wrap gap-2">
-                                                                    @foreach($review->images as $img)
-                                                                        <a href="{{asset('storage/'. $img->image_path)}}" target="_blank" class="review-image-link">
-                                                                            <img src="{{asset('storage/'. $img->image_path)}}" alt="Review Images" width="80px" class="review-image">
-                                                                        </a>
-                                                                    @endforeach
-                                                                </div>
-                                                            @endif
-                                                            @foreach ($review->replies as $reply)
+                                                            <div class="tp-product-details-review-avater-content">
                                                                 <div
-                                                                    class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
-                                                                    <strong
-                                                                        class="text-primary">Phản hồi của Shop</strong>
-                                                                    trả lời:
-                                                                    <p class="mb-0">{{ $reply->review_text }}</p>
-                                                                    <small
-                                                                        class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                                    class="tp-product-details-review-avater-rating text-warning mb-1">
+                                                                    {!! str_repeat('<i class="fa-solid fa-star"> </i>', $review->rating) !!}
+                                                                    {!! str_repeat('<i class="fa-regular fa-star"> </i>', 5 - $review->rating) !!}
                                                                 </div>
-                                                            @endforeach
-                                                            @if ($review->reason)
-                                                                <small class="text-muted">Lý do:
-                                                                    {{ $review->reason }}</small>
-                                                            @endif
+                                                                <h3 class="tp-product-details-review-avater-title mb-1">
+                                                                    {{ $review->user->fullname }}
+                                                                </h3>
+                                                                <span
+                                                                    class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }} 
+
+                                                                </span>
+                                                                <!-- Hiển thị phân loại đã mua  -->
+                                                                @if($review->orderItem && $review->orderItem->attributes_variant)
+                                                                    @php
+                                                                        $attrs = json_decode($review->orderItem->attributes_variant, true);
+                                                                    @endphp
+                                                                    <div class="mt-1 text-muted small">
+                                                                        Phân loại hàng: <strong>
+                                                                            @foreach($attrs as $key => $value)
+                                                                                {{ ucfirst($key) }} : {{ $value }}@if(!$loop->last), @endif
+                                                                            @endforeach
+                                                                        </strong>
+                                                                    </div>
+                                                                @endif
+                                                                <div class="tp-product-details-review-avater-comment mb-1">
+                                                                    <div class="mt-1 text-muted small">
+                                                                        <strong>{{ $review->review_text }}</strong>
+                                                                    </div>
+                                                                </div>
+                                                                @if($review ->images->count())
+                                                                    <div class="mt-2 d-flex flex-wrap gap-2">
+                                                                        @foreach($review->images as $img)
+                                                                            <a href="{{asset('storage/'. $img->image_path)}}" target="_blank" class="review-image-link">
+                                                                                <img src="{{asset('storage/'. $img->image_path)}}" alt="Review Images" width="80px" class="review-image">
+                                                                            </a>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                                @foreach ($review->replies as $reply)
+                                                                    <div
+                                                                        class="ms-4 mt-2 ps-3 border-start border-2 border-primary">
+                                                                        <strong
+                                                                            class="text-primary">Phản hồi của Shop</strong>
+                                                                        trả lời:
+                                                                        <p class="mb-0">{{ $reply->review_text }}</p>
+                                                                        <small
+                                                                            class="text-muted">{{ $reply->created_at->format('d/m/Y H:i') }}</small>
+                                                                    </div>
+                                                                @endforeach
+
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                @endforeach
+                                                @empty
+                                                    <p>Chưa có đánh giá nào</p>
+                                                @endforelse
                                                 {{-- Thanh phân trang --}}
                                                 <div class="mt-4 d-flex justify-content-end" >
                                                     {{ $reviews->withQueryString()->fragment('reviews')->links() }}
