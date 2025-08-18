@@ -161,4 +161,12 @@ class Order extends Model
 
         return $this->is_paid || ($this->payment && $this->payment->name == 'COD');
     }
+    public function refund()
+    {
+        return $this->hasOne(Refund::class);
+    }
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
 }

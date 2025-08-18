@@ -13,6 +13,7 @@ use function Laravel\Prompts\password;
 use Laravel\Socialite\Facades\Socialite;
 
 use Laravel\Socialite\Two\GoogleProvider;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\MediaController;
@@ -22,16 +23,15 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ShopController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CouponController;
-use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Client\ContactController;
+
+
 use App\Http\Controllers\Client\ProfileController;
-
-
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\AdminLoginController;
@@ -43,8 +43,8 @@ use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
-use App\Http\Controllers\Client\Auth\RegisterController;
 
+use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
@@ -63,8 +63,9 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     // Media Upload Route
     Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
 
-    Route::get('refunds', [RefundController::class, 'index'])->name('refunds.index');
-    Route::patch('refunds/{refund}', [RefundController::class, 'update'])->name('refunds.update');
+    Route::get('/refunds', [RefundController::class, 'adminIndex'])->name('refunds.index');
+    Route::get('/refunds/{id}', [RefundController::class, 'adminShow'])->name('refunds.show');
+    Route::put('/refunds/{id}', [RefundController::class, 'adminUpdate'])->name('refunds.update');
     // Blog Comments Routes
     Route::prefix('blog/comments')->name('blog.comments.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BlogCommentController::class, 'index'])->name('index');
@@ -528,6 +529,9 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
     Route::get('/checkout/retry-payment/{order_code}', [CheckoutController::class, 'retryPendingPayment'])->name('checkout.retry-payment');
     Route::get('/checkout/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('checkout.vnpay-return');
+    //Refund 
+    Route::get('/refund/{order_code}', [RefundController::class, 'form'])->name('refund.form');
+    Route::post('/refund/submit', [RefundController::class, 'submit'])->name('refund.submit');
     // Address Management
     Route::get('/address/create', [CheckoutController::class, 'createAddress'])->name('address.create');
     Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');

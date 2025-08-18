@@ -13,12 +13,13 @@ use App\Models\UserAddress;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ProductVariant;
+use Illuminate\Support\Carbon;
 use App\Models\OrderOrderStatus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Client\AddressFormRequest;
 use App\Http\Requests\Client\SaveAddressRequest;
@@ -719,6 +720,65 @@ class CheckoutController extends Controller
                 return redirect()->route('home')->with('error', 'Đơn hàng không tồn tại hoặc không hợp lệ để thanh toán lại!');
             }
 
+            // Check if the order has timed out (30 minutes from created_at)
+            $timeout = Carbon::parse($order->created_at)->addMinutes(30);
+            if (Carbon::now()->greaterThan($timeout)) {
+                // Cancel the order and restore quantities
+                DB::transaction(function () use ($order, $order_code) {
+                    // Update order status to canceled
+                    $order->is_paid = 0; // Ensure the order is marked as unpaid
+                    $order->cancelled_at = now(); // Set the cancellation timestamp
+                    $order->cancel_reason = 'Order timed out'; // Optional: Set a reason
+                    $order->save();
+
+                    // Restore quantities in products and product_variants tables
+                    foreach ($order->items as $item) {
+                        if ($item->product_variant_id) {
+                            $variant = ProductVariant::lockForUpdate()->find($item->product_variant_id);
+                            if ($variant) {
+                                $variant->stock += $item->quantity;
+                                $variant->save();
+                                \Log::info('Restored variant stock', [
+                                    'variant_id' => $item->product_variant_id,
+                                    'new_stock' => $variant->stock,
+                                    'session_id' => Session::getId()
+                                ]);
+                            }
+                        } else {
+                            $product = Product::lockForUpdate()->find($item->product_id);
+                            if ($product) {
+                                $product->stock += $item->quantity;
+                                $product->save();
+                                \Log::info('Restored product stock', [
+                                    'product_id' => $item->product_id,
+                                    'new_stock' => $product->stock,
+                                    'session_id' => Session::getId()
+                                ]);
+                            }
+                        }
+                    }
+
+                    \Log::info('Order timed out and canceled, quantities restored', [
+                        'order_id' => $order->id,
+                        'order_code' => $order_code,
+                        'user_id' => Auth::id(),
+                        'session_id' => Session::getId()
+                    ]);
+                });
+
+                return redirect()->route('home')->with('error', 'Đơn hàng đã hết thời gian thanh toán và bị hủy. Vui lòng tạo đơn hàng mới!');
+            }
+
+            // Tạo mã giao dịch mới để tránh lỗi "Giao dịch đã được xử lý"
+            $order->code = $order->code . '-' . Str::upper(Str::random(4));
+            $order->save();
+
+            \Log::info('Generated new transaction code for retry', [
+                'order_id' => $order->id,
+                'new_code' => $order->code,
+                'session_id' => Session::getId()
+            ]);
+
             // Lưu user_id và session_id vào session
             session(['post_payment_user_id' => Auth::id(), 'post_payment_session_id' => Session::getId()]);
             Session::save();
@@ -821,7 +881,6 @@ class CheckoutController extends Controller
                 'url' => $vnp_Url,
                 'txn_ref' => $vnp_TxnRef,
                 'amount' => $vnp_Amount,
-                'order_id' => $order->id,
                 'session_id' => Session::getId()
             ]);
 
@@ -836,6 +895,7 @@ class CheckoutController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
                 'session_id' => Session::getId()
             ]);
+            session()->forget(['vnpay_txn_ref', 'pending_order_id']);
             return redirect()->route('checkout')
                 ->with('error', 'Lỗi khi tạo thanh toán VNPay: ' . $e->getMessage());
         }
@@ -844,156 +904,116 @@ class CheckoutController extends Controller
     public function vnpayReturn(Request $request)
     {
         try {
-            \Log::info('VNPay return full URL', [
-                'full_url' => $request->fullUrl(),
-                'query_params' => $request->query(),
-                'all_data' => $request->all(),
-                'ip' => $request->ip(),
-                'session_id' => Session::getId()
-            ]);
-
-            // Kiểm tra các tham số bắt buộc
-            if (!$request->has('vnp_TxnRef') || !$request->has('vnp_Amount') || !$request->has('vnp_ResponseCode') || !$request->has('vnp_SecureHash')) {
-                \Log::error('VNPay thiếu tham số bắt buộc', [
-                    'request_data' => $request->all(),
-                    'missing_params' => array_diff(['vnp_TxnRef', 'vnp_Amount', 'vnp_ResponseCode', 'vnp_SecureHash'], array_keys($request->all())),
-                    'session_id' => Session::getId()
-                ]);
-                return redirect()->route('home')->with('error', 'Dữ liệu trả về từ VNPay không hợp lệ!');
-            }
-
-            $vnp_SecureHash = $request->input('vnp_SecureHash');
             $vnp_HashSecret = env('VNPAY_HASH_SECRET');
+            $vnp_SecureHash = $request->vnp_SecureHash;
+            $inputData = $request->except('vnp_SecureHash');
 
-            // Chỉ lấy các tham số bắt đầu bằng vnp_ và loại bỏ vnp_SecureHash, vnp_SecureHashType
-            $inputData = array_filter($request->all(), function ($key) {
-                return strpos($key, 'vnp_') === 0 && !in_array($key, ['vnp_SecureHash', 'vnp_SecureHashType']);
-            }, ARRAY_FILTER_USE_KEY);
-
-            // Loại bỏ các tham số rỗng
-            $inputData = array_filter($inputData, function ($value) {
-                return $value !== '' && $value !== null;
-            });
-
-            // Sắp xếp tham số theo thứ tự bảng chữ cái
             ksort($inputData);
-
-            // Tạo query string với mã hóa đúng
-            $query = '';
-            $i = 0;
-            foreach ($inputData as $key => $value) {
-                if ($i++ > 0) {
-                    $query .= '&';
-                }
-                $query .= $key . '=' . urlencode($value);
-            }
+            $query = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
             $query = str_replace('%20', '+', $query);
-
-            // Tính toán hash
             $hash = hash_hmac('sha512', $query, $vnp_HashSecret);
 
-            \Log::debug('VNPay secure hash verification', [
-                'query_string' => $query,
+            \Log::debug('VNPay return validation', [
+                'received_hash' => $vnp_SecureHash,
                 'calculated_hash' => $hash,
-                'provided_hash' => $vnp_SecureHash,
-                'input_data' => $inputData,
+                'query_string' => $query,
                 'session_id' => Session::getId()
             ]);
 
-            if ($hash === $vnp_SecureHash) {
-                $order = Order::where('code', $request->vnp_TxnRef)->firstOrFail();
+            if ($hash !== $vnp_SecureHash) {
+                \Log::error('Invalid VNPay secure hash', [
+                    'received_hash' => $vnp_SecureHash,
+                    'calculated_hash' => $hash,
+                    'session_id' => Session::getId()
+                ]);
+                return redirect()->route('home')->with('error', 'Chữ ký thanh toán không hợp lệ!');
+            }
 
-                // Kiểm tra số tiền
-                if ($order->total_amount * 100 != $request->vnp_Amount) {
-                    \Log::warning('VNPay amount mismatch', [
-                        'order_id' => $order->id,
-                        'order_amount' => $order->total_amount * 100,
-                        'vnp_amount' => $request->vnp_Amount,
-                        'session_id' => Session::getId()
-                    ]);
-                    return redirect()->route('home')->with('error', 'Số tiền thanh toán không khớp với đơn hàng!');
-                }
+            $order = Order::where('code', $request->vnp_TxnRef)->firstOrFail();
 
-                // Kiểm tra trạng thái đơn hàng
-                if ($order->is_paid) {
-                    \Log::warning('Order already paid', [
-                        'order_id' => $order->id,
-                        'txn_ref' => $request->vnp_TxnRef,
-                        'session_id' => Session::getId()
-                    ]);
-                    return redirect()->route('checkout.success', $order->code)
-                        ->with('success', 'Đơn hàng đã được thanh toán trước đó!');
-                }
+            // Kiểm tra số tiền
+            if ($order->total_amount * 100 != $request->vnp_Amount) {
+                \Log::warning('VNPay amount mismatch', [
+                    'order_id' => $order->id,
+                    'order_amount' => $order->total_amount * 100,
+                    'vnp_amount' => $request->vnp_Amount,
+                    'session_id' => Session::getId()
+                ]);
+                return redirect()->route('home')->with('error', 'Số tiền thanh toán không khớp!');
+            }
 
-                if ($request->vnp_ResponseCode == '00' && $request->vnp_TransactionStatus == '00') {
-                    // Sử dụng giao dịch để cập nhật trạng thái
-                    DB::transaction(function () use ($order, $request) {
-                        $order->update([
-                            'is_paid' => 1,
-                            'order_status_id' => 2,
-                        ]);
-
-                        PaymentLog::create([
-                            'order_id' => $order->id,
-                            'payment_method' => 'vnpay',
-                            'transaction_id' => $request->vnp_TransactionNo,
-                            'amount' => $request->vnp_Amount / 100,
-                            'status' => 'success',
-                            'response_data' => json_encode($request->all())
-                        ]);
-                    });
-
-                    // Xóa session liên quan
-                    session()->forget(['vnpay_txn_ref', 'pending_order_id', 'selected_items', 'coupon', 'post_payment_user_id', 'post_payment_session_id']);
-                    \Log::info('VNPay payment successful', [
-                        'order_id' => $order->id,
-                        'txn_ref' => $request->vnp_TxnRef,
-                        'amount' => $request->vnp_Amount / 100,
-                        'session_id' => Session::getId()
+            if ($request->vnp_ResponseCode == '00' && $request->vnp_TransactionStatus == '00') {
+                // Thanh toán thành công
+                DB::transaction(function () use ($order, $request) {
+                    $order->update([
+                        'is_paid' => 1,
+                        'order_status_id' => 2,
                     ]);
 
-                    return redirect()->route('checkout.success', $order->code)
-                        ->with('success', 'Thanh toán thành công!');
-                } else {
-                    // Thanh toán thất bại
                     PaymentLog::create([
                         'order_id' => $order->id,
                         'payment_method' => 'vnpay',
                         'transaction_id' => $request->vnp_TransactionNo,
                         'amount' => $request->vnp_Amount / 100,
-                        'status' => 'failed',
+                        'status' => 'success',
                         'response_data' => json_encode($request->all())
                     ]);
 
-                    \Log::warning('VNPay payment failed', [
-                        'order_id' => $order->id,
-                        'txn_ref' => $request->vnp_TxnRef,
-                        'response_code' => $request->vnp_ResponseCode,
-                        'transaction_status' => $request->vnp_TransactionStatus,
-                        'session_id' => Session::getId()
-                    ]);
+                    // Xóa các mục đã chọn trong giỏ hàng
+                    $cart = Cart::where('user_id', $order->user_id)->first();
+                    if ($cart) {
+                        $selectedItems = session('selected_items', []);
+                        CartItem::where('cart_id', $cart->id)
+                            ->whereIn('id', $selectedItems)
+                            ->delete();
+                        if ($cart->items()->count() === 0) {
+                            $cart->delete();
+                        }
+                    }
+                });
 
-                    return redirect()->route('home')
-                        ->with('error', 'Thanh toán thất bại! Mã lỗi: ' . $request->vnp_ResponseCode);
-                }
-            } else {
-                \Log::error('VNPay invalid secure hash', [
-                    'request_data' => $request->all(),
-                    'calculated_hash' => $hash,
-                    'provided_hash' => $vnp_SecureHash,
-                    'query_string' => $query,
+                // Xóa session liên quan
+                session()->forget(['vnpay_txn_ref', 'pending_order_id', 'selected_items', 'coupon', 'post_payment_user_id', 'post_payment_session_id']);
+                \Log::info('VNPay payment successful', [
+                    'order_id' => $order->id,
+                    'txn_ref' => $request->vnp_TxnRef,
+                    'amount' => $request->vnp_Amount / 100,
                     'session_id' => Session::getId()
                 ]);
-                return redirect()->route('home')
-                    ->with('error', 'Dữ liệu trả về từ VNPay không hợp lệ! Mã lỗi: Invalid checksum');
+
+                return redirect()->route('checkout.success', $order->code)
+                    ->with('success', 'Thanh toán thành công!');
+            } else {
+                // Thanh toán thất bại hoặc người dùng dừng
+                DB::transaction(function () use ($order, $request) {
+                    PaymentLog::create([
+                        'order_id' => $order->id,
+                        'payment_method' => 'vnpay',
+                        'transaction_id' => $request->vnp_TransactionNo ?? null,
+                        'amount' => $request->vnp_Amount / 100 ?? $order->total_amount,
+                        'status' => 'failed',
+                        'response_data' => json_encode($request->all())
+                    ]);
+                });
+
+                \Log::warning('VNPay payment failed or cancelled', [
+                    'order_id' => $order->id,
+                    'txn_ref' => $request->vnp_TxnRef,
+                    'response_code' => $request->vnp_ResponseCode,
+                    'transaction_status' => $request->vnp_TransactionStatus,
+                    'session_id' => Session::getId()
+                ]);
+
+                return redirect()->route('checkout.retry', $order->code)
+                    ->with('error', 'Thanh toán chưa hoàn tất. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.');
             }
         } catch (\Exception $e) {
             \Log::error('VNPay return error: ' . $e->getMessage(), [
-                'request_data' => $request->all(),
+                'user_id' => Auth::id(),
                 'stack_trace' => $e->getTraceAsString(),
                 'session_id' => Session::getId()
             ]);
-            return redirect()->route('home')
+            return redirect()->route('checkout.retry', $request->vnp_TxnRef ?? 'unknown')
                 ->with('error', 'Lỗi khi xử lý thanh toán VNPay: ' . $e->getMessage());
         }
     }
