@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class OrderItem extends Model
 {
@@ -42,5 +43,14 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ProductVariant::class);
     }
+    public function review()
+{
+    return $this->hasOne(Review::class, 'order_item_id', 'id')
+                ->where('user_id', Auth::id());
+}
+public function hasBeenReviewed()
+{
+    return $this->review()->exists();
+}
 
 }

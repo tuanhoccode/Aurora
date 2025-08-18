@@ -62,7 +62,10 @@ class OrderOrderStatus extends Model
     {
         return $this->belongsTo(OrderStatus::class, 'order_status_id');
     }
-
+    public function order_status()
+    {
+        return $this->belongsTo(OrderStatus::class, 'order_status_id');
+    }
     /**
      * Get the user who modified this status.
      *
@@ -72,5 +75,4 @@ class OrderOrderStatus extends Model
     {
         return $this->belongsTo(User::class, 'modified_by');
     }
-    
 }

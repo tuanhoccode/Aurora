@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -20,9 +21,6 @@ class Order extends Model
         'shipping_type',
         'shipping_fee',
         'is_paid',
-        'is_refunded',
-        'is_refunded_canceled',
-        'check_refunded_canceled',
         'img_refunded_money',
         'cancel_reason',
         'cancel_note',
@@ -31,7 +29,7 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
     }
     
     // Alias for items() for compatibility
@@ -48,6 +46,11 @@ class Order extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function orderStatuses()
+    {
+        return $this->hasMany(OrderOrderStatus::class, 'order_id');
     }
 
     public function user()
@@ -140,5 +143,62 @@ class Order extends Model
     public function getShippingFeeFormattedAttribute()
     {
         return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
+    }
+    public function isEligibleForRefund()
+    {
+        $currentStatus = $this->orderStatuses()->where('is_current', 1)->first();
+        if (!$currentStatus || !in_array($currentStatus->order_status->name, ['Giao hàng thành công', 'Gửi hàng'])) {
+            return false;
+        }
+
+        $completedDate = $this->orderStatuses()->whereHas('order_status', function ($query) {
+            $query->where('name', 'Giao hàng thành công');
+        })->first()?->created_at;
+
+        if (!$completedDate || Carbon::now()->diffInDays($completedDate) > 7) {
+            return false;
+        }
+
+        return $this->is_paid || ($this->payment && $this->payment->name == 'COD');
+    }
+    //Khai báo quan hệ review với order
+    public function reviews(){
+        //review gắn trực tiếp với Order(order_id trong bảng review)
+        return $this->hasMany(Review::class, 'order_id', 'id');
+    }
+    public function itemReviews(){
+        return $this->hasManyThrough(
+            Review::class,  
+            OrderItem::class,  
+            'order_id',//foreign key trên bảng order_items
+            'order_item_id',//foreign key trên bảng reviews
+            'id',//key trên bảng orders
+            'id',//key trên bảng order_item
+        );
+    }
+
+    public function canReview()
+    {
+        // Giả sử status 4 là "Đã giao hàng"
+        $deliveredStatus = $this->statusHistory()
+        ->where('order_status_id', 4)
+        ->latest()
+        ->first();
+
+        if (!$deliveredStatus) {
+            return false; // chưa giao thì không review
+        }
+
+        //Tính thời gian hết hạn review
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(2);  
+        return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
+    }
+    public function refund()
+    {
+        return $this->hasOne(Refund::class);
+    }
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
     }
 }

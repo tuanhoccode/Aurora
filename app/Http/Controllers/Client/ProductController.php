@@ -22,7 +22,11 @@ class ProductController extends Controller
         $product = Product::with([
             'variants.images',
             'images',
-            'reviews',
+            'reviews'=> fn($q) => $q->where('is_active', 1)->whereNull('review_id')->where('rating', '>=', 1),
+            'reviews.user',
+            'reviews.orderItem',
+            'reviews.images',
+            'reviews.replies.user',
             'categories',
             'variants.attributeValues.attribute',
         ])->where('slug', $slug)->firstOrFail();
@@ -90,10 +94,8 @@ class ProductController extends Controller
         // Lấy review kèm biến thể từ order_item
         $reviews = $product->reviews()->where('is_active', 1)->whereNull('review_id')
         ->where('rating', '>=', 1)
-        ->with(['user', 'orderItems',  'replies' => function($q){
-            $q->where('is_active', 1);
-        }])
-        ->latest()->paginate(6);
+        ->with(['user', 'orderItem', 'images', 'replies.user' ])
+        ->latest()->paginate(2);
         $orderIds = $reviews->pluck('order_id')->unique();
         $orderItems = OrderItem::WhereIn('order_id', $orderIds)
         ->where('product_id', $product->id)->get();
@@ -105,7 +107,6 @@ class ProductController extends Controller
         }
         //Lấy biến thể đã mua khi user đăng nhập và đã mua
         $orderItem = null;
-        $attributes = [];
         if (Auth::check()) {
             $orderItem = OrderItem::where('product_id', $product->id)
             ->whereHas('order', function($q){
@@ -113,9 +114,7 @@ class ProductController extends Controller
                 ->where('is_paid', 1);
             })->latest()->first();
         }
-        if ($orderItem && $orderItem->attributes_variant) {
-            $attributes = json_decode($orderItem->attributes_variant, true);
-        }
+        
         return view('client.product-detail', [
             'product' => $product,
             'productVariants' => $productVariants,

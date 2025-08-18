@@ -23,6 +23,7 @@ class OrderController extends Controller
             ->with([
                 'items.product',
                 'orderItems',
+                'items.review',
                 'currentOrderStatus.status',
                 'payment'
             ])

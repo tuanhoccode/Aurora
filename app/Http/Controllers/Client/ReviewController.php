@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewRequest;
 use App\Models\Comment;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\ReviewImage;
@@ -15,73 +16,59 @@ use Illuminate\Support\Facades\Redis;
 
 class ReviewController extends Controller
 {
-    public function store(ReviewRequest $req, Product $product)
-    {
+   public function store(ReviewRequest $req)
+{
+    $productId = $req->product_id;
+    $user = Auth::user();
+    //Lấy tất cả đơn hàng của user với sản phẩm này đã được giao
+    $orders = Order::where('user_id', $user->id)
+        ->whereHas('items', fn($q)=>$q->where('product_id', $productId))
+        ->whereHas('currentStatus.status', fn($q)
+        => $q->where('name', 'Giao hàng thành công'))
+        ->get();
+    
+    if($orders->isEmpty()){
+        return back()->with('error', 'Bạn chưa mua hoặc chưa nhận được sản phẩm này, không thể đánh giá');
+    }
+    //Kiểm tra xem đon hàng này đã được đánh giá chưa 
+    $reviewedOrderItemIds  = Review::where('user_id', $user->id)
+    ->where('product_id', $productId)
+    ->pluck('order_item_id')->toArray();
 
-        $user = Auth::user();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Bạn cần đăng nhập.');
+    //Lấy order_item nào chưa được đánh giá 
+    $orderItem = null;
+    foreach($orders as $order){
+        foreach($order->items as $item){
+            if (!in_array($item -> id, $reviewedOrderItemIds)) {
+                $orderItem = $item;
+                break 2; //Tìm thấy là break luôn 
+            }
         }
-        // Admin không được đánh giá và bình luận 
-        if ($user->role === 'admin' || $user->role === 'employee') {
-            return back()->with('error', 'Admin và nhân viên không thể tạo đánh giá và bình luận');
-        }
-        if ($req->filled('rating')) {
+    }
+    if (!$orderItem) {
+        return back()->with('error', 'Bạn đánh giá tất cả các đơn hàng trước của sản phẩm này');
+    }
 
-            //Kiểm tra người dùng mua sản phẩm chưa
-            $orders = Order::where('user_id', $user->id)
-                 ->whereHas('currentStatus', function ($q) {
-            $q->where('order_status_id', 4); 
-            })
-                ->whereHas('orderDetail', function ($q) use ($product) {
-                    $q->where('product_id', $product->id);
-                })->get();
-            if ($orders->isEmpty()) {
-                return back()->with('error', 'Bạn chỉ có thể đánh giá khi bạn đã mua sản phẩm và nhận hàng thành công.');
-            }
-
-            //Lấy danh sách order_id user đã đánh giá cho sản phẩm này
-            $reviewedOrderIds = Review::where('user_id', $user->id)
-            -> where('product_id', $product->id)
-            ->pluck('order_id')
-            ->toArray();
-
-            //Tìm xem ddown hàng nào chưa được đánh giá
-            $orderToReview = $orders->first(function ($order) use ($reviewedOrderIds){
-                return !in_array($order->id, $reviewedOrderIds);
-            });
-
-            if (!$orderToReview) {
-                return back()->with('error', 'Bạn đã đánh giá hết tất cả các lần mua sản phẩm này rồi');
-            }
-
-            $review = Review::create([
-                'product_id' => $product->id,
-                'order_id' => $orderToReview?->id,
-                'user_id' => $user->id,
-                'rating' => $req->rating,
-                'review_text' => $req->review_text,
-                'is_active' =>  0,
-            ]);
-            //Lưu ảnh
-            if ($req->hasFile('images')) {
-                foreach($req->file('images') as $file){
-                    $path = $file->store('reviews', 'public');
-                    ReviewImage::create([
-                        'review_id' => $review->id,
-                        'image_path' => $path
-                    ]);
-                }
-            }
-            return back()->with('success', 'Đánh giá của bạn đang chờ kiểm duyệt và sẽ hiển thị sau khi được duyệt.');
-        } else {
-            Comment::create([
-                'product_id' => $product->id,
-                'user_id' => $user->id,
-                'content' => $req->review_text,
-                'is_active' =>  0,
+    // Tạo review mới
+    $review = Review::create([
+        'user_id'      => $user->id,
+        'product_id'   => $productId,
+        'order_id'     => $orderItem->order_id,
+        'order_item_id'=> $orderItem->id,
+        'rating'       => $req->rating,
+        'review_text'  => $req->review_text,
+    ]);
+    //upload ảnh 
+    if ($req->hasFile('images')) {
+        foreach ($req->file('images') as $file){
+            $path = $file->store('reviews', 'public');
+            ReviewImage::create([
+                'review_id' => $review->id,
+                'image_path' => $path,
             ]);
         }
-        return back()-> with('success', 'Bình luận của bạn đang chờ kiểm duyệt và sẽ được trả lời trong vài giờ.');
-    }   
+    }
+
+    return back()->with('success', 'Đánh giá của bạn đã được gửi thành công.');
+}
 }

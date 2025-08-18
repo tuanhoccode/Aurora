@@ -15,7 +15,7 @@
       <!-- Tiêu đề -->
       <div class="row mb-5">
         <div class="col text-center">
-          <h2 class="fw-bold">🧡 Danh sách sản phẩm yêu thích của bạn</h2>
+          <h2 class="fw-bold">🧡 Danh Sách Yêu Thích Của Bạn</h2>
           <p class="text-muted">Các sản phẩm bạn đã thêm vào danh sách yêu thích.</p>
         </div>
       </div>
