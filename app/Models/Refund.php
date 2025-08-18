@@ -1,21 +1,33 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Refund extends Model
 {
-    protected $guarded = []; // Cho phép mass assignment
-
-    protected $casts = [
-        'status' => 'string',
-        'bank_account_status' => 'string',
-        'is_send_money' => 'boolean',
+    protected $table = 'refunds';
+    
+    protected $fillable = [
+        'order_id',
+        'user_id',
+        'total_amount',
+        'bank_account',
+        'user_bank_name',
+        'bank_name',
+        'reason',
+        'admin_reason',
+        'reason_image',
+        'status',
+        'bank_account_status',
+        'is_send_money',
+        'created_at',
+        'updated_at',
     ];
 
-    public function order()
+    public function items()
     {
-        return $this->belongsTo(Order::class);
+        return $this->hasMany(RefundItem::class, 'refund_id');
     }
 
     public function user()
@@ -23,8 +35,8 @@ class Refund extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function refundItems()
+    public function order()
     {
-        return $this->hasMany(RefundItem::class);
+        return $this->belongsTo(Order::class);
     }
 }

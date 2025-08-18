@@ -193,7 +193,7 @@ class OrderController extends Controller
             $note = $request->note ?? 'Chuyển trạng thái: ' . OrderStatus::find($to)?->name;
 
             // Tạo mã đơn hàng mới
-            $newCode = $this->generateNewOrderCode($order, $to);
+            // $newCode = $this->generateNewOrderCode($order, $to);
 
             // Chuẩn bị dữ liệu cho lịch sử trạng thái
             $data = [
@@ -223,7 +223,7 @@ class OrderController extends Controller
             $order->update([
                 'order_status_id' => $to,
                 'is_paid' => $isPaid,
-                'code' => $newCode,
+                // 'code' => $newCode,
                 'note' => $note,
             ]);
 

@@ -6,23 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class RefundItem extends Model
 {
-    protected $guarded = []; // Cho phép mass assignment
+    protected $table = 'refund_items';
+    
+    protected $fillable = [
+        'refund_id',
+        'product_id',
+        'variant_id',
+        'name',
+        'name_variant',
+        'quantity',
+        'price',
+        'price_variant',
+        'quantity_variant',
+        'created_at',
+        'updated_at',
+    ];
 
     public function refund()
     {
         return $this->belongsTo(Refund::class);
-    }
-    public function orderItem()
-    {
-        return $this->belongsTo(OrderItem::class);
-    }
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function variant()
-    {
-        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 }

@@ -1,39 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cập nhật trạng thái hoàn tiền</title>
+    <meta charset="UTF-8">
+    <title>Cập Nhật Trạng Thái Yêu Cầu Hoàn Tiền</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #f8f9fa; padding: 10px; text-align: center; }
-        .content { padding: 20px; }
-        .footer { font-size: 12px; color: #777; text-align: center; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #f8f8f8;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Cập nhật trạng thái hoàn tiền</h1>
+            <h2>Cập Nhật Trạng Thái Yêu Cầu Hoàn Tiền</h2>
         </div>
         <div class="content">
-            <p>Kính gửi {{ $refund->user->fullname }},</p>
-            <p>Yêu cầu hoàn tiền #{{ $refund->id }} của bạn đã được xử lý.</p>
-            <p><strong>Đơn hàng:</strong> {{ $refund->order->code }}</p>
-            <p><strong>Số tiền thanh toán ban đầu:</strong> {{ number_format($refund->order->total_amount, 2) }} VND</p>
-            <p><strong>Số tiền hoàn:</strong> {{ number_format($refund->total_amount, 2) }} VND</p>
-            <p><strong>Trạng thái:</strong> {{ $refund->status }}</p>
-            @if ($refund->status == 'completed')
-                <p><strong>Đã chuyển vào tài khoản:</strong> {{ $refund->bank_account }}</p>
-                <p><strong>Ngân hàng:</strong> {{ $refund->bank_name }}</p>
-                <p><strong>Chủ tài khoản:</strong> {{ $refund->user_bank_name }}</p>
+            <p>Kính gửi Quý khách,</p>
+            <p>Yêu cầu hoàn tiền của bạn cho đơn hàng <strong>#{{ $order_code }}</strong> đã được cập nhật trạng thái:</p>
+            <p><strong>Trạng Thái:</strong> {{ $status }}</p>
+            @if ($admin_reason)
+                <p><strong>Lý Do:</strong> {{ $admin_reason }}</p>
             @endif
-            @if ($refund->admin_reason)
-                <p><strong>Lý do:</strong> {{ $refund->admin_reason }}</p>
-            @endif
-            <p>Vui lòng liên hệ chúng tôi nếu bạn có bất kỳ câu hỏi nào.</p>
+            <p><strong>Mã Yêu Cầu:</strong> {{ $refund->id }}</p>
+            <p><strong>Tổng Số Tiền:</strong> {{ number_format($refund->total_amount, 2) }} VNĐ</p>
+            <p>Chi tiết sản phẩm hoàn tiền:</p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #ddd; padding: 8px;">Sản Phẩm</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Biến Thể</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Số Lượng</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($refund->items as $item)
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->name }}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->name_variant ?? 'N/A' }}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->quantity }}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">{{ number_format($item->price, 2) }} VNĐ</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p>Vui lòng liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.</p>
+            <p>Trân trọng,</p>
+            <p>Đội ngũ hỗ trợ</p>
         </div>
         <div class="footer">
-            <p>Trân trọng,<br>Đội ngũ hỗ trợ</p>
+            <p>&copy; {{ date('Y') }} Công ty của bạn. Mọi quyền được bảo lưu.</p>
         </div>
     </div>
 </body>

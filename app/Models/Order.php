@@ -193,4 +193,12 @@ class Order extends Model
         $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(2);  
         return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
     }
+    public function refund()
+    {
+        return $this->hasOne(Refund::class);
+    }
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
 }
