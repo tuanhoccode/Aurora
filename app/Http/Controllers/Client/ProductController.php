@@ -95,7 +95,7 @@ class ProductController extends Controller
         $reviews = $product->reviews()->where('is_active', 1)->whereNull('review_id')
         ->where('rating', '>=', 1)
         ->with(['user', 'orderItem', 'images', 'replies.user' ])
-        ->latest()->paginate(6);
+        ->latest()->paginate(2);
         $orderIds = $reviews->pluck('order_id')->unique();
         $orderItems = OrderItem::WhereIn('order_id', $orderIds)
         ->where('product_id', $product->id)->get();
