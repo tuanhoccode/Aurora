@@ -315,7 +315,7 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th><i class="fas fa-list-ol me-1"></i> STT</th>
-                                            <th><i class="fas fa-id-badge me-1"></i> ID</th>
+                                            {{-- <th><i class="fas fa-id-badge me-1"></i> ID</th> --}}
                                             <th><i class="fas fa-info me-1"></i> Trạng thái</th>
                                             <th><i class="fas fa-sticky-note me-1"></i> Ghi chú</th>
                                             <th><i class="fas fa-user-edit me-1"></i> Người cập nhật</th>
@@ -327,7 +327,7 @@
                                         @foreach ($order->statusHistory as $status)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $status->id }}</td>
+                                                {{-- <td>{{ $status->id }}</td> --}}
                                                 <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
                                                 <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
                                                 <td>{{ $status->modifier?->name ?? 'Hệ thống' }}</td>

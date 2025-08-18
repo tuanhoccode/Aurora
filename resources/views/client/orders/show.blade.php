@@ -826,7 +826,7 @@
                         Phương thức thanh toán: <strong>{{ $order->payment_method }}</strong>
                     </div>
                 @endif
-                @if ($order->is_paid == 0 && $order->payment_id == 2)
+                @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
                     <a href="{{ route('checkout.retry-payment', $order->code) }}"
                         class="btn btn-primary checkout__btn-main">
                         <i class="fas fa-redo"></i> Quay lại thanh toán
