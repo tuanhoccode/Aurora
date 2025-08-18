@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -20,9 +21,6 @@ class Order extends Model
         'shipping_type',
         'shipping_fee',
         'is_paid',
-        'is_refunded',
-        'is_refunded_canceled',
-        'check_refunded_canceled',
         'img_refunded_money',
         'cancel_reason',
         'cancel_note',
@@ -48,6 +46,11 @@ class Order extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function orderStatuses()
+    {
+        return $this->hasMany(OrderOrderStatus::class, 'order_id');
     }
 
     public function user()
@@ -131,14 +134,43 @@ class Order extends Model
     /**
      * Kiểm tra xem đơn hàng đã bị hủy chưa
      */
+    /**
+     * Kiểm tra xem đơn hàng đã bị hủy chưa
+     */
     public function isCancelled()
     {
         $currentStatusName = optional(optional($this->currentStatus)->status)->name;
         return $currentStatusName === 'Đã hủy';
     }
 
+    /**
+     * Kiểm tra xem đơn hàng đã hoàn thành chưa
+     */
+    public function isCompleted()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        return $currentStatusName === 'Nhận hàng thành công';
+    }
+    
     public function getShippingFeeFormattedAttribute()
     {
         return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
+    }
+    public function isEligibleForRefund()
+    {
+        $currentStatus = $this->orderStatuses()->where('is_current', 1)->first();
+        if (!$currentStatus || !in_array($currentStatus->order_status->name, ['Giao hàng thành công', 'Gửi hàng'])) {
+            return false;
+        }
+
+        $completedDate = $this->orderStatuses()->whereHas('order_status', function ($query) {
+            $query->where('name', 'Giao hàng thành công');
+        })->first()?->created_at;
+
+        if (!$completedDate || Carbon::now()->diffInDays($completedDate) > 7) {
+            return false;
+        }
+
+        return $this->is_paid || ($this->payment && $this->payment->name == 'COD');
     }
 }

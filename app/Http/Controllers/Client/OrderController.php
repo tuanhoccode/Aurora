@@ -7,10 +7,14 @@ use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusHistory;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -77,6 +81,14 @@ class OrderController extends Controller
                           ->where('order_status_id', 8); // Đã hủy
                     });
                     break;
+                    
+                case 'return_refund':
+                    // Trả hàng/Hoàn tiền
+                    $query->whereHas('statusHistory', function ($q) {
+                        $q->where('is_current', true)
+                          ->whereIn('order_status_id', [5, 6, 7]); // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
+                    });
+                    break;
             }
         }
         
@@ -107,6 +119,7 @@ class OrderController extends Controller
         $deliveredCount = 0;
         $completedCount = 0;
         $cancelledCount = 0;
+        $returnRefundCount = 0;
         
         // Đếm số lượng đơn hàng theo từng trạng thái
         foreach ($allOrders as $order) {
@@ -143,6 +156,11 @@ class OrderController extends Controller
                 case $statusId == 8:
                     $cancelledCount++;
                     break;
+                    
+                case in_array($statusId, [5, 6, 7]):
+                    // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
+                    $returnRefundCount++;
+                    break;
             }
             
             // Đếm đơn hàng chờ thanh toán
@@ -159,7 +177,8 @@ class OrderController extends Controller
             'shipping' => $shippingCount,
             'delivered' => $deliveredCount,
             'completed' => $completedCount,
-            'cancelled' => $cancelledCount
+            'cancelled' => $cancelledCount,
+            'return_refund' => $returnRefundCount
         ];
         
         return view('client.orders.index', compact('orders', 'statusCounts', 'search'));
@@ -168,16 +187,124 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
-            abort(403, 'Không có quyền truy cập đơn hàng này');
+            abort(404);
         }
 
-        $order->load([
-            'items', 
-            'payment',
-            'currentOrderStatus.status',
-        ]);
+        $order->load(['items.product', 'statusHistory.status', 'payment']);
 
         return view('client.orders.show', compact('order'));
+    }
+
+    /**
+     * Xử lý mua lại đơn hàng
+     */
+    public function reorder(Order $order, Request $request)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(404);
+        }
+
+        // Kiểm tra trạng thái đơn hàng có được phép mua lại không
+        $allowedStatuses = ['COMPLETED', 'CANCELLED', 'DELIVERED'];
+        $currentStatus = $order->currentStatus->status->code ?? '';
+        
+        if (!in_array($currentStatus, $allowedStatuses)) {
+            return back()->with('reorder_status', [
+                'type' => 'danger',
+                'message' => 'Không thể mua lại đơn hàng này.'
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Lấy hoặc tạo giỏ hàng của người dùng
+            $cart = Cart::firstOrCreate(
+                ['user_id' => Auth::id()],
+                ['total_price' => 0]
+            );
+
+            $addedItems = 0;
+            $unavailableItems = [];
+
+            // Duyệt qua các sản phẩm trong đơn hàng cũ
+            foreach ($order->items as $item) {
+                // Kiểm tra sản phẩm còn bán không
+                $product = $item->product;
+                if (!$product || !$product->is_active || $product->stock < 1) {
+                    $unavailableItems[] = $product ? $product->name : 'Sản phẩm không tồn tại';
+                    continue;
+                }
+
+                // Kiểm tra biến thể (nếu có)
+                $variant = null;
+                if ($item->variant_id) {
+                    $variant = ProductVariant::find($item->variant_id);
+                    if (!$variant || $variant->quantity < 1) {
+                        $unavailableItems[] = $product->name . ($variant ? ' - ' . $variant->name : '');
+                        continue;
+                    }
+                }
+
+                // Thêm vào giỏ hàng
+                $quantity = min($variant ? $variant->quantity : $product->stock, $item->quantity);
+                
+                // Kiểm tra xem sản phẩm đã có trong giỏ chưa
+                $existingCartItem = $cart->items()
+                    ->where('product_id', $product->id)
+                    ->where('variant_id', $variant ? $variant->id : null)
+                    ->first();
+
+                if ($existingCartItem) {
+                    // Nếu đã có thì cộng thêm số lượng (không vượt quá số lượng có sẵn)
+                    $newQuantity = min(
+                        $existingCartItem->quantity + $quantity,
+                        $variant ? $variant->quantity : $product->stock
+                    );
+                    $existingCartItem->update(['quantity' => $newQuantity]);
+                } else {
+                    // Nếu chưa có thì tạo mới
+                    $cart->items()->create([
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'quantity' => $quantity,
+                        'price' => $item->price_variant ?? $item->price
+                    ]);
+                }
+
+                $addedItems++;
+            }
+
+            // Cập nhật tổng tiền giỏ hàng
+            $cart->updateTotalPrice();
+
+            DB::commit();
+
+            // Thông báo kết quả
+            $message = 'Đã thêm ' . $addedItems . ' sản phẩm vào giỏ hàng.';
+            
+            if (!empty($unavailableItems)) {
+                $message .= ' Không thể thêm ' . count($unavailableItems) . ' sản phẩm do hết hàng hoặc ngừng kinh doanh.';
+            }
+
+            // Kiểm tra nếu có yêu cầu chuyển hướng
+            if ($request->has('redirect_to_cart')) {
+                return redirect()->route('shopping-cart.index')->with('success', $message);
+            }
+
+            return back()->with('reorder_status', [
+                'type' => 'success',
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi mua lại đơn hàng: ' . $e->getMessage());
+            
+            return back()->with('reorder_status', [
+                'type' => 'danger',
+                'message' => 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.'
+            ]);
+        }
     }
 
     public function tracking(Order $order)
@@ -397,7 +524,7 @@ class OrderController extends Controller
             
             DB::commit();
             
-            return redirect()->route('client.orders.index')->with('success', 'Đã xác nhận nhận hàng thành công');
+            return redirect()->route('client.orders')->with('success', 'Đã xác nhận nhận hàng thành công');
             
         } catch (\Exception $e) {
             DB::rollBack();
