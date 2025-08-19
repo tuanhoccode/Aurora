@@ -526,6 +526,7 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/apply-coupon-by-id', [CheckoutController::class, 'applyCouponById'])->name('checkout.apply-coupon-by-id');
     Route::post('/checkout/remove-coupon', action: [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
     Route::post('/checkout/clear-coupon-session', action: [CheckoutController::class, 'clearCouponSession'])->name('checkout.clear-coupon-session');
+    
     Route::get('/checkout/success/{order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
     Route::get('/checkout/retry-payment/{order_code}', [CheckoutController::class, 'retryPendingPayment'])->name('checkout.retry-payment');
@@ -538,7 +539,7 @@ Route::middleware('web')->group(function () {
     Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
     Route::get('/address/edit/{id?}', [CheckoutController::class, 'editAddress'])->name('address.edit');
     Route::post('/address/save', [CheckoutController::class, 'saveAddress'])->name('address.save');
-
+    Route::delete('/address/{id}', [CheckoutController::class, 'deleteAddress'])->name('address.delete');
     // Trang liên hệ
     Route::get('/contact', [ContactController::class, 'index'])->name('contact');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
