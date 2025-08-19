@@ -13,6 +13,7 @@ use function Laravel\Prompts\password;
 use Laravel\Socialite\Facades\Socialite;
 
 use Laravel\Socialite\Two\GoogleProvider;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\MediaController;
@@ -22,16 +23,15 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ShopController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CouponController;
-use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Client\ErrorController;
 use App\Http\Controllers\admin\CommentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Client\ContactController;
+
+
 use App\Http\Controllers\Client\ProfileController;
-
-
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\AdminLoginController;
@@ -43,8 +43,8 @@ use App\Http\Controllers\Client\ShoppingCartController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductGalleryController;
 use App\Http\Controllers\Admin\ProductVariantController;
-use App\Http\Controllers\Client\Auth\RegisterController;
 
+use App\Http\Controllers\Client\Auth\RegisterController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Client\ChangePasswordController;
 use App\Http\Controllers\Client\Auth\VerifyEmailController;
@@ -63,8 +63,9 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     // Media Upload Route
     Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
 
-    Route::get('refunds', [RefundController::class, 'index'])->name('refunds.index');
-    Route::patch('refunds/{refund}', [RefundController::class, 'update'])->name('refunds.update');
+    Route::get('/refunds', [RefundController::class, 'adminIndex'])->name('refunds.index');
+    Route::get('/refunds/{id}', [RefundController::class, 'adminShow'])->name('refunds.show');
+    Route::put('/refunds/{id}', [RefundController::class, 'adminUpdate'])->name('refunds.update');
     // Blog Comments Routes
     Route::prefix('blog/comments')->name('blog.comments.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BlogCommentController::class, 'index'])->name('index');
@@ -433,7 +434,7 @@ Route::prefix('blog')->name('blog.')->group(function () {
 Route::get('/products/{slug}', [\App\Http\Controllers\Client\ProductController::class, 'show'])->name('client.products.show');
 
 // Yêu thích
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
@@ -497,12 +498,13 @@ Route::middleware('web')->group(function () {
 
     //Callback từ gg
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
-
+    //Xác thực email mới được vào tk
+    Route::middleware(['auth', 'verified'])->group(function(){
     //Profile
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('showProfile')->middleware('auth');
     Route::post('/profile', [ProfileController::class, 'avatar'])->name('avatar');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('updateProfile');
-    //changepassword
+    //change password
     Route::post('/profile/change-password', [ChangePasswordController::class, 'changePassword'])->name('changePassword');
 
     // Shopping Cart routes
@@ -528,6 +530,9 @@ Route::middleware('web')->group(function () {
     Route::post('/checkout/update', [CheckoutController::class, 'update'])->name('checkout.update');
     Route::get('/checkout/retry-payment/{order_code}', [CheckoutController::class, 'retryPendingPayment'])->name('checkout.retry-payment');
     Route::get('/checkout/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('checkout.vnpay-return');
+    //Refund 
+    Route::get('/refund/{order_code}', [RefundController::class, 'form'])->name('refund.form');
+    Route::post('/refund/submit', [RefundController::class, 'submit'])->name('refund.submit');
     // Address Management
     Route::get('/address/create', [CheckoutController::class, 'createAddress'])->name('address.create');
     Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
@@ -550,13 +555,14 @@ Route::middleware('web')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Client\CategoryController::class, 'show'])->name('show');
     });
 });
+});
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
     // Shopping Cart Routes
-    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index');
-    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add');
-    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove');
-    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete');
+    Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index')->middleware(['auth', 'verified']);
+    Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add')->middleware(['auth', 'verified']);
+    Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove')->middleware(['auth', 'verified']);
+    Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete')->middleware(['auth', 'verified']);
 
     Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
@@ -573,7 +579,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::post('/orders/{order}/reorder', [\App\Http\Controllers\Client\OrderController::class, 'reorder'])->name('orders.reorder');
     
     //Đánh giá sản phẩm
-    Route::post('/reviews/{product}', [ReviewController::class, 'store'])->name('store');
+    Route::post('/reviews/{product}', [\App\Http\Controllers\Client\ReviewController::class, 'store'])->name('store');
 });
 
 

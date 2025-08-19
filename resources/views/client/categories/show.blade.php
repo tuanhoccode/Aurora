@@ -307,7 +307,7 @@
                         </div>
                     </div>
                     <div class="tp-shop-widget-btn">
-                        <button type="submit" class="tp-btn w-100">Lọc sản phẩm</button>
+                        <button type="submit"  class="btn btn-primary w-100" >Lọc sản phẩm</button>
                     </div>
                 </form>
             </div>

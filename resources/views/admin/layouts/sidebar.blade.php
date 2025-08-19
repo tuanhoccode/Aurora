@@ -56,11 +56,11 @@
             </a>
         </li>
         <li>
-            <a class="nav-link {{ request()->routeIs('admin.refunds*') ? 'active' : '' }}"
-                href="{{ route('admin.refunds.index') }}">
-                <span class="nav-icon"><i class="fas fa-undo"></i></span> Hoàn tiền
-            </a>
-        </li>
+        <a class="nav-link {{ request()->routeIs('admin.refunds*') ? 'active' : '' }}"
+            href="{{ route('admin.refunds.index') }}">
+            <span class="nav-icon"><i class="fas fa-undo"></i></span> Hoàn tiền
+        </a>
+    </li>
         @if (Auth::user()->role === 'admin')
             <li>
                 <a class="nav-link {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}"

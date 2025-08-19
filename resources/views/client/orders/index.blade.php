@@ -792,7 +792,9 @@
                                                 : $item->variant->attributeValues()->with('attribute')->get();
                                             $variantText = $vals->pluck('value')->filter()->implode(' / ');
                                         }
-                                    @endphp
+
+                                        @endphp
+                                       
 
                                     <div class="sp-row">
                                         <a href="{{ route('client.orders.show', $order->id) }}" class="d-block">
@@ -821,69 +823,125 @@
                                         <b>{{ number_format($order->total_amount, 0, ',', '.') }} ₫</b>
                                     </div>
 
-                            <div class="card-footer bg-white p-3 border-radius-12">
-                                <div class="d-flex justify-content-between align-items-center order-actions">
-                                    <div class="d-flex gap-2">
-                            
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                    @php
-                                        $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
-                                        $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
-                                    @endphp
+                                    <div class="card-footer bg-white p-3 border-top border-radius-12">
+                                        <div class="d-flex justify-content-between align-items-center order-actions">
+                                            <div class="d-flex gap-2">
+
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                @if ($order->canBeCancelled())
+                                                    <button type="button" class="btn btn-danger checkout__btn-main"
+                                                        onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
+                                                        <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                                                    </button>
+                                                @elseif($order->isCancelled())
+                                                    <button type="button" class="btn btn-danger" disabled>
+                                                        <i class="fas fa-ban me-1"></i> Đã hủy
+                                                    </button>
+                                                @endif
+
+                                                @php
+                                                    $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
+                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                                @endphp
+                                                
+                                                @if($isDelivered)
+                                                    <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
+                                                        @csrf
+                                                        @method('POST')
+                                                        <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
+                                                            <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
+                                                        </button>
+                                                    </form>
+                                                @elseif($order->isCompleted())
+                                                    <button type="button" class="btn btn-success me-2" disabled>
+                                                        <i class="fas fa-check-double me-1"></i> Đã nhận hàng
+                                                    </button>
+                                                    <form action="{{ route('client.orders.reorder', $order->id) }}" method="POST" class="d-inline me-2">
+                                                        @csrf
+                                                        <input type="hidden" name="redirect_to_cart" value="1">
+                                                        <button type="submit" class="btn btn-outline-primary" onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...';this.form.submit();">
+                                                            <i class="fas fa-redo-alt me-1"></i> Mua lại
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                                @if ($statusId == 4)
+                                                    @if ($item->review)
+                                                        <div class="mt-2">
+                                                            <button class="btn btn-outline-secondary btn-sm"
+                                                                data-bs-toggle = "modal"
+                                                                data-bs-target = "#viewReviewModal"
+                                                                data-rating = "{{$item->review->rating}}"
+                                                                data-text = "{{$item->review->review_text}}"
+                                                                data-images='@json($item->review->images->map(fn($img) => asset("storage/reviews/".$img->path)))'
+                                                                data-product-name = "{{$item->product->name}}"
+                                                                data-variant = "{{$variantText}}"
+                                                                data-thumb="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail)
+                                                                : asset('assets2/img/product/2/prodcut-1.jpg') }}"
                                     
-                                    @if($isDelivered)
-                                        <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
-                                            @csrf
-                                            @method('POST')
-                                            <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
-                                                <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
-                                            </button>
-                                        </form>
-                                    @elseif($order->isCompleted())
-                                        <button type="button" class="btn btn-success me-2" disabled>
-                                            <i class="fas fa-check-double me-1"></i> Đã nhận hàng
-                                        </button>
-                                        <form action="{{ route('client.orders.reorder', $order->id) }}" method="POST" class="d-inline me-2">
-                                            @csrf
-                                            <input type="hidden" name="redirect_to_cart" value="1">
-                                            <button type="submit" class="btn btn-outline-primary">
-                                                <i class="fas fa-redo-alt me-1"></i> Mua lại
-                                            </button>
-                                        </form>
-                                    @elseif($order->canBeCancelled())
-                                        <button type="button" 
-                                                class="btn btn-cancel-order btn-danger"
-                                                onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
-                                            <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
-                                        </button>
-                                    @elseif($order->isCancelled())
-                                        <button type="button" class="btn btn-danger">
-                                            <i class="fas fa-times-circle me-1"></i> Đã hủy
-                                        </button>
-                                    @endif
+                                                            >
+                                                                <i class="fas fa-eye me-1"></i> Xem đánh giá
+                                                            </button>
+                                                            
+                                                        </div>
+                                                    @else
+                                                        {{-- Chưa đánh giá + còn hạn 7 ngày sẽ không được đánh giá --}}
+                                                        @if($order->canReview())
+                                                            <div class="mt-2">
+                                                                <button class="btn btn-primary btn-sm w-100"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#reviewModal"
+                                                                    data-product-id="{{ $item->product->id }}"
+                                                                    data-order-item-id="{{ $item->id }}"
+                                                                    data-product-name="{{ $item->product->name }}"
+                                                                    data-variant="{{ $variantText }}"
+                                                                    >
+                                                                    Đánh giá sản phẩm
+                                                                </button>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                @endif
+                                             
+                                                @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
+                                                    <a href="{{ route('checkout.retry-payment', $order->code) }}"
+                                                        class="btn btn-primary checkout__btn-main">
+                                                        <i class="fas fa-redo"></i> Quay lại thanh toán
+                                                    </a>
+                                                @endif
+                                                 @if (
+                                                    $order->is_paid == 1 &&
+                                                        $order->cancelled_at == null &&
+                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
+                                                        !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
+                                                    <a href="{{ route('refund.form', $order->code) }}"
+                                                        class="tp-checkout-btn checkout__btn-main tp-checkout-btn-hover-alt">
+                                                        <i class="fas fa-undo"></i> Yêu cầu hoàn trả
+                                                    </a>
+                                                @endif
+                                                
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <!-- /Shopee-like card -->
+                        @endforeach
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="text-muted">
+                                Hiển thị {{ $orders->firstItem() }} đến {{ $orders->lastItem() }} trong tổng số
+                                {{ $orders->total() }} đơn hàng
+                            </div>
+                            <div>
+                                {{ $orders->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
-                    </div>
-                    <!-- /Shopee-like card -->
-                @endforeach
-                
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="text-muted">
-                        Hiển thị {{ $orders->firstItem() }} đến {{ $orders->lastItem() }} trong tổng số
-                        {{ $orders->total() }} đơn hàng
-                    </div>
-                    <div>
-                        {{ $orders->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
-    @endif
-</div>
 
     <!-- Modal Hủy đơn hàng -->
     <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
@@ -975,6 +1033,216 @@
             }
 
             document.getElementById('cancel_note').value = '';
+        });
+    </script>
+    <!-- Modal đánh giá sp -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="reviewForm" action="" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="product_id" id="review_product_id"> 
+                    <div class="modal-header">
+                        <h5 class="modal-title">Đánh giá sản phẩm</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <strong id="reviewProductName"></strong> <br>
+                            <strong class="text-muted" id="reviewVariantText"></strong>
+                        </div>
+                        <div class="mb-3">
+                            <label>Đánh giá của bạn:</label>
+                            <div class="d-flex gap-1 rating-group">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}" class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
+                                <label for="star{{ $i }}" class="star-label" data-index="{{ $i }}">
+                                    <i class="fa-regular fa-star" style="color: #ccc;"></i>
+                                </label>
+                            @endfor
+                        </div>
+                        @error('rating')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="review_text" class="form-control" placeholder="Viết đánh giá của bạn..."></textarea>
+                        </div>
+                        @error('review_text')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        <div class="mb-3">
+                            <input type="file" name="images[]" multiple accept="images/*" class="form-control" id="reviewImagesInput">
+                        </div>
+                        <div id="reviewImagesPreview" class="d-flex flex-wrap gap-2 mb-3"></div>
+                        @error('images.*')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Script modal đánh giá sp -->
+    <script>
+        // Gán product_id khi mở modal
+    var reviewModal = document.getElementById('reviewModal');
+    reviewModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+        const orderItemId = button.getAttribute('data-order-item-id');
+        
+        // Cập nhật URL form với product_id
+        const form = document.getElementById('reviewForm');
+        form.action = '{{ url("client/reviews") }}/' + productId;
+        document.getElementById('review_product_id').value = productId;
+
+            //Gán tên sp phân loại
+            const productName = button.getAttribute('data-product-name');
+            const variantText  = button.getAttribute('data-variant');
+            document.getElementById('reviewProductName').textContent = productName;
+            document.getElementById('reviewVariantText').textContent = variantText ? `Phân loại: ${variantText}` : '';
+        });
+
+
+        //màu sao
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.rating-group').forEach(group => {
+                const radios = group.querySelectorAll('input[name="rating"]');
+                const labels = group.querySelectorAll('.star-label');
+
+                labels.forEach((label, idx) => {
+                    label.addEventListener('click', () => {
+                        // Check radio tương ứng
+                        radios[idx].checked = true;
+
+                        // Update màu sao
+                        labels.forEach((lbl, i) => {
+                            const icon = lbl.querySelector('i');
+                            if(i <= idx){
+                                icon.classList.remove('fa-regular');
+                                icon.classList.add('fa-solid');
+                                icon.style.color = '#ffc107';
+                            } else {
+                                icon.classList.remove('fa-solid');
+                                icon.classList.add('fa-regular');
+                                icon.style.color = '#ccc';
+                            }
+                        });
+                    });
+                });
+            
+                // Giữ màu nếu form validation fail
+                const checkedRadio = group.querySelector('input[name="rating"]:checked');
+                if(checkedRadio){
+                    const idx = Array.from(radios).indexOf(checkedRadio);
+                    labels.forEach((lbl, i) => {
+                        const icon = lbl.querySelector('i');
+                        if(i <= idx){
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid');
+                            icon.style.color = '#ffc107';
+                        } else {
+                            icon.classList.remove('fa-solid');
+                            icon.classList.add('fa-regular');
+                            icon.style.color = '#ccc';
+                        }
+                    });
+                }
+            });
+            //Thêm hiển thị khung ảnh
+            document.getElementById('reviewImagesInput').addEventListener('change', function(event) {
+            const previewContainer = document.getElementById('reviewImagesPreview');
+            previewContainer.innerHTML = ''; // Xóa các ảnh cũ
+
+            const files = event.target.files;
+
+            if (files) {
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.classList.add('rounded'); // có thể thêm class tùy ý
+                        previewContainer.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+            });
+        }); 
+
+    </script>
+
+    <!-- Modal hiển thị xem đánh giá -->
+    <div class="modal fade" id="viewReviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đánh giá của bạn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-start mb-3 border-bottom pb-3">
+                        <img id="viewReviewThumb" class="rounded me-3" width="80" height="80" style="object-fit:cover" alt="Ảnh sản phẩm">
+                        <div>
+                            <h6 id="viewReviewProduct" class="mb-1"></h6>
+                            <p id="viewReviewVariant" class="text-muted small mb-1"></p>
+                            <div id="viewReviewRating" class="mb-1"></div>
+                        </div>
+                    </div>
+                    <p id="viewReviewText" class="mb-3"></p>
+                    <div id="viewReviewImages" class="d-flex flex-wrap gap-2"></div>
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- script xem đánh giá  -->
+     <script>
+        var viewReviewModal = document.getElementById('viewReviewModal');
+        viewReviewModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+        
+            const rating = button.getAttribute('data-rating');
+            const text = button.getAttribute('data-text');
+            const images = JSON.parse(button.getAttribute('data-images') || '[]');
+            const product = button.getAttribute('data-product-name');
+            const variant = button.getAttribute('data-variant') || '';
+            const thumb = button.getAttribute('data-thumb');
+        
+            // hiển thị sao
+            const stars = Array.from({ length: 5 }, (_, i) =>
+                `<i class="fa${i < rating ? 's' : 'r'} fa-star" style="color:${i < rating ? '#ffc107' : '#ccc'}"></i>`
+            ).join('');
+            document.getElementById('viewReviewRating').innerHTML = stars;
+        
+            // text
+            document.getElementById('viewReviewText').textContent = text || '';
+        
+            // product info
+            document.getElementById('viewReviewProduct').textContent = product;
+            document.getElementById('viewReviewVariant').textContent = variant ? 'Phân loại: ' + variant : '';
+            document.getElementById('viewReviewThumb').src = thumb;
+        
+            // images
+            const imgContainer = document.getElementById('viewReviewImages');
+images.forEach(url => {
+    let img = document.createElement('img');
+    img.src = url; // đã full URL rồi
+    img.className = "rounded border";
+    img.style.width = "100px";
+    img.style.height = "100px";
+    img.style.objectFit = "cover";
+    imgContainer.appendChild(img);
+});
         });
     </script>
 
@@ -1212,6 +1480,25 @@
             background-color: #e2e3e5;
             color: #383d41;
         }
+
+        /* Màu sao */
+    .star-label {
+        cursor: pointer;
+        font-size: 24px;
+    }
+    .star-label i {
+        transition: color 0.2s;
+    }
+    /* hover màu vàng */
+    .star-label:hover ~ .star-label i,
+    .star-label:hover i {
+        color: #ffc107 !important;
+    }
+    /* sao được chọn */
+    input[type="radio"]:checked ~ label i {
+        color: #ffc107 !important;
+    }
+
     </style>
 @endpush
 
@@ -1300,16 +1587,36 @@
     
     // Xử lý form mua lại
     $(document).on('submit', 'form[action*="reorder"]', function(e) {
-        console.log('Form submit detected');
         e.preventDefault();
         const form = $(this);
         
-        // Hiển thị loading
-        const submitButton = form.find('button[type="submit"]');
-        const originalText = submitButton.html();
-        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+        // Tạo form ẩn để submit
+        const tempForm = document.createElement('form');
+        tempForm.method = 'POST';
+        tempForm.action = form.attr('action');
+        tempForm.style.display = 'none';
         
-        // Gửi yêu cầu AJAX
+        // Thêm CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = $('meta[name="csrf-token"]').attr('content');
+        tempForm.appendChild(csrfInput);
+        
+        // Thêm input redirect_to_cart
+        const redirectInput = document.createElement('input');
+        redirectInput.type = 'hidden';
+        redirectInput.name = 'redirect_to_cart';
+        redirectInput.value = '1';
+        tempForm.appendChild(redirectInput);
+        
+        // Thêm form vào body và submit
+        document.body.appendChild(tempForm);
+        tempForm.submit();
+        
+        // Hiển thị thông báo đang xử lý
+        const submitButton = form.find('button[type="submit"]');
+        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang chuyển hướng...');
         $.ajax({
             url: form.attr('action'),
             method: 'POST',
@@ -1393,3 +1700,4 @@
     });
 </script>
 @endpush
+        

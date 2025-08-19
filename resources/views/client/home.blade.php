@@ -432,7 +432,7 @@
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />
                         </svg>
                      </span>
-                     <h3 class="tp-section-title-2">Sản phẩm được yêu thích</h3>
+                     <h3 class="tp-section-title-2">Sản Phẩm Mới Nhất</h3>
                   </div>
                </div>
             </div>
@@ -516,7 +516,7 @@
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />
                         </svg>
                      </span>
-                     <h3 class="tp-section-title-2">Sản phẩm nổi bật</h3>
+                     <h3 class="tp-section-title-2">Sản Phẩm Nổi Bật</h3>
                   </div>
                </div>
             </div>
@@ -567,15 +567,15 @@
          <div class="container">
             <div class="row">
                <div class="col-xl-12">
-                  <div class="tp-section-title-wrapper-2 mb-50">
-                     <span class="tp-section-title-pre-2">
-                        Đánh giá của khách hàng
+                  <div class="tp-section-title-wrapper-2 mb-80">
+                     <span class="tp-section-title-pre-2"  style="font-size: 28px; font-weight: 500;">
+                        Những Đánh Giá Tích Cực Từ Khách Hàng
                         <svg width="82" height="22" viewBox="0 0 82 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                            <path d="M81 14.5798C0.890564 -8.05914 -5.81154 0.0503902 5.00322 21" stroke="currentColor"
                               stroke-opacity="0.3" stroke-width="2" stroke-miterlimit="3.8637" stroke-linecap="round" />
                         </svg>
                      </span>
-                     <h3 class="tp-section-title-2">Những đánh giá tích cực từ khách hàng</h3>
+                     <!-- <h3 class="tp-section-title-2">Những đánh giá tích cực từ khách hàng</h3> -->
                   </div>
                </div>
             </div>
@@ -588,32 +588,34 @@
                      <div class="tp-testimonial-slider-active swiper-container">
                         <div class="swiper-wrapper">
                            @forelse($topReviews as $review)
-                                       <div class="tp-testimonial-item text-center mb-20 swiper-slide">
-                                         <div class="tp-testimonial-rating">
-                                           @for($i = 0; $i < 5; $i++)
-                                       <span><i class="fa-solid fa-star text-warning"></i></span>
-                                     @endfor
-                                         </div>
-                                         <div class="tp-testimonial-content">
-                                           <p>"{{$review->review_text}}"</p>
-                                         </div>
-                                         <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
-                                           <div class="tp-testimonial-user d-flex align-items-center">
-                                             <div class="tp-testimonial-avater mr-10">
-                                                <img src="{{ $review->user->avatar
-                       ? asset('storage/' . $review->user->avatar)
-                       : asset('assets2/img/users/avatars.png') }}" alt="avatar" width="50">
-                                             </div>
-                                             <div class="tp-testimonial-user-info tp-testimonial-user-translate">
-                                                <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}
-                                                </h3>
-                                                <span class="tp-testimonial-designation">Khách hàng</span>
-                                             </div>
-                                           </div>
-                                         </div>
-                                       </div>
+                              <div class="tp-testimonial-item text-center mb-20 swiper-slide">
+                                <div class="tp-testimonial-rating">
+                                  @for($i = 0; $i < 5; $i++)
+                              <span><i class="fa-solid fa-star text-warning"></i></span>
+                           @endfor
+                        </div>
+                        <div class="tp-testimonial-content">
+                          <p>"{{$review->review_text}}"</p>
+                        </div>
+                        <div class="tp-testimonial-user-wrapper d-flex align-items-center justify-content-center">
+                          <div class="tp-testimonial-user d-flex align-items-center">
+                            <div class="tp-testimonial-avater mr-10">
+                               <img src="{{ $review->user->avatar
+                               ? asset('storage/' . $review->user->avatar)
+                               : asset('assets2/img/users/avatars.png') }}" alt="avatar" width="50">
+                            </div>
+                            <div class="tp-testimonial-user-info tp-testimonial-user-translate">
+                               <h3 class="tp-testimonial-user-title">{{$review->user->fullname ?? 'Ẩn Danh'}}
+                               </h3>
+                               <span class="tp-testimonial-designation">Khách hàng</span>
+                            </div>
+                          </div>
+                        </div>
+                     </div>
                      @empty
-                        <p class="text-center">Chưa có đánh giá 5 sao</p>
+                        <div class="d-flex justify-content-center align-items-center w-100" style="height: 150px;">
+                           <p class="mb-0 text-center">Chưa có đánh giá 5 sao</p>
+                        </div>
                      @endforelse
 
                         </div>
