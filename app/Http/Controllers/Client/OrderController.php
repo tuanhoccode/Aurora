@@ -201,111 +201,137 @@ class OrderController extends Controller
      */
     public function reorder(Order $order, Request $request)
     {
-        if ($order->user_id !== Auth::id()) {
-            abort(404);
-        }
-
-        // Kiểm tra trạng thái đơn hàng có được phép mua lại không
-        $allowedStatuses = ['COMPLETED', 'CANCELLED', 'DELIVERED'];
-        $currentStatus = $order->currentStatus->status->code ?? '';
-        
-        if (!in_array($currentStatus, $allowedStatuses)) {
-            return back()->with('reorder_status', [
-                'type' => 'danger',
-                'message' => 'Không thể mua lại đơn hàng này.'
-            ]);
-        }
-
-        DB::beginTransaction();
         try {
-            // Lấy hoặc tạo giỏ hàng của người dùng
+            // Kiểm tra quyền truy cập
+            if ($order->user_id !== Auth::id()) {
+                return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này');
+            }
+    
+            // Kiểm tra trạng thái đơn hàng
+            $allowedStatuses = ['COMPLETED', 'CANCELLED', 'DELIVERED', '10', '8', '4'];
+            $currentStatus = $order->currentStatus->status->code ?? $order->currentStatus->order_status_id ?? '';
+            
+            if (!in_array($currentStatus, $allowedStatuses)) {
+                return redirect()->back()->with('error', 'Không thể mua lại đơn hàng này. Trạng thái hiện tại: ' . $currentStatus);
+            }
+    
+            DB::beginTransaction();
+    
+            // Lấy hoặc tạo giỏ hàng
             $cart = Cart::firstOrCreate(
-                ['user_id' => Auth::id()],
-                ['total_price' => 0]
+                ['user_id' => Auth::id(), 'status' => 'pending'],
+                ['total_price' => 0, 'created_at' => now(), 'updated_at' => now()]
             );
-
+    
             $addedItems = 0;
             $unavailableItems = [];
-
-            // Duyệt qua các sản phẩm trong đơn hàng cũ
+            $outOfStockItems = [];
+    
+            // Tải trước các mối quan hệ cần thiết
+            $order->load(['items.product', 'items.variant']);
+    
+            // Thêm từng sản phẩm vào giỏ
             foreach ($order->items as $item) {
-                // Kiểm tra sản phẩm còn bán không
                 $product = $item->product;
-                if (!$product || !$product->is_active || $product->stock < 1) {
+                
+                // Kiểm tra sản phẩm có tồn tại và đang hoạt động
+                if (!$product || !$product->is_active) {
                     $unavailableItems[] = $product ? $product->name : 'Sản phẩm không tồn tại';
                     continue;
                 }
-
-                // Kiểm tra biến thể (nếu có)
-                $variant = null;
-                if ($item->variant_id) {
-                    $variant = ProductVariant::find($item->variant_id);
-                    if (!$variant || $variant->quantity < 1) {
-                        $unavailableItems[] = $product->name . ($variant ? ' - ' . $variant->name : '');
-                        continue;
-                    }
-                }
-
-                // Thêm vào giỏ hàng
-                $quantity = min($variant ? $variant->quantity : $product->stock, $item->quantity);
+    
+                // Xử lý biến thể
+                $variant = $item->variant;
+                $variantId = $variant->id ?? null;
+                $variantName = $variant ? ' - ' . $variant->name : '';
+    
+                // Kiểm tra tồn kho
+                $availableStock = $variant ? $variant->stock : $product->stock;
                 
-                // Kiểm tra xem sản phẩm đã có trong giỏ chưa
-                $existingCartItem = $cart->items()
-                    ->where('product_id', $product->id)
-                    ->where('variant_id', $variant ? $variant->id : null)
-                    ->first();
-
-                if ($existingCartItem) {
-                    // Nếu đã có thì cộng thêm số lượng (không vượt quá số lượng có sẵn)
-                    $newQuantity = min(
-                        $existingCartItem->quantity + $quantity,
-                        $variant ? $variant->quantity : $product->stock
-                    );
-                    $existingCartItem->update(['quantity' => $newQuantity]);
-                } else {
-                    // Nếu chưa có thì tạo mới
-                    $cart->items()->create([
-                        'product_id' => $product->id,
-                        'variant_id' => $variant ? $variant->id : null,
-                        'quantity' => $quantity,
-                        'price' => $item->price_variant ?? $item->price
-                    ]);
+                if ($availableStock < 1) {
+                    $outOfStockItems[] = $product->name . $variantName;
+                    continue;
                 }
-
+    
+                // Tính số lượng tối đa có thể thêm
+                $quantity = min($availableStock, $item->quantity);
+                
+                // Lấy giá hiện tại
+                $currentPrice = $item->price_variant ?? $item->price ?? $product->price;
+                
+                // Xử lý thuộc tính biến thể
+                $attributes = $this->processVariantAttributes($item);
+                
+                // Tìm hoặc tạo cart item
+                $cartItem = $cart->items()->updateOrCreate(
+                    [
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variantId
+                    ],
+                    [
+                        'quantity' => DB::raw("LEAST(quantity + $quantity, $availableStock)"),
+                        'price' => $currentPrice,
+                        'price_at_time' => $currentPrice,
+                        'attributes' => $attributes,
+                        'updated_at' => now()
+                    ]
+                );
+    
+                // Nếu là tạo mới, cập nhật created_at
+                if ($cartItem->wasRecentlyCreated) {
+                    $cartItem->update(['created_at' => now()]);
+                }
+    
                 $addedItems++;
             }
-
-            // Cập nhật tổng tiền giỏ hàng
-            $cart->updateTotalPrice();
-
+    
             DB::commit();
-
-            // Thông báo kết quả
-            $message = 'Đã thêm ' . $addedItems . ' sản phẩm vào giỏ hàng.';
-            
-            if (!empty($unavailableItems)) {
-                $message .= ' Không thể thêm ' . count($unavailableItems) . ' sản phẩm do hết hàng hoặc ngừng kinh doanh.';
+    
+            // Tạo thông báo
+            $messages = [];
+            if ($addedItems > 0) {
+                $messages[] = "Đã thêm $addedItems sản phẩm vào giỏ hàng.";
             }
-
-            // Kiểm tra nếu có yêu cầu chuyển hướng
-            if ($request->has('redirect_to_cart')) {
-                return redirect()->route('shopping-cart.index')->with('success', $message);
+            if (count($unavailableItems) > 0) {
+                $messages[] = count($unavailableItems) . " sản phẩm không khả dụng: " . implode(', ', array_slice($unavailableItems, 0, 5)) . (count($unavailableItems) > 5 ? '...' : '');
             }
-
-            return back()->with('reorder_status', [
-                'type' => 'success',
-                'message' => $message
-            ]);
-
+            if (count($outOfStockItems) > 0) {
+                $messages[] = count($outOfStockItems) . " sản phẩm đã hết hàng: " . implode(', ', array_slice($outOfStockItems, 0, 5)) . (count($outOfStockItems) > 5 ? '...' : '');
+            }
+    
+            return redirect()->route('client.shopping-cart.index')
+                ->with('success', implode(' ', $messages));
+    
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi khi mua lại đơn hàng: ' . $e->getMessage());
-            
-            return back()->with('reorder_status', [
-                'type' => 'danger',
-                'message' => 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.'
+            \Log::error('Lỗi khi mua lại đơn hàng: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
             ]);
+            
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.');
         }
+    }
+    
+    /**
+     * Xử lý thuộc tính biến thể
+     */
+    private function processVariantAttributes($item)
+    {
+        if (empty($item->attributes_variant)) {
+            return null;
+        }
+    
+        if (is_string($item->attributes_variant)) {
+            $attributes = json_decode($item->attributes_variant, true);
+            return $attributes ? json_encode($attributes) : null;
+        }
+    
+        return is_array($item->attributes_variant) 
+            ? json_encode($item->attributes_variant) 
+            : null;
     }
 
     public function tracking(Order $order)

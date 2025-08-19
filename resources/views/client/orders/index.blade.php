@@ -857,17 +857,36 @@
                                                     <button type="button" class="btn btn-success me-2" disabled>
                                                         <i class="fas fa-check-double me-1"></i> Đã nhận hàng
                                                     </button>
-                                                    <form action="{{ route('client.orders.reorder', $order->id) }}" method="POST" class="d-inline me-2">
-                                                        @csrf
-                                                        <input type="hidden" name="redirect_to_cart" value="1">
-                                                        <button type="submit" class="btn btn-outline-primary" onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...';this.form.submit();">
-                                                            <i class="fas fa-redo-alt me-1"></i> Mua lại
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-primary me-2 reorder-btn" 
+                                                            data-order-id="{{ $order->id }}"
+                                                            title="Mua lại các sản phẩm trong đơn hàng này"
+                                                            onclick="event.preventDefault(); 
+                                                                     const button = this; 
+                                                                     button.disabled = true; 
+                                                                     button.innerHTML = '<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...'; 
+                                                                     // Tạo form ẩn
+                                                                     const form = document.createElement('form'); 
+                                                                     form.method = 'POST'; 
+                                                                     form.action = '/client/orders/{{ $order->id }}/reorder'; 
+                                                                     form.style.display = 'none'; 
+                                                                     
+                                                                     // Thêm CSRF token và method spoofing
+                                                                     const csrfToken = document.querySelector('meta[name=\'csrf-token\']').content; 
+                                                                     form.innerHTML = `
+                                                                         <input type='hidden' name='_token' value='${csrfToken}'>
+                                                                         <input type='hidden' name='_method' value='POST'>
+                                                                     `; 
+                                                                     
+                                                                     // Thêm form vào body và submit
+                                                                     document.body.appendChild(form); 
+                                                                     form.submit();">
+                                                        <i class="fas fa-redo-alt me-1"></i> Mua lại
+                                                    </button>
                                                 @endif
                                                 @if ($statusId == 4)
                                                     @if ($item->review)
-                                                        <div class="mt-2">
+                                                        <div class="d-flex gap-2">
                                                             <button class="btn btn-outline-secondary btn-sm"
                                                                 data-bs-toggle = "modal"
                                                                 data-bs-target = "#viewReviewModal"
@@ -887,7 +906,7 @@
                                                     @else
                                                         {{-- Chưa đánh giá + còn hạn 7 ngày sẽ không được đánh giá --}}
                                                         @if($order->canReview())
-                                                            <div class="mt-2">
+                                                            <div class="d-flex gap-2">
                                                                 <button class="btn btn-primary btn-sm w-100"
                                                                     data-bs-toggle="modal"
                                                                     data-bs-target="#reviewModal"
@@ -909,15 +928,17 @@
                                                         <i class="fas fa-redo"></i> Quay lại thanh toán
                                                     </a>
                                                 @endif
+                                                
                                                  @if (
                                                     $order->is_paid == 1 &&
                                                         $order->cancelled_at == null &&
                                                         $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
                                                         !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
                                                     <a href="{{ route('refund.form', $order->code) }}"
-                                                        class="tp-checkout-btn checkout__btn-main tp-checkout-btn-hover-alt">
+                                                    class="btn btn-outline-primary me-2 reorder-btn">
                                                         <i class="fas fa-undo"></i> Yêu cầu hoàn trả
                                                     </a>
+                                                    
                                                 @endif
                                                 
                                             </div>
@@ -1325,7 +1346,7 @@ images.forEach(url => {
         }
         
         /* Table styling */
-        }
+        
 
         .table th {
             font-weight: 600;
@@ -1504,8 +1525,225 @@ images.forEach(url => {
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    // Function to handle reorder
+    function handleReorder(button) {
+        const orderId = button.getAttribute('data-order-id');
+        console.log('Handling reorder for order:', orderId);
+        
+        if (!orderId) {
+            console.error('No order ID found');
+            return;
+        }
+        
+        // Show loading state
+        const originalHTML = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+        
+        // Create form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/orders/' + orderId + '/reorder';
+        form.style.display = 'none';
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add method spoofing
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'POST';
+        form.appendChild(methodInput);
+        
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Add click handler when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.reorder-btn');
+        console.log('Found', buttons.length, 'reorder buttons');
+        
+        buttons.forEach(button => {
+            button.onclick = function(e) {
+                e.preventDefault();
+                handleReorder(this);
+            };
+                
+                console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+                console.log('Order ID:', orderId);
+                
+                if (!orderId) {
+                    console.error('Không tìm thấy orderId');
+                    alert('Không tìm thấy thông tin đơn hàng');
+                    return false;
+                }
+                
+                // Vô hiệu hóa nút và hiển thị loading
+                button.disabled = true;
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+                
+                // Tạo form ẩn để gửi request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/orders/' + orderId + '/reorder';
+                form.style.display = 'none';
+                
+                // Thêm CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                // Thêm method spoofing cho POST
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'POST';
+                form.appendChild(methodInput);
+                
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Đảm bảo form được submit
+                setTimeout(() => {
+                    if (document.body.contains(form)) {
+                        document.body.removeChild(form);
+                    }
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }, 1000);
+            });
+        });
+    });
+</script>
+
+<script>
+    // Hàm xử lý nút Mua lại
+    window.handleReorder = function(button, event, orderId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+        console.log('Order ID:', orderId);
+        
+        if (!orderId) {
+            console.error('Không tìm thấy orderId');
+            alert('Không tìm thấy thông tin đơn hàng');
+            return false;
+        }
+        
+        // Vô hiệu hóa nút và hiển thị loading
+        button.disabled = true;
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+        
+        // Tạo form ẩn để gửi request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/orders/' + orderId + '/reorder';
+        form.style.display = 'none';
+        
+        // Thêm CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Thêm method spoofing cho POST
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'POST';
+        form.appendChild(methodInput);
+        
+        // Thêm form vào body và submit
+        document.body.appendChild(form);
+        form.submit();
+        
+        // Đảm bảo form được submit
+        setTimeout(() => {
+            if (document.body.contains(form)) {
+                document.body.removeChild(form);
+            }
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+            alert('Đang xử lý yêu cầu mua lại đơn hàng...');
+        }, 1000);
+    }
+    // Hàm hiển thị lỗi
+    function showError(message) {
+        console.error('Error:', message);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'Đóng',
+            confirmButtonColor: '#dc3545'
+        });
+    }
+    
+    // Xử lý nút Mua lại - phiên bản đơn giản
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.reorder-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.reorder-btn');
+            const orderId = button.getAttribute('data-order-id');
+            const originalHTML = button.innerHTML;
+            
+            console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+            console.log('Order ID:', orderId);
+            
+            if (!orderId) {
+                console.error('Không tìm thấy orderId');
+                alert('Không tìm thấy thông tin đơn hàng');
+                return false;
+            }
+            
+            // Vô hiệu hóa nút và hiển thị loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+            
+            // Tạo form ẩn để gửi request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/orders/' + orderId + '/reorder';
+            form.style.display = 'none';
+            
+            // Thêm CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            // Thêm method spoofing cho POST
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'POST';
+            form.appendChild(methodInput);
+            
+            // Thêm form vào body và submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
     // Khởi tạo tooltip
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -1583,60 +1821,118 @@ images.forEach(url => {
         }
     }
     
-    // Xử lý form xác nhận đã nhận hàng
-    
-    // Xử lý form mua lại
-    $(document).on('submit', 'form[action*="reorder"]', function(e) {
+    // Hàm hiển thị lỗi
+    function showError(message) {
+        console.error('Error:', message);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'Đóng',
+            confirmButtonColor: '#dc3545'
+        });
+    }
+
+    // Xử lý nút Mua lại
+    $(document).on('click', '.reorder-btn', function(e) {
         e.preventDefault();
-        const form = $(this);
+        const button = $(this);
+        const orderId = button.data('order-id');
+        const originalText = button.html();
         
-        // Tạo form ẩn để submit
-        const tempForm = document.createElement('form');
-        tempForm.method = 'POST';
-        tempForm.action = form.attr('action');
-        tempForm.style.display = 'none';
+        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+        console.log('Order ID:', orderId);
+        console.log('Button:', button);
         
-        // Thêm CSRF token
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = $('meta[name="csrf-token"]').attr('content');
-        tempForm.appendChild(csrfInput);
+        // Kiểm tra orderId
+        if (!orderId) {
+            console.error('Không tìm thấy orderId');
+            showError('Không tìm thấy thông tin đơn hàng');
+            return false;
+        }
         
-        // Thêm input redirect_to_cart
-        const redirectInput = document.createElement('input');
-        redirectInput.type = 'hidden';
-        redirectInput.name = 'redirect_to_cart';
-        redirectInput.value = '1';
-        tempForm.appendChild(redirectInput);
+        // Vô hiệu hóa nút và hiển thị loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
         
-        // Thêm form vào body và submit
-        document.body.appendChild(tempForm);
-        tempForm.submit();
+        // Gửi yêu cầu AJAX
+        const url = '{{ url("orders") }}/' + orderId + '/reorder';
+        console.log('Gửi yêu cầu AJAX đến:', url);
         
-        // Hiển thị thông báo đang xử lý
-        const submitButton = form.find('button[type="submit"]');
-        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang chuyển hướng...');
         $.ajax({
-            url: form.attr('action'),
+            url: url,
             method: 'POST',
-            data: form.serialize(),
-            success: function(response) {
-                // Chuyển hướng đến trang giỏ hàng
-                window.location.href = '{{ route("client.shopping-cart.index") }}';
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            error: function(xhr) {
+            success: function(response) {
+                console.log('=== Phản hồi từ máy chủ ===');
+                console.log('Response:', response);
+                
+                // Bật lại nút
+                button.prop('disabled', false).html(originalText);
+                
+                if (response && response.success) {
+                    // Chuyển hướng trực tiếp đến giỏ hàng
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                        return;
+                    }
+                    
+                    // Nếu không có redirect URL, chuyển hướng đến giỏ hàng mặc định
+                    window.location.href = '{{ route("client.shopping-cart.index") }}';
+                } else {
+                    // Xử lý khi response không có success = true
+                    const errorMessage = response && response.message 
+                        ? response.message 
+                        : 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.';
+                    showError(errorMessage);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                console.error('Response:', xhr.responseText);
+                
+                // Bật lại nút
+                button.prop('disabled', false).html(originalText);
+                
                 // Hiển thị thông báo lỗi
+                let errorMessage = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMessage = response.message || errorMessage;
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
+                    errorMessage = xhr.responseText || errorMessage;
+                }
+                
+                // Hiển thị thông báo lỗi chi tiết hơn
                 Swal.fire({
+                    title: 'Lỗi!',
+                    html: `<div style="text-align: left;">
+                        <p>${errorMessage}</p>
+                        <div class="mt-3 text-muted small">
+                            <div>Mã lỗi: ${xhr.status} (${xhr.statusText})</div>
+                            ${xhr.responseJSON && xhr.responseJSON.errors ? 
+                                '<div class="mt-2">Chi tiết lỗi: ' + 
+                                JSON.stringify(xhr.responseJSON.errors) + '</div>' : ''}
+                        </div>
+                    </div>`,
                     icon: 'error',
-                    title: 'Lỗi',
-                    text: xhr.responseJSON?.message || 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.'
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#dc3545',
+                    width: '500px'
                 });
-                submitButton.prop('disabled', false).html(originalText);
             }
         });
     });
-
+    
+    // Xử lý form xác nhận đã nhận hàng
     $(document).on('submit', 'form.confirm-delivery-form', function(e) {
         e.preventDefault();
         const form = $(this);
