@@ -21,6 +21,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Client\AddressFormRequest;
 use App\Http\Requests\Client\SaveAddressRequest;
 
@@ -347,23 +348,72 @@ class CheckoutController extends Controller
         }
     }
 
+    /**
+     * Hiển thị form tạo địa chỉ mới
+     */
     public function createAddress()
     {
         try {
             if (!Auth::check()) {
                 return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục!');
             }
-            return view('client.address.create');
+            $user = Auth::user();
+            $address = null; // Truyền $address là null cho trường hợp tạo mới
+            return view('client.address.create', compact('user', 'address'));
         } catch (\Exception $e) {
             Log::error('Create address error: ' . $e->getMessage(), ['session_id' => Session::getId()]);
             return redirect()->route('checkout')->with('error', 'Đã xảy ra lỗi, vui lòng thử lại!');
         }
     }
 
-    public function storeAddress(AddressFormRequest $request)
+    /**
+     * Lưu địa chỉ mới
+     */
+    public function storeAddress(Request $request)
     {
         try {
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục!');
+            }
+
             $user = Auth::user();
+
+            // Validate thủ công
+            $validator = Validator::make($request->all(), [
+                'fullname' => 'required|regex:/^[A-Za-z\sÀ-ỹ]{2,255}$/',
+                'phone_number' => 'required|regex:/^0[35789][0-9]{8}$/',
+                'email' => 'required|email|max:255',
+                'province' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'district' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'ward' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'street' => 'required|string|max:255|regex:/^[A-Za-z0-9\s,À-ỹ]{5,255}$/',
+                'address' => 'required|string|max:500',
+                'address_type' => 'required|in:home,office',
+                'is_default' => 'nullable|boolean',
+            ], [
+                'fullname.required' => 'Vui lòng nhập họ và tên.',
+                'fullname.regex' => 'Họ và tên chỉ chứa chữ cái và dấu cách, từ 2 đến 255 ký tự.',
+                'phone_number.required' => 'Vui lòng nhập số điện thoại.',
+                'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 0, theo sau là 9 chữ số (bắt đầu bằng 3, 5, 7, 8, hoặc 9).',
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email' => 'Email không đúng định dạng.',
+                'province.required' => 'Vui lòng chọn tỉnh/thành phố.',
+                'province.regex' => 'Tỉnh/Thành phố không hợp lệ.',
+                'district.required' => 'Vui lòng chọn quận/huyện.',
+                'district.regex' => 'Quận/Huyện không hợp lệ.',
+                'ward.required' => 'Vui lòng chọn phường/xã.',
+                'ward.regex' => 'Phường/Xã không hợp lệ.',
+                'street.required' => 'Vui lòng nhập địa chỉ cụ thể.',
+                'street.regex' => 'Địa chỉ cụ thể chứa chữ cái, số, dấu cách hoặc dấu phẩy, từ 5 đến 255 ký tự.',
+                'address.required' => 'Địa chỉ đầy đủ không được để trống.',
+                'address_type.required' => 'Vui lòng chọn loại địa chỉ.',
+                'address_type.in' => 'Loại địa chỉ không hợp lệ.',
+            ]);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
             $data = $request->only([
                 'fullname',
                 'phone_number',
@@ -378,9 +428,13 @@ class CheckoutController extends Controller
             ]);
             $data['user_id'] = $user->id;
 
+            // Xử lý địa chỉ mặc định
             if ($request->is_default) {
                 UserAddress::where('user_id', $user->id)->update(['is_default' => 0]);
             }
+
+            // Đảm bảo is_default là 0 nếu không được chọn
+            $data['is_default'] = $request->is_default ? 1 : 0;
 
             $address = UserAddress::create($data);
             session(['checkout_address_id' => $address->id]);
@@ -392,6 +446,9 @@ class CheckoutController extends Controller
         }
     }
 
+    /**
+     * Hiển thị form chỉnh sửa địa chỉ
+     */
     public function editAddress($id = null)
     {
         try {
@@ -417,10 +474,57 @@ class CheckoutController extends Controller
         }
     }
 
-    public function saveAddress(SaveAddressRequest $request)
+    /**
+     * Lưu thông tin chỉnh sửa địa chỉ
+     */
+    public function saveAddress(Request $request)
     {
         try {
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục!');
+            }
+
             $user = Auth::user();
+
+            // Validate thủ công
+            $validator = Validator::make($request->all(), [
+                'address_id' => 'required|exists:user_addresses,id',
+                'fullname' => 'required|regex:/^[A-Za-z\sÀ-ỹ]{2,255}$/',
+                'phone_number' => 'required|regex:/^0[35789][0-9]{8}$/',
+                'email' => 'required|email|max:255',
+                'province' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'district' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'ward' => 'required|string|max:100|regex:/^[A-Za-z\sÀ-ỹ]{2,100}$/',
+                'street' => 'required|string|max:255|regex:/^[A-Za-z0-9\s,À-ỹ]{5,255}$/',
+                'address' => 'required|string|max:500',
+                'address_type' => 'required|in:home,office',
+                'is_default' => 'nullable|boolean',
+            ], [
+                'address_id.required' => 'ID địa chỉ không được để trống.',
+                'address_id.exists' => 'Địa chỉ không tồn tại.',
+                'fullname.required' => 'Vui lòng nhập họ và tên.',
+                'fullname.regex' => 'Họ và tên chỉ chứa chữ cái và dấu cách, từ 2 đến 255 ký tự.',
+                'phone_number.required' => 'Vui lòng nhập số điện thoại.',
+                'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 0, theo sau là 9 chữ số (bắt đầu bằng 3, 5, 7, 8, hoặc 9).',
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email' => 'Email không đúng định dạng.',
+                'province.required' => 'Vui lòng chọn tỉnh/thành phố.',
+                'province.regex' => 'Tỉnh/Thành phố không hợp lệ.',
+                'district.required' => 'Vui lòng chọn quận/huyện.',
+                'district.regex' => 'Quận/Huyện không hợp lệ.',
+                'ward.required' => 'Vui lòng chọn phường/xã.',
+                'ward.regex' => 'Phường/Xã không hợp lệ.',
+                'street.required' => 'Vui lòng nhập địa chỉ cụ thể.',
+                'street.regex' => 'Địa chỉ cụ thể chứa chữ cái, số, dấu cách hoặc dấu phẩy, từ 5 đến 255 ký tự.',
+                'address.required' => 'Địa chỉ đầy đủ không được để trống.',
+                'address_type.required' => 'Vui lòng chọn loại địa chỉ.',
+                'address_type.in' => 'Loại địa chỉ không hợp lệ.',
+            ]);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
             $data = $request->only([
                 'fullname',
                 'phone_number',
@@ -435,9 +539,13 @@ class CheckoutController extends Controller
             ]);
             $data['user_id'] = $user->id;
 
+            // Xử lý địa chỉ mặc định
             if ($request->is_default) {
                 UserAddress::where('user_id', $user->id)->update(['is_default' => 0]);
             }
+
+            // Đảm bảo is_default là 0 nếu không được chọn
+            $data['is_default'] = $request->is_default ? 1 : 0;
 
             UserAddress::where('id', $request->address_id)
                 ->where('user_id', $user->id)
@@ -449,6 +557,40 @@ class CheckoutController extends Controller
             return back()->withInput()->with('error', 'Đã xảy ra lỗi khi cập nhật địa chỉ, vui lòng thử lại!');
         }
     }
+    public function deleteAddress($id)
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập để xóa địa chỉ!'], 401);
+            }
+
+            $address = UserAddress::where('id', $id)
+                ->where('user_id', Auth::user()->id)
+                ->first();
+
+            if (!$address) {
+                return response()->json(['success' => false, 'message' => 'Địa chỉ không tồn tại hoặc không thuộc về bạn.'], 404);
+            }
+
+            if ($address->is_default) {
+                return response()->json(['success' => false, 'message' => 'Không thể xóa địa chỉ mặc định!'], 403);
+            }
+
+            $address->delete();
+            Log::info('Address deleted successfully', ['address_id' => $id, 'user_id' => Auth::user()->id]);
+
+            // Nếu địa chỉ vừa xóa là địa chỉ đang chọn trong session, xóa session
+            if (Session::get('checkout_address_id') == $id) {
+                Session::forget('checkout_address_id');
+            }
+
+            return response()->json(['success' => true, 'message' => 'Địa chỉ đã được xóa thành công!']);
+        } catch (\Exception $e) {
+            Log::error('Delete address error: ' . $e->getMessage(), ['address_id' => $id, 'user_id' => Auth::user()->id]);
+            return response()->json(['success' => false, 'message' => 'Đã xảy ra lỗi khi xóa địa chỉ!'], 500);
+        }
+    }
+
 
     public function process(Request $request)
     {
