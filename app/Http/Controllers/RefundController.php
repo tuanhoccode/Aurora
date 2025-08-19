@@ -28,12 +28,14 @@ class RefundController extends Controller
             ->where('is_paid', 1)
             ->whereNull('cancelled_at')
             ->whereHas('statusHistories', function ($query) {
-                $query->where('order_status_id', 4)->where('is_current', 1);
+                $query->where('order_status_id', 10)->where('is_current', 1);
             })
             ->whereDoesntHave('refund', function ($query) {
                 $query->where('status', 'pending');
             })
-            ->with('items')
+            ->with(['items' => function($query) {
+                $query->with(['product', 'variant.attributes.attribute']);
+            }])
             ->firstOrFail();
 
         return view('client.refund', compact('order'));
@@ -73,7 +75,7 @@ class RefundController extends Controller
                 ->where('is_paid', 1)
                 ->whereNull('cancelled_at')
                 ->whereHas('statusHistories', function ($query) {
-                    $query->where('order_status_id', 4)->where('is_current', 1);
+                    $query->where('order_status_id', 10)->where('is_current', 1);
                 })
                 ->whereDoesntHave('refund', function ($query) {
                     $query->where('status', 'pending');

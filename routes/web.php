@@ -565,18 +565,22 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::delete('/shopping-cart/remove/{itemId}', [ShoppingCartController::class, 'removeFromCart'])->name('shopping-cart.remove')->middleware(['auth', 'verified']);
     Route::delete('/shopping-cart/bulk-delete', [ShoppingCartController::class, 'bulkDelete'])->name('shopping-cart.bulk-delete')->middleware(['auth', 'verified']);
 
-    Route::middleware(['auth', 'verified'])->group(function(){
-        Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
-        Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
-        //Tracking đơn hàng
-        Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
-        //Hủy đơn hàng
-        Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
-        Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
-        //Đánh giá sản phẩm
-        Route::post('/review}', [ReviewController::class, 'store'])->name('store');
-
-    });
+    Route::get('/orders', [\App\Http\Controllers\Client\OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Client\OrderController::class, 'show'])->name('orders.show');
+    // Tracking đơn hàng
+    Route::get('/orders/{order}/tracking', [\App\Http\Controllers\Client\OrderController::class, 'tracking'])->name('orders.tracking');
+    // Hủy đơn hàng
+    Route::put('/orders/{order}/cancel', [\App\Http\Controllers\Client\OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::get('/orders/sync-statuses', [\App\Http\Controllers\Client\OrderController::class, 'syncOrderStatuses'])->name('orders.sync-statuses');
+    
+    // Xác nhận đã nhận hàng
+    Route::post('/orders/{order}/confirm-delivery', [\App\Http\Controllers\Client\OrderController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
+    
+    // Mua lại đơn hàng
+    Route::post('/orders/{order}/reorder', [\App\Http\Controllers\Client\OrderController::class, 'reorder'])->name('orders.reorder');
+    
+    //Đánh giá sản phẩm
+    Route::post('/reviews/{product}', [\App\Http\Controllers\Client\ReviewController::class, 'store'])->name('store');
 });
 
 
