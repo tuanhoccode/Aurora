@@ -19,4 +19,18 @@ class Cart extends Model
     {
         return $this->belongsTo(\App\Models\Product::class, 'product_id');
     }
+
+    /**
+     * Calculate the total price of the cart
+     * Note: This doesn't save to database as total_price column doesn't exist
+     */
+    public function updateTotalPrice()
+    {
+        // Just return the total price without saving to database
+        return $this->items()->with('product')
+            ->get()
+            ->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+    }
 }

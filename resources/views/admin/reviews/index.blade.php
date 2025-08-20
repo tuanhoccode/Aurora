@@ -30,16 +30,16 @@
     </div>
     <div class="card shadow-sm rounded-3 border-0 mb-4">
         <div class="card-body p-4">
-            <form action="{{ route('admin.products.index') }}" method="GET" class="row g-3">
+            <form action="{{ route('admin.reviews.searchComment') }}" method="GET" class="row g-3">
                 <div class="col-12">
                     <div class="input-group">
                         <input type="text" class="form-control" name="search" value="{{ request('search') }}"
-                            placeholder="Tìm kiếm sản phẩm...">
+                            placeholder="Tìm kiếm bình luận...">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i>
                         </button>
                         @if (request('search'))
-                            <a href="{{ route('admin.products.index') }}" class="btn btn-light">
+                            <a href="{{ route('admin.reviews.comments') }}" class="btn btn-light">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
@@ -54,8 +54,6 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                             <tr>
-                            
-                                
                                 <th>Người dùng </th>
                                 <th>Sản phẩm</th>
                                 <th>Nội dung</th>
@@ -67,39 +65,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($mergedList as $comment)
+                            @foreach($mergedList as $review)
                                 <tr>
                                     
                                     <td>
-                                        {{ $comment->user ? $comment->user->fullname : 'N/A' }}
+                                        {{ $review->user ? $review->user->fullname : 'N/A' }}
                                     </td>
                                     <td>
-                                        {{ $comment->product ? $comment->product->name : 'N/A' }}
+                                        {{ $review->product ? $review->product->name : 'N/A' }}
                                     </td>
                                     <td>
-                                        {{ $comment->content }}
-                                        @if(optional($comment->user)-> role === 'admin')
+                                        {{ $review->review_text }}
+                                        @if(optional($review->user)-> role === 'admin')
                                             <br>
                                             <span class="badge bg-primary">Phản hồi từ Admin</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($comment->type === 'review' && $comment->rating !== null)
-                                            {!! str_repeat('<i class="fa fa-star text-warning"></i>', $comment->rating) !!}
-                                            {!! str_repeat('<i class="fa fa-star text-muted"></i>', 5 - $comment->rating) !!}
-                                            <br>
-                                            
-                                        @else
-                                            <span class="text-muted">Bình luận</span>
-                                        @endif
+                                            {!! str_repeat('<i class="fa fa-star text-warning"></i>', $review->rating) !!}
+                                            {!! str_repeat('<i class="fa fa-star text-muted"></i>', 5 - $review->rating) !!}
                                     </td>
                                     
                                     <td>
-                                        @if ($comment->is_active === 1)
+                                        @if ($review->is_active === 1)
                                             <span class="badge d-inline-block text-center bg-success w-100" style="min-width: 110px;">
                                             <i class="fas fa-check-circle me-1"></i> Đã duyệt
                                             </span>
-                                        @elseif ($comment->is_active === 0 && $comment->reason)
+                                        @elseif ($review->is_active === 0 && $review->reason)
                                             <span class="badge d-inline-block text-center bg-danger w-100" style="min-width: 110px;">
                                                 <i class="fas fa-times-circle me-1"></i> Không duyệt
                                             </span>
@@ -110,26 +102,20 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {{$comment->reason}}
+                                        {{$review->reason}}
                                     </td>
                                     <td>
-                                        {{$comment->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}
+                                        {{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}
                                     </td>
-                                    <!-- <td>
-                                        <div class="form-check form-switch">
-                                            <input type="checkbox" class="form-check-input toggle-comment"
-                                                data-id="{{ $comment->id }}" {{ $comment->is_active ? 'checked' : '' }}>
-                                        </div>
-                                    </td> -->
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('admin.reviews.showComment', ['type' => $comment->type, 'id' => $comment->id]) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('admin.reviews.showComment', ['id' =>  $review->id]) }}" class="btn btn-sm btn-info">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             {{-- Nút mở modal từ chối --}}
-                                            @if (!$comment->is_active)
+                                            @if (!$review->is_active)
                                             {{-- Nút chấp nhận --}}
-                                            <form action="{{ route('admin.reviews.approve', ['type' => $comment->type, 'id' => $comment->id]) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('admin.reviews.approve', ['id' => $review->id]) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="btn btn-sm btn-success">
@@ -140,42 +126,38 @@
                                             {{-- Nút mở modal từ chối --}}
                                             <button type="button"
                                                 class="btn btn-sm btn-warning btn-reject"
-                                                data-id="{{ $comment->id }}"
-                                                data-type="{{ $comment->type }}"
-                                                data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
-                                                data-content="{{ $comment->content }}">
-                                                <i class="bi bi-x-circle"></i> {{-- Từ chối --}}
+                                                data-id="{{ $review->id }}"
+                                                data-type="{{ $review->type }}"
+                                                data-user="{{ $review->user ? $review->user->fullname : 'N/A' }}"
+                                                data-content="{{ $review->content }}">
+                                                <i class="bi bi-x-circle"></i>
                                             </button>
                                             @endif
-                                            <form action="{{route('admin.reviews.destroyComment', ['type' => $comment->type, 'id' => $comment->id])}}" method="post"  class="d-inline delete-form">
+                                            <form action="{{route('admin.reviews.destroyComment', ['id' => $review->id])}}" method="post"  class="d-inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger delete-button"
-                                                data-type= "{{$comment->type}}"
-                                                onclick="return false;"
-                                                >
-                                                    
+                                                <button type="submit" class="btn btn-sm btn-danger delete-button" onclick="return confirm('Bạn có chắc chắn muốn xóa mềm đánh giá này không?')">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                             <!-- Nút mở modal trả lời -->
                                             <button type="button" 
                                                 class="btn btn-sm btn-outline-secondary btn-reply d-flex align-items-center justify-content-center gap-1 position-relative"                                                style="width: 40px; min-width: 30px; height: 32px;"
-                                                data-id="{{ $comment->id }}" 
-                                                data-type="{{ $comment->type }}"
-                                                data-user="{{ $comment->user ? $comment->user->fullname : 'N/A' }}"
-                                                data-content="{{ $comment->content }}"
-                                                data-rating="{{ $comment->rating ?? 'Không có' }}"
+                                                data-id="{{ $review->id }}" 
+                                                data-type="{{$review->type}}"
+                                                data-user="{{ $review->user ? $review->user->fullname : 'N/A' }}"
+                                                data-content="{{ $review->content }}"
+                                                data-rating="{{ $review->rating ?? 'Không có' }}"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#replyModal"
-                                                {{ (!$comment->is_active || $comment->has_replies) ? 'disabled' : '' }}
-                                                title="{{ !$comment->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : ($comment->has_replies ? 'Bình luận này đã được trả lời' : 'Trả lời bình luận') }}">
+                                                {{ (!$review->is_active || $review->has_replies) ? 'disabled' : '' }}
+                                                title="{{ !$review->is_active ? 'Không thể trả lời vì bình luận này đã bị từ chối' : ($review->has_replies ? 'Bình luận này đã được trả lời' : 'Trả lời bình luận') }}">
                                                 <i class="bi bi-reply-fill"></i>
-                                                @if($comment->has_replies)
+                                                @if($review->has_replies)
                                                     <span class="d-flex align-items-center gap-1 text-success small">
                                                         <i class="bi bi-reply-fill"></i>
                                                     </span>
-                                                @elseif(!$comment->is_active)
+                                                @elseif(!$review->is_active)
                                                     <span class="d-flex align-items-center gap-1 text-danger small">
                                                         <i class="bi bi-x-circle"></i> 
                                                     </span>
@@ -338,8 +320,7 @@
                     const type = $(this).data('type');
                     const user = $(this).data('user');
                     const content = $(this).data('content');
-
-                    const action = `/admin/reviews/reject/${type}/${id}`;
+                    const action = `/admin/reviews/${type}/reject/${id}`;
                     $('#rejectForm').attr('action', action);
 
                     $('#rejectUser').text(user);
@@ -352,27 +333,6 @@
 
             });
         </script>
-        
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                document.querySelectorAll('.delete-button').forEach(button => {
-                    button.addEventListener('click', function (e) {
-                        const type = this.dataset.type;
-                        const form = this.closest('form');
-                    
-                        if (type === 'review') {
-                            alert('Không thể xóa đánh giá sản phẩm. Bạn chỉ có thể duyệt hoặc từ chối.');
-                        } else if (type === 'comment') {
-                            if (confirm('Bạn có chắc chắn muốn xóa mềm bình luận này?')) {
-                                form.submit();
-                            }
-                        }
-                    });
-                });
-            });
-
-
-            </script>
             
         <!-- //JS Trả lời bình luận  -->
         <script>

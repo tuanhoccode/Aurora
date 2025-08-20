@@ -134,12 +134,24 @@ class Order extends Model
     /**
      * Kiểm tra xem đơn hàng đã bị hủy chưa
      */
+    /**
+     * Kiểm tra xem đơn hàng đã bị hủy chưa
+     */
     public function isCancelled()
     {
         $currentStatusName = optional(optional($this->currentStatus)->status)->name;
         return $currentStatusName === 'Đã hủy';
     }
 
+    /**
+     * Kiểm tra xem đơn hàng đã hoàn thành chưa
+     */
+    public function isCompleted()
+    {
+        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
+        return $currentStatusName === 'Nhận hàng thành công';
+    }
+    
     public function getShippingFeeFormattedAttribute()
     {
         return number_format($this->shipping_fee ?? 0, 0, ',', '.') . 'đ';
@@ -190,7 +202,7 @@ class Order extends Model
         }
 
         //Tính thời gian hết hạn review
-        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(2);  
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(3);  
         return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
     }
     public function refund()

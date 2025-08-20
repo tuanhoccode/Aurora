@@ -250,14 +250,16 @@
             margin-bottom: 8px;
         }
 
+        /* Stronger rules to ensure green appears for completed/active */
         .timeline-step.active .timeline-icon {
-            background: #1a9c57;
-            color: white;
+            background: #16a34a !important;
+            color: white !important;
+            border: 2px solid #16a34a !important;
         }
 
         .timeline-step.completed .timeline-icon {
-            background: #1a9c57;
-            color: white;
+            background: #16a34a !important;
+            color: white !important;
         }
 
         .timeline-content {
@@ -317,7 +319,7 @@
             left: 0;
             height: 100%;
             width: 0;
-            background: #1a9c57;
+            background: #16a34a;
             transition: width 0.3s ease;
         }
 
@@ -356,7 +358,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #1a9c57;
+            background: #16a34a;
             margin-right: 15px;
             margin-top: 5px;
         }
@@ -381,37 +383,56 @@
             color: #616161;
             line-height: 1.4;
         }
+
+        /* Vertical track (left column) styles */
+        .ship-board{display:grid;grid-template-columns:1.1fr 1.9fr;gap:28px;align-items:flex-start}
+        .ship-addr{padding-right:24px;border-right:1px solid #e5e7eb}
+        .ship-addr h3{margin:0 0 12px 0;font-size:20px}
+        .ship-addr p{margin:6px 0;font-size:14px;color:#334155}
+        .track-wrap{position:relative}
+        .track-header{font-size:12px;color:#64748b;text-align:right;margin-bottom:6px}
+        .track-list{margin:0;padding:0;list-style:none;position:relative}
+        .track-list::before{content:"";position:absolute;left:14px;top:4px;bottom:4px;width:2px;background:#e5e7eb}
+        .track-item{position:relative;padding-left:36px;margin:0 0 16px 0}
+        .track-node{position:absolute;left:6px;top:0;width:16px;height:16px;border-radius:50%;background:#cbd5e1;border:2px solid #fff;box-shadow:0 0 0 1px #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:10px}
+        .track-item.current .track-node{background:#16a34a;box-shadow:0 0 0 1px #16a34a;color:#fff}
+        .track-item.done .track-node{background:#16a34a;box-shadow:0 0 0 1px #16a34a;color:#fff}
+        .track-time{font-size:13px;color:#475569;margin-bottom:2px}
+        .track-title{font-weight:600;font-size:14px;color:#0f766e;margin-bottom:2px}
+        .track-desc{font-size:13px;color:#475569;line-height:1.45}
+        .track-link{font-size:13px;color:#0ea5e9;text-decoration:none}
+        .track-more{font-size:14px;margin-top:6px}
     </style>
 
-    <div class="container mt-4" style="max-width: 1200px;">
-        <div id="order-detail-container">
-            <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
-                <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
-                @php
-                    // Get the latest status from status history
-                    $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
-                    $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
-                    $statusText = '';
-
-                    // Map status to display text
-                    if (in_array($currentStatusName, ['Đã giao hàng', 'Hoàn thành', 'Giao hàng thành công'])) {
-                        $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
-                    } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
-                        $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
-                    } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
-                        $statusText = 'ĐANG GIAO HÀNG';
-                    } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Đang đóng gói', 'Đã xác nhận đơn hàng'])) {
-                        $statusText = 'ĐANG XỬ LÝ';
-                    } else {
-                        $statusText = 'CHỜ XÁC NHẬN';
-                    }
-                @endphp
-                <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
-            </div>
-
+<div class="container mt-4" style="max-width: 1200px;">
+    <div id="order-detail-container">
+    <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
+        <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
+        @php
+            // Get the latest status from status history
+            $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
+            $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
+            $statusText = '';
+            
+            // Map status to display text
+            if ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
+                $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
+                
+            } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
+                $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
+            } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
+                $statusText = 'ĐANG GIAO HÀNG';
+            } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đã xác nhận thanh toán'])) {
+                $statusText = 'ĐANG XỬ LÝ';
+            } else {
+                $statusText = 'CHỜ XÁC NHẬN';
+            }
+        @endphp
+        <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
+    </div>
 
 
             <!-- Timeline -->
@@ -463,8 +484,8 @@
                             'completed' =>
                                 ($currentStatusId >= 3 && $currentStatusId < 5) ||
                                 ($currentStatusId > 5 && $currentStatusId != 8),
-                            'time' => isset($statusTimes['Đang giao hàng'])
-                                ? $statusTimes['Đang giao hàng']->format('d/m/Y H:i')
+                            'time' => isset($statusTimes['Đang giao'])
+                                ? $statusTimes['Đang giao']->format('d/m/Y H:i')
                                 : '',
                             'desc' => 'Đơn hàng đang được giao.',
                         ],
@@ -475,68 +496,10 @@
                             'status' => 'Giao hàng thành công',
                             'active' => $currentStatusId == 4,
                             'completed' => $currentStatusId == 4 || $currentStatusId == 7, // Chỉ hoàn thành khi đã giao hoặc đã hoàn tiền
-                            'time' => isset($statusTimes['Đã giao hàng'])
-                                ? $statusTimes['Đã giao hàng']->format('d/m/Y H:i')
+                            'time' => isset($statusTimes['Giao hàng thành công'])
+                                ? $statusTimes['Giao hàng thành công']->format('d/m/Y H:i')
                                 : '',
                             'desc' => 'Đơn hàng đã giao thành công.',
-                        ],
-                        [
-                            'id' => 9,
-                            'icon' => 'fa-truck',
-                            'title' => 'Đã gửi hàng',
-                            'status' => 'Đã gửi hàng',
-                            'active' => $currentStatusId == 9,
-                            'completed' => $currentStatusId == 9,
-                            'time' => isset($statusTimes['Đã gửi hàng'])
-                                ? $statusTimes['Đã gửi hàng']->format('d/m/Y H:i')
-                                : '',
-                            'desc' => 'Đơn hàng đã được gửi đi.',
-                        ],
-                        [
-                            'id' => 5,
-                            'icon' => 'fa-undo',
-                            'title' => 'Chờ trả hàng',
-                            'status' => 'Chờ trả hàng',
-                            'active' => $currentStatusId == 5,
-                            'completed' => $currentStatusId >= 5 && $currentStatusId <= 7,
-                            'time' => isset($statusTimes['Chờ trả hàng'])
-                                ? $statusTimes['Chờ trả hàng']->format('d/m/Y H:i')
-                                : '',
-                            'desc' => 'Đang chờ xử lý trả hàng.',
-                        ],
-                        [
-                            'id' => 6,
-                            'icon' => 'fa-undo',
-                            'title' => 'Đã trả hàng',
-                            'status' => 'Đã trả hàng',
-                            'active' => $currentStatusId == 6,
-                            'completed' => $currentStatusId >= 6 && $currentStatusId <= 7,
-                            'time' => isset($statusTimes['Đã trả hàng'])
-                                ? $statusTimes['Đã trả hàng']->format('d/m/Y H:i')
-                                : '',
-                            'desc' => 'Đơn hàng đã được trả lại.',
-                        ],
-                        [
-                            'id' => 7,
-                            'icon' => 'fa-money-bill-wave',
-                            'title' => 'Đã hoàn tiền',
-                            'status' => 'Đã hoàn tiền',
-                            'active' => $currentStatusId == 7,
-                            'completed' => $currentStatusId == 7,
-                            'time' => isset($statusTimes['Đã hoàn tiền'])
-                                ? $statusTimes['Đã hoàn tiền']->format('d/m/Y H:i')
-                                : '',
-                            'desc' => 'Đã hoàn tiền cho đơn hàng.',
-                        ],
-                        [
-                            'id' => 8,
-                            'icon' => 'fa-times-circle',
-                            'title' => 'Đã hủy',
-                            'status' => 'Đã hủy',
-                            'active' => $currentStatusId == 8,
-                            'completed' => $currentStatusId == 8,
-                            'time' => isset($statusTimes['Đã hủy']) ? $statusTimes['Đã hủy']->format('d/m/Y H:i') : '',
-                            'desc' => 'Đơn hàng đã bị hủy.',
                         ],
                     ];
 
@@ -601,9 +564,20 @@
                     </div>
                 @else
                     @foreach ($timelineSteps as $index => $step)
+                        @php
+                          // Provide inline styles to ensure completed/active appear green
+                          $isCompleted = !empty($step['completed']);
+                          $isActive = !empty($step['active']);
+                          $iconStyle = '';
+                          if ($isCompleted) {
+                            $iconStyle = 'background:#16a34a;color:#fff';
+                          } elseif ($isActive) {
+                            $iconStyle = 'background:#fff;color:#16a34a;border:2px solid #16a34a';
+                          }
+                        @endphp
                         <div
                             class="timeline-step {{ $step['completed'] ? 'completed' : '' }} {{ $step['active'] ? 'active' : '' }}">
-                            <div class="timeline-icon">
+                            <div class="timeline-icon" style="{{ $iconStyle }}">
                                 <i class="fas {{ $step['icon'] }}"></i>
                             </div>
                             <div class="timeline-content">
@@ -631,116 +605,116 @@
 
 
             <!-- Thông tin người nhận -->
-            <div class="order-info">
-                <p><strong>Người nhận:</strong> {{ $order->fullname }}</p>
-                <p><strong>SĐT:</strong> {{ $order->phone_number }}</p>
-                <p><strong>Địa chỉ:</strong> {{ $order->address }}, {{ $order->city }}</p>
-                @if ($order->note)
-                    <p><strong>Ghi chú:</strong> {{ $order->note }}</p>
-                @endif
-            </div>
 
-            <!-- Trạng thái thanh toán -->
-            <div class="order-info" style="margin-top: 20px;">
-                <h4>Trạng thái thanh toán</h4>
-                @if ($order->is_paid)
-                    <p><i class="fas fa-check-circle" style="color: #28a745;"></i> <strong>Đã thanh toán</strong></p>
-                    @if ($order->payment)
-                        <p><strong>Phương thức thanh toán:</strong> {{ $order->payment->name ?? 'Không xác định' }}</p>
-                    @endif
-                    <p><strong>Ngày thanh toán:</strong> {{ $order->updated_at->format('H:i d/m/Y') }}</p>
-                @else
-                    <p><i class="fas fa-times-circle" style="color: #dc3545;"></i> <strong>Chưa thanh toán</strong></p>
-                    @if ($order->payment)
-                        <p><strong>Phương thức thanh toán:</strong> {{ $order->payment->name ?? 'Không xác định' }}</p>
-                    @endif
-                @endif
-
-                @if ($order->is_refunded)
-                    <div
-                        style="margin-top: 10px; padding: 10px; background-color: #fff8e1; border-left: 4px solid #ffc107;">
-                        <p><i class="fas fa-info-circle" style="color: #ffc107;"></i> <strong>Đơn hàng đã được hoàn
-                                tiền</strong></p>
-                        @if ($order->is_refunded_canceled)
-                            <p>Lý do hủy: {{ $order->cancel_reason ?? 'Không có thông tin' }}</p>
-                            @if ($order->cancel_note)
-                                <p>Ghi chú: {{ $order->cancel_note }}</p>
-                            @endif
+            <div class="order-info" style="border:none;padding:0;margin-bottom:20px">
+              <div class="ship-board">
+                <!-- Cột trái: Địa chỉ nhận hàng -->
+                <div class="ship-addr">
+                    <div class="order-info">
+                        <h3>Địa Chỉ Nhận Hàng</h3>
+                        <p style="font-weight:600;font-size:15px">{{ $order->fullname }}</p>
+                        <p>(+84) {{ preg_replace('/^(0|\+84)/','', $order->phone_number) }}</p>
+                        <p>{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</p>
+                    </div>
+                   <!-- Trạng thái thanh toán -->
+                <div class="order-info">
+                    <h3>Trạng Thái Thanh Toán</h3>
+                    @if ($order->is_paid)
+                        <p><i class="fas fa-check-circle" style="color: #28a745;"></i> <strong>Đã thanh toán</strong></p>
+                        @if ($order->payment)
+                            <p><strong>Phương thức thanh toán:</strong> {{ $order->payment->name ?? 'Không xác định' }}</p>
                         @endif
-                    </div>
-                @endif
-            </div>
+                        <p><strong>Ngày thanh toán:</strong> {{ $order->updated_at->format('H:i d/m/Y') }}</p>
+                    @else
+                        <p><i class="fas fa-times-circle" style="color: #dc3545;"></i> <strong>Chưa thanh toán</strong></p>
+                        @if ($order->payment)
+                            <p><strong>Phương thức thanh toán:</strong> {{ $order->payment->name ?? 'Không xác định' }}</p>
+                        @endif
+                    @endif
 
-            <!-- Chi tiết trạng thái -->
-            <div class="timeline-details">
-                <h3>Chi tiết trạng thái đơn hàng</h3>
-                @php
-                    $events = [];
-
-                    // Thêm sự kiện tạo đơn hàng
-                    $events[] = [
-                        'time' => $order->created_at->setTimezone('Asia/Ho_Chi_Minh'),
-                        'title' => 'Đơn hàng đã được đặt',
-                        'desc' => 'Đơn hàng #' . $order->code . ' đã được tạo thành công.',
-                    ];
-
-                    // Thêm các sự kiện từ order status history
-                    foreach ($order->statusHistory as $history) {
-                        $statusName = $history->status->name;
-                        $events[] = [
-                            'time' => $history->created_at->setTimezone('Asia/Ho_Chi_Minh'),
-                            'title' => 'Đơn hàng ' . strtolower($statusName),
-                            'desc' => $history->note ?? 'Cập nhật trạng thái đơn hàng.',
-                        ];
-                    }
-
-                    // Sắp xếp các sự kiện theo thời gian giảm dần
-                    $events = collect($events)->sortByDesc('time')->values();
-                    $totalEvents = count($events);
-                    $showAll = request()->has('show_all_events');
-                    $showMore = $totalEvents > 5;
-                @endphp
-
-                <div id="status-events-container">
-                    @foreach ($events as $index => $status)
-                        <div class="status-detail-item" @if (!$showAll && $index >= 3) style="display: none;" @endif>
-                            <div class="status-dot"></div>
-                            <div class="status-content">
-                                <div class="status-title">{{ $status['title'] }}</div>
-                                <div class="status-time">{{ $status['time']->format('H:i d/m/Y') }}</div>
-                                @if (!empty($status['desc']))
-                                    <div class="status-desc">{{ $status['desc'] }}</div>
+                    @if ($order->is_refunded)
+                        <div
+                            style="margin-top: 10px; padding: 10px; background-color: #fff8e1; border-left: 4px solid #ffc107;">
+                            <p><i class="fas fa-info-circle" style="color: #ffc107;"></i> <strong>Đơn hàng đã được hoàn
+                                    tiền</strong></p>
+                            @if ($order->is_refunded_canceled)
+                                <p>Lý do hủy: {{ $order->cancel_reason ?? 'Không có thông tin' }}</p>
+                                @if ($order->cancel_note)
+                                    <p>Ghi chú: {{ $order->cancel_note }}</p>
                                 @endif
-                            </div>
+                            @endif
                         </div>
-                    @endforeach
+                    @endif
                 </div>
-
-                @if ($showMore)
-                    <div class="text-center mt-3">
-                        <a href="{{ $showAll ? url()->current() : url()->current() . '?show_all_events=1' }}"
-                            class="btn btn-outline-primary btn-sm">
-                            {{ $showAll ? 'Ẩn bớt' : 'Xem thêm' }}
-                        </a>
-                    </div>
-                @endif
             </div>
 
-            @php
-                // Lấy thông tin sự kiện từ order
-                $events = $order->statusHistory->sortByDesc('created_at');
-                $showAll = request()->has('show_all_events');
-                $showMore = $events->count() > 5;
-            @endphp
+                <!-- Cột phải: Timeline trạng thái dọc -->
+                <div class="track-wrap">
+                  @php
+                    $carrier = data_get($order, 'shipping_carrier');
+                    $tracking = data_get($order, 'tracking_code');
+                  @endphp
+                  @if(!empty($carrier) || !empty($tracking))
+                    <div class="track-header">
+                      {{ $carrier ?? '' }}<br>
+                      {{ $tracking ?? '' }}
+                    </div>
+                  @endif
 
-            @if ($showMore)
-                <div class="text-center mt-3">
-                    <a href="{{ $showAll ? url()->current() : url()->current() . '?show_all_events=1' }}"
-                        class="btn btn-outline-primary btn-sm">
-                        {{ $showAll ? 'Ẩn bớt' : 'Xem thêm' }}
-                    </a>
+                  @php
+                    // Số mục hiển thị mặc định (bạn muốn thay đổi mặc định thì sửa biến này)
+                    $__initialVisible = 3;
+
+                    $__events = [];
+                    $__events[] = [
+                      'time'  => $order->created_at->setTimezone('Asia/Ho_Chi_Minh'),
+                      'title' => 'Đơn hàng đã được đặt',
+                      'desc'  => 'Đơn #'.$order->code.' đã tạo thành công.',
+                    ];
+                    foreach ($order->statusHistory as $h) {
+                      $__events[] = [
+                        'time'  => $h->created_at->setTimezone('Asia/Ho_Chi_Minh'),
+                        'title' => $h->status->name,
+                        'desc'  => $h->note ?? 'Cập nhật trạng thái đơn hàng.',
+                      ];
+                    }
+                    $__events = collect($__events)->sortByDesc('time')->values();
+                    $__showAll = request()->has('show_all_events');
+                  @endphp
+
+                  <ul class="track-list">
+                    @foreach ($__events as $i => $e)
+                      @php
+                        // Mark items as done/current based on index and current status predictable logic
+                        $isCurrent = $i === 0;
+                        $isDone = $i === 0 ? ($currentStatusName && in_array($currentStatusName, ['Đã giao hàng','Giao hàng thành công','Nhận hàng thành công'])) : false;
+                      @endphp
+                      <li class="track-item {{ $isCurrent ? 'current' : '' }} {{ $isDone ? 'done' : '' }}" @if(!$__showAll && $i >= $__initialVisible) style="display:none" @endif>
+                        <div class="track-node">@if($isDone || $isCurrent)<i class="fas fa-check"></i>@endif</div>
+                        <div class="track-time">{{ $e['time']->format('H:i d-m-Y') }}</div>
+
+                        @if($i===0 && in_array($currentStatusName ?? '', ['Đã giao hàng','Giao hàng thành công','Nhận hàng thành công']))
+                          <div class="track-title" style="color:#16a34a">Đã giao</div>
+                          <div class="track-desc">Giao hàng thành công</div>
+                          <div class="track-desc">Người nhận hàng: {{ $order->fullname }}</div>
+                        @else
+                          <div class="track-title" style="color:{{ $i===0 ? '#16a34a' : '#0f766e' }}">{{ $e['title'] }}</div>
+                          @if(!empty($e['desc']))<div class="track-desc">{{ $e['desc'] }}</div>@endif
+                        @endif
+                      </li>
+                    @endforeach
+                  </ul>
+
+                  @if($__events->count() > $__initialVisible)
+                    <div class="track-more">
+                      <a class="track-link" href="{{ $__showAll ? url()->current() : url()->current().'?show_all_events=1' }}">
+                        {{ $__showAll ? 'Ẩn bớt' : 'Xem thêm' }}
+                      </a>
+                    </div>
+                  @endif
                 </div>
-            @endif
+              </div>
+            </div>
 
             <!-- Danh sách sản phẩm -->
             <div class="order-box"
@@ -881,6 +855,29 @@
                     </p>
                 </div>
             @endif
+
+            @if(in_array(optional(optional($order->currentStatus)->status)->code, ['COMPLETED', 'CANCELLED', 'DELIVERED']))
+                <div class="mt-4">
+                    <form action="{{ route('client.orders.reorder', $order->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-redo-alt me-1"></i> Mua lại đơn hàng
+                        </button>
+                    </form>
+                    <p class="text-muted mt-2">
+                        <small>Bấm để thêm tất cả sản phẩm còn bán vào giỏ hàng</small>
+                    </p>
+                </div>
+            @endif
         </div>
 
-    @endsection
+        @if(session('reorder_status'))
+            <div class="alert alert-{{ session('reorder_status')['type'] }} mt-3">
+                {{ session('reorder_status')['message'] }}
+                @if(session('reorder_status')['type'] === 'success')
+                    <a href="{{ route('client.cart') }}" class="alert-link">Xem giỏ hàng</a>
+                @endif
+            </div>
+        @endif
+
+@endsection

@@ -68,7 +68,7 @@
       <a href="/">Trang chủ</a> <span>/</span> <span>Tìm kiếm</span>
     </div>
     <div class="search-title-row">
-      <div class="search-title">Kết quả tìm kiếm: {{ mb_strtoupper($query) }}</div>
+      <div class="search-title text-capitalize fw-normal text-dark" style="color: #1E3A8A;">Kết quả tìm kiếm: {{ mb_strtoupper($query) }}</div>
       @php
         $inStockCount = $products->filter(function($product) {
           return $product->type === 'variant'
@@ -76,7 +76,7 @@
             : (($product->stock ?? 0) > 0);
         })->count();
       @endphp
-      <div class="search-count">{{ $inStockCount }} sản phẩm</div>
+      <div class="search-count fw-normal text-dark" style="font-size: 1.1rem;">{{ $inStockCount }} sản phẩm</div>
     </div>
     <hr class="search-divider">
     <div class="d-flex justify-content-end align-items-center mb-3">
@@ -90,7 +90,7 @@
         </select>
       </form>
     </div>
-    <h4 class="mt-4 mb-3">Sản phẩm phù hợp</h4>
+    <h4 class="mt-4 mb-3 text-dark fw-normal">Sản Phẩm Phù Hợp</h4>
     <div class="row justify-content-center">
         @php $found = false; @endphp
         @php

@@ -13,12 +13,6 @@
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-bell"></i></span> Thông báo
-            </a>
-        </li>
 
         <hr>
 
@@ -75,12 +69,6 @@
                 </a>
             </li>
         @endif
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}">
-                <span class="nav-icon"><i class="fas fa-user-lock"></i></span> Vai trò & Phân quyền
-            </a>
-        </li>
 
         <hr>
         @if (Auth::user()->role === 'admin')
