@@ -62,14 +62,14 @@ class CommentController extends Controller
     }
     public function trashComments()
     {
-        $trashComments = Review::onlyTrashed()->with(['user', 'product'])->paginate(10);
+        $trashComments = Review::onlyTrashed()->with(['user', 'product'])->orderByDesc('deleted_at')->paginate(10);
         return view('admin.reviews.trashComment', compact('trashComments'));
     }
 
     // Khôi phục 1 sản phẩm
     public function restore($id)
     {
-        $review = Review::withTrashed()->findOrFail($id);
+        $review = Review::withTrashed()->findOrFail($id); 
         $review->restore();
         return redirect()->route('admin.reviews.comments')->with('success', 'Đã khôi phục sản phẩm');
     }
@@ -87,21 +87,6 @@ class CommentController extends Controller
         }
     }
     // Khôi phục hàng loạt
-    public function bulkRestore(Request $request)
-    {
-        $ids = $request->ids;
-        Review::withTrashed()->whereIn('id', $ids)->restore();
-
-        return redirect()->route('admin.reviews.trashComments')->with('success', 'Đã khôi phục tất cả');
-    }
-    // Xóa hàng loạt vĩnh viễn
-    public function bulkForceDelete(Request $request)
-    {
-        $ids = $request->ids;
-        Review::withTrashed()->whereIn('id', $ids)->forceDelete();
-
-        return redirect()->route('admin.reviews.trashComment')->with('success', 'Đã xóa vĩnh viễn thành công');
-    }
 
     //phản hồi review
     public function reply(ReplyRequest $req, $type, $id)

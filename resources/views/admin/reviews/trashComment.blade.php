@@ -21,6 +21,7 @@
                         <tr>
                             <th>Người dùng</th>
                             <th>Sản phẩm</th>
+                            <th>Đánh giá</th>
                             <th>Nội dung</th>
                             <th>Trạng thái</th>
                             <th>Lý do</th>
@@ -40,8 +41,13 @@
                                 <span class="badge bg-light text-dark border">{{ $review->product ? $review->product->name : 'N/A' }}</span>
                             </td>
                             <td>
+                                {!! str_repeat('<i class="fa fa-star text-warning"></i>', $review->rating) !!}
+                                {!! str_repeat('<i class="fa fa-star text-muted"></i>', 5 - $review->rating) !!}
+                            </td>
+                            <td>
                                 {{$review->review_text}}
                             </td>
+                            
                             <td>
                                 @if ($review->is_active === 1)
                                     <span class="badge d-inline-block text-center bg-success w-10" style="min-width: 110px;">
