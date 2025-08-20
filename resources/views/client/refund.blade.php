@@ -48,6 +48,7 @@
                                 <thead>
                                     <tr>
                                         <th>Tên Sản Phẩm</th>
+                                        <th>Hình ảnh</th>
                                         <th>Biến Thể</th>
                                         <th>Số Lượng</th>
                                         <th>Giá</th>
@@ -55,11 +56,45 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($order->items as $item)
-                                        <tr>
-                                            <td>{{ $item->name }}</td>
-                                            <td>{{ $item->name_variant ?? 'N/A' }}</td>
+                                        <tr> 
+                                            <td>
+                                                {{ $item->name }}
+                                                @if($item->variant && $item->variant->sku)
+                                                    <div class="text-muted small">MÃ SP: {{ $item->variant->sku }}</div>
+                                                @elseif($item->product && $item->product->sku)
+                                                    <div class="text-muted small">MÃ SP: {{ $item->product->sku }}</div>
+                                                @endif
+                                               
+                                            </td>
+
+                                            <td class="align-middle">
+                                                @php
+                                                    $thumbnail = $item->variant->img ?? $item->product->thumbnail ?? null;
+                                                    $imageUrl = $thumbnail ? Storage::url($thumbnail) : asset('assets1/img/placeholder.jpg');
+                                                @endphp
+                                                <img src="{{ $imageUrl }}" alt="{{ $item->name }}" style="max-width: 80px; max-height: 80px; object-fit: cover;">
+                                            </td>
+                                           
+                                            <td>
+                                                @if($item->product_variant_id && $item->variant)
+                                                    @if($item->attributes_variant)
+                                                        <div class="text-muted small">
+                                                            @php
+                                                                $attributes = json_decode($item->attributes_variant, true);
+                                                            @endphp
+                                                            @if(is_array($attributes))
+                                                                @foreach($attributes as $key => $value)
+                                                                    {{ $key }}: {{ $value }}@if(!$loop->last), @endif
+                                                                @endforeach
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">Không có biến thể</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $item->quantity }}</td>
-                                            <td>{{ number_format($item->price, 2) }}</td>
+                                            <td>{{ number_format($item->price, 0, ',', '.') }} ₫</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

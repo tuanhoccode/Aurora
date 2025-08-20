@@ -2,8 +2,98 @@
 
 @section('title', 'Đơn hàng của tôi')
 
-
 <style>
+    :root {
+        --brand: #ff4d2d;
+        --text: #222;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --bg: #fff;
+    }
+    
+    /* Tabs */
+    .tabs {
+        display: flex;
+        gap: 8px;
+        padding: 10px 14px 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+        background: #f9fafb;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .tabs::-webkit-scrollbar { 
+        display: none; 
+    }
+
+    .tab-btn {
+        white-space: nowrap;
+        padding: 10px 14px;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        background: transparent;
+        color: #444;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all .18s ease;
+        margin-bottom: -1px;
+    }
+    
+    .tab-btn:hover { 
+        color: #111; 
+        background: #f0f0f0; 
+    }
+
+    .tab-btn.active {
+        color: #000;
+        background: #fff;
+        border-color: var(--line);
+        border-bottom: 1px solid #fff;
+        position: relative;
+        font-weight: 500;
+    }
+    
+    .tab-btn.active::after {
+        content: "";
+        position: absolute;
+        left: 0; 
+        right: 0; 
+        bottom: 0;
+        height: 2px;
+        background: var(--brand);
+    }
+
+    /* Search bar */
+    .search-bar {
+        background: #f9fafb;
+        padding: 10px 14px 14px;
+        border-top: 1px solid var(--line);
+    }
+    
+    .search-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        border-radius: 6px;
+        max-width: 800px;
+    }
+    
+    .search-input input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .search-input svg { 
+        flex: 0 0 auto; 
+        color: var(--muted);
+    }
     .order-card {
         border: none;
         border-radius: 12px;
@@ -118,7 +208,7 @@
     }
 
     .order-actions .btn {
-        border-radius: 8px;
+        
         padding: 6px 16px;
         font-weight: 500;
         transition: all 0.2s;
@@ -370,16 +460,153 @@
             text-align: left
         }
     }
-    .btn-outline-warning button {
-        color: #333333 !important; /* Thay #333333 bằng màu bạn chọn */
-    }
+     /* Search bar styling */
+     .input-group .form-control-lg {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            box-shadow: none;
+        }
+        
+        .input-group .btn-primary {
+            background-color: #ff4d2d;
+            border-color: #ff4d2d;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .input-group .btn-primary:hover {
+            background-color: #f04120;
+            border-color: #f04120;
+        }
+        
+        /* Tabs styling */
+        .nav-tabs {
+            border-bottom: 1px solid #e5e7eb;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+            scrollbar-width: none;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6b7280;
+            border: none;
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            border-radius: 0.25rem 0.25rem 0 0;
+            transition: all 0.2s;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: #ff4d2d;
+            background-color: rgba(0, 0, 0, 0.025);
+            border-color: transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #ff4d2d;
+            background-color: #fff;
+            border-bottom: 3px solid #ff4d2d;
+        }
+        
+        .nav-tabs .nav-link i {
+            margin-right: 0.25rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .input-group .btn-primary {
+                padding: 0.75rem 1rem;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+        /* Shopee-like button styles */
+.card-footer .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    height: 40px;
+}
+
+/* Primary button (Xem chi tiết) */
+.card-footer .btn-primary {
+    background-color: #ee4d2d;
+    border: 1px solid #ee4d2d;
+    color: #fff;
+}
+
+.card-footer .btn-primary:hover {
+    background-color: #d7381d;
+    border-color: #d7381d;
+}
+
+/* Success button (Xác nhận đã nhận hàng) */
+.card-footer .btn-success {
+    background-color: #00bfa5;
+    border: 1px solid #00bfa5;
+    color: #fff;
+}
+
+.card-footer .btn-success:hover {
+    background-color: #00a08a;
+    border-color: #00a08a;
+}
+
+/* Danger button (Hủy đơn hàng) */
+.card-footer .btn-danger {
+    background-color: #fff;
+    color: #ee4d2d;
+}
+
+.card-footer .btn-danger:hover {
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    color: #ee4d2d;
+}
+
+/* Disabled state */
+.card-footer .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Button group spacing */
+.card-footer .order-actions .d-flex.gap-2 {
+    gap: 12px !important;
+}
+
+/* Button icons */
+.card-footer .btn i {
+    margin-right: 6px;
+    font-size: 14px;
+}
+        
 </style>
 
 @section('content')
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1 class="h3 mb-0 fw-bold">Danh sách đơn hàng</h1>
+                <h1 class="h3 mb-0 fw-bold">Đơn hàng của tôi</h1>
                 <p class="text-muted mt-1">Quản lý các đơn hàng của bạn</p>
             </div>
         </div>
@@ -398,106 +625,129 @@
             </div>
         @endif
 
-        @if ($orders->isEmpty())
-            <div class="card shadow-sm rounded-3 border-0">
-                <div class="card-body text-center p-5">
-                    <i
-                        class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-cart' }} fa-3x text-muted mb-3"></i>
-                    @if (request()->has('search'))
-                        <h4 class="text-muted">Không tìm thấy đơn hàng phù hợp</h4>
-                        <p class="text-muted">Không có đơn hàng nào khớp với từ khóa "{{ request('search') }}"</p>
-                    @else
-                        <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
-                        <p class="text-muted">Hãy mua sắm và tạo đơn hàng mới</p>
-                    @endif
-                    <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
-                        <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
-                    </a>
-                    @if (request()->has('search'))
-                        <a href="{{ route('client.orders') }}" class="btn btn-outline-secondary mt-3 ms-2">
-                            <i class="fas fa-times me-2"></i>Xóa bộ lọc
-                        </a>
-                    @endif
+        <div class="mb-4">
+            <form action="{{ route('client.orders') }}" method="GET" class="w-100">
+                <div class="input-group">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control form-control-lg" 
+                           placeholder="Tìm kiếm theo tên sản phẩm hoặc mã đơn hàng..." 
+                           value="{{ request('search') }}"
+                           style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-search me-2"></i>Tìm kiếm
+                    </button>
                 </div>
+            </form>
+        </div>
+        
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link {{ !request('filter') ? 'active' : '' }}" 
+                   href="{{ route('client.orders') }}">
+                    <i class="fas fa-list me-1"></i> Tất cả ({{ $statusCounts['all'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'pending_payment' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'pending_payment']) }}">
+                    <i class="fas fa-money-bill-wave me-1"></i> Chờ thanh toán ({{ $statusCounts['pending_payment'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'processing' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'processing']) }}">
+                    <i class="fas fa-tasks me-1"></i> Đang xử lý ({{ $statusCounts['processing'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'shipping' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'shipping']) }}">
+                    <i class="fas fa-truck me-1"></i> Vận chuyển ({{ $statusCounts['shipping'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'delivered' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'delivered']) }}">
+                    <i class="fas fa-truck-arrow-right me-1"></i> Giao thành công ({{ $statusCounts['delivered'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'completed' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'completed']) }}">
+                    <i class="fas fa-check-circle me-1"></i> Hoàn thành ({{ $statusCounts['completed'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'cancelled' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'cancelled']) }}">
+                    <i class="fas fa-ban me-1"></i> Đã hủy ({{ $statusCounts['cancelled'] ?? 0 }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request('filter') === 'return_refund' ? 'active' : '' }}" 
+                   href="{{ route('client.orders', ['filter' => 'return_refund']) }}">
+                    <i class="fas fa-undo-alt me-1"></i> Trả hàng/Hoàn tiền ({{ $statusCounts['return_refund'] ?? 0 }})
+                </a>
+            </li>
+        </ul>
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @else
-            <div class="card shadow-sm rounded-3 border-0">
-                <div class="card-body p-4">
-                    <div class="mb-4">
-                        <form action="{{ route('client.orders') }}" method="GET" class="w-100">
-                            <div class="input-group">
-                                <input type="text" name="search" class="form-control form-control-lg"
-                                    placeholder="Tìm kiếm theo tên sản phẩm hoặc mã đơn hàng..."
-                                    value="{{ request('search') }}"
-                                    style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
-                                <button type="submit" class="btn btn-primary px-4">
-                                    <i class="fas fa-search me-2"></i>Tìm kiếm
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+        @endif
 
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <a class="nav-link {{ !request('filter') ? 'active' : '' }}"
-                                href="{{ route('client.orders') }}">
-                                <i class="fas fa-list me-1"></i> Tất cả ({{ $allCount ?? 0 }})
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request('filter') === 'pending_payment' ? 'active' : '' }}"
-                                href="{{ route('client.orders', ['filter' => 'pending_payment']) }}">
-                                <i class="fas fa-money-bill-wave me-1"></i> Chờ thanh toán
-                                ({{ $pendingPaymentCount ?? 0 }})
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request('filter') === 'processing' ? 'active' : '' }}"
-                                href="{{ route('client.orders', ['filter' => 'processing']) }}">
-                                <i class="fas fa-tasks me-1"></i> Đang xử lý ({{ $processingCount ?? 0 }})
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request('filter') === 'shipping' ? 'active' : '' }}"
-                                href="{{ route('client.orders', ['filter' => 'shipping']) }}">
-                                <i class="fas fa-truck me-1"></i> Đang giao hàng ({{ $shippingCount ?? 0 }})
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request('filter') === 'completed' ? 'active' : '' }}"
-                                href="{{ route('client.orders', ['filter' => 'completed']) }}">
-                                <i class="fas fa-check-circle me-1"></i> Đã giao hàng ({{ $completedCount ?? 0 }})
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request('filter') === 'cancelled' ? 'active' : '' }}"
-                                href="{{ route('client.orders', ['filter' => 'cancelled']) }}">
-                                <i class="fas fa-ban me-1"></i> Đã hủy ({{ $cancelledCount ?? 0 }})
-                            </a>
-                        </li>
-                    </ul>
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-                    <div class="order-list">
-                        @foreach ($orders as $order)
-                            @php
-                                $currentStatus = $order->currentStatus;
-                                $statusId = $currentStatus ? $currentStatus->order_status_id : 1;
-                                $statusName =
-                                    $currentStatus && $currentStatus->status
-                                        ? $currentStatus->status->name
-                                        : 'Chờ xác nhận';
-
-                                $badgeClass = match ($statusId) {
-                                    1 => 'warning',
-                                    2 => 'info',
-                                    3 => 'primary',
-                                    4 => 'success',
-                                    5, 6, 7, 8 => 'danger',
-                                    default => 'secondary',
-                                };
-
-                                $paymentStatus = $order->is_paid ? 'Đã thanh toán' : 'Chờ thanh toán';
-                                $paymentBadgeClass = $order->is_paid ? 'success' : 'warning';
+    @if($orders->isEmpty())
+        <div class="card shadow-sm rounded-3 border-0">
+            <div class="card-body text-center p-5">
+                <i class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-cart' }} fa-3x text-muted mb-3"></i>
+                @if(request()->has('search'))
+                    <h4 class="text-muted">Không tìm thấy đơn hàng phù hợp</h4>
+                    <p class="text-muted">Không có đơn hàng nào khớp với từ khóa "{{ request('search') }}"</p>
+                @else
+                    <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
+                    <p class="text-muted">Hãy mua sắm và tạo đơn hàng mới</p>
+                @endif
+                <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+                </a>
+                @if(request()->has('search'))
+                    <a href="{{ route('client.orders') }}" class="btn btn-outline-secondary mt-3 ms-2">
+                        <i class="fas fa-times me-2"></i>Xóa bộ lọc
+                    </a>
+                @endif
+            </div>
+        </div>
+    @else
+    <div class="card shadow-sm rounded-3 border-0">
+        <div class="card-body p-4">
+            <div class="order-list">
+                @foreach($orders as $order)
+                    @php
+                        $currentStatus = $order->currentStatus;
+                        $statusId = $currentStatus ? $currentStatus->order_status_id : 1;
+                        $statusName = $currentStatus && $currentStatus->status ? $currentStatus->status->name : 'Chờ xác nhận';
+                        
+                        $badgeClass = match ($statusId) {
+                            1 => 'warning',
+                            2 => 'info',
+                            3 => 'primary',
+                            4 => 'success',
+                            5, 6, 7, 8 => 'danger',
+                            default => 'secondary',
+                        };
+                        
+                        $paymentStatus = $order->is_paid ? 'Đã thanh toán' : 'Chờ thanh toán';
+                        $paymentBadgeClass = $order->is_paid ? 'success' : 'warning';
 
                                 // get first item shop name fallback
                                 $firstItem = $order->items->first();
@@ -547,9 +797,13 @@
                                        
 
                                     <div class="sp-row">
-                                        <img class="sp-thumb" src="{{ $img }}" alt="{{ $item->product->name }}">
-                                        <div class="flex-grow-1 d-flex flex-column justify-content-between">
-                                            <div class="sp-title">{{ $item->product->name }}</div>
+                                        <a href="{{ route('client.orders.show', $order->id) }}" class="d-block">
+                                            <img class="sp-thumb" src="{{ $img }}" alt="{{ $item->product->name }}">
+                                        </a>
+                                        <div class="flex-grow-1">
+                                            <a href="{{ route('client.orders.show', $order->id) }}" class="text-dark text-decoration-none">
+                                                <div class="sp-title">{{ $item->product->name }}</div>
+                                            </a>
                                             @if ($variantText)
                                                 <div class="sp-variant">Phân loại hàng: {{ $variantText }}</div>
                                             @endif
@@ -583,6 +837,51 @@
                                                 @elseif($order->isCancelled())
                                                     <button type="button" class="btn btn-danger" disabled>
                                                         <i class="fas fa-ban me-1"></i> Đã hủy
+                                                    </button>
+                                                @endif
+
+                                                @php
+                                                    $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
+                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                                @endphp
+                                                
+                                                @if($isDelivered)
+                                                    <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
+                                                        @csrf
+                                                        @method('POST')
+                                                        <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
+                                                            <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
+                                                        </button>
+                                                    </form>
+                                                @elseif($order->isCompleted())
+                                                    <button type="button" class="btn btn-success me-2" disabled>
+                                                        <i class="fas fa-check-double me-1"></i> Đã nhận hàng
+                                                    </button>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-primary me-2 reorder-btn" 
+                                                            data-order-id="{{ $order->id }}"
+                                                            title="Mua lại các sản phẩm trong đơn hàng này"
+                                                            onclick="event.preventDefault(); 
+                                                                     const button = this; 
+                                                                     button.disabled = true; 
+                                                                     button.innerHTML = '<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...'; 
+                                                                     // Tạo form ẩn
+                                                                     const form = document.createElement('form'); 
+                                                                     form.method = 'POST'; 
+                                                                     form.action = '/client/orders/{{ $order->id }}/reorder'; 
+                                                                     form.style.display = 'none'; 
+                                                                     
+                                                                     // Thêm CSRF token và method spoofing
+                                                                     const csrfToken = document.querySelector('meta[name=\'csrf-token\']').content; 
+                                                                     form.innerHTML = `
+                                                                         <input type='hidden' name='_token' value='${csrfToken}'>
+                                                                         <input type='hidden' name='_method' value='POST'>
+                                                                     `; 
+                                                                     
+                                                                     // Thêm form vào body và submit
+                                                                     document.body.appendChild(form); 
+                                                                     form.submit();">
+                                                        <i class="fas fa-redo-alt me-1"></i> Mua lại
                                                     </button>
                                                 @endif
                                                 @if ($statusId == 4)
@@ -629,15 +928,17 @@
                                                         <i class="fas fa-redo"></i> Quay lại thanh toán
                                                     </a>
                                                 @endif
+                                                
                                                  @if (
                                                     $order->is_paid == 1 &&
                                                         $order->cancelled_at == null &&
-                                                        $order->statusHistories()->where('order_status_id', 4)->where('is_current', 1)->exists() &&
+                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
                                                         !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
                                                     <a href="{{ route('refund.form', $order->code) }}"
-                                                        class="tp-checkout-btn checkout__btn-main tp-checkout-btn-hover-alt">
+                                                    class="btn btn-outline-primary me-2 reorder-btn">
                                                         <i class="fas fa-undo"></i> Yêu cầu hoàn trả
                                                     </a>
+                                                    
                                                 @endif
                                                 
                                             </div>
@@ -759,7 +1060,7 @@
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form id="reviewForm" action="{{ route('client.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="reviewForm" action="" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="product_id" id="review_product_id"> 
                     <div class="modal-header">
@@ -809,12 +1110,16 @@
     <!-- Script modal đánh giá sp -->
     <script>
         // Gán product_id khi mở modal
-        var reviewModalEl = document.getElementById('reviewModal');
-        reviewModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const productId = button.getAttribute('data-product-id');
-            const orderItemId = button.getAttribute('data-order-item-id');
-            document.getElementById('review_product_id').value = productId;
+    var reviewModal = document.getElementById('reviewModal');
+    reviewModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+        const orderItemId = button.getAttribute('data-order-item-id');
+        
+        // Cập nhật URL form với product_id
+        const form = document.getElementById('reviewForm');
+        form.action = '{{ url("client/reviews") }}/' + productId;
+        document.getElementById('review_product_id').value = productId;
 
             //Gán tên sp phân loại
             const productName = button.getAttribute('data-product-name');
@@ -969,25 +1274,82 @@
 
 @push('styles')
     <style>
-        .nav-tabs .nav-link {
-            color: #495057;
-            border: none;
-            padding: 0.75rem 1.25rem;
+        /* Search bar styling */
+        .input-group .form-control-lg {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            box-shadow: none;
+        }
+        
+        .input-group .btn-primary {
+            background-color: #ff4d2d;
+            border-color: #ff4d2d;
             font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .input-group .btn-primary:hover {
+            background-color: #f04120;
+            border-color: #f04120;
+        }
+        
+        /* Tabs styling */
+        .nav-tabs {
+            border-bottom: 1px solid #e5e7eb;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+            scrollbar-width: none;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6b7280;
+            border: none;
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
             border-radius: 0.25rem 0.25rem 0 0;
             transition: all 0.2s;
         }
-
+        
         .nav-tabs .nav-link:hover {
-            border-color: transparent;
+            color: #ff4d2d;
             background-color: rgba(0, 0, 0, 0.025);
+            border-color: transparent;
         }
-
+        
         .nav-tabs .nav-link.active {
-            color: #0d6efd;
+            color: #ff4d2d;
             background-color: #fff;
-            border-bottom: 3px solid #0d6efd;
+            border-bottom: 3px solid #ff4d2d;
         }
+        
+        .nav-tabs .nav-link i {
+            margin-right: 0.25rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .input-group .btn-primary {
+                padding: 0.75rem 1rem;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Table styling */
+        
 
         .table th {
             font-weight: 600;
@@ -1165,84 +1527,476 @@
 @endpush
 
 @push('scripts')
-    <script>
-        // Khởi tạo tooltip
-        document.addEventListener('DOMContentLoaded', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Function to handle reorder
+    function handleReorder(button) {
+        const orderId = button.getAttribute('data-order-id');
+        console.log('Handling reorder for order:', orderId);
+        
+        if (!orderId) {
+            console.error('No order ID found');
+            return;
+        }
+        
+        // Show loading state
+        const originalHTML = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+        
+        // Create form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/orders/' + orderId + '/reorder';
+        form.style.display = 'none';
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add method spoofing
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'POST';
+        form.appendChild(methodInput);
+        
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Add click handler when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.reorder-btn');
+        console.log('Found', buttons.length, 'reorder buttons');
+        
+        buttons.forEach(button => {
+            button.onclick = function(e) {
+                e.preventDefault();
+                handleReorder(this);
+            };
+                
+                console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+                console.log('Order ID:', orderId);
+                
+                if (!orderId) {
+                    console.error('Không tìm thấy orderId');
+                    alert('Không tìm thấy thông tin đơn hàng');
+                    return false;
+                }
+                
+                // Vô hiệu hóa nút và hiển thị loading
+                button.disabled = true;
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+                
+                // Tạo form ẩn để gửi request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/orders/' + orderId + '/reorder';
+                form.style.display = 'none';
+                
+                // Thêm CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                // Thêm method spoofing cho POST
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'POST';
+                form.appendChild(methodInput);
+                
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Đảm bảo form được submit
+                setTimeout(() => {
+                    if (document.body.contains(form)) {
+                        document.body.removeChild(form);
+                    }
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }, 1000);
             });
         });
+    });
+</script>
 
-        // Xử lý khi chọn "Khác" trong lý do hủy
-        document.addEventListener('DOMContentLoaded', function() {
-            var cancelReasonSelect = document.getElementById('cancel_reason');
-            if (cancelReasonSelect) {
-                cancelReasonSelect.addEventListener('change', function() {
-                    if (this.value === 'Khác') {
-                        this.style.display = 'none';
-                        var otherReasonInput = document.createElement('input');
-                        otherReasonInput.type = 'text';
-                        otherReasonInput.name = 'cancel_reason';
-                        otherReasonInput.className = 'form-control';
-                        otherReasonInput.placeholder = 'Nhập lý do hủy đơn...';
-                        otherReasonInput.required = true;
-                        this.parentNode.appendChild(otherReasonInput);
-                        otherReasonInput.focus();
-                    }
-                });
+<script>
+    // Hàm xử lý nút Mua lại
+    window.handleReorder = function(button, event, orderId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+        console.log('Order ID:', orderId);
+        
+        if (!orderId) {
+            console.error('Không tìm thấy orderId');
+            alert('Không tìm thấy thông tin đơn hàng');
+            return false;
+        }
+        
+        // Vô hiệu hóa nút và hiển thị loading
+        button.disabled = true;
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+        
+        // Tạo form ẩn để gửi request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/orders/' + orderId + '/reorder';
+        form.style.display = 'none';
+        
+        // Thêm CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Thêm method spoofing cho POST
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'POST';
+        form.appendChild(methodInput);
+        
+        // Thêm form vào body và submit
+        document.body.appendChild(form);
+        form.submit();
+        
+        // Đảm bảo form được submit
+        setTimeout(() => {
+            if (document.body.contains(form)) {
+                document.body.removeChild(form);
             }
-
-            // Reset modal khi đóng
-            var cancelModal = document.getElementById('cancelOrderModal');
-            if (cancelModal) {
-                cancelModal.addEventListener('hidden.bs.modal', function() {
-                    var select = document.getElementById('cancel_reason');
-                    if (select) {
-                        select.style.display = 'block';
-                        select.value = '';
-
-                        // Xóa input "Khác" nếu có
-                        var otherInput = select.parentNode.querySelector('input[name="cancel_reason"]');
-                        if (otherInput) {
-                            otherInput.remove();
-                        }
-
-                        var cancelNote = document.getElementById('cancel_note');
-                        if (cancelNote) {
-                            cancelNote.value = '';
-                        }
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+            alert('Đang xử lý yêu cầu mua lại đơn hàng...');
+        }, 1000);
+    }
+    // Hàm hiển thị lỗi
+    function showError(message) {
+        console.error('Error:', message);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'Đóng',
+            confirmButtonColor: '#dc3545'
+        });
+    }
+    
+    // Xử lý nút Mua lại - phiên bản đơn giản
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.reorder-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.reorder-btn');
+            const orderId = button.getAttribute('data-order-id');
+            const originalHTML = button.innerHTML;
+            
+            console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+            console.log('Order ID:', orderId);
+            
+            if (!orderId) {
+                console.error('Không tìm thấy orderId');
+                alert('Không tìm thấy thông tin đơn hàng');
+                return false;
+            }
+            
+            // Vô hiệu hóa nút và hiển thị loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+            
+            // Tạo form ẩn để gửi request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/orders/' + orderId + '/reorder';
+            form.style.display = 'none';
+            
+            // Thêm CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            // Thêm method spoofing cho POST
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'POST';
+            form.appendChild(methodInput);
+            
+            // Thêm form vào body và submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+    // Khởi tạo tooltip
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+    
+    // Xử lý khi chọn "Khác" trong lý do hủy
+    document.addEventListener('DOMContentLoaded', function() {
+        var cancelReasonSelect = document.getElementById('cancel_reason');
+        if (cancelReasonSelect) {
+            cancelReasonSelect.addEventListener('change', function() {
+                if (this.value === 'Khác') {
+                    this.style.display = 'none';
+                    var otherReasonInput = document.createElement('input');
+                    otherReasonInput.type = 'text';
+                    otherReasonInput.name = 'cancel_reason';
+                    otherReasonInput.className = 'form-control';
+                    otherReasonInput.placeholder = 'Nhập lý do hủy đơn...';
+                    otherReasonInput.required = true;
+                    this.parentNode.appendChild(otherReasonInput);
+                    otherReasonInput.focus();
+                }
+            });
+        }
+        
+        // Reset modal khi đóng
+        var cancelModal = document.getElementById('cancelOrderModal');
+        if (cancelModal) {
+            cancelModal.addEventListener('hidden.bs.modal', function() {
+                var select = document.getElementById('cancel_reason');
+                if (select) {
+                    select.style.display = 'block';
+                    select.value = '';
+                    
+                    // Xóa input "Khác" nếu có
+                    var otherInput = select.parentNode.querySelector('input[name="cancel_reason"]');
+                    if (otherInput) {
+                        otherInput.remove();
                     }
+                    
+                    var cancelNote = document.getElementById('cancel_note');
+                    if (cancelNote) {
+                        cancelNote.value = '';
+                    }
+                }
+            });
+        }
+    });
+    
+    // Hàm mở modal hủy đơn hàng
+    function openCancelModal(orderId, orderCode) {
+        var orderCodeInput = document.getElementById('orderCode');
+        var cancelOrderForm = document.getElementById('cancelOrderForm');
+        if (orderCodeInput) orderCodeInput.value = orderCode;
+        if (cancelOrderForm) cancelOrderForm.action = '{{ route("client.orders.cancel", ":orderId") }}'.replace(':orderId', orderId);
+        
+        // Reset form
+        var cancelReason = document.getElementById('cancel_reason');
+        if (cancelReason) {
+            cancelReason.value = '';
+        }
+        
+        var cancelNote = document.getElementById('cancel_note');
+        if (cancelNote) {
+            cancelNote.value = '';
+        }
+        
+        // Hiển thị modal
+        var modalEl = document.getElementById('cancelOrderModal');
+        if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    }
+    
+    // Hàm hiển thị lỗi
+    function showError(message) {
+        console.error('Error:', message);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'Đóng',
+            confirmButtonColor: '#dc3545'
+        });
+    }
+
+    // Xử lý nút Mua lại
+    $(document).on('click', '.reorder-btn', function(e) {
+        e.preventDefault();
+        const button = $(this);
+        const orderId = button.data('order-id');
+        const originalText = button.html();
+        
+        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+        console.log('Order ID:', orderId);
+        console.log('Button:', button);
+        
+        // Kiểm tra orderId
+        if (!orderId) {
+            console.error('Không tìm thấy orderId');
+            showError('Không tìm thấy thông tin đơn hàng');
+            return false;
+        }
+        
+        // Vô hiệu hóa nút và hiển thị loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+        
+        // Gửi yêu cầu AJAX
+        const url = '{{ url("orders") }}/' + orderId + '/reorder';
+        console.log('Gửi yêu cầu AJAX đến:', url);
+        
+        $.ajax({
+            url: url,
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                console.log('=== Phản hồi từ máy chủ ===');
+                console.log('Response:', response);
+                
+                // Bật lại nút
+                button.prop('disabled', false).html(originalText);
+                
+                if (response && response.success) {
+                    // Chuyển hướng trực tiếp đến giỏ hàng
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                        return;
+                    }
+                    
+                    // Nếu không có redirect URL, chuyển hướng đến giỏ hàng mặc định
+                    window.location.href = '{{ route("client.shopping-cart.index") }}';
+                } else {
+                    // Xử lý khi response không có success = true
+                    const errorMessage = response && response.message 
+                        ? response.message 
+                        : 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.';
+                    showError(errorMessage);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                console.error('Response:', xhr.responseText);
+                
+                // Bật lại nút
+                button.prop('disabled', false).html(originalText);
+                
+                // Hiển thị thông báo lỗi
+                let errorMessage = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMessage = response.message || errorMessage;
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
+                    errorMessage = xhr.responseText || errorMessage;
+                }
+                
+                // Hiển thị thông báo lỗi chi tiết hơn
+                Swal.fire({
+                    title: 'Lỗi!',
+                    html: `<div style="text-align: left;">
+                        <p>${errorMessage}</p>
+                        <div class="mt-3 text-muted small">
+                            <div>Mã lỗi: ${xhr.status} (${xhr.statusText})</div>
+                            ${xhr.responseJSON && xhr.responseJSON.errors ? 
+                                '<div class="mt-2">Chi tiết lỗi: ' + 
+                                JSON.stringify(xhr.responseJSON.errors) + '</div>' : ''}
+                        </div>
+                    </div>`,
+                    icon: 'error',
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#dc3545',
+                    width: '500px'
                 });
             }
         });
-
-        // Hàm mở modal hủy đơn hàng
-        function openCancelModal(orderId, orderCode) {
-            var orderCodeInput = document.getElementById('orderCode');
-            var cancelOrderForm = document.getElementById('cancelOrderForm');
-            if (orderCodeInput) orderCodeInput.value = orderCode;
-            if (cancelOrderForm) cancelOrderForm.action = '{{ route('client.orders.cancel', ':orderId') }}'.replace(
-                ':orderId', orderId);
-
-            // Reset form
-            var cancelReason = document.getElementById('cancel_reason');
-            if (cancelReason) {
-                cancelReason.value = '';
+    });
+    
+    // Xử lý form xác nhận đã nhận hàng
+    $(document).on('submit', 'form.confirm-delivery-form', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const button = form.find('button[type="submit"]');
+        const originalButtonText = button.html();
+        
+        // Vô hiệu hóa nút để tránh submit nhiều lần
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+        
+        // Gửi form bằng AJAX
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    // Hiển thị thông báo thành công
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#28a745'
+                    }).then((result) => {
+                        // Lọc lại danh sách đơn hàng theo trạng thái đã hoàn thành
+                        if (response.filter) {
+                            window.location.href = '{{ route("client.orders") }}?filter=' + response.filter;
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: response.message || 'Có lỗi xảy ra, vui lòng thử lại sau',
+                        icon: 'error',
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại sau';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#dc3545'
+                });
+            },
+            complete: function() {
+                // Kích hoạt lại nút sau khi hoàn thành
+                button.prop('disabled', false).html(originalButtonText);
             }
-
-            var cancelNote = document.getElementById('cancel_note');
-            if (cancelNote) {
-                cancelNote.value = '';
-            }
-
-            // Hiển thị modal
-            var modalEl = document.getElementById('cancelOrderModal');
-            if (modalEl) {
-                var modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            }
-        }
-    </script>
+        });
+    });
+</script>
 @endpush
         
