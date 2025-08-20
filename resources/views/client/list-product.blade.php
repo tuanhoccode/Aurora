@@ -232,7 +232,7 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
-            <h2 class="mb-4 mt-2" style="font-weight:700;font-size:2.2rem;line-height:1.2;">Tất cả sản phẩm</h2>
+            <h2 class="mb-4 mt-2" style="font-weight:600;font-size:2.2rem;line-height:1.2;">Tất Cả Sản Phẩm</h2>
         </div>
     </div>
     <div class="row align-items-start">

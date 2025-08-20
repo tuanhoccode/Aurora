@@ -1358,7 +1358,7 @@
                     <div class="col-12 col-lg-8">
                         <div class="cart-header mb-4">
                             <div class="d-flex flex-column gap-2">
-                                <h1 class="fw-bold mb-0" style="font-size: 2.25rem; color: #1e293b;">
+                                <h1 class="fw-bold mb-0" style="font-size: 2.2rem; color: #1e293b;">
                                     GIỎ HÀNG CỦA BẠN
                                 </h1>
                                 <span class="fs-6 text-muted" style="font-weight: 400;">

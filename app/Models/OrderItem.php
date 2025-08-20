@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,13 +45,27 @@ class OrderItem extends Model
         return $this->belongsTo(ProductVariant::class);
     }
     public function review()
-{
-    return $this->hasOne(Review::class, 'order_item_id', 'id')
-                ->where('user_id', Auth::id());
-}
-public function hasBeenReviewed()
-{
-    return $this->review()->exists();
-}
+    {
+        return $this->hasOne(Review::class, 'order_item_id', 'id')
+                    ->where('user_id', Auth::id());
+    }
+    public function hasBeenReviewed()
+    {
+        return $this->review()->exists();
+    }
+    public function canReviewItem(){
+        $order = $this->order();
+        $deliveredStatus = $order->statusHistory()
+        ->where('order_status_id', 4)
+        ->latest()
+        ->first();
+
+        if (!$deliveredStatus) {
+            return false;
+        }
+
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(3);
+        return now()->lessThanOrEqualTo($expireDate);
+    }
 
 }

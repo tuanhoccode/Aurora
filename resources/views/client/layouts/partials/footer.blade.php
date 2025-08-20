@@ -12,12 +12,6 @@
                                     </a>
                                 </div>
                                 <p class="tp-footer-desc">Thiên nhiên tạo ra địa chấn - Thời trang Aurora tạo nên điểm nhấn.</p>
-                                <div class="tp-footer-social">
-                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                                    <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -51,16 +45,7 @@
                     <div class="col-xl-5 col-lg-3 col-md-4 col-sm-6">
                         <div class="tp-footer-widget footer-col-4 mb-50">
                             <h4 class="tp-footer-widget-title">Đăng ký nhận tin</h4>
-                            <div class="tp-footer-subscribe">
-                                <p>Nhận thông tin về sự kiện, khuyến mãi và ưu đãi mới nhất của chúng tôi.</p>
-                                <form action="#">
-                                    <div class="tp-footer-subscribe-input">
-                                        <input type="email" placeholder="Địa chỉ email của bạn...">
-                                        <button type="submit" aria-label="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="tp-footer-contact mt-30">
+                            <div class="tp-footer-contact mt-20">
                                 <div class="tp-footer-contact-item d-flex align-items-center">
                                     <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-phone"></i></span></div>
                                     <div class="tp-footer-contact-content"><p><a href="tel:0336689888">0336689888</a></p></div>
@@ -73,24 +58,6 @@
                                     <div class="tp-footer-contact-icon"><span><i class="fa-solid fa-location-dot"></i></span></div>
                                     <div class="tp-footer-contact-content"><p><a>Tòa nhà FPT Polytechnic, Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội.</a></p></div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tp-footer-bottom">
-            <div class="container">
-                <div class="tp-footer-bottom-wrapper">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <div class="tp-footer-copyright">
-                                <p>© {{ date('Y') }} Bản quyền thuộc về <a href="{{route('home')}}">Aurora</a>.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="tp-footer-payment text-md-end">
-                                <p><img src="{{asset('assets2/img/footer/footer-pay-2.png')}}" alt=""></p>
                             </div>
                         </div>
                     </div>

@@ -29,25 +29,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($trashComments as $comment)
+                        @forelse($trashComments as $review)
                         <tr>
 
                             <td>
-                                <div class="fw-medium text-primary">{{ $comment->user->fullname }}</div>
-                                <!-- <small class="text-muted d-block">{{ Str::limit($comment->short_description, 100) }}</small> -->
+                                <div class="fw-medium text-primary">{{ $review->user->fullname }}</div>
+                                <!-- <small class="text-muted d-block">{{ Str::limit($review->short_description, 100) }}</small> -->
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border">{{ $comment->product ? $comment->product->name : 'N/A' }}</span>
+                                <span class="badge bg-light text-dark border">{{ $review->product ? $review->product->name : 'N/A' }}</span>
                             </td>
                             <td>
-                                {{$comment->content}}
+                                {{$review->review_text}}
                             </td>
                             <td>
-                                @if ($comment->is_active === 1)
+                                @if ($review->is_active === 1)
                                     <span class="badge d-inline-block text-center bg-success w-10" style="min-width: 110px;">
                                     <i class="fas fa-check-circle me-1"></i> Đã duyệt
                                     </span>
-                                @elseif ($comment->is_active === 0 && $comment->reason)
+                                @elseif ($review->is_active === 0 && $review->reason)
                                     <span class="badge d-inline-block text-center bg-danger w-10" style="min-width: 110px;">
                                         <i class="fas fa-times-circle me-1"></i> Không duyệt
                                     </span>
@@ -58,21 +58,21 @@
                                 @endif
                             </td>
                             <td>
-                                {{$comment->reason}}
+                                {{$review->reason}}
                             </td>
                             <td>
-                                {{ $comment->deleted_at ? $comment->deleted_at->format('d/m/Y H:i') : '' }}
+                                {{ $review->deleted_at ? $review->deleted_at->format('d/m/Y H:i') : '' }}
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <form id="restoreForm{{ $comment->id }}" action="{{ route('admin.reviews.restore', $comment->id) }}" method="POST" class="d-inline">
+                                    <form id="restoreForm{{ $review->id }}" action="{{ route('admin.reviews.restore', $review->id) }}" method="POST" class="d-inline">
                                         @method('PUT')
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Khôi phục">
                                             <i class="bi bi-arrow-counterclockwise"></i>
                                         </button>
                                     </form>
-                                    <form action="{{ route('admin.reviews.forceDelete', $comment->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn sản phẩm này?')">
+                                    <form action="{{ route('admin.reviews.forceDelete', $review->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn sản phẩm này?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Xóa vĩnh viễn">
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select all checkbox
     const selectAllCheckbox = document.getElementById('selectAll');
-    const commentCheckboxes = document.querySelectorAll('.comment-checkbox');
+    const commentCheckboxes = document.querySelectorAll('.review-checkbox');
     
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function() {
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateBulkActions() {
-    const checkedCount = document.querySelectorAll('.comment-checkbox:checked').length;
+    const checkedCount = document.querySelectorAll('.review-checkbox:checked').length;
     const bulkActions = document.querySelector('.bulk-actions');
     const selectedCountElements = document.querySelectorAll('.selected-count');
     
@@ -154,7 +154,7 @@ function updateBulkActions() {
 
     // Update "Select All" checkbox state
     const selectAllCheckbox = document.getElementById('selectAll');
-    const totalCheckboxes = document.querySelectorAll('.comment-checkbox').length;
+    const totalCheckboxes = document.querySelectorAll('.review-checkbox').length;
     if (selectAllCheckbox) {
         selectAllCheckbox.checked = checkedCount > 0 && checkedCount === totalCheckboxes;
         selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCheckboxes;
@@ -162,7 +162,7 @@ function updateBulkActions() {
 }
 
 function getSelectedIds() {
-    return Array.from(document.querySelectorAll('.comment-checkbox:checked')).map(cb => cb.value);
+    return Array.from(document.querySelectorAll('.review-checkbox:checked')).map(cb => cb.value);
 }
 
 function bulkRestore() {
@@ -198,7 +198,7 @@ function bulkRestore() {
 }
 
 function confirmBulkDelete() {
-    const count = document.querySelectorAll('.comment-checkbox:checked').length;
+    const count = document.querySelectorAll('.review-checkbox:checked').length;
     if (count === 0) return;
 
     const selectedCountElements = document.querySelectorAll('.selected-count');

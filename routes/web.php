@@ -363,11 +363,12 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
 
     //Quản lý bình luận
     Route::prefix('reviews')->name('reviews.')->group(function () {
-        Route::get('/', [CommentController::class, 'index'])->name('comments');
-        Route::get('/{type}/{id}', [CommentController::class, 'showComment'])->name('showComment');
-        Route::patch('/approve/{type}/{id}', [CommentController::class, 'approve'])->name('approve');
-        Route::patch('/reject/{type}/{id}', [CommentController::class, 'reject'])->name('reject');
         Route::get('/trash-comment', [CommentController::class, 'trashComments'])->name('trashComments');
+        Route::get('/comment-search', [CommentController::class, 'searchComments'])->name('searchComments');
+        Route::get('/', [CommentController::class, 'index'])->name('comments');
+        Route::get('/{id}', [CommentController::class, 'showComment'])->name('showComment');
+        Route::patch('/approve/{id}', [CommentController::class, 'approve'])->name('approve');
+        Route::patch('/{type}/reject/{id}', [CommentController::class, 'reject'])->name('reject');
 
         Route::delete('/delete/{id}', [CommentController::class, 'destroyComment'])->name('destroyComment');
         Route::put('/restore/{id}', [CommentController::class, 'restore'])->name('restore');

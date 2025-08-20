@@ -56,41 +56,16 @@
                                             <a href="#">Danh mục</a>
                                             <ul class="tp-submenu">
                                                 @foreach($categories as $category)
-                                                    <li>
-                                                        <a href="{{ route('client.categories.show', $category->id) }}">
-                                                            {{ $category->name }}
-                                                        </a>
-                                                    </li>
+                                                <li>
+                                                    <a href="{{ route('client.categories.show', $category->id) }}">
+                                                        {{ $category->name }}
+                                                    </a>
+                                                </li>
                                                 @endforeach
                                             </ul>
                                         </li>
                                         <li class="has-mega-menu">
                                             <a href="{{ route('shop') }}">Cửa hàng</a>
-                                        </li>
-                                        <li class="has-dropdown has-mega-menu">
-                                            <a href="">Sản phẩm</a>
-                                            <ul class="tp-submenu tp-mega-menu mega-menu-style-2">
-                                                <li class="has-dropdown">
-                                                    <a href="shop.html" class="mega-menu-title">Trang cửa hàng</a>
-                                                    <ul class="tp-submenu">
-                                                        <li><a href="shop-category.html">Chỉ danh mục</a></li>
-                                                        <li><a href="shop-filter-offcanvas.html">Cửa hàng lưới</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="has-dropdown">
-                                                    <a href="shop.html" class="mega-menu-title">Thương mại điện tử</a>
-                                                    <ul class="tp-submenu">
-                                                        <li><a href="">Giỏ hàng</a></li>
-                                                        <li><a href="order.html">Theo dõi đơn hàng</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="has-dropdown">
-                                                    <a href="shop.html" class="mega-menu-title">Trang khác</a>
-                                                    <ul class="tp-submenu">
-                                                        <li><a href="about.html">Giới thiệu</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
                                         </li>
                                         <li><a href="{{ route('contact') }}">Liên hệ</a></li>
                                         <li><a href="{{ route('blog.index') }}">Blog</a></li>
@@ -99,10 +74,10 @@
                             </div>
                         </div>
                         <div class="col-xl-5 col-lg-7 col-md-7 col-sm-8 col-6">
-                            <div class="tp-header-bottom-right d-flex align-items-center justify-content-end pl-30">
+                            <div class="tp-header-bottom-right d-flex align-items-center justify-content-end pl-50">
                                 <div class="tp-header-search-2 d-none d-sm-block">
                                     <form action="{{ route('search') }}" method="GET">
-                                        <input type="text" name="query" placeholder="Tìm kiếm sản phẩm...">
+                                        <input type="text" name="query" placeholder="Tìm kiếm sản phẩm..." style="width: 390px;">
                                         <button type="submit">
                                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -132,9 +107,9 @@
                                             </svg>
                                             <span class="tp-header-action-badge">
                                                 @if(Auth::check())
-                                                    {{ Auth::user()->wishlists()->count() }}
+                                                {{ Auth::user()->wishlists()->count() }}
                                                 @else
-                                                    0
+                                                0
                                                 @endif
                                             </span>
                                         </a>
@@ -158,16 +133,16 @@
                                             </svg>
                                             <span class="tp-header-action-badge cart-count">
                                                 @if(Auth::check())
-                                                    @php
-                                                        $cart = \App\Models\Cart::where('user_id', Auth::id())
-                                                            ->where('status', 'pending')
-                                                            ->with('items')
-                                                            ->first();
-                                                        $cartCount = $cart ? $cart->items->count() : 0;
-                                                    @endphp
-                                                    {{ $cartCount }}
+                                                @php
+                                                $cart = \App\Models\Cart::where('user_id', Auth::id())
+                                                ->where('status', 'pending')
+                                                ->with('items')
+                                                ->first();
+                                                $cartCount = $cart ? $cart->items->count() : 0;
+                                                @endphp
+                                                {{ $cartCount }}
                                                 @else
-                                                    0
+                                                0
                                                 @endif
                                             </span>
                                         </button>
@@ -176,48 +151,48 @@
                                         <a href="#" class="tp-header-account-toggle">
                                             <i class="fa fa-user"></i>
                                             @if (Auth::check())
-                                                {{ Auth::user()->fullname }}
+                                            {{ Auth::user()->fullname }}
                                             @else
-                                                Tài khoản
+                                            Tài khoản
                                             @endif
                                         </a>
                                         <ul class="tp-submenu tp-account-menu">
                                             @if (Auth::check())
-                                                <li class="tp-account-menu-header">
-                                                    <span class="tp-account-menu-name">{{ Auth::user()->fullname }}</span>
-                                                </li>
-                                                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'employee')
-                                                    <li><a href="{{ route('admin.dashboard') }}"><i
-                                                                class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a>
-                                                    </li>
-                                                @endif
-                                                <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ
-                                                        sơ</a></li>
-                                                <li><a href="{{ route('wishlist.index') }}"><i
-                                                            class="fa-solid fa-heart"></i> Yêu thích</a></li>
-                                                <li><a href="{{ route('shopping-cart.index') }}"><i
-                                                            class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
-                                                <li><a href="{{ route('loginHistory') }}"><i class="fa-solid fa-user"></i>
-                                                        Phiên đăng nhập</a></li>
-                                                @auth
-                                                    <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i>
-                                                            Đơn hàng của tôi</a></li>
-                                                @endauth
-                                                <li class="tp-account-menu-divider"></li>
-                                                <li>
-                                                    <a href="#"
-                                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                                                    </a>
-                                                    <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                                        style="display: none;">
-                                                        @csrf
-                                                    </form>
-                                                </li>
+                                            <li class="tp-account-menu-header">
+                                                <span class="tp-account-menu-name">{{ Auth::user()->fullname }}</span>
+                                            </li>
+                                            @if (Auth::user()->role === 'admin' || Auth::user()->role === 'employee')
+                                            <li><a href="{{ route('admin.dashboard') }}"><i
+                                                        class="fa-solid fa-screwdriver-wrench"></i> Trang quản trị</a>
+                                            </li>
+                                            @endif
+                                            <li><a href="{{ route('showProfile') }}"><i class="fa-solid fa-user"></i> Hồ
+                                                    sơ</a></li>
+                                            <li><a href="{{ route('wishlist.index') }}"><i
+                                                        class="fa-solid fa-heart"></i> Yêu thích</a></li>
+                                            <li><a href="{{ route('shopping-cart.index') }}"><i
+                                                        class="fa-solid fa-cart-shopping"></i> Giỏ hàng</a></li>
+                                            <li><a href="{{ route('loginHistory') }}"><i class="fa-solid fa-user"></i>
+                                                    Phiên đăng nhập</a></li>
+                                            @auth
+                                            <li><a href="{{ route('client.orders') }}"><i class="fa-solid fa-box"></i>
+                                                    Đơn hàng của tôi</a></li>
+                                            @endauth
+                                            <li class="tp-account-menu-divider"></li>
+                                            <li>
+                                                <a href="#"
+                                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                                                </a>
+                                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                                    style="display: none;">
+                                                    @csrf
+                                                </form>
+                                            </li>
                                             @else
-                                                <li><a href="{{ route('login') }}"><i
-                                                            class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập / Đăng
-                                                        ký</a></li>
+                                            <li><a href="{{ route('login') }}"><i
+                                                        class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập / Đăng
+                                                    ký</a></li>
                                             @endif
                                         </ul>
                                     </div>

@@ -107,7 +107,7 @@
                     <div class="cartmini__empty text-center" id="cartmini-empty">
                         <img src="{{ asset('assets2/img/product/cartmini/empty-cart.png') }}" alt="Giỏ hàng trống">
                         <p>Chưa có sản phẩm nào trong giỏ hàng</p>
-                        <a href="{{ route('home') }}" class="tp-btn">Bắt đầu mua sắm</a>
+                        <a href="{{ route('home') }}" class="tp-btn btn-primary" style="background-color: #007bff; color: white; border-color: #007bff;">Bắt đầu mua sắm</a>
                     </div>
                 @endif
             </div>

@@ -370,6 +370,9 @@
             text-align: left
         }
     }
+    .btn-outline-warning button {
+        color: #333333 !important; /* Thay #333333 bằng màu bạn chọn */
+    }
 </style>
 
 @section('content')
@@ -571,7 +574,7 @@
                                             <div class="d-flex gap-2">
 
                                             </div>
-                                            <div class="d-flex gap-2">
+                                            <div class="d-flex gap-2 flex-wrap">
                                                 @if ($order->canBeCancelled())
                                                     <button type="button" class="btn btn-danger checkout__btn-main"
                                                         onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
@@ -584,13 +587,13 @@
                                                 @endif
                                                 @if ($statusId == 4)
                                                     @if ($item->review)
-                                                        <div class="mt-2">
-                                                            <button class="btn btn-outline-secondary btn-sm"
+                                                        <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
+                                                            <button 
                                                                 data-bs-toggle = "modal"
                                                                 data-bs-target = "#viewReviewModal"
                                                                 data-rating = "{{$item->review->rating}}"
                                                                 data-text = "{{$item->review->review_text}}"
-                                                                data-images='@json($item->review->images->map(fn($img) => asset("storage/reviews/".$img->path)))'
+                                                                data-images='@json($item->review->images->map(fn($img) => asset("storage/" . $img->image_path)))'
                                                                 data-product-name = "{{$item->product->name}}"
                                                                 data-variant = "{{$variantText}}"
                                                                 data-thumb="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail)
@@ -601,31 +604,28 @@
                                                             </button>
                                                             
                                                         </div>
-                                                    @else
-                                                        {{-- Chưa đánh giá + còn hạn 7 ngày sẽ không được đánh giá --}}
-                                                        @if($order->canReview())
-                                                            <div class="mt-2">
-                                                                <button class="btn btn-primary btn-sm w-100"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#reviewModal"
-                                                                    data-product-id="{{ $item->product->id }}"
-                                                                    data-order-item-id="{{ $item->id }}"
-                                                                    data-product-name="{{ $item->product->name }}"
-                                                                    data-variant="{{ $variantText }}"
-                                                                    >
-                                                                    Đánh giá sản phẩm
-                                                                </button>
-                                                            </div>
-                                                        @endif
+                                                    @elseif($item->order->canReview())
+                                                        <div class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
+                                                            <button
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#reviewModal"
+                                                                data-product-id="{{ $item->product->id }}"
+                                                                data-order-item-id="{{ $item->id }}"
+                                                                data-product-name="{{ $item->product->name }}"
+                                                                data-variant="{{ $variantText }}"
+                                                                >
+                                                                <i class="fas fa-star"></i>Đánh giá sản phẩm
+                                                            </button>
+                                                        </div>
                                                     @endif
                                                 @endif
                                                 <a href="{{ route('client.orders.show', $order->id) }}"
-                                                    class="btn btn-primary checkout__btn-main">
-                                                    <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                                    class="btn btn-primary d-flex align-items-center gap-1 btn-sm">
+                                                    <i class="fas fa-eye"></i> Xem chi tiết
                                                 </a>
                                                 @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
                                                     <a href="{{ route('checkout.retry-payment', $order->code) }}"
-                                                        class="btn btn-primary checkout__btn-main">
+                                                        class="btn btn-warning d-flex align-items-center gap-1 btn-sm">
                                                         <i class="fas fa-redo"></i> Quay lại thanh toán
                                                     </a>
                                                 @endif
@@ -923,44 +923,47 @@
     </div>
     <!-- script xem đánh giá  -->
      <script>
-        var viewReviewModal = document.getElementById('viewReviewModal');
-        viewReviewModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-        
-            const rating = button.getAttribute('data-rating');
-            const text = button.getAttribute('data-text');
-            const images = JSON.parse(button.getAttribute('data-images') || '[]');
-            const product = button.getAttribute('data-product-name');
-            const variant = button.getAttribute('data-variant') || '';
-            const thumb = button.getAttribute('data-thumb');
-        
-            // hiển thị sao
-            const stars = Array.from({ length: 5 }, (_, i) =>
-                `<i class="fa${i < rating ? 's' : 'r'} fa-star" style="color:${i < rating ? '#ffc107' : '#ccc'}"></i>`
-            ).join('');
-            document.getElementById('viewReviewRating').innerHTML = stars;
-        
-            // text
-            document.getElementById('viewReviewText').textContent = text || '';
-        
-            // product info
-            document.getElementById('viewReviewProduct').textContent = product;
-            document.getElementById('viewReviewVariant').textContent = variant ? 'Phân loại: ' + variant : '';
-            document.getElementById('viewReviewThumb').src = thumb;
-        
-            // images
-            const imgContainer = document.getElementById('viewReviewImages');
-images.forEach(url => {
-    let img = document.createElement('img');
-    img.src = url; // đã full URL rồi
-    img.className = "rounded border";
-    img.style.width = "100px";
-    img.style.height = "100px";
-    img.style.objectFit = "cover";
-    imgContainer.appendChild(img);
-});
+    var viewReviewModal = document.getElementById('viewReviewModal');
+    viewReviewModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        const rating = button.getAttribute('data-rating');
+        const text = button.getAttribute('data-text');
+        const images = JSON.parse(button.getAttribute('data-images') || '[]');
+        const product = button.getAttribute('data-product-name');
+        const variant = button.getAttribute('data-variant') || '';
+        const thumb = button.getAttribute('data-thumb');
+
+        // Hiển thị sao
+        const stars = Array.from({ length: 5 }, (_, i) =>
+            `<i class="fa${i < rating ? 's' : 'r'} fa-star" style="color:${i < rating ? '#ffc107' : '#ccc'}"></i>`
+        ).join('');
+        document.getElementById('viewReviewRating').innerHTML = stars;
+
+        // Text
+        document.getElementById('viewReviewText').textContent = text || '';
+
+        // Product info
+        document.getElementById('viewReviewProduct').textContent = product;
+        document.getElementById('viewReviewVariant').textContent = variant ? 'Phân loại: ' + variant : '';
+        document.getElementById('viewReviewThumb').src = thumb;
+
+        // Xóa ảnh cũ trước khi thêm ảnh mới
+        const imgContainer = document.getElementById('viewReviewImages');
+        imgContainer.innerHTML = ''; // Xóa nội dung cũ
+
+        // Thêm ảnh mới
+        images.forEach(url => {
+            let img = document.createElement('img');
+            img.src = url; // Đường dẫn đã được xử lý trong Blade
+            img.className = "rounded border";
+            img.style.width = "100px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            imgContainer.appendChild(img);
         });
-    </script>
+    });
+</script>
 
 @endsection
 
