@@ -28,26 +28,35 @@
             --input-font-size: 0.95rem;
         }
 
-        /* Main Layout */
+        /* Main Layout - Shopee Style */
         .checkout__section {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            padding: 3rem 1rem;
+            background: #f5f5f5;
+            padding: 20px 0;
             min-height: 100vh;
         }
 
         .checkout__container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
-            display: grid;
-            gap: 2rem;
-            grid-template-columns: 1fr 480px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
         }
 
         /* Force 2-column layout on larger screens */
         @media (min-width: 1200px) {
             .checkout__container {
-                grid-template-columns: 1fr 480px !important;
+                flex-direction: row !important;
+            }
+            
+            .checkout__left-column {
+                flex: 2;
+                min-width: 0;
+            }
+            
+            .checkout__right-column {
+                flex: 1;
+                max-width: 480px;
             }
         }
 
@@ -56,6 +65,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            flex: 2;
+            min-width: 0;
         }
 
         .checkout__right-column {
@@ -65,91 +76,78 @@
             position: sticky;
             top: 2rem;
             height: fit-content;
+            width: 100%;
+            max-width: 480px;
+            flex-shrink: 0;
         }
 
-        /* Checkout Blocks */
+        /* Checkout Blocks - Shopee Style */
         .checkout__block {
             background: #fff;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 2rem;
-            border: 1px solid var(--border-light);
-            transition: var(--transition);
+            border-radius: 8px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-
-        .checkout__block::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
-            opacity: 0;
-            transition: var(--transition);
+            margin-bottom: 20px;
         }
 
         .checkout__block:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .checkout__block:hover::before {
-            opacity: 1;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
         }
 
         .checkout__block-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 1.5rem;
+            font-size: 18px;
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 20px;
             position: relative;
-            padding-bottom: 0.8rem;
+            padding-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 8px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .checkout__block-title::before {
             content: '';
-            width: 5px;
-            height: 25px;
-            background: var(--primary);
-            border-radius: 3px;
+            width: 4px;
+            height: 20px;
+            background: #ee4d2d;
+            border-radius: 2px;
         }
 
-        /* Address */
+        /* Address - Shopee Style */
         .checkout__address-selection {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 1.5rem;
-            background: linear-gradient(135deg, var(--primary-light) 0%, #f8fafc 100%);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            border: 2px solid var(--border);
-            transition: var(--transition);
+            gap: 20px;
+            background: #fff7f2;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
             position: relative;
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
         }
 
         .checkout__address-selection:hover {
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+            border-color: #ee4d2d;
+            box-shadow: 0 2px 8px 0 rgba(238, 77, 45, 0.1);
         }
 
         .checkout__address-selection label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-dark);
+            font-size: 14px;
+            font-weight: 400;
+            color: #222;
             line-height: 1.5;
             flex: 1;
         }
 
-        /* Cart Items */
+        /* Cart Items - Shopee Style */
         .checkout__cart-list {
             list-style: none;
             padding: 0;
@@ -159,151 +157,154 @@
         .checkout__cart-header,
         .checkout__cart-item {
             display: grid;
-            grid-template-columns: 80px 2.5fr 1fr 1fr 1fr;
+            grid-template-columns: 80px 2fr 1fr 1fr 1fr;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem 0;
-            font-size: 0.95rem;
+            gap: 16px;
+            padding: 16px;
+            font-size: 14px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 10px;
         }
 
         .checkout__cart-header {
-            font-weight: 700;
-            color: var(--text-muted);
-            border-bottom: 3px solid var(--border);
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.8px;
-            padding-bottom: 1.2rem;
-            margin-bottom: 1rem;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 1px solid #f0f0f0;
+            text-transform: none;
+            font-size: 13px;
+            letter-spacing: 0;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
         }
 
         .checkout__cart-item {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: var(--radius-sm);
-            margin-bottom: 0.8rem;
-            padding: 1.2rem;
-            transition: var(--transition);
-            border: 2px solid var(--border-light);
+            background: #fff;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            border: 1px solid #f0f0f0;
         }
 
         .checkout__cart-item:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
+            background: #fff7f2;
+            border-color: #f0f0f0;
         }
 
         .checkout__cart-item img {
             width: 70px;
             height: 70px;
             object-fit: cover;
-            border-radius: var(--radius-sm);
-            border: 2px solid var(--border);
-            transition: var(--transition);
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
         }
 
         .checkout__cart-item p {
             margin: 0;
-            font-size: 0.95rem;
-            color: var(--text-dark);
-            font-weight: 600;
+            font-size: 14px;
+            color: #222;
+            font-weight: 500;
             line-height: 1.4;
         }
 
         .checkout__cart-item small {
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            color: #666;
+            font-size: 12px;
             display: block;
-            margin-top: 0.3rem;
+            margin-top: 4px;
         }
 
-        /* Note Textarea */
+        /* Note Textarea - Shopee Style */
         .checkout__note {
-            border-radius: var(--radius-sm);
-            border: 2px solid var(--border);
-            background: #f8fafc;
-            font-size: var(--input-font-size);
-            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            background: #fff;
+            font-size: 14px;
+            padding: 12px;
             width: 100%;
-            min-height: 100px;
+            min-height: 80px;
             resize: vertical;
-            transition: var(--transition);
+            transition: all 0.2s ease;
             font-family: inherit;
-            margin-top: 1rem;
+            margin-top: 16px;
         }
 
         .checkout__note:focus {
-            border-color: var(--primary);
+            border-color: #ee4d2d;
             outline: none;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.1);
             background: #fff;
         }
 
-        /* Shipping & Payment Methods */
+        /* Shipping & Payment Methods - Shopee Style */
         .checkout__shipping-method .form-check,
         .checkout__payment-method .form-check {
-            border-radius: var(--radius);
-            border: 2px solid var(--border);
-            padding: 1.5rem;
-            margin-bottom: 1.2rem;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            padding: 20px;
+            margin-bottom: 16px;
             cursor: pointer;
             position: relative;
             display: flex;
             align-items: flex-start;
-            gap: 1rem;
-            transition: var(--transition);
-            background: #f8fafc;
+            gap: 16px;
+            transition: all 0.2s ease;
+            background: #fff;
         }
 
         .checkout__shipping-method .form-check:hover,
         .checkout__shipping-method .form-check.selected,
         .checkout__payment-method .form-check:hover,
         .checkout__payment-method .form-check.selected {
-            border-color: var(--primary);
-            box-shadow: var(--shadow);
-            background: var(--primary-light);
+            border-color: #ee4d2d;
+            box-shadow: 0 2px 8px 0 rgba(238, 77, 45, 0.1);
+            background: #fff7f2;
         }
 
         .checkout__shipping-method .form-check-input,
         .checkout__payment-method .form-check-input {
-            width: 22px;
-            height: 22px;
-            margin: 0.3rem 0.8rem 0 0;
+            width: 18px;
+            height: 18px;
+            margin: 2px 12px 0 0;
             flex-shrink: 0;
-            border: 2px solid var(--border);
+            border: 1px solid #d9d9d9;
             border-radius: 50%;
-            transition: var(--transition);
+            transition: all 0.2s ease;
         }
 
         .checkout__shipping-method .form-check-input:checked,
         .checkout__payment-method .form-check-input:checked {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            background-color: #ee4d2d;
+            border-color: #ee4d2d;
+            box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.2);
         }
 
         .checkout__shipping-method .form-check-label,
         .checkout__payment-method .form-check-label {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-dark);
+            font-size: 16px;
+            font-weight: 500;
+            color: #222;
             flex: 1;
-            margin-bottom: 0.5rem;
+            margin-bottom: 8px;
         }
 
         .checkout__shipping-method p,
         .checkout__payment-method p {
-            margin: 0.4rem 0 0;
-            font-size: 0.9rem;
-            color: var(--text-muted);
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #666;
             line-height: 1.5;
         }
 
-        /* Coupon Section */
+        /* Coupon Section - Shopee Style */
         .coupon-section {
-            background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
-            border: 2px solid #e9d5ff;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            background: #fff7f2;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
         }
@@ -315,15 +316,15 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
+            background: linear-gradient(90deg, #ee4d2d, #ff6b4a);
         }
 
         .coupon-applied {
             background: #f0fdf4;
-            border: 1px solid #10b981;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            border: 1px solid #00bfa5;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 16px;
             position: relative;
             display: flex;
             justify-content: space-between;
@@ -338,7 +339,7 @@
             left: 16px;
             width: 20px;
             height: 20px;
-            background: #10b981;
+            background: #00bfa5;
             color: white;
             border-radius: 50%;
             display: flex;
@@ -353,104 +354,104 @@
         }
 
         .coupon-applied .coupon-code {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #10b981;
-            margin-bottom: 0.2rem;
+            font-size: 14px;
+            font-weight: 500;
+            color: #00bfa5;
+            margin-bottom: 4px;
         }
 
         .coupon-applied .coupon-discount {
-            font-size: 0.9rem;
+            font-size: 13px;
             color: #065f46;
             font-weight: 500;
         }
 
         .coupon-applied .coupon-title {
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-top: 0.1rem;
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
         }
 
         .coupon-input-section {
             background: #fff;
-            border-radius: var(--radius-sm);
-            padding: 1.5rem;
-            border: 2px solid #e9d5ff;
-            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 20px;
         }
 
         .coupon-input-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 1rem;
+            font-size: 14px;
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .checkout__coupon-group {
             display: flex;
-            gap: 1rem;
+            gap: 16px;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
         }
 
         .checkout__coupon-group .form-control {
-            border-radius: var(--radius-sm);
-            border: 2px solid #e9d5ff;
-            font-size: var(--input-font-size);
-            height: var(--input-height);
-            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            font-size: 14px;
+            height: 40px;
+            padding: 8px 12px;
             flex: 1;
-            transition: var(--transition);
-            background: #fef7ff;
+            transition: all 0.2s ease;
+            background: #fff;
         }
 
         .checkout__coupon-group .form-control:focus {
-            border-color: #8b5cf6;
+            border-color: #ee4d2d;
             outline: none;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.1);
             background: #fff;
         }
 
         .checkout__coupon-group .form-control::placeholder {
-            color: #a855f7;
-            font-style: italic;
+            color: #999;
+            font-style: normal;
         }
 
         .coupon-available-section {
             background: #fff;
-            border-radius: var(--radius-sm);
-            padding: 1.5rem;
-            border: 2px solid #e9d5ff;
+            border-radius: 4px;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
         }
 
         .coupon-available-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .coupon-card {
-            background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
-            border: 2px solid #e9d5ff;
-            border-radius: var(--radius-sm);
-            padding: 1rem;
-            margin-bottom: 0.8rem;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 12px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
 
         .coupon-card:hover {
-            border-color: #8b5cf6;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+            border-color: #ee4d2d;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px 0 rgba(238, 77, 45, 0.1);
         }
 
         .coupon-card::before {
@@ -460,7 +461,7 @@
             left: 0;
             width: 4px;
             height: 100%;
-            background: linear-gradient(180deg, #8b5cf6, #a855f7);
+            background: linear-gradient(180deg, #ee4d2d, #ff6b4a);
         }
 
         .coupon-card .coupon-header {
@@ -471,39 +472,39 @@
         }
 
         .coupon-card .coupon-code {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #8b5cf6;
+            font-size: 16px;
+            font-weight: 500;
+            color: #ee4d2d;
         }
 
         .coupon-card .coupon-discount {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--success);
+            font-size: 14px;
+            font-weight: 500;
+            color: #00bfa5;
         }
 
         .coupon-card .coupon-details {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            font-size: 13px;
+            color: #666;
             line-height: 1.4;
         }
 
         .coupon-card .coupon-expiry {
-            font-size: 0.8rem;
-            color: var(--warning);
-            margin-top: 0.3rem;
+            font-size: 12px;
+            color: #f59e0b;
+            margin-top: 4px;
         }
 
         .coupon-empty {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
+            padding: 32px;
+            color: #666;
         }
 
         .coupon-empty i {
-            font-size: 3rem;
+            font-size: 48px;
             opacity: 0.3;
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
             display: block;
         }
 
@@ -519,30 +520,49 @@
             }
         }
 
-        /* Buttons */
+        /* Buttons - Shopee Style */
         .checkout__coupon-group .btn,
         .checkout__btn-main,
         .checkout__submit-btn {
-            border-radius: var(--radius-sm);
-            font-size: var(--input-font-size);
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-radius: 4px;
+            font-size: 14px;
+            padding: 8px 16px;
+            background: #ee4d2d;
             color: #fff;
             border: none;
-            transition: var(--transition);
-            height: var(--input-height);
+            transition: all 0.2s ease;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             position: relative;
             overflow: hidden;
             min-width: 120px;
         }
 
-        .checkout__coupon-group .btn::before,
-        .checkout__btn-main::before,
+        .checkout__coupon-group .btn:hover,
+        .checkout__btn-main:hover,
+        .checkout__submit-btn:hover {
+            background: #d7381d;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px 0 rgba(238, 77, 45, 0.3);
+        }
+
+        .checkout__submit-btn {
+            width: 100%;
+            font-size: 18px;
+            padding: 16px;
+            height: auto;
+            margin-top: 20px;
+            background: #ee4d2d;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
         .checkout__submit-btn::before {
             content: '';
             position: absolute;
@@ -550,40 +570,21 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
         }
 
-        .checkout__coupon-group .btn:hover::before,
-        .checkout__btn-main:hover::before,
+        .checkout__submit-btn:hover {
+            background: #d7381d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(238, 77, 45, 0.3);
+        }
+
         .checkout__submit-btn:hover::before {
             left: 100%;
         }
 
-        .checkout__coupon-group .btn:hover,
-        .checkout__btn-main:hover,
-        .checkout__submit-btn:hover {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-        }
-
-        .checkout__submit-btn {
-            width: 100%;
-            font-size: 1.2rem;
-            padding: 1.2rem;
-            height: auto;
-            margin-top: 1.5rem;
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            border-radius: var(--radius);
-        }
-
-        .checkout__submit-btn:hover {
-            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
-        }
-
-        /* Summary */
+        /* Summary - Shopee Style */
         .checkout__summary-list {
             list-style: none;
             padding: 0;
@@ -593,30 +594,30 @@
         .checkout__summary-list li {
             display: flex;
             justify-content: space-between;
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid var(--border-light);
-            transition: var(--transition);
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
         }
 
         .checkout__summary-list .total {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            border: 3px solid var(--primary);
-            background: var(--primary-light);
-            margin-top: 1.5rem;
+            font-size: 18px;
+            font-weight: 600;
+            color: #ee4d2d;
+            padding: 20px;
+            border-radius: 4px;
+            border: 2px solid #ee4d2d;
+            background: #fff7f2;
+            margin-top: 20px;
             border-bottom: none;
         }
 
         .alert {
-            border-radius: var(--radius);
-            padding: 1.2rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
             border: none;
             position: relative;
             overflow: hidden;
@@ -627,195 +628,332 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 5px;
+            width: 4px;
             height: 100%;
         }
 
         .alert-success {
-            background: var(--success-light);
+            background: #f0fdf4;
             color: #065f46;
         }
 
         .alert-success::before {
-            background: var(--success);
+            background: #00bfa5;
         }
 
         .alert-danger {
-            background: var(--danger-light);
+            background: #fee2e2;
             color: #991b1b;
         }
 
         .alert-danger::before {
-            background: var(--danger);
+            background: #ef4444;
         }
 
-        /* Modal Styles */
+        /* Modal Styles - Shopee Style */
         .modal-content {
             border: none;
-            border-radius: var(--radius);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
 
         .modal-header {
-            background: linear-gradient(135deg, var(--primary-light) 0%, #f8fafc 100%);
-            border-bottom: 2px solid var(--primary);
-            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #ee4d2d, #ff6b4a);
+            border-bottom: none;
+            padding: 24px 24px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .modal-title {
-            color: var(--text-dark);
+            color: #fff;
             font-weight: 700;
-            font-size: 1.25rem;
+            font-size: 20px;
             margin: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .modal-title i {
-            color: var(--primary);
+            color: #fff;
+            margin-right: 8px;
         }
 
         .btn-close {
-            background: none;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
-            font-size: 1.5rem;
-            color: var(--text-muted);
-            transition: var(--transition);
+            font-size: 18px;
+            color: #fff;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-close:hover {
-            color: var(--text-dark);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1) rotate(90deg);
         }
 
         .modal-body {
-            padding: 2rem;
+            padding: 24px;
             background: #fff;
         }
 
         .modal-footer {
-            background: var(--border-light);
-            border-top: 2px solid var(--border);
-            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 20px 24px;
             display: flex;
             justify-content: flex-end;
-            gap: 1rem;
+            gap: 16px;
         }
 
         .modal-footer .btn {
-            border-radius: var(--radius);
-            font-weight: 700;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
-            transition: var(--transition);
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 12px 24px;
+            font-size: 14px;
+            transition: all 0.3s ease;
             min-width: 120px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .modal-footer .btn-light {
-            background: #fff;
-            border: 2px solid var(--border);
-            color: var(--text-muted);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .modal-footer .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
         }
 
-        .modal-footer .btn-light:hover {
-            background: var(--border-light);
-            border-color: var(--text-muted);
-            color: var(--text-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        .modal-footer .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
         }
 
         .modal-footer .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: #ee4d2d;
             border: none;
             color: #fff;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 2px 8px rgba(238, 77, 45, 0.3);
         }
 
         .modal-footer .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            background: #d7381d;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 4px 15px rgba(238, 77, 45, 0.4);
         }
 
-        /* Address Modal Specific */
+        .modal-footer .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .modal-footer .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        /* Address Modal Specific - Shopee Style */
         .address-item {
-            border-color: #dee2e6 !important;
+            border-color: #f0f0f0 !important;
             transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .address-item:hover {
-            border-color: #6366f1 !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+            border-color: #ee4d2d !important;
+            box-shadow: 0 4px 20px rgba(238, 77, 45, 0.15);
             transform: translateY(-2px);
         }
 
+        .address-item .card {
+            border-radius: 12px;
+            border: 2px solid #f0f0f0;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .address-item:hover .card {
+            border-color: #ee4d2d;
+            background: #fff7f2;
+        }
+
         .address-item .form-check-input {
-            width: 14px !important;
-            height: 14px !important;
-            margin-top: 0.1rem;
+            width: 18px !important;
+            height: 18px !important;
+            margin-top: 2px;
+            border: 2px solid #d9d9d9;
+            transition: all 0.3s ease;
         }
 
         .address-item .form-check-input:checked {
-            background-color: #6366f1 !important;
-            border-color: #6366f1 !important;
+            background-color: #ee4d2d !important;
+            border-color: #ee4d2d !important;
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.2);
         }
 
         .address-item .form-check-input:focus {
-            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.25) !important;
         }
 
-        /* Utility Classes */
+        .address-item .btn-outline-primary {
+            border-color: #ee4d2d;
+            color: #ee4d2d;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .address-item .btn-outline-primary:hover {
+            background: #ee4d2d;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(238, 77, 45, 0.3);
+        }
+
+        .address-item .btn-outline-danger {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .address-item .btn-outline-danger:hover {
+            background: #ef4444;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .address-item .btn-primary {
+            background: linear-gradient(135deg, #ee4d2d, #ff6b4a);
+            border: none;
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 16px 32px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(238, 77, 45, 0.3);
+        }
+
+        .address-item .btn-primary:hover {
+            background: linear-gradient(135deg, #d7381d, #ee4d2d);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(238, 77, 45, 0.4);
+        }
+
+        .address-item .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .address-item .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        /* Utility Classes - Shopee Style */
         .text-danger {
-            color: var(--danger) !important;
-            font-size: 0.9rem;
+            color: #ef4444 !important;
+            font-size: 13px;
             font-weight: 500;
         }
 
         .text-success {
-            color: var(--success) !important;
+            color: #00bfa5 !important;
         }
 
         .text-muted {
-            color: var(--text-muted) !important;
+            color: #666 !important;
         }
 
         .btn-outline-primary {
-            border-color: var(--primary);
-            color: var(--primary);
+            border-color: #ee4d2d;
+            color: #ee4d2d;
             background: transparent;
-            transition: var(--transition);
-            border-radius: var(--radius-sm);
-            padding: 0.8rem 1.2rem;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            padding: 8px 16px;
         }
 
         .btn-outline-primary:hover {
-            background: var(--primary);
+            background: #ee4d2d;
             color: #fff;
-            border-color: var(--primary);
+            border-color: #ee4d2d;
             transform: translateY(-1px);
         }
 
         .btn-outline-danger {
-            border-color: var(--danger);
-            color: var(--danger);
+            border-color: #ef4444;
+            color: #ef4444;
             background: transparent;
-            transition: var(--transition);
-            border-radius: var(--radius-sm);
-            padding: 0.8rem 1.2rem;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            padding: 8px 16px;
         }
 
         .btn-outline-danger:hover {
-            background: var(--danger);
+            background: #ef4444;
             color: #fff;
-            border-color: var(--danger);
+            border-color: #ef4444;
             transform: translateY(-1px);
         }
 
-        /* Enhanced Coupon Card Styles */
+        /* Enhanced Coupon Card Styles - Shopee Style */
         .coupon-card.applied {
-            background: linear-gradient(135deg, var(--success-light) 0%, #d1fae5 100%);
-            border-color: var(--success);
+            background: #f0fdf4;
+            border-color: #00bfa5;
             position: relative;
         }
 
@@ -826,7 +964,7 @@
             right: 10px;
             width: 24px;
             height: 24px;
-            background: var(--success);
+            background: #00bfa5;
             color: white;
             border-radius: 50%;
             display: flex;
@@ -837,105 +975,134 @@
         }
 
         .coupon-card.applied .coupon-code {
-            color: var(--success);
+            color: #00bfa5;
         }
 
-        /* Coupon Modal Styles */
+        /* Coupon Modal Styles - Shopee Style */
         .bg-gradient-primary {
-            background: #6366f1 !important;
+            background: #ee4d2d !important;
         }
 
         .coupon-modal-card {
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 1.2rem;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
             position: relative;
+            overflow: hidden;
+        }
+
+        .coupon-modal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #ee4d2d, #ff6b4a);
+            transition: all 0.3s ease;
         }
 
         .coupon-modal-card:hover {
-            border-color: #6366f1;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+            border-color: #ee4d2d;
+            box-shadow: 0 4px 20px rgba(238, 77, 45, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .coupon-modal-card:hover::before {
+            width: 8px;
         }
 
         .coupon-modal-card.applied {
             background: #f0fdf4;
-            border-color: #10b981;
-            border-left: 4px solid #10b981;
+            border-color: #00bfa5;
+            border-left: 6px solid #00bfa5;
+        }
+
+        .coupon-modal-card.applied::before {
+            background: linear-gradient(180deg, #00bfa5, #00a08a);
         }
 
         .coupon-modal-card.applied::after {
             content: '✓';
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 20px;
-            height: 20px;
-            background: #10b981;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            background: #00bfa5;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 191, 165, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .coupon-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 0.8rem;
+            margin-bottom: 12px;
         }
 
         .coupon-modal-code {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .coupon-code-text {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #6366f1;
+            font-size: 16px;
+            font-weight: 500;
+            color: #ee4d2d;
             background: #f3f4f6;
-            padding: 0.3rem 0.6rem;
+            padding: 4px 8px;
             border-radius: 4px;
         }
 
         .coupon-modal-card.applied .coupon-code-text {
-            color: #10b981;
+            color: #00bfa5;
             background: #d1fae5;
         }
 
         .coupon-modal-discount {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #10b981;
+            font-size: 14px;
+            font-weight: 500;
+            color: #00bfa5;
             background: #f0fdf4;
-            padding: 0.3rem 0.6rem;
+            padding: 4px 8px;
             border-radius: 4px;
         }
 
         .coupon-modal-details {
-            margin-bottom: 0.8rem;
+            margin-bottom: 12px;
             line-height: 1.5;
         }
 
         .coupon-modal-details .discount-type {
-            font-size: 0.95rem;
+            font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: #222;
             display: block;
-            margin-bottom: 0.2rem;
+            margin-bottom: 4px;
         }
 
         .coupon-modal-details .coupon-title {
-            font-size: 0.85rem;
-            color: #6b7280;
+            font-size: 13px;
+            color: #666;
             display: block;
         }
 
@@ -943,7 +1110,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 12px;
         }
 
         .coupon-modal-footer .coupon-expiry {
@@ -952,23 +1119,23 @@
         }
 
         .coupon-modal-footer .apply-text {
-            color: #6366f1;
+            color: #ee4d2d;
             font-weight: 500;
         }
 
         .coupon-modal-card.applied .apply-text {
-            color: #10b981;
+            color: #00bfa5;
         }
 
-        /* Responsive improvements for coupon section */
+        /* Responsive improvements for coupon section - Shopee Style */
         @media (max-width: 768px) {
             .coupon-section {
-                padding: 1rem;
+                padding: 16px;
             }
 
             .coupon-applied {
                 flex-direction: column;
-                gap: 0.8rem;
+                gap: 12px;
                 text-align: center;
             }
 
@@ -979,17 +1146,17 @@
 
             .checkout__coupon-group {
                 flex-direction: column;
-                gap: 0.8rem;
+                gap: 12px;
             }
 
             .coupon-card {
-                padding: 0.8rem;
+                padding: 12px;
             }
 
             .coupon-card .coupon-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.5rem;
+                gap: 8px;
             }
 
             /* Modal coupon responsive */
@@ -1006,21 +1173,21 @@
             .coupon-modal-footer {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.4rem;
+                gap: 6px;
             }
 
             .coupon-code-text {
-                font-size: 1rem;
-                padding: 0.2rem 0.5rem;
+                font-size: 14px;
+                padding: 2px 6px;
             }
 
             .coupon-modal-discount {
-                font-size: 0.9rem;
-                padding: 0.2rem 0.5rem;
+                font-size: 13px;
+                padding: 2px 6px;
             }
         }
 
-        /* Responsive Design */
+        /* Responsive Design - Shopee Style */
         @media (min-width: 1400px) {
             .checkout__container {
                 max-width: 1400px;
@@ -1029,71 +1196,40 @@
 
         @media (max-width: 1399px) {
             .checkout__container {
-                max-width: 1200px;
+                max-width: 1400px;
             }
         }
 
         @media (max-width: 1199px) {
             .checkout__container {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
+                flex-direction: column;
+            }
+
+            .checkout__right-column {
+                position: static;
+                width: 100%;
                 max-width: 100%;
             }
 
             .checkout__left-column,
             .checkout__right-column {
-                position: static;
-            }
-
-            .checkout__cart-header,
-            .checkout__cart-item {
-                grid-template-columns: 70px 1.5fr 1fr 1fr 1fr;
-                font-size: 0.9rem;
-            }
-
-            .checkout__section {
-                padding: 2rem 1rem;
-            }
-
-            .checkout__block {
-                padding: 1.5rem;
-            }
-
-            .coupon-section {
-                padding: 1.2rem;
-            }
-
-            .coupon-applied {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .coupon-applied::before {
-                left: 50%;
-                transform: translateX(-50%);
+                width: 100%;
+                max-width: 100%;
             }
         }
 
-        /* Đảm bảo layout 2 cột trên desktop */
-        @media (min-width: 992px) {
+        @media (max-width: 992px) {
             .checkout__container {
-                grid-template-columns: 1fr 480px;
-                gap: 2rem;
-            }
-
-            .checkout__left-column {
-                display: flex;
                 flex-direction: column;
-                gap: 1.5rem;
             }
 
             .checkout__right-column {
-                display: flex;
-                flex-direction: column;
-                gap: 1.5rem;
+                position: static;
+                width: 100%;
+                max-width: 100%;
+                gap: 20px;
                 position: sticky;
-                top: 2rem;
+                top: 20px;
                 height: fit-content;
             }
         }
