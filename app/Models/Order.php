@@ -202,7 +202,7 @@ class Order extends Model
         }
 
         //Tính thời gian hết hạn review
-        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(2);  
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(3);  
         return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
     }
     public function refund()

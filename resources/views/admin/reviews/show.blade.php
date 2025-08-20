@@ -29,51 +29,44 @@
                             <table class="table table-borderless">
                                 <tr>
                                     <th width="150">Khách hàng:</th>
-                                    <td><strong>{{ $comment->user->fullname }}</strong></td>
+                                    <td><strong>{{ $review->user->fullname }}</strong></td>
                                 </tr>
                                 <tr>
                                     <th>Sản phẩm:</th>
-                                    <td>{{ $comment->product->name }}</td>
+                                    <td>{{ $review->product->name }}</td>
                                 </tr>
-                                @if($type === 'review')
+                                <tr>
+                                    <th>Bình luận:</th>
+                                    <td><code>{{$review->review_text}}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Số sao: </th>
+                                    <td>{{$review->rating}}⭐</td>
+                                </tr>
+                                @if($review->images && $review->images->count())
                                     <tr>
-                                        <th>Bình luận:</th>
-                                        <td><code>{{$comment->review_text}}</code></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Số sao: </th>
-                                        <td>{{$comment->rating}}⭐</td>
-                                    </tr>
-                                    @if($type === 'review' && $comment->images && $comment->images->count())
-                                        <tr>
-                                            <th>Ảnh đính kèm:</th>
-                                            <td>
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    @foreach($comment->images as $img)
-                                                        <a href="{{asset('storage/' . $img->image_path)}}" target="_blank" class="d-inline-block">
-                                                            <img src="{{asset('storage/' . $img->image_path)}}" alt="Ảnh đánh giá"
-                                                            class="img-thumbnail" style="width:110px; height:110px; object-fit:cover; border-radius:10px;" >
-                                                        </a>
-                                                    @endforeach
-
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @else
-                                    <tr>
-                                        <th>Bình luận:</th>
-                                        <td><code>{{ $comment->content }}</code></td>
+                                        <th>Ảnh đính kèm:</th>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($review->images as $img)
+                                                    <a href="{{asset('storage/' . $img->image_path)}}" target="_blank" class="d-inline-block">
+                                                        <img src="{{asset('storage/' . $img->image_path)}}" alt="Ảnh đánh giá"
+                                                        class="img-thumbnail" style="width:110px; height:110px; object-fit:cover; border-radius:10px;" >
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endif
+                               
                                 <tr>
                                     <th>Trạng thái:</th>
                                     <td>
-                                    @if ($comment->is_active === 1)
+                                    @if ($review->is_active === 1)
                                         <span class="badge d-inline-block text-center bg-success w-10" style="min-width: 10px;">
                                         <i class="fas fa-check-circle me-1"></i> Đã duyệt
                                         </span>
-                                    @elseif ($comment->is_active === 0 && $comment->reason)
+                                    @elseif ($review->is_active === 0 && $review->reason)
                                         <span class="badge d-inline-block text-center bg-danger w-10" style="min-width: 10px;">
                                             <i class="fas fa-times-circle me-1"></i> Không duyệt
                                         </span>
@@ -84,10 +77,22 @@
                                     @endif
                                     </td>
                                 </tr>
-                                
+                                <tr>
+                                    <th>Phản hồi của </th>
+                                    <td>
+                                        @if($review->replies && $review->replies->count())
+                                            @foreach($review->replies as $reply)
+                                                <strong>Admin:</strong> {{$reply->review_text}}
+                                                <small class="text-muted">({{ $reply->created_at->format('d/m/Y H:i') }})</small>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">Chưa phản hồi</span>
+                                        @endif
+                                    </td>
+                                </tr>
                                 <tr>
                                     <th>Lý do:</th>
-                                    <td>{{$comment->reason}}</td>
+                                    <td>{{$review->reason}}</td>
                                 </tr>
                             </table>
                         </div>
@@ -111,7 +116,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Bạn có chắc chắn muốn chuyển sản phẩm <strong>{{ $comment->content }}</strong> vào thùng rác?</p>
+                <p>Bạn có chắc chắn muốn chuyển sản phẩm <strong>{{ $review->content }}</strong> vào thùng rác?</p>
                 <p class="mb-0 text-muted">
                     <i class="bi bi-info-circle"></i>
                     Sản phẩm sẽ được chuyển vào thùng rác và có thể khôi phục lại sau.
