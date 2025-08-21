@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class RefundItem extends Model
 {
     protected $table = 'refund_items';
-    
+
     protected $fillable = [
         'refund_id',
         'product_id',
@@ -25,5 +25,14 @@ class RefundItem extends Model
     public function refund()
     {
         return $this->belongsTo(Refund::class);
+    }
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }
