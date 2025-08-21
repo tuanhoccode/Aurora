@@ -610,7 +610,7 @@
             border: 2px solid #ee4d2d;
             background: #fff7f2;
             margin-top: 20px;
-            border-bottom: none;
+            
         }
 
         .alert {
