@@ -4,22 +4,26 @@
 
 <style>
     :root {
-        --brand: #ff4d2d;
+        --brand: #ee4d2d;
+        --brand-light: #fff6f5;
         --text: #222;
-        --muted: #6b7280;
-        --line: #e5e7eb;
-        --bg: #fff;
+        --muted: #757575;
+        --line: #f5f5f5;
+        --bg: #f5f5f5;
+        --border-radius: 4px;
+        --box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
     }
     
     /* Tabs */
     .tabs {
         display: flex;
-        gap: 8px;
-        padding: 10px 14px 0;
+        gap: 0;
+        padding: 0;
         overflow-x: auto;
         scrollbar-width: none;
-        background: #f9fafb;
-        border-radius: 10px 10px 0 0;
+        background: #fff;
+        border-bottom: 2px solid var(--brand);
+        margin-bottom: 20px;
     }
     
     .tabs::-webkit-scrollbar { 
@@ -28,16 +32,16 @@
 
     .tab-btn {
         white-space: nowrap;
-        padding: 10px 14px;
-        border: 1px solid transparent;
-        border-bottom: none;
-        border-radius: 8px 8px 0 0;
+        padding: 16px 24px;
+        border: none;
         background: transparent;
-        color: #444;
-        font-size: 14px;
+        color: #555;
+        font-size: 16px;
+        font-weight: 500;
         cursor: pointer;
-        transition: all .18s ease;
-        margin-bottom: -1px;
+        transition: all .2s ease;
+        position: relative;
+        margin-right: 2px;
     }
     
     .tab-btn:hover { 
@@ -46,11 +50,8 @@
     }
 
     .tab-btn.active {
-        color: #000;
+        color: var(--brand);
         background: #fff;
-        border-color: var(--line);
-        border-bottom: 1px solid #fff;
-        position: relative;
         font-weight: 500;
     }
     
@@ -59,27 +60,35 @@
         position: absolute;
         left: 0; 
         right: 0; 
-        bottom: 0;
+        bottom: -2px;
         height: 2px;
         background: var(--brand);
     }
 
     /* Search bar */
     .search-bar {
-        background: #f9fafb;
-        padding: 10px 14px 14px;
-        border-top: 1px solid var(--line);
+        background: #fff;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 20px;
     }
     
     .search-input {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 12px;
-        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        border: 1px solid #d8d8d8;
         background: #fff;
-        border-radius: 6px;
-        max-width: 800px;
+        border-radius: 2px;
+        max-width: 600px;
+        transition: all .2s;
+    }
+    
+    .search-input:focus-within {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 1px var(--brand);
     }
     
     .search-input input {
@@ -96,57 +105,36 @@
     }
     .order-card {
         border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: all 0.2s;
         overflow: hidden;
         margin-bottom: 20px;
         background: #fff;
     }
 
     .order-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     }
 
     .order-card .card-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 16px 24px;
+        background: #fff9f8;
+        border-bottom: 1px solid #f5f5f5;
+        padding: 16px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    
-    .order-card .card-header .order-info {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .order-card .card-header .order-number {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 4px;
-    }
-    
-    .order-card .card-header .order-date {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
 
     .order-status-badge .badge {
         position: relative;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 2px;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
     }
 
     .order-status-badge .badge i {
@@ -210,55 +198,15 @@
     }
 
     .order-item {
-        transition: all 0.3s ease;
-        border-radius: 8px;
+        transition: background-color 0.2s;
         padding: 16px;
-        margin-bottom: 12px;
-        border: 1px solid #f0f0f0;
-        background: #fff;
+        border-bottom: 1px solid #f5f5f5;
         display: flex;
         align-items: center;
-        gap: 16px;
     }
 
     .order-item:hover {
         background-color: #f8f9fa;
-        border-color: #e0e0e0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    
-    .order-item img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid #eee;
-    }
-    
-    .order-item-details {
-        flex: 1;
-    }
-    
-    .order-item-title {
-        font-weight: 500;
-        margin-bottom: 4px;
-        color: #333;
-    }
-    
-    .order-item-variant {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 4px;
-    }
-    
-    .order-item-price {
-        font-weight: 600;
-        color: #ff4d2d;
-    }
-    
-    .order-item-quantity {
-        color: #6c757d;
-        font-size: 0.9rem;
     }
 
     .order-item img {
@@ -303,8 +251,9 @@
 
     .product-variant,
     .product-quantity {
-        font-size: 0.85rem;
-        color: #666;
+        font-size: 14px;
+        color: #888;
+        margin-top: 4px;
     }
 
     .product-price {
@@ -392,17 +341,35 @@
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 12px 16px;
-        border-bottom: 1px solid #f0f0f0
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 15px;
+        font-weight: 500;
+        background: #fff9f8;
+        border-left: 4px solid var(--brand);
+        margin-bottom: 2px;
+    }
+
+    .sp-head .btn-danger {
+        background: #fff;
+        border: 1px solid #d8d8d8;
+        color: #555;
+    }
+    
+    .btn-danger:hover {
+        background: #f8f8f8;
+        border-color: #d8d8d8;
+        color: #222;
     }
 
     .sp-like {
         background: #ee4d2d;
         color: #fff;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 500;
         padding: 4px 8px;
-        border-radius: 2px
+        border-radius: 2px;
+        margin-right: 8px;
     }
 
     .sp-head .shop {
@@ -421,15 +388,33 @@
     }
 
     .sp-ok {
-        color: #00bfa5;
-        display: flex;
+        color: #00a67c;
+        display: inline-flex;
         align-items: center;
-        gap: 6px
+        gap: 6px;
+        background: #f0faf8;
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid #d1f2eb;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .sp-ok i {
+        color: #00a67c;
     }
 
     .sp-done {
-        color: #ee4d2d;
-        font-weight: 700
+        color: #00a67c;
+        font-weight: 600;
+        padding: 6px 12px;
+        background: #e6f7f5;
+        border-radius: 4px;
+        border: 1px solid #a7e1d7;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        margin-left: 8px;
     }
 
     .sp-row {
@@ -497,23 +482,51 @@
 
     .sp-btn {
         border-radius: 2px;
-        padding: 10px 20px;
-        font-weight: 700;
+        padding: 8px 16px;
+        font-weight: 400;
         cursor: pointer;
         border: 1px solid transparent;
-        font-size: 14px
+        font-size: 14px;
+        height: 36px;
+        min-width: 120px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
     }
 
-    .sp-btn-primary {
-        background: #ee4d2d;
-        border-color: #ee4d2d;
-        color: #fff
+    .btn-primary {
+        background: var(--brand);
+        border: 1px solid var(--brand);
+        color: #fff;
+    }
+    
+    .btn-primary:hover {
+        background: #f05d40;
+        border-color: #f05d40;
+        color: #fff;
     }
 
     .sp-btn-ghost {
         background: #fff;
-        border: 1px solid #dcdcdc;
-        color: #333
+        border: 1px solid #d8d8d8;
+        color: #555;
+    }
+    
+    .sp-btn-ghost:hover {
+        background: #f8f8f8;
+    }
+
+    .btn-outline-primary {
+        border: 1px solid var(--brand);
+        color: var(--brand);
+        background: #fff;
+    }
+    
+    .btn-outline-primary:hover {
+        background: rgba(238, 77, 45, 0.1);
+        color: var(--brand);
+        border-color: var(--brand);
     }
 
     @media (max-width:576px) {
@@ -547,21 +560,28 @@
             border-color: #f04120;
         }
         
-        /* Tabs styling */
-        .nav-tabs {
-            border-bottom: 1px solid #e5e7eb;
-            flex-wrap: nowrap;
+        /* Enhanced Tabs styling */
+       .nav-tabs {
+            border: none;
+            background: #fff;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: block;
+            white-space: nowrap;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: -ms-autohiding-scrollbar;
+            -ms-overflow-style: none;
             scrollbar-width: none;
+            width: 100%;
         }
         
-        .nav-tabs::-webkit-scrollbar {
+       .nav-tabs::-webkit-scrollbar {
             display: none;
         }
         
-        .nav-tabs .nav-link {
+       .nav-tabs .nav-link {
             color: #6b7280;
             border: none;
             font-weight: 500;
@@ -572,20 +592,40 @@
             transition: all 0.2s;
         }
         
-        .nav-tabs .nav-link:hover {
-            color: #ff4d2d;
-            background-color: rgba(0, 0, 0, 0.025);
-            border-color: transparent;
+       .nav-tabs .nav-link:hover:not(.active) {
+            color: #ee4d2d;
+            border-color: #ee4d2d;
+            background: #fff9f8;
         }
         
-        .nav-tabs .nav-link.active {
-            color: #ff4d2d;
-            background-color: #fff;
-            border-bottom: 3px solid #ff4d2d;
+       .nav-tabs .nav-link.active {
+            color: #fff;
+            background: #ee4d2d;
+            border-color: #ee4d2d;
+            box-shadow: 0 2px 8px rgba(238, 77, 45, 0.25);
+            transform: translateY(-2px);
         }
         
-        .nav-tabs .nav-link i {
-            margin-right: 0.25rem;
+       .nav-tabs .badge {
+            margin-left: 6px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            min-width: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+       .nav-tabs .nav-link:not(.active) .badge {
+            background: #f1f1f1;
+            color: #666;
+        }
+        
+       .nav-tabs .nav-link.active .badge {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
         }
         
         /* Responsive adjustments */
@@ -601,14 +641,13 @@
         }
         /* Shopee-like button styles */
 .card-footer .btn {
-    padding: 8px 16px;
+    padding: 8px 20px;
     font-size: 14px;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    border-radius: 2px;
+    font-weight: 400;
+    text-transform: none;
+    min-width: 120px;
+    text-align: center;
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
@@ -657,43 +696,6 @@
 .card-footer .btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-/* Button icons */
-.card-footer .btn i {
-    font-size: 14px;
-}
-
-.btn-outline-primary {
-    border: 1px solid #0d6efd;
-    color: #0d6efd;
-}
-
-.btn-outline-primary:hover {
-    background: #0d6efd;
-    color: #fff;
-}
-
-.btn-outline-success {
-    border: 1px solid #198754;
-    color: #198754;
-}
-
-.btn-outline-success:hover {
-    background: #198754;
-    color: #fff;
-}
-
-.btn-outline-danger {
-    border: 1px solid #dc3545;
-    color: #dc3545;
-}
-
-.btn-outline-danger:hover {
-    background: #dc3545;
-    color: #fff;
 }
 
 /* Button group spacing */
@@ -713,8 +715,8 @@
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1 class="h3 mb-0 fw-bold">Đơn hàng của tôi</h1>
-                <p class="text-muted mt-1">Quản lý các đơn hàng của bạn</p>
+                <h1 class="h4 mb-2 fw-bold" style="color: #222;">Đơn hàng của tôi</h1>
+                <p class="text-muted small">Xem thông tin chi tiết và theo dõi đơn hàng của bạn</p>
             </div>
         </div>
 
@@ -814,9 +816,11 @@
         @endif
 
     @if($orders->isEmpty())
-        <div class="card shadow-sm rounded-3 border-0">
-            <div class="card-body text-center p-5">
-                <i class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-cart' }} fa-3x text-muted mb-3"></i>
+        <div class="card text-center p-5" style="background: #fff;">
+            <div class="card-body">
+                <div class="mb-4">
+                    <i class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-bag' }} fa-4x" style="color: #f5f5f5;"></i>
+                </div>
                 @if(request()->has('search'))
                     <h4 class="text-muted">Không tìm thấy đơn hàng phù hợp</h4>
                     <p class="text-muted">Không có đơn hàng nào khớp với từ khóa "{{ request('search') }}"</p>
@@ -864,185 +868,193 @@
                                         (data_get($firstItem, 'product.user.name') ?? 'Cửa hàng'));
                             @endphp
 
-                            <div class="order-card mb-4">
-                                <div class="card-header">
-                                    <div class="order-info">
-                                        <div class="order-number">
-                                            <i class="fas fa-receipt me-2"></i>Đơn hàng #{{ $order->code }}
-                                        </div>
-                                        <div class="order-date">
-                                            <i class="far fa-calendar-alt me-2"></i>
-                                            {{ $order->created_at->format('H:i d/m/Y') }}
-                                        </div>
+                            <div class="sp-card mb-4">
+                                <div class="sp-head">
+                                    <div class="d-flex align-items-center">
+                                        <span class="sp-like">Sản phẩm đã mua</span>
+                                        <span class="shop ms-2">{{ $shopName }}</span>
                                     </div>
-                                    <div class="order-status-badge">
-                                        @php
-                                            $currentStatus = $order->currentStatus;
-                                            $statusId = $currentStatus ? $currentStatus->order_status_id : 1;
-                                            $statusName = $currentStatus && $currentStatus->status ? $currentStatus->status->name : 'Chờ xác nhận';
-                                            
-                                            // Xác định class cho badge trạng thái
-                                            $statusClass = 'secondary';
-                                            $statusIcon = 'fa-clock';
-                                            
-                                            switch($statusId) {
-                                                case 1: // Chờ xác nhận
-                                                    $statusClass = 'warning';
-                                                    $statusIcon = 'fa-clock';
-                                                    break;
-                                                case 2: // Đã xác nhận
-                                                    $statusClass = 'info';
-                                                    $statusIcon = 'fa-check-circle';
-                                                    break;
-                                                case 3: // Đang giao hàng
-                                                    $statusClass = 'primary';
-                                                    $statusIcon = 'fa-truck';
-                                                    break;
-                                                case 4: // Đã giao hàng
-                                                    $statusClass = 'success';
-                                                    $statusIcon = 'fa-check-double';
-                                                    break;
-                                                case 5: // Đã hủy
-                                                    $statusClass = 'danger';
-                                                    $statusIcon = 'fa-times-circle';
-                                                    break;
-                                            }
-                                            
-                                            // Xác định class cho badge thanh toán
-                                            $paymentBadgeClass = $order->is_paid ? 'success' : 'warning';
-                                        @endphp
-                                        <span class="badge bg-{{ $statusClass }}">
-                                            <i class="fas {{ $statusIcon }}"></i>
-                                            {{ $statusName }}
-                                        </span>
-                                        
-                                        @if($order->is_paid)
-                                            <span class="badge bg-success ms-2">
-                                                <i class="fas fa-check-circle"></i>
-                                                Đã thanh toán
-                                            </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if ($statusId == 4)
+                                            <span class="sp-ok"><i class="fas fa-truck"></i> Giao hàng thành công</span>
+                                            <span>|</span>
+                                            <span class="sp-done">HOÀN THÀNH</span>
                                         @else
-                                            <span class="badge bg-warning text-dark ms-2">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                Chưa thanh toán
-                                            </span>
+                                            <span class="text-muted">{{ $statusName }}</span>
                                         @endif
                                     </div>
                                 </div>
-                                
-                                <div class="card-body p-4">
+
+                                @foreach ($order->items as $item)
                                     @php
-                                        $firstItem = $order->items->first();
-                                        $shopName = data_get($firstItem, 'product.store.name') ?? 
-                                                   data_get($firstItem, 'product.store_name') ?? 
-                                                   'Cửa hàng';
-                                    @endphp
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-store me-2 text-primary"></i>
-                                            <h5 class="mb-0 fw-medium">{{ $shopName }}</h5>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
-                                                <a href="{{ route('checkout.retry-payment', $order->code) }}"
-                                                    class="btn btn-warning d-flex align-items-center gap-1 btn-sm">
-                                                    <i class="fas fa-redo"></i> Quay lại thanh toán
-                                                </a>
-                                            @endif
-                                            
-                                            @if ($order->is_paid == 1 &&
-                                                $order->cancelled_at == null &&
-                                                $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
-                                                !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
-                                                <a href="{{ route('refund.form', $order->code) }}"
-                                                class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-                                                    <i class="fas fa-undo"></i> Yêu cầu hoàn trả
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="order-items">
-                                        @foreach($order->items as $item)
-                                            <div class="order-item d-flex align-items-center p-3 border-bottom">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <img src="{{ $item->product->image_url ?? asset('images/default-product.jpg') }}" 
-                                                         alt="{{ $item->product_name }}" 
-                                                         class="img-fluid rounded" 
-                                                         style="width: 80px; height: 80px; object-fit: cover;">
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                        <h6 class="mb-1 fw-medium">{{ $item->product_name }}</h6>
-                                                        <div class="text-end">
-                                                            <div class="fw-medium">{{ number_format($item->price, 0, ',', '.') }} ₫</div>
-                                                            <small class="text-muted">x{{ $item->quantity }}</small>
-                                                        </div>
-                                                    </div>
-                                                    @if($item->variant_name)
-                                                        <div class="text-muted small">
-                                                            <i class="fas fa-tag me-1"></i>{{ $item->variant_name }}
-                                                        </div>
-                                                    @endif
-                                                    @if($item->review)
-                                                        <div class="mt-2">
-                                                            <div class="d-flex align-items-center mb-1">
-                                                                @for($i = 1; $i <= 5; $i++)
-                                                                    <i class="fas fa-star {{ $i <= $item->review->rating ? 'text-warning' : 'text-muted' }}"></i>
-                                                                @endfor
-                                                            </div>
-                                                            <div class="small text-muted">{{ $item->review->comment }}</div>
-                                                        </div>
-                                                    @elseif($order->isCompleted() && !$order->isCancelled())
-                                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2"
-                                                                data-bs-toggle="modal" data-bs-target="#reviewModal"
-                                                                data-product-id="{{ $item->product_id }}"
-                                                                data-order-item-id="{{ $item->id }}"
-                                                                data-product-name="{{ $item->product_name }}">
-                                                            <i class="far fa-star"></i> Đánh giá
-                                                        </button>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                        <div>
-                                            <span class="text-muted">Tổng tiền:</span>
-                                            <span class="fw-bold text-danger ms-2">{{ number_format($order->total_amount, 0, ',', '.') }} ₫</span>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            @if($order->canBeCancelled())
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                        onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
-                                                    <i class="fas fa-times me-1"></i> Hủy đơn
-                                                </button>
-                                            @endif
-                                            
-                                            @if($order->isPending())
-                                                <a href="{{ route('checkout.payment', ['order' => $order->id]) }}"
-                                                   class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-credit-card me-1"></i> Thanh toán
-                                                </a>
-                                            @endif
-                                            
-                                            @if($order->isDelivered())
-                                                <form action="{{ route('orders.complete', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm">
-                                                        <i class="fas fa-check me-1"></i> Đã nhận
-                                                    </button>
-                                                </form>
-                                            @endif
-                                            
-                                            <a href="{{ route('orders.show', $order->id) }}" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-eye me-1"></i> Chi tiết
+                                        $img = $item->product->thumbnail
+                                            ? asset('storage/' . $item->product->thumbnail)
+                                            : asset('assets2/img/product/2/prodcut-1.jpg');
+                                        $old =
+                                            $item->original_price ??
+                                            (data_get($item, 'variant.original_price') ??
+                                                data_get($item, 'product.price'));
+                                        $showOld = $old && $old > $item->price;
+                                        $variantText = null;
+                                        if ($item->product_variant_id && $item->variant) {
+                                            $vals = $item->variant->relationLoaded('attributeValues')
+                                                ? $item->variant->attributeValues
+                                                : $item->variant->attributeValues()->with('attribute')->get();
+                                            $variantText = $vals->pluck('value')->filter()->implode(' / ');
+                                        }
+
+                                        @endphp
+                                       
+
+                                    <div class="sp-row">
+                                        <a href="{{ route('client.orders.show', $order->id) }}" class="d-block">
+                                            <img class="sp-thumb" src="{{ $img }}" alt="{{ $item->product->name }}">
+                                        </a>
+                                        <div class="flex-grow-1">
+                                            <a href="{{ route('client.orders.show', $order->id) }}" class="text-dark text-decoration-none">
+                                                <div class="sp-title">{{ $item->product->name }}</div>
                                             </a>
+                                            @if ($variantText)
+                                                <div class="sp-variant">Phân loại hàng: {{ $variantText }}</div>
+                                            @endif
+                                            <div class="sp-qty">x{{ $item->quantity }}</div>
+                                        </div>
+                                        <div class="sp-price">
+                                            @if ($showOld)
+                                                <span class="sp-old">{{ number_format($old, 0, ',', '.') }} ₫</span>
+                                            @endif
+                                            <span class="sp-new">{{ number_format($item->price, 0, ',', '.') }} ₫</span>
                                         </div>
                                     </div>
+                                @endforeach
+
+                                <div class="sp-foot">
+                                    <div class="sp-total">Thành tiền:
+                                        <b>{{ number_format($order->total_amount, 0, ',', '.') }} ₫</b>
+                                    </div>
+
+                                    <div class="card-footer bg-white p-3 border-top border-radius-12">
+                                        <div class="d-flex justify-content-between align-items-center order-actions">
+                                            <div class="d-flex gap-2">
+
+                                            </div>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                @if ($order->canBeCancelled())
+                                                    <button type="button" class="btn btn-danger checkout__btn-main"
+                                                        onclick="openCancelModal({{ $order->id }}, '{{ $order->code }}')">
+                                                        <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                                                    </button>
+                                                @elseif($order->isCancelled())
+                                                    <button type="button" class="btn btn-danger" disabled>
+                                                        <i class="fas fa-ban me-1"></i> Đã hủy
+                                                    </button>
+                                                @endif
+
+                                                @php
+                                                    $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
+                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                                @endphp
+                                                
+                                                @if($isDelivered)
+                                                    <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
+                                                        @csrf
+                                                        @method('POST')
+                                                        <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
+                                                            <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
+                                                        </button>
+                                                    </form>
+                                                @elseif($order->isCompleted())
+                                                    <button type="button" class="btn btn-success me-2" disabled>
+                                                        <i class="fas fa-check-double me-1"></i> Đã nhận hàng
+                                                    </button>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-primary me-2 reorder-btn" 
+                                                            data-order-id="{{ $order->id }}"
+                                                            title="Mua lại các sản phẩm trong đơn hàng này"
+                                                            onclick="event.preventDefault(); 
+                                                                     const button = this; 
+                                                                     button.disabled = true; 
+                                                                     button.innerHTML = '<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...'; 
+                                                                     // Tạo form ẩn
+                                                                     const form = document.createElement('form'); 
+                                                                     form.method = 'POST'; 
+                                                                     form.action = '/client/orders/{{ $order->id }}/reorder'; 
+                                                                     form.style.display = 'none'; 
+                                                                     
+                                                                     // Thêm CSRF token và method spoofing
+                                                                     const csrfToken = document.querySelector('meta[name=\'csrf-token\']').content; 
+                                                                     form.innerHTML = `
+                                                                         <input type='hidden' name='_token' value='${csrfToken}'>
+                                                                         <input type='hidden' name='_method' value='POST'>
+                                                                     `; 
+                                                                     
+                                                                     // Thêm form vào body và submit
+                                                                     document.body.appendChild(form); 
+                                                                     form.submit();">
+                                                        <i class="fas fa-redo-alt me-1"></i> Mua lại
+                                                    </button>
+                                                @endif
+                                                @if ($statusId == 4)
+                                                    @if ($item->review)
+                                                        <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
+                                                            <button 
+                                                                data-bs-toggle = "modal"
+                                                                data-bs-target = "#viewReviewModal"
+                                                                data-rating = "{{$item->review->rating}}"
+                                                                data-text = "{{$item->review->review_text}}"
+                                                                data-images='@json($item->review->images->map(fn($img) => asset("storage/" . $img->image_path)))'
+                                                                data-product-name = "{{$item->product->name}}"
+                                                                data-variant = "{{$variantText}}"
+                                                                data-thumb="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail)
+                                                                : asset('assets2/img/product/2/prodcut-1.jpg') }}"
+                                    
+                                                            >
+                                                                <i class="fas fa-eye me-1"></i> Xem đánh giá
+                                                            </button>
+                                                            
+                                                        </div>
+                                                    @elseif($item->order->canReview())
+                                                        <div class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
+                                                            <button
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#reviewModal"
+                                                                data-product-id="{{ $item->product->id }}"
+                                                                data-order-item-id="{{ $item->id }}"
+                                                                data-product-name="{{ $item->product->name }}"
+                                                                data-variant="{{ $variantText }}"
+                                                                >
+                                                                <i class="fas fa-star"></i>Đánh giá sản phẩm
+                                                            </button>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                <a href="{{ route('client.orders.show', $order->id) }}"
+                                                    class="btn btn-primary d-flex align-items-center gap-1 btn-sm">
+                                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                                </a>
+                                                @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
+                                                    <a href="{{ route('checkout.retry-payment', $order->code) }}"
+                                                        class="btn btn-warning d-flex align-items-center gap-1 btn-sm">
+                                                        <i class="fas fa-redo"></i> Quay lại thanh toán
+                                                    </a>
+                                                @endif
+                                                
+                                                 @if (
+                                                    $order->is_paid == 1 &&
+                                                        $order->cancelled_at == null &&
+                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
+                                                        !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
+                                                    <a href="{{ route('refund.form', $order->code) }}"
+                                                    class="btn btn-outline-primary me-2 reorder-btn">
+                                                        <i class="fas fa-undo"></i> Yêu cầu hoàn trả
+                                                    </a>
+                                                    
+                                                @endif
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <!-- /Shopee-like card -->
                         @endforeach
@@ -1394,7 +1406,7 @@
         }
         
         /* Tabs styling */
-        .nav-tabs {
+       .nav-tabs {
             border-bottom: 1px solid #e5e7eb;
             flex-wrap: nowrap;
             overflow-x: auto;
@@ -1403,13 +1415,13 @@
             scrollbar-width: none;
         }
         
-        .nav-tabs::-webkit-scrollbar {
+       .nav-tabs::-webkit-scrollbar {
             display: none;
         }
         
-        .nav-tabs .nav-link {
-            color: #6b7280;
-            border: none;
+       .nav-tabs .nav-link {
+            color: #666;
+            border: 1px solid #e8e8e8;
             font-weight: 500;
             padding: 0.75rem 1.25rem;
             white-space: nowrap;
@@ -1430,11 +1442,10 @@
             border-bottom: 3px solid #ff4d2d;
         }
         
-        .nav-tabs .nav-link i {
+       .nav-tabs .nav-link i {
             margin-right: 0.25rem;
         }
         
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .input-group .btn-primary {
                 padding: 0.75rem 1rem;

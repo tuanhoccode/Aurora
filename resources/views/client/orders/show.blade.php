@@ -3,25 +3,220 @@
 @section('title', 'Chi tiết đơn hàng')
 
 @section('content')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fafafa;
-            margin: 0;
-            padding: 20px 0;
-            color: #333;
-        }
+    <div class="container py-4">
 
-        #order-detail-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 30px;
-            font-family: Arial, sans-serif;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-        }
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        <style>
+            .order-card {
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                margin-bottom: 20px;
+                overflow: hidden;
+                border: 1px solid #e5e7eb;
+            }
+            
+            .order-card .card-header {
+                background-color: #f9fafb;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .order-card .card-body {
+                padding: 20px;
+            }
+            
+            .order-status {
+                font-weight: 500;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-size: 13px;
+                text-transform: uppercase;
+            }
+            
+            .status-pending {
+                background-color: #fef3c7;
+                color: #92400e;
+            }
+            
+            .status-processing {
+                background-color: #dbeafe;
+                color: #1e40af;
+            }
+            
+            .status-shipping {
+                background-color: #dbeafe;
+                color: #1e40af;
+            }
+            
+            .status-delivered {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+            
+            .status-cancelled {
+                background-color: #fee2e2;
+                color: #991b1b;
+            }
+            
+            .product-item {
+                display: flex;
+                padding: 16px 0;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .product-image {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
+                margin-right: 16px;
+            }
+            
+            .product-info {
+                flex: 1;
+            }
+            
+            .product-name {
+                font-weight: 500;
+                margin-bottom: 4px;
+                color: #111827;
+            }
+            
+            .product-variant {
+                color: #6b7280;
+                font-size: 13px;
+                margin-bottom: 4px;
+            }
+            
+            .product-price {
+                color: #ef4444;
+                font-weight: 500;
+            }
+            
+            .order-summary {
+                background-color: #f9fafb;
+                border-radius: 6px;
+                padding: 16px;
+                margin-top: 16px;
+            }
+            
+            .summary-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+            
+            .summary-total {
+                font-size: 18px;
+                font-weight: 600;
+                color: #111827;
+                border-top: 1px solid #e5e7eb;
+                padding-top: 12px;
+                margin-top: 8px;
+            }
+            
+            .tracking-steps {
+                position: relative;
+                padding-left: 30px;
+                margin: 20px 0;
+            }
+            
+            .tracking-step {
+                position: relative;
+                padding-bottom: 20px;
+                padding-left: 20px;
+                border-left: 2px solid #e5e7eb;
+            }
+            
+            .tracking-step:last-child {
+                border-left-color: transparent;
+            }
+            
+            .tracking-step.active {
+                border-left-color: #3b82f6;
+            }
+            
+            .tracking-step.completed {
+                border-left-color: #10b981;
+            }
+            
+            .tracking-dot {
+                position: absolute;
+                left: -10px;
+                top: 0;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #e5e7eb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 10px;
+            }
+            
+            .tracking-step.active .tracking-dot {
+                background: #3b82f6;
+            }
+            
+            .tracking-step.completed .tracking-dot {
+                background: #10b981;
+            }
+            
+            .tracking-content {
+                margin-left: 10px;
+            }
+            
+            .tracking-title {
+                font-weight: 500;
+                margin-bottom: 4px;
+                color: #111827;
+            }
+            
+            .tracking-time {
+                font-size: 12px;
+                color: #6b7280;
+            }
+            
+            @media (max-width: 768px) {
+                .order-card .card-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+                }
+                
+                .order-status {
+                    align-self: flex-start;
+                }
+                
+                .product-item {
+                    flex-direction: column;
+                }
+                
+                .product-image {
+                    width: 100%;
+                    height: auto;
+                    margin-bottom: 12px;
+                }
+            }
 
         .order-box {
             margin: 30px 0;

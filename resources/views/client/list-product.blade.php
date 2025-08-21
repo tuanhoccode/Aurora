@@ -248,8 +248,8 @@
                                 <ul class="filter-items filter-checkbox">
                                     <li class="d-flex justify-content-between mb-10">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="on_sale" value="1" id="on_sale" {{ request('on_sale') ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="on_sale">Đang giảm giá</label>
+                                            <input class="form-check-input" type="checkbox" name="is_sale" value="1" id="is_sale" {{ request('is_sale') ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="is_sale">Đang giảm giá</label>
                                         </div>
                                     </li>
                                     <li class="d-flex justify-content-between mb-10">
@@ -258,24 +258,6 @@
                                             <label class="form-check-label" for="in_stock">Còn hàng</label>
                                         </div>
                                     </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Brand Filter -->
-                    <div class="tp-shop-widget mb-35">
-                        <h3 class="tp-shop-widget-title">Thương hiệu</h3>
-                        <div class="tp-shop-widget-content">
-                            <div class="tp-shop-widget-checkbox">
-                                <ul class="filter-items filter-checkbox">
-                                    @foreach($brands as $brand)
-                                    <li class="d-flex justify-content-between mb-10">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="brands[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brands'))->contains($brand->id) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="brand_{{ $brand->id }}">{{ $brand->name }}</label>
-                                        </div>
-                                    </li>
-                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -298,6 +280,24 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Brand Filter -->
+                    <div class="tp-shop-widget mb-35">
+                        <h3 class="tp-shop-widget-title">Thương hiệu</h3>
+                        <div class="tp-shop-widget-content">
+                            <div class="tp-shop-widget-checkbox">
+                                <ul class="filter-items filter-checkbox">
+                                    @foreach($brands as $brand)
+                                    <li class="d-flex justify-content-between mb-10">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="brands[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brands'))->contains($brand->id) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="brand_{{ $brand->id }}">{{ $brand->name }}</label>
+                                        </div>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Price Filter (Multi-checkbox) -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Lọc theo giá</h3>
@@ -310,12 +310,13 @@
                                             ['min' => 200000, 'max' => 500000, 'label' => '200.000 đ - 500.000 đ'],
                                             ['min' => 500000, 'max' => 800000, 'label' => '500.000 đ - 800.000 đ'],
                                             ['min' => 800000, 'max' => 1000000, 'label' => '800.000 đ - 1.000.000 đ'],
+                                            ['min' => 1000000, 'max' => 10000000, 'label' => 'Trên 1.000.000 đ'],
                                         ];
                                     @endphp
                                     @foreach($priceRanges as $i => $range)
                                     <li class="mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="prices[]" value="{{ $i }}" id="price_range_{{ $i }}" {{ collect(request('prices'))->contains($i) ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="checkbox" name="price_ranges[]" value="{{ $range['min'] }}-{{ $range['max'] }}" id="price_range_{{ $i }}" {{ collect(request('price_ranges'))->contains($range['min'].'-'.$range['max']) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="price_range_{{ $i }}">{{ $range['label'] }}</label>
                                         </div>
                                     </li>
