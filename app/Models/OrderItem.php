@@ -56,7 +56,7 @@ class OrderItem extends Model
     public function canReviewItem(){
         $order = $this->order();
         $deliveredStatus = $order->statusHistory()
-        ->where('order_status_id', 4)
+        ->where('order_status_id', 10)
         ->latest()
         ->first();
 
@@ -64,7 +64,7 @@ class OrderItem extends Model
             return false;
         }
 
-        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(3);
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(30);
         return now()->lessThanOrEqualTo($expireDate);
     }
 

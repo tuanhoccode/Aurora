@@ -67,9 +67,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
 
         View::composer('admin.layouts.sidebar', function ($view){
-            $pendingComments = Comment::where('is_active', 0)->count();
             $pendingReviews= Review::where('is_active', 0)->count();
-            $view->with('hasPendingFeedbacks', $pendingComments + $pendingReviews > 0);
+            $view->with('hasPendingFeedbacks',  $pendingReviews > 0);
         });
     }
 }

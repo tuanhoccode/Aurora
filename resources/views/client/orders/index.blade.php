@@ -704,7 +704,7 @@
             </div>
         </div>
 
-        @if (session('success'))
+        <!-- @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -716,7 +716,7 @@
                 <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        @endif -->
 
         <div class="mb-4">
             <form action="{{ route('client.orders') }}" method="GET" class="w-100">
@@ -784,20 +784,6 @@
                 </a>
             </li>
         </ul>
-
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
 
     @if($orders->isEmpty())
         <div class="card text-center p-5" style="background: #fff;">
@@ -962,7 +948,7 @@
                                                         </button>
                                                     </form>
                                                 @endif
-                                                @if ($statusId == 4)
+                                                @if ($statusId == 10)
                                                     @if ($item->review)
                                                         <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
                                                             <button 

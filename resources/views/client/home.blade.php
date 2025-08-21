@@ -469,20 +469,20 @@
                   @endphp
                    <div class="tp-product-rating-icon tp-product-rating-icon-2">
                      @if ($validReviews->count() > 0)
-                   <div class="review-item pb-3">
-                     <div class="text-warning mb-1">
-                     @for ($i = 1; $i <= 5; $i++)
-                      @if ($i <= $avg)
-                     ★
-                   @else
-                     ☆
-                   @endif
-                  @endfor
-                     </div>
-                   </div>
-                  @else
-                   <p>Chưa có đánh giá.</p>
-                  @endif
+                        <div class="review-item pb-3">
+                           <div class="text-warning mb-1">
+                              @for ($i = 1; $i <= 5; $i++)
+                                 @if ($i <= $avg)
+                                    ★
+                                 @else
+                                    ☆
+                                 @endif
+                              @endfor
+                           </div>
+                        </div>
+                     @else
+                        <p>Chưa có đánh giá.</p>
+                     @endif
                    </div>
 
                    <div class="tp-product-price-wrapper-2">
@@ -522,6 +522,14 @@
             </div>
             <div class="row">
                @foreach($featuredThisWeek as $prod)
+                  @php
+                     $validReviews = $prod->reviews
+                         ->where('is_active', 1)
+                         ->where('review_id', null)
+                         ->where('rating', '>', 0);
+
+                     $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
+                  @endphp
                <div class="col-xl-3 col-lg-4 col-sm-6">
                  <div class="tp-product-item-2 mb-40">
                    <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
@@ -535,6 +543,23 @@
                           {{ Str::limit($prod->name, 30) }}
                         </a>
                      </h3>
+                     <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                                    @if ($validReviews->count() > 0)
+                                        <div class="review-item">
+                                            <div class="text-warning">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($i <= $avg)
+                                                        ★
+                                                    @else
+                                                        ☆
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p>Chưa có đánh giá.</p>
+                                    @endif
+                                </div>
                      <div class="tp-product-price-wrapper-2">
                         <span class="tp-product-price-2 new-price">
                           {{ number_format($prod->display_price, 0, ',', '.') }}

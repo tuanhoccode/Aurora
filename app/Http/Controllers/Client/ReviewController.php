@@ -24,7 +24,7 @@ class ReviewController extends Controller
     $orders = Order::where('user_id', $user->id)
         ->whereHas('items', fn($q)=>$q->where('product_id', $productId))
         ->whereHas('currentStatus.status', fn($q)
-        => $q->where('name', 'Giao hàng thành công'))
+        => $q->where('name', 'Nhận hàng thành công'))
         ->get();
     
     if($orders->isEmpty()){
