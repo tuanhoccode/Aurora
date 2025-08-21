@@ -888,9 +888,14 @@
                         <div class="track-node">@if($isDone || $isCurrent)<i class="fas fa-check"></i>@endif</div>
                         <div class="track-time">{{ $e['time']->format('H:i d-m-Y') }}</div>
 
-                        @if($i===0 && in_array($currentStatusName ?? '', ['Đã giao hàng','Giao hàng thành công','Nhận hàng thành công']))
-                          <div class="track-title" style="color:#16a34a">Đã giao</div>
-                          <div class="track-desc">Giao hàng thành công</div>
+                        @if($i===0 && in_array($currentStatusName ?? '', ['Giao hàng thành công','Nhận hàng thành công']))
+                          @if($order->isCompleted())
+                            <div class="track-title" style="color:#16a34a">Đã nhận hàng thành công</div>
+                            <div class="track-desc">Cảm ơn bạn đã mua hàng tại cửa hàng chúng tôi</div>
+                          @else
+                            <div class="track-title" style="color:#16a34a">Đã giao</div>
+                            <div class="track-desc">Giao hàng thành công. Vui lòng xác nhận đã nhận hàng.</div>
+                          @endif
                           <div class="track-desc">Người nhận hàng: {{ $order->fullname }}</div>
                         @else
                           <div class="track-title" style="color:{{ $i===0 ? '#16a34a' : '#0f766e' }}">{{ $e['title'] }}</div>
@@ -982,9 +987,22 @@
                                 style="color: #26aa99; margin-left: 12px;">-{{ number_format($order->discount_amount, 0, ',', '.') }}đ</span>
                         </div>
                     @endif
-                    <div
-                        style="font-size: 18px; color: #ee4d2d; font-weight: bold; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0;">
-                        Thành tiền: {{ number_format($total, 0, ',', '.') }}đ
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0; text-align: right;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            @if($order->isCompleted() || $order->isCancelled())
+                                <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-shopping-cart me-1"></i> Mua lại
+                                    </button>
+                                </form>
+                            @else
+                                <div></div> <!-- Placeholder để đảm bảo tổng tiền luôn nằm bên phải -->
+                            @endif
+                            <div style="font-size: 18px; color: #ee4d2d; font-weight: bold;">
+                                Thành tiền: {{ number_format($total, 0, ',', '.') }}đ
+                            </div>
+                        </div>
                     </div>
                     
                 </div>
