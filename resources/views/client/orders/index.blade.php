@@ -994,17 +994,15 @@
                                                     </a>
                                                 @endif
                                                 
-                                                 @if (
-                                                    $order->is_paid == 1 &&
-                                                        $order->cancelled_at == null &&
-                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
-                                                        !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
-                                                    <a href="{{ route('refund.form', $order->code) }}"
-                                                    class="btn btn-outline-primary me-2 reorder-btn">
-                                                        <i class="fas fa-undo"></i> Yêu cầu hoàn trả
-                                                    </a>
-                                                    
-                                                @endif
+                                                 @if ($order->is_paid == 1 &&
+                                                $order->cancelled_at == null &&
+                                                $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
+                                                !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
+                                                <a href="{{ route('refund.form', $order->code) }}"
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                                                    <i class="fas fa-undo"></i> Yêu cầu hoàn trả
+                                                </a>
+                                            @endif
                                                 
                                             </div>
                                         </div>
