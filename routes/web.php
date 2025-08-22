@@ -80,6 +80,8 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         // Trash Management - Phải đặt trước các route có tham số {post}
         Route::get('/trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'trash'])->name('trash');
         Route::post('/empty-trash', [\App\Http\Controllers\Admin\BlogPostController::class, 'emptyTrash'])->name('empty-trash');
+        Route::post('/bulk-restore', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkRestore'])->name('bulk-restore');
+        Route::delete('/bulk-force-delete', [\App\Http\Controllers\Admin\BlogPostController::class, 'bulkForceDelete'])->name('bulk-force-delete');
 
         // Danh sách và tạo bài viết
         Route::get('/', [\App\Http\Controllers\Admin\BlogPostController::class, 'index'])->name('index');
@@ -121,11 +123,6 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::get('/{category}/edit', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'edit'])->name('edit');
         Route::put('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'destroy'])->name('destroy');
-
-        // Bulk actions
-        Route::post('/bulk-activate', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkActivate'])->name('bulk-activate');
-        Route::post('/bulk-deactivate', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkDeactivate'])->name('bulk-deactivate');
-        Route::post('/bulk-destroy', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'bulkDestroy'])->name('bulk-destroy');
 
         // Restore and force delete routes
         Route::patch('/{id}/restore', [\App\Http\Controllers\Admin\BlogCategoryController::class, 'restore'])->name('restore');
@@ -416,10 +413,6 @@ Route::prefix('blog')->name('blog.')->group(function () {
     Route::post('/{post}/comments', [\App\Http\Controllers\Client\BlogController::class, 'storeComment'])
         ->name('comments.store')
         ->middleware('throttle:3,1'); // Giới hạn 3 request mỗi phút
-
-    // Danh mục bài viết
-    Route::get('/category/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByCategory'])
-        ->name('category');
 
     // Bài viết theo tag
     Route::get('/tag/{slug}', [\App\Http\Controllers\Client\BlogController::class, 'showByTag'])

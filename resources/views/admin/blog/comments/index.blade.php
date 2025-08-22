@@ -42,14 +42,14 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <form action="{{ route('admin.blog.comments.index') }}" method="GET" class="row g-2">
-                            <div class="col-md-11">
+                            <div class="col-md-10">
                                 <input type="text" name="search" class="form-control" 
                                        placeholder="Tìm kiếm nội dung, tên, email..." 
                                        value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-1">
+                            <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary w-100 px-4">
-                                    <i class="fas fa-search me-1"></i>
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm 
                                 </button>
                             </div>
                         </form>
@@ -121,22 +121,25 @@
                                                     <i class="fas fa-reply me-1"></i> Trả lời
                                                 </button>
                                                 
-                                                @if(!$comment->is_active)
-                                                    <form action="{{ route('admin.blog.comments.approve', $comment) }}" 
-                                                          method="POST" class="d-inline"
-                                                          onsubmit="return confirm('Bạn có chắc chắn muốn duyệt bình luận này?')">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="btn btn-sm btn-success" 
-                                                                title="Duyệt bình luận">
-                                                            <i class="fas fa-check me-1"></i> Duyệt
+                                                <!-- Container chứa nút duyệt/đã duyệt -->
+                                                <div class="btn-approve-container">
+                                                    @if(!$comment->is_active)
+                                                        <form action="{{ route('admin.blog.comments.approve', $comment) }}" 
+                                                              method="POST" class="d-inline btn-approve-form"
+                                                              onsubmit="return confirm('Bạn có chắc chắn muốn duyệt bình luận này?')">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" class="btn btn-sm btn-success" 
+                                                                    title="Duyệt bình luận">
+                                                                <i class="fas fa-check me-1"></i> Duyệt
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <button class="btn btn-sm btn-success" disabled>
+                                                            <i class="fas fa-check me-1"></i> Đã duyệt
                                                         </button>
-                                                    </form>
-                                                @else
-                                                    <button class="btn btn-sm btn-success" disabled>
-                                                        <i class="fas fa-check me-1"></i> Đã duyệt
-                                                    </button>
-                                                @endif
+                                                    @endif
+                                                </div>
                                                 
                                                 <form action="{{ route('admin.blog.comments.destroy', $comment) }}" 
                                                       method="POST" class="d-inline"
@@ -188,6 +191,7 @@
             const commentId = $(this).data('id');
             const isActive = $(this).is(':checked') ? 1 : 0;
             const $toggle = $(this);
+            const $row = $toggle.closest('tr');
             
             // Gửi yêu cầu cập nhật trạng thái
             $.ajax({
@@ -196,18 +200,36 @@
                 data: { is_active: isActive },
                 success: function(response) {
                     if (response.success) {
-                        // Cập nhật giao diện nếu cần
+                        // Cập nhật nút duyệt/đã duyệt
                         if (isActive) {
-                            $toggle.closest('tr').find('.badge')
-                                .removeClass('bg-warning')
-                                .addClass('bg-success')
-                                .text('Đã duyệt');
+                            // Nếu đang bật trạng thái active
+                            $row.find('.btn-approve-container').html(`
+                                <button class="btn btn-sm btn-success" disabled>
+                                    <i class="fas fa-check me-1"></i> Đã duyệt
+                                </button>
+                            `);
                         } else {
-                            $toggle.closest('tr').find('.badge')
-                                .removeClass('bg-success')
-                                .addClass('bg-warning')
-                                .text('Chờ duyệt');
+                            // Nếu đang tắt trạng thái active
+                            $row.find('.btn-approve-container').html(`
+                                <form action="/admin/blog/comments/${commentId}/approve" 
+                                      method="POST" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn duyệt bình luận này?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-success" 
+                                            title="Duyệt bình luận">
+                                        <i class="fas fa-check me-1"></i> Duyệt
+                                    </button>
+                                </form>
+                            `);
                         }
+                        
+                        // Cập nhật lại sự kiện click cho nút duyệt mới
+                        $row.find('.btn-approve-form').on('submit', function(e) {
+                            if (!confirm('Bạn có chắc chắn muốn duyệt bình luận này?')) {
+                                e.preventDefault();
+                            }
+                        });
                     } else {
                         // Nếu có lỗi, khôi phục lại trạng thái cũ
                         $toggle.prop('checked', !isActive);

@@ -373,15 +373,12 @@ class BlogPostController extends Controller
         $ids = $request->input('ids', []);
         
         if (empty($ids)) {
-            return response()->json(['success' => false, 'message' => 'Không có bài viết nào được chọn']);
+            return redirect()->back()->with('error', 'Vui lòng chọn ít nhất một bài viết');
         }
-        
-        $count = BlogPost::whereIn('id', $ids)->delete();
-            
-        return response()->json([
-            'success' => true, 
-            'message' => 'Đã xóa ' . $count . ' bài viết vào thùng rác'
-        ]);
+
+        $count = BlogPost::destroy($ids);
+
+        return redirect()->back()->with('success', "Đã xóa {$count} bài viết vào thùng rác");
     }
     
     /**
@@ -392,7 +389,7 @@ class BlogPostController extends Controller
         $ids = $request->input('ids', []);
         
         if (empty($ids)) {
-            return response()->json(['success' => false, 'message' => 'Không có bài viết nào được chọn']);
+            return redirect()->back()->with('error', 'Vui lòng chọn ít nhất một bài viết');
         }
         
         $count = BlogPost::whereIn('id', $ids)
@@ -401,10 +398,7 @@ class BlogPostController extends Controller
                 'updated_at' => now()
             ]);
             
-        return response()->json([
-            'success' => true, 
-            'message' => 'Đã kích hoạt ' . $count . ' bài viết'
-        ]);
+        return redirect()->back()->with('success', 'Đã kích hoạt ' . $count . ' bài viết');
     }
     
     /**
@@ -415,7 +409,7 @@ class BlogPostController extends Controller
         $ids = $request->input('ids', []);
         
         if (empty($ids)) {
-            return response()->json(['success' => false, 'message' => 'Không có bài viết nào được chọn']);
+            return redirect()->back()->with('error', 'Vui lòng chọn ít nhất một bài viết');
         }
         
         $count = BlogPost::whereIn('id', $ids)
@@ -424,15 +418,59 @@ class BlogPostController extends Controller
                 'updated_at' => now()
             ]);
             
-        return response()->json([
-            'success' => true, 
-            'message' => 'Đã tắt ' . $count . ' bài viết'
-        ]);
+        return redirect()->back()->with('success', 'Đã tắt ' . $count . ' bài viết');
     }
 
     protected function uploadThumbnail($file)
     {
         $fileName = time() . '_' . $file->getClientOriginalName();
         return $file->storeAs('uploads/blog/thumbnails', $fileName, 'public');
+    }
+
+    /**
+     * Bulk restore posts from trash
+     */
+    public function bulkRestore(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Vui lòng chọn ít nhất một bài viết');
+        }
+        
+        $count = BlogPost::onlyTrashed()
+            ->whereIn('id', $ids)
+            ->restore();
+            
+        return redirect()->back()->with('success', 'Đã khôi phục ' . $count . ' bài viết');
+    }
+    
+    /**
+     * Bulk force delete posts
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Vui lòng chọn ít nhất một bài viết');
+        }
+        
+        $count = 0;
+        $posts = BlogPost::onlyTrashed()->whereIn('id', $ids)->get();
+        
+        foreach ($posts as $post) {
+            // Xóa ảnh đại diện nếu có
+            if ($post->thumbnail) {
+                Storage::disk('public')->delete($post->thumbnail);
+            }
+            
+            // Xóa bài viết vĩnh viễn
+            if ($post->forceDelete()) {
+                $count++;
+            }
+        }
+            
+        return redirect()->back()->with('success', 'Đã xóa vĩnh viễn ' . $count . ' bài viết');
     }
 }

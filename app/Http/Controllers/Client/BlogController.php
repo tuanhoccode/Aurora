@@ -29,7 +29,9 @@ class BlogController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Tìm kiếm theo từ khóa
-        if ($request->has('search') && $search = $request->input('search')) {
+        $searchTerm = null;
+        if ($request->has('search') && $search = trim($request->input('search'))) {
+            $searchTerm = $search;
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('content', 'like', "%{$search}%");
@@ -37,10 +39,8 @@ class BlogController extends Controller
         }
 
         // Lọc theo danh mục
-        if ($request->has('category') && $categorySlug = $request->input('category')) {
-            $query->whereHas('category', function($q) use ($categorySlug) {
-                $q->where('slug', $categorySlug);
-            });
+        if ($request->has('category') && $categoryId = $request->input('category')) {
+            $query->where('category_id', $categoryId);
         }
 
         // Lọc theo tag (tạm thời bỏ qua vì chưa cần thiết)
@@ -89,12 +89,16 @@ class BlogController extends Controller
             ->take(5)
             ->get();
 
+        $hasSearchResults = $searchTerm ? $posts->count() > 0 : null;
+        
         return view('client.blog.index', compact(
             'posts', 
             'categories', 
             'popularPosts', 
             'recentComments',
-            'archives'
+            'archives',
+            'searchTerm',
+            'hasSearchResults'
         ));
     }
 
@@ -158,12 +162,30 @@ class BlogController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Lấy tất cả bình luận đã được phê duyệt của bài viết
+        $approvedComments = BlogComment::with(['user' => function($q) {
+                $q->select('id', 'fullname as name', 'email', 'avatar');
+            }])
+            ->where('post_id', $post->id)
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Lấy các bài viết mới nhất
+        $latestPosts = BlogPost::where('is_active', true)
+            ->where('id', '!=', $post->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         return view('client.blog.show', compact(
             'post', 
             'relatedPosts', 
             'popularPosts', 
             'recentComments',
-            'categories'
+            'categories',
+            'approvedComments',
+            'latestPosts'
         ));
     }
 

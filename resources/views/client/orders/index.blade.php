@@ -848,7 +848,7 @@
                                         @if ($statusId == 10)
                                             <span class="sp-ok"><i class="fas fa-truck"></i> Giao hàng thành công</span>
                                             <span>|</span>
-                                            <span class="sp-done">HOÀN THÀNH</span>
+                                            <span class="sp-done">ĐÃ HOÀN THÀNH</span>
                                         @else
                                             <span class="text-muted">{{ $statusName }}</span>
                                         @endif
@@ -857,9 +857,12 @@
 
                                 @foreach ($order->items as $item)
                                     @php
-                                        $img = $item->product->thumbnail
-                                            ? asset('storage/' . $item->product->thumbnail)
-                                            : asset('assets2/img/product/2/prodcut-1.jpg');
+                                        // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
+                                        $img = $item->variant && $item->variant->img 
+                                            ? asset('storage/' . $item->variant->img)
+                                            : ($item->product->thumbnail 
+                                                ? asset('storage/' . $item->product->thumbnail)
+                                                : asset('assets2/img/product/2/prodcut-1.jpg'));
                                         $old =
                                             $item->original_price ??
                                             (data_get($item, 'variant.original_price') ??
@@ -928,10 +931,10 @@
 
                                                 @php
                                                     $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
-                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 10; // 10 = Nhận hàng thành công
                                                 @endphp
                                                 
-                                                @if($isDelivered)
+                                                @if($isDelivered && !$order->isConfirmationExpired())
                                                     <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
                                                         @csrf
                                                         @method('POST')
