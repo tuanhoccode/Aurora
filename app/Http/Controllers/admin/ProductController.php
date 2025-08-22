@@ -783,9 +783,6 @@ class ProductController extends Controller
     public function bulkToggleStatus(Request $request)
     {
         try {
-            if (Auth::user()->role !== 'admin') {
-                abort(403, 'Bạn không có quyền cập nhật trạng thái.');
-            }
             $validated = $request->validate([
                 'ids' => 'required|array',
                 'ids.*' => 'exists:products,id',

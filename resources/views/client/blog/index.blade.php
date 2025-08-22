@@ -205,6 +205,9 @@
             height: 260px;
         }
     }
+    .tp-breadcrumb-height {
+        height: 550px;  /* chỉnh tùy ý, ví dụ 400px */
+    }
 </style>
 
 
