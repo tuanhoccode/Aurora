@@ -19,27 +19,6 @@
     </div>
 </div>
 
-{{-- Bulk Actions --}}
-<div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-success bulk-action" data-action="activate">
-            <i class="bi bi-check-circle"></i>
-            Kích hoạt
-        </button>
-        <button type="button" class="btn btn-warning bulk-action" data-action="deactivate">
-            <i class="bi bi-eye-slash"></i>
-            Tạm ẩn
-        </button>
-        <button type="button" class="btn btn-danger bulk-action" data-action="delete">
-            <i class="bi bi-trash"></i>
-            Xóa
-        </button>
-        <button type="button" class="btn btn-light ms-auto cancel-bulk">
-            <i class="bi bi-x-lg"></i>
-            Hủy
-        </button>
-    </div>
-</div>
 
 {{-- Search --}}
 <div class="card shadow-sm rounded-3 border-0 mb-3">
@@ -117,11 +96,6 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th width="40">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="selectAll">
-                            </div>
-                        </th>
                         <th>Tên danh mục</th>
                         <th>Danh mục cha</th>
                         <th class="text-center">Bài viết</th>
@@ -132,11 +106,6 @@
                 <tbody>
                     @forelse($categories as $category)
                         <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="ids[]" value="{{ $category->id }}">
-                                </div>
-                            </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="bg-light rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
@@ -386,109 +355,8 @@
         });
     }
     
-    // Hàm kiểm tra và hiển thị bulk actions
-    function toggleBulkActions() {
-        const anyChecked = $('input[name="ids[]"]:checked').length > 0;
-        $('.bulk-actions').toggle(anyChecked);
-        
-        // Kiểm tra nếu tất cả các checkbox đều được chọn
-        const allChecked = $('input[name="ids[]"]').length === $('input[name="ids[]"]:checked').length;
-        $('#selectAll').prop('checked', allChecked);
-    }
-    
-    // Xử lý bulk actions
     $(document).ready(function() {
-        // Select all checkbox
-        $('#selectAll').change(function() {
-            $('input[name="ids[]"]').prop('checked', this.checked);
-            toggleBulkActions();
-        });
-        
-        // Toggle bulk actions khi chọn các checkbox
-        $(document).on('change', 'input[name="ids[]"]', function() {
-            toggleBulkActions();
-        });
-        
-        // Hủy chọn tất cả
-        $('.cancel-bulk').click(function() {
-            $('.form-check-input').prop('checked', false);
-            $('.bulk-actions').hide();
-        });
-        
-        // Xử lý bulk actions
-        $('.bulk-action').click(function() {
-            const action = $(this).data('action');
-            const ids = [];
-            
-            $('.form-check-input:checked').not('#selectAll').each(function() {
-                ids.push($(this).val());
-            });
-            
-            if (ids.length === 0) {
-                showToast('warning', 'Vui lòng chọn ít nhất một danh mục');
-                return;
-            }
-            
-            let confirmMessage = '';
-            let url = '';
-            
-            switch (action) {
-                case 'activate':
-                    confirmMessage = 'Bạn có chắc chắn muốn kích hoạt ' + ids.length + ' danh mục đã chọn?';
-                    url = '{{ route("admin.blog.categories.bulk-activate") }}';
-                    break;
-                case 'deactivate':
-                    confirmMessage = 'Bạn có chắc chắn muốn tắt ' + ids.length + ' danh mục đã chọn?';
-                    url = '{{ route("admin.blog.categories.bulk-deactivate") }}';
-                    break;
-                case 'delete':
-                    confirmMessage = 'Bạn có chắc chắn muốn xóa ' + ids.length + ' danh mục đã chọn?';
-                    url = '{{ route("admin.blog.categories.bulk-destroy") }}';
-                    break;
-            }
-            
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            // Hiển thị loading
-            const $submitButton = $(this);
-            const originalText = $submitButton.html();
-            $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...');
-            
-            // Xác định method dựa trên action
-            const method = (action === 'delete' || action === 'destroy') ? 'DELETE' : 'POST';
-            
-            $.ajax({
-                url: url,
-                type: method,
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    ids: ids
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Làm mới bảng bằng cách gọi lại dữ liệu
-                        refreshTable(function() {
-                            showToast('success', response.message || 'Thao tác thành công');
-                        });
-                    } else {
-                        showToast('error', response.message || 'Có lỗi xảy ra');
-                    }
-                },
-                error: function(xhr) {
-                    const errorMessage = xhr.responseJSON?.message || 'Có lỗi xảy ra khi kết nối đến máy chủ';
-                    showToast('error', errorMessage);
-                },
-                complete: function() {
-                    $submitButton.prop('disabled', false).html(originalText);
-                    // Ẩn bulk actions
-                    $('.bulk-actions').hide();
-                    // Bỏ chọn tất cả checkbox
-                    $('.form-check-input').prop('checked', false);
-                }
-            });
-        });
+        // Code khác ở đây (nếu có)
     });
 </script>
 @endpush

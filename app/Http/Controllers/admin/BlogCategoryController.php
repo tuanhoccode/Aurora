@@ -231,7 +231,15 @@ class BlogCategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = BlogCategory::findOrFail($id);
+        $category = BlogCategory::withCount('posts')->findOrFail($id);
+        
+        // Kiểm tra xem danh mục có bài viết nào không
+        if ($category->posts_count > 0) {
+            return redirect()
+                ->route('admin.blog.categories.index')
+                ->with('error', 'Không thể xóa danh mục vì có ' . $category->posts_count . ' bài viết đang sử dụng.');
+        }
+        
         $category->delete();
 
         return redirect()
@@ -272,67 +280,7 @@ class BlogCategoryController extends Controller
             ->with('success', 'Đã khôi phục danh mục thành công');
     }
     
-    /**
-     * Kích hoạt nhiều danh mục cùng lúc
-     */
-    public function bulkActivate(Request $request)
-    {
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:blog_categories,id'
-        ]);
-
-        $count = BlogCategory::whereIn('id', $request->ids)
-            ->where('is_active', false)
-            ->update(['is_active' => true]);
-
-        return response()->json([
-            'success' => true,
-            'message' => "Đã kích hoạt {$count} danh mục thành công.",
-            'count' => $count
-        ]);
-    }
-
-    /**
-     * Vô hiệu hóa nhiều danh mục cùng lúc
-     */
-    public function bulkDeactivate(Request $request)
-    {
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:blog_categories,id'
-        ]);
-
-        $count = BlogCategory::whereIn('id', $request->ids)
-            ->where('is_active', true)
-            ->update(['is_active' => false]);
-
-        return response()->json([
-            'success' => true,
-            'message' => "Đã vô hiệu hóa {$count} danh mục thành công.",
-            'count' => $count
-        ]);
-    }
     
-    /**
-     * Xóa nhiều danh mục cùng lúc
-     */
-    public function bulkDestroy(Request $request)
-    {
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:blog_categories,id'
-        ]);
-
-        $count = BlogCategory::whereIn('id', $request->ids)->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Đã xóa {$count} danh mục vào thùng rác.",
-            'count' => $count
-        ]);
-    }
-
     /**
      * Display a listing of trashed categories.
      */

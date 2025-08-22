@@ -444,38 +444,31 @@
             }
 
             if (confirm(confirmMessage)) {
-                // Gửi yêu cầu AJAX
-                $.ajax({
-                    url: formAction,
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        ids: postIds
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Cập nhật giao diện ngay lập tức
-                            postIds.forEach(function(id) {
-                                const statusCell = $(`#post-status-${id}`);
-                                const statusBadge = statusCell.find('.badge');
-                                
-                                if (action === 'activate') {
-                                    statusBadge.removeClass('bg-warning').addClass('bg-success').text('Đang hiển thị');
-                                } else if (action === 'deactivate') {
-                                    statusBadge.removeClass('bg-success').addClass('bg-warning').text('Chưa hiển thị');
-                                }
-                            });
-                            
-                            // Ẩn bulk actions
-                            $('.bulk-actions').slideUp();
-                            // Bỏ chọn tất cả checkbox
-                            $('.post-checkbox, #selectAll').prop('checked', false);
-                        }
-                    },
-                    error: function(xhr) {
-                        alert('Có lỗi xảy ra: ' + (xhr.responseJSON?.message || 'Vui lòng thử lại sau'));
-                    }
+                // Tạo form ẩn để submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = formAction;
+                form.style.display = 'none';
+                
+                // Thêm CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+                
+                // Thêm các ID bài viết
+                postIds.forEach(function(id) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = id;
+                    form.appendChild(input);
                 });
+                
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     });    
