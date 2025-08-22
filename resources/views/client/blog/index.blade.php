@@ -91,6 +91,9 @@
     .tp-blog-btn a:hover i {
         transform: translateX(5px);
     }
+    .tp-breadcrumb-height {
+        height: 550px;  /* chỉnh tùy ý, ví dụ 400px */
+    }
 </style>
 @endpush
 

@@ -28,10 +28,10 @@
 
         {{-- Search & Filter --}}
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <form action="{{ route('admin.coupons.index') }}" method="GET" class="d-flex gap-2">
     <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm mã..."
+        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm mã giảm giá..."
                value="{{ request('search') }}">
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-search"></i>

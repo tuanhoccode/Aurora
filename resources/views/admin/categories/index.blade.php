@@ -45,7 +45,7 @@
                 </div>
                 {{-- Search and Filter Form --}}
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <form action="{{ route('admin.categories.index') }}" method="GET" class="d-flex gap-2">
                             <div class="input-group">
                                 <input type="text"
