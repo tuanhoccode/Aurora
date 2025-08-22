@@ -260,6 +260,12 @@ class Product extends Model
         return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
     }
 
+    public function productVariants()
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+
 
 
 

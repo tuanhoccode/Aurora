@@ -214,13 +214,29 @@
                             <th>Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($recentProducts as $product)
+                <tbody>
+                    @foreach($recentProducts as $product)
+                        @php
+                            if ($product->variants && $product->variants->count()) {
+                                $minPrice = $product->variants->min('regular_price');
+                                $maxPrice = $product->variants->max('regular_price');
+                            } else {
+                                $minPrice = $maxPrice = $product->price;
+                            }
+                        @endphp
+
                         <tr>
                             <td><span class="fw-bold">{{ $product->sku }}</span></td>
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->brand->name ?? '-' }}</td>
-                            <td><span class="fw-bold">{{ number_format($product->price, 0, ',', '.') }}đ</span></td>
+                            <td>
+                                @if ($minPrice == $maxPrice)
+                                    <span class="fw-bold">{{ number_format($minPrice, 0, ',', '.') }}đ</span>
+                                @else
+                                    <span class="fw-bold">{{ number_format($minPrice, 0, ',', '.') }}đ</span>
+                                    <small class="text-muted">- {{ number_format($maxPrice, 0, ',', '.') }}đ</small>
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge bg-{{ $product->is_active ? 'success' : 'danger' }} px-3 py-2">
                                     {{ $product->is_active ? 'Hoạt động' : 'Ngừng hoạt động' }}
@@ -232,8 +248,8 @@
                                 </a>
                             </td>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    @endforeach
+                </tbody>
                 </table>
             </div>
         </div>
@@ -335,7 +351,7 @@ const revenueChart = new Chart(ctx, {
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    }); 
+    });
 </script>
 @endpush
 
