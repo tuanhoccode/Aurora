@@ -1460,7 +1460,68 @@ $('form').on('submit', function(e) {
       });
     }
   @endif
+
+  // Hàm hiển thị thông báo
+  function showToast(type, message) {
+    const toast = `
+      <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <div class="d-flex">
+          <div class="toast-body">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    `;
+    
+    // Thêm toast vào DOM
+    $('body').append(toast);
+    
+    // Tự động ẩn sau 3 giây
+    setTimeout(() => {
+      $('.toast').fadeOut(400, function() {
+        $(this).remove();
+      });
+    }, 3000);
+  }
+
+  // Hàm xóa ảnh trong gallery sản phẩm
+  function deleteGalleryImage(button, imagePath) {
+    if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+      return false;
+    }
+
+    const token = $('meta[name="csrf-token"]').attr('content');
+    const imageElement = $(button).closest('.gallery-image');
+    
+    // Gửi yêu cầu xóa ảnh sản phẩm
+    $.ajax({
+      url: '{{ route("admin.products.delete-gallery-image", $product->id) }}',
+      type: 'DELETE',
+      data: {
+        _token: token,
+        path: imagePath  // Gửi path thay vì image_id
+      },
+      success: function(response) {
+        if (response.success) {
+          imageElement.remove();
+          // Kiểm tra xem còn ảnh nào không
+          const galleryContainer = $('.gallery-container');
+          if (galleryContainer.find('.gallery-image').length === 0) {
+            galleryContainer.append('<p class="text-muted text-center">Chưa có ảnh nào</p>');
+          }
+          showToast('success', 'Xóa ảnh thành công');
+        } else {
+          showToast('danger', response.message || 'Có lỗi xảy ra khi xóa ảnh');
+        }
+      },
+      error: function(xhr) {
+        showToast('danger', xhr.responseJSON?.message || 'Có lỗi xảy ra khi xóa ảnh');
+      }
+    });
+  }
 </script>
+ 
 @endpush
 
 @endsection

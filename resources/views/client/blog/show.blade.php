@@ -37,7 +37,7 @@
         padding: 18px;
         background: #fff;
         margin-bottom: 24px;
-        border-radius: 8px;
+        
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     
@@ -152,7 +152,6 @@
     .comment-item {
         background: #fff;
         border: 1px solid #eee;
-        border-radius: 10px;
         padding: 15px;
         margin-bottom: 20px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -172,7 +171,7 @@
         font-size: 14px;
     }
     .comment-form textarea {
-        border-radius: 8px;
+        margin-bottom: 10px;
     }
      /* Sidebar widgets */
      .widget {
@@ -180,7 +179,6 @@
         padding: 18px;
         background: #fff;
         margin-bottom: 24px;
-        border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     
@@ -269,7 +267,7 @@
 </style>
 
 @section('content')
-<div class="container py-5">
+<div class="container">
     <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
         <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
         <span class="mx-2">/</span>
@@ -419,7 +417,7 @@
                         <form action="{{ route('blog.comments.store', $post->id) }}" method="POST">
                             @csrf
                             <textarea name="content" class="form-control mb-3" rows="4" placeholder="Viết bình luận..."></textarea>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary mb-3">
                                 <i class="far fa-paper-plane me-1"></i> Gửi bình luận
                             </button>
                         </form>

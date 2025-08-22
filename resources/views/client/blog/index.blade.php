@@ -26,7 +26,7 @@
     .container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 20px 18px 40px;
+        
     }
     
     .layout {
@@ -212,7 +212,7 @@
 
 
 @section('content')
-<div class="container py-5">
+<div class="container">
     <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
         <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
         <span class="mx-2">/</span>

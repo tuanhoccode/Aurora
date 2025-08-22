@@ -601,7 +601,6 @@
             // Map status to display text
             if ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
                 $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
-                
             } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
                 $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
             } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
