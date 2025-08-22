@@ -1817,8 +1817,7 @@
                                             <div class="coupon-modal-details">
                                                 @if ($availableCoupon->discount_type === 'percent')
                                                     <span class="discount-type">Giảm
-                                                        {{ $availableCoupon->discount_value }}%
-                                                        giá trị đơn hàng</span>
+                                                        {{ $availableCoupon->discount_value }}% giá trị đơn hàng</span>
                                                 @else
                                                     <span class="discount-type">Giảm
                                                         {{ number_format($availableCoupon->discount_value) }} ₫</span>
@@ -1848,8 +1847,7 @@
                                     </div>
                                     <h5 class="fw-bold text-dark mb-2">Không có mã giảm giá</h5>
                                     <p class="text-muted mb-0">Hiện tại không có mã giảm giá nào khả dụng cho đơn hàng của
-                                        bạn
-                                    </p>
+                                        bạn</p>
                                 </div>
                             @endif
                         </div>
@@ -1867,6 +1865,110 @@
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
+            // Hàm áp dụng mã giảm giá bằng form ẩn
+            function applySelectedCoupon(couponId) {
+                // Tạo form ẩn
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = couponId ?
+                    '{{ route('checkout.apply-coupon-by-id') }}' :
+                    '{{ route('checkout.remove-coupon') }}';
+
+                // Thêm CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Nếu có couponId, thêm vào form
+                if (couponId) {
+                    const couponInput = document.createElement('input');
+                    couponInput.type = 'hidden';
+                    couponInput.name = 'coupon_id';
+                    couponInput.value = couponId;
+                    form.appendChild(couponInput);
+                }
+
+                // Thêm loading state
+                const couponModalCard = event.target.closest('.coupon-modal-card');
+                if (couponModalCard) {
+                    couponModalCard.style.opacity = '0.6';
+                    couponModalCard.style.pointerEvents = 'none';
+                    couponModalCard.innerHTML =
+                        '<div class="text-center p-4"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 mb-0">Đang áp dụng mã giảm giá...</p></div>';
+                }
+
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            // Hàm xử lý áp dụng mã giảm giá thủ công bằng form ẩn
+            function applyCouponManually() {
+                const couponCode = $('#coupon_code').val().trim();
+                if (!couponCode) {
+                    alert('Vui lòng nhập mã giảm giá!');
+                    return;
+                }
+
+                // Tạo form ẩn
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('checkout.apply-coupon') }}';
+
+                // Thêm CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Thêm coupon code
+                const couponInput = document.createElement('input');
+                couponInput.type = 'hidden';
+                couponInput.name = 'coupon_code';
+                couponInput.value = couponCode;
+                form.appendChild(couponInput);
+
+                // Thêm loading state
+                const applyButton = $('#applyCouponForm .btn');
+                if (applyButton.length) {
+                    applyButton.prop('disabled', true);
+                    applyButton.html('<i class="fa fa-spinner fa-spin me-1"></i>Đang xử lý...');
+                }
+
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            // Hàm xử lý xóa mã giảm giá bằng form ẩn
+            function removeCoupon() {
+                // Tạo form ẩn
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('checkout.remove-coupon') }}';
+
+                // Thêm CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Thêm loading state
+                const removeButton = $('#remove-coupon');
+                if (removeButton.length) {
+                    removeButton.prop('disabled', true);
+                    removeButton.html('<i class="fa fa-spinner fa-spin me-1"></i>Đang xóa...');
+                }
+
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+
             $(document).ready(function() {
                 // Hàm debounce để hạn chế tần suất gọi AJAX
                 function debounce(func, wait) {
@@ -1909,7 +2011,7 @@
 
                 // Xử lý submit form khi nhấn nút "Xác nhận" trong modal địa chỉ
                 $('#addressForm').on('submit', function(e) {
-                    e.preventDefault(); // Ngăn form submit mặc định
+                    e.preventDefault();
                     const selectedAddressId = $('.address-radio:checked').val();
                     console.log('Sending AJAX request with selected_address:', selectedAddressId);
 
@@ -1923,7 +2025,6 @@
                         success: function(response) {
                             console.log('Response data:', response);
                             if (response.success) {
-                                // Cập nhật phí vận chuyển và ngày giao hàng
                                 $('#normal_shipping_fee').text(new Intl.NumberFormat('vi-VN')
                                     .format(response.normal_shipping_fee || 16500));
                                 $('#fast_shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
@@ -1933,8 +2034,6 @@
                                     );
                                 $('#fast_shipping_dates').text(response.fast_shipping_dates ||
                                     'Trong 4 giờ nếu đặt trước 16:00');
-
-                                // Cập nhật thông tin địa chỉ
                                 $('#address_fullname').text(response.selected_address.fullname ||
                                     'Chưa cung cấp');
                                 $('#address_phone').text(response.selected_address.phone_number ?
@@ -1942,10 +2041,7 @@
                                     'Chưa cung cấp');
                                 $('#address_details').text(response.selected_address.address ||
                                     'Chưa cung cấp');
-
-                                // Cập nhật phí vận chuyển và tổng thanh toán
-                                const shippingFee = response.shipping_fee ||
-                                16500; // Fallback nếu thiếu
+                                const shippingFee = response.shipping_fee || 16500;
                                 $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
                                     shippingFee));
                                 const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
@@ -1954,12 +2050,8 @@
                                     '')) || 0;
                                 $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
                                     cartTotal + shippingFee - discount));
-
-                                // Cập nhật input ẩn trong checkoutForm
                                 $('#shipping_type_input').val(response.shipping_type || 'thường');
                                 $('#address_id_input').val(response.selected_address.id || '');
-
-                                // Đóng modal
                                 $('#addressModal').modal('hide');
                             } else {
                                 console.error('Response error:', response.message);
@@ -1982,7 +2074,7 @@
                 $('.checkout__shipping-method .form-check input[name="shipping_type"]').on('change', updateShipping);
 
                 $('#shippingForm').on('submit', function(e) {
-                    e.preventDefault(); // Ngăn form submit mặc định
+                    e.preventDefault();
                     const shippingType = $(this).find('input[name="shipping_type"]:checked').val();
                     console.log('Sending AJAX request with shipping_type:', shippingType);
 
@@ -1996,7 +2088,6 @@
                         success: function(response) {
                             console.log('Response data:', response);
                             if (response.success) {
-                                // Cập nhật phí vận chuyển và ngày giao hàng
                                 $('#normal_shipping_fee').text(new Intl.NumberFormat('vi-VN')
                                     .format(response.normal_shipping_fee || 16500));
                                 $('#fast_shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
@@ -2006,10 +2097,7 @@
                                     );
                                 $('#fast_shipping_dates').text(response.fast_shipping_dates ||
                                     'Trong 4 giờ nếu đặt trước 16:00');
-
-                                // Cập nhật phí vận chuyển và tổng thanh toán
-                                const shippingFee = response.shipping_fee ||
-                                16500; // Fallback nếu thiếu
+                                const shippingFee = response.shipping_fee || 16500;
                                 $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
                                     shippingFee));
                                 const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
@@ -2018,11 +2106,7 @@
                                     '')) || 0;
                                 $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
                                     cartTotal + shippingFee - discount));
-
-                                // Cập nhật input ẩn trong checkoutForm
                                 $('#shipping_type_input').val(response.shipping_type || 'thường');
-
-                                // Cập nhật trạng thái giao diện
                                 updateShippingState();
                             } else {
                                 console.error('Response error:', response.message);
@@ -2075,7 +2159,7 @@
                     const addressId = $(this).data('address-id');
                     if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
                         $.ajax({
-                            url: '/address/' + addressId, // Sử dụng URL tĩnh
+                            url: '/address/' + addressId,
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -2085,10 +2169,8 @@
                                 if (response.success) {
                                     $(`.address-item[data-address-id="${addressId}"]`).remove();
                                     alert(response.message || 'Xóa địa chỉ thành công!');
-                                    // Cập nhật lại địa chỉ nếu đang chọn
                                     if ($('#address_id_input').val() == addressId) {
-                                        $('#addressForm')
-                                    .submit(); // Gửi lại để cập nhật địa chỉ mặc định
+                                        $('#addressForm').submit();
                                     }
                                 } else {
                                     console.error('Delete address error:', response.message);
@@ -2104,105 +2186,40 @@
                     }
                 });
 
-                // Xử lý áp dụng mã giảm giá
+                // Xử lý áp dụng mã giảm giá thủ công
                 $('#applyCouponForm').on('submit', function(e) {
                     e.preventDefault();
-                    const couponCode = $('#coupon_code').val().trim();
-                    if (!couponCode) {
-                        alert('Vui lòng nhập mã giảm giá!');
-                        return;
-                    }
-
-                    $.ajax({
-                        url: '{{ route('checkout.apply-coupon') }}',
-                        method: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content'),
-                            coupon_code: couponCode
-                        },
-                        success: function(response) {
-                            console.log('Coupon response:', response);
-                            if (response.success) {
-                                $('#coupon-section').html(response.coupon_view);
-                                const discount = response.discount || 0;
-                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
-                                    '')) || 0;
-                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
-                                    /,/g, '')) || 16500;
-                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
-                                    cartTotal + shippingFee - discount));
-                            } else {
-                                alert(response.message || 'Mã giảm giá không hợp lệ!');
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
-                                .responseText);
-                            alert('Đã xảy ra lỗi khi áp dụng mã giảm giá!');
-                        }
-                    });
+                    applyCouponManually();
                 });
 
                 // Xử lý xóa mã giảm giá
                 $(document).on('click', '#remove-coupon', function(e) {
                     e.preventDefault();
-                    $.ajax({
-                        url: '{{ route('checkout.remove-coupon') }}',
-                        method: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                $('#coupon-section').html(response.coupon_view);
-                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
-                                    '')) || 0;
-                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
-                                    /,/g, '')) || 16500;
-                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
-                                    cartTotal + shippingFee));
-                            } else {
-                                alert(response.message || 'Xóa mã giảm giá thất bại!');
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
-                                .responseText);
-                            alert('Đã xảy ra lỗi khi xóa mã giảm giá!');
-                        }
+                    removeCoupon();
+                });
+
+                // Thêm hiệu ứng hover cho coupon modal cards
+                const couponModalCards = $('.coupon-modal-card:not(.applied)');
+                couponModalCards.on('mouseenter', function() {
+                    $(this).css({
+                        transform: 'translateY(-3px) scale(1.02)',
+                        transition: 'all 0.3s ease'
+                    });
+                }).on('mouseleave', function() {
+                    $(this).css({
+                        transform: 'translateY(0) scale(1)',
+                        transition: 'all 0.3s ease'
                     });
                 });
 
-                // Xử lý chọn mã giảm giá từ danh sách
-                $('.coupon-card').on('click', function() {
-                    const couponId = $(this).data('coupon-id');
-                    $.ajax({
-                        url: '{{ route('checkout.apply-coupon') }}',
-                        method: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content'),
-                            coupon_id: couponId
-                        },
-                        success: function(response) {
-                            console.log('Coupon response:', response);
-                            if (response.success) {
-                                $('#coupon-section').html(response.coupon_view);
-                                const discount = response.discount || 0;
-                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
-                                    '')) || 0;
-                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
-                                    /,/g, '')) || 16500;
-                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
-                                    cartTotal + shippingFee - discount));
-                            } else {
-                                alert(response.message || 'Áp dụng mã giảm giá thất bại!');
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
-                                .responseText);
-                            alert('Đã xảy ra lỗi khi áp dụng mã giảm giá!');
-                        }
+                // Reset loading state khi đóng modal
+                $('#couponModal').on('hidden.bs.modal', function() {
+                    const loadingCards = $(this).find('.coupon-modal-card[style*="opacity: 0.6"]');
+                    loadingCards.each(function() {
+                        $(this).css({
+                            opacity: '',
+                            pointerEvents: ''
+                        });
                     });
                 });
 
