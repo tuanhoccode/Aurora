@@ -871,9 +871,12 @@
 
                                 @foreach ($order->items as $item)
                                     @php
-                                        $img = $item->product->thumbnail
-                                            ? asset('storage/' . $item->product->thumbnail)
-                                            : asset('assets2/img/product/2/prodcut-1.jpg');
+                                        // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
+                                        $img = $item->variant && $item->variant->img 
+                                            ? asset('storage/' . $item->variant->img)
+                                            : ($item->product->thumbnail 
+                                                ? asset('storage/' . $item->product->thumbnail)
+                                                : asset('assets2/img/product/2/prodcut-1.jpg'));
                                         $old =
                                             $item->original_price ??
                                             (data_get($item, 'variant.original_price') ??
