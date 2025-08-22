@@ -193,7 +193,7 @@ class Order extends Model
     {
         // Giả sử status 4 là "Đã giao hàng"
         $deliveredStatus = $this->statusHistory()
-        ->where('order_status_id', 4)
+        ->where('order_status_id', 10)
         ->latest()
         ->first();
 
@@ -202,8 +202,8 @@ class Order extends Model
         }
 
         //Tính thời gian hết hạn review
-        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(3);  
-        return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 7 ngày
+        $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(30);  
+        return now()->lessThanOrEqualTo($expireDate); //True nếu chưa quá 30 ngày
     }
     public function refund()
     {

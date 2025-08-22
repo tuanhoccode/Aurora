@@ -101,7 +101,7 @@ class CommentController extends Controller
                 return redirect()->back()->with('error', 'Đánh giá này đã đc trả lời');
             }
             if ($parent->review_id !== null) {
-                return redirect()->back()->with('error', 'Phản hồi này admin đã trả lời');
+                return redirect()->back()->with('error', 'Đây là phản hồi của admin');
             }   
             Review::create([
                 'user_id' => Auth::id(),

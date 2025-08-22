@@ -10,7 +10,6 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Mã Yêu Cầu</th>
                             <th>Mã Đơn Hàng</th>
                             <th>Người Dùng</th>
                             <th>Tổng Tiền</th>
@@ -22,8 +21,7 @@
                     <tbody>
                         @foreach ($refunds as $refund)
                             <tr>
-                                <td>{{ $refund->id }}</td>
-                                <td>{{ $refund->order_id }}</td>
+                                <td>{{ $refund->order->code ?? 'N/A' }}</td>
                                 <td>{{ $refund->user->fullname ?? 'N/A' }}</td>
                                 <td>{{ number_format($refund->total_amount, 2) }}</td>
                                 <td>
