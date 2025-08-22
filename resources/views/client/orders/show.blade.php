@@ -5,20 +5,6 @@
 @section('content')
     <div class="container py-4">
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
         <style>
             .order-card {
                 background: #fff;
@@ -888,9 +874,14 @@
                         <div class="track-node">@if($isDone || $isCurrent)<i class="fas fa-check"></i>@endif</div>
                         <div class="track-time">{{ $e['time']->format('H:i d-m-Y') }}</div>
 
-                        @if($i===0 && in_array($currentStatusName ?? '', ['Đã giao hàng','Giao hàng thành công','Nhận hàng thành công']))
-                          <div class="track-title" style="color:#16a34a">Đã giao</div>
-                          <div class="track-desc">Giao hàng thành công</div>
+                        @if($i===0 && in_array($currentStatusName ?? '', ['Giao hàng thành công','Nhận hàng thành công']))
+                          @if($order->isCompleted())
+                            <div class="track-title" style="color:#16a34a">Đã nhận hàng thành công</div>
+                            <div class="track-desc">Cảm ơn bạn đã mua hàng tại cửa hàng chúng tôi</div>
+                          @else
+                            <div class="track-title" style="color:#16a34a">Đã giao</div>
+                            <div class="track-desc">Giao hàng thành công. Vui lòng xác nhận đã nhận hàng.</div>
+                          @endif
                           <div class="track-desc">Người nhận hàng: {{ $order->fullname }}</div>
                         @else
                           <div class="track-title" style="color:{{ $i===0 ? '#16a34a' : '#0f766e' }}">{{ $e['title'] }}</div>
@@ -923,7 +914,15 @@
 
                 @foreach ($order->items as $item)
                     <div style="padding: 12px; border-bottom: 1px solid #f5f5f5; display: flex;">
-                        <img src="{{ $item->product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                        @php
+                            // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
+                            $imageUrl = $item->variant && $item->variant->img 
+                                ? asset('storage/' . $item->variant->img)
+                                : ($item->product->thumbnail 
+                                    ? asset('storage/' . $item->product->thumbnail)
+                                    : asset('assets2/img/product/2/default.png'));
+                        @endphp
+                        <img src="{{ $imageUrl }}"
                             alt="{{ $item->product->name }}"
                             style="width: 80px; height: 80px; object-fit: cover; margin-right: 12px; border: 1px solid #f0f0f0;">
                         <div style="flex: 1;">
@@ -982,9 +981,22 @@
                                 style="color: #26aa99; margin-left: 12px;">-{{ number_format($order->discount_amount, 0, ',', '.') }}đ</span>
                         </div>
                     @endif
-                    <div
-                        style="font-size: 18px; color: #ee4d2d; font-weight: bold; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0;">
-                        Thành tiền: {{ number_format($total, 0, ',', '.') }}đ
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0; text-align: right;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            @if($order->isCompleted() || $order->isCancelled())
+                                <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-shopping-cart me-1"></i> Mua lại
+                                    </button>
+                                </form>
+                            @else
+                                <div></div> <!-- Placeholder để đảm bảo tổng tiền luôn nằm bên phải -->
+                            @endif
+                            <div style="font-size: 18px; color: #ee4d2d; font-weight: bold;">
+                                Thành tiền: {{ number_format($total, 0, ',', '.') }}đ
+                            </div>
+                        </div>
                     </div>
                     
                 </div>

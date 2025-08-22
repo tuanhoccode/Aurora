@@ -45,55 +45,65 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-    @foreach ($order->items as $item)
-        @php
-            $variant = $item->productVariant;
-            $product = $item->product;
-            $unitPrice = $item->price_at_time;
+                                    @foreach ($order->items as $item)
+                                        @php
+                                            $variant = $item->productVariant;
+                                            $product = $item->product;
+                                            $unitPrice = $item->price_at_time;
 
-            $getAttrValue = function ($entity, $keywords) {
-                if (!$entity || !isset($entity->attributeValues)) return null;
-                foreach ($entity->attributeValues as $attrVal) {
-                    $attrName = strtolower($attrVal->attribute->name ?? '');
-                    foreach ($keywords as $kw) {
-                        if (str_contains($attrName, $kw)) {
-                            return $attrVal->value;
-                        }
-                    }
-                }
-                return null;
-            };
+                                            $getAttrValue = function ($entity, $keywords) {
+                                                if (!$entity || !isset($entity->attributeValues)) {
+                                                    return null;
+                                                }
+                                                foreach ($entity->attributeValues as $attrVal) {
+                                                    $attrName = strtolower($attrVal->attribute->name ?? '');
+                                                    foreach ($keywords as $kw) {
+                                                        if (str_contains($attrName, $kw)) {
+                                                            return $attrVal->value;
+                                                        }
+                                                    }
+                                                }
+                                                return null;
+                                            };
 
-            $size = $getAttrValue($variant, ['size', 'kích']);
-            $color = $getAttrValue($variant, ['color', 'màu']);
+                                            $size = $getAttrValue($variant, ['size', 'kích']);
+                                            $color = $getAttrValue($variant, ['color', 'màu']);
 
-            if ($variant) {
-                if (!empty($variant->img)) {
-                    $img = asset('storage/' . $variant->img);
-                } elseif ($variant->images && $variant->images->count() > 0) {
-                    $img = asset('storage/' . $variant->images->first()->url);
-                } else {
-                    $img = $product->image_url ?? asset('assets/img/product/placeholder.jpg');
-                }
-            } else {
-                $img = $product->image_url ?? asset('assets/img/product/placeholder.jpg');
-            }
-        @endphp
-        <tr>
-            <td>{{ $item->name ?? 'Sản phẩm ' . $item->product_id }}</td>
-            <td>
-                <img src="{{ $img }}" alt="{{ $item->name }}" style="width: 50px; height: 50px; object-fit: cover;">
-            </td>
-            <td>
-                @if ($size) <span>Size: {{ $size }}</span><br> @endif
-                @if ($color) <span>Màu: {{ $color }}</span> @endif
-            </td>
-            <td>{{ number_format($item->price, 0, ',', '.') }} ₫</td>
-            <td>{{ $item->quantity }}</td>
-            <td>{{ number_format($item->price * $item->quantity, 0, ',', '.') }} ₫</td>
-        </tr>
-    @endforeach
-</tbody>
+                                            if ($variant) {
+                                                if (!empty($variant->img)) {
+                                                    $img = asset('storage/' . $variant->img);
+                                                } elseif ($variant->images && $variant->images->count() > 0) {
+                                                    $img = asset('storage/' . $variant->images->first()->url);
+                                                } else {
+                                                    $img =
+                                                        $product->image_url ??
+                                                        asset('assets/img/product/placeholder.jpg');
+                                                }
+                                            } else {
+                                                $img =
+                                                    $product->image_url ?? asset('assets/img/product/placeholder.jpg');
+                                            }
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $item->name ?? 'Sản phẩm ' . $item->product_id }}</td>
+                                            <td>
+                                                <img src="{{ $img }}" alt="{{ $item->name }}"
+                                                    style="width: 50px; height: 50px; object-fit: cover;">
+                                            </td>
+                                            <td>
+                                                @if ($size)
+                                                    <span>Size: {{ $size }}</span><br>
+                                                @endif
+                                                @if ($color)
+                                                    <span>Màu: {{ $color }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ number_format($item->price, 0, ',', '.') }} ₫</td>
+                                            <td>{{ $item->quantity }}</td>
+                                            <td>{{ number_format($item->price * $item->quantity, 0, ',', '.') }} ₫</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
 
                             </table>
                         </div>
@@ -145,13 +155,7 @@
                             <tr>
                                 <td><i class="fas fa-shipping-fast me-1"></i> Phí giao hàng:</td>
                                 <td>
-                                    @if ($order->shipping_type == 'thường')
-                                        {{ number_format(16500, 0, ',', '.') }} ₫
-                                    @elseif ($order->shipping_type == 'nhanh')
-                                        {{ number_format(30000, 0, ',', '.') }} ₫
-                                    @else
-                                        {{ number_format(0, 0, ',', '.') }} ₫
-                                    @endif
+                                    {{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} ₫
                                 </td>
                             </tr>
                             <tr>
@@ -172,56 +176,57 @@
                     </div>
                 </div>
 
-                @if($order->cancel_reason || $order->cancelled_at)
-                <div class="card shadow-sm rounded mb-4 border-danger">
-                    <div class="card-header bg-danger text-white fw-bold">
-                        <i class="fas fa-times-circle me-2"></i>Thông tin hủy đơn hàng
+                @if ($order->cancel_reason || $order->cancelled_at)
+                    <div class="card shadow-sm rounded mb-4 border-danger">
+                        <div class="card-header bg-danger text-white fw-bold">
+                            <i class="fas fa-times-circle me-2"></i>Thông tin hủy đơn hàng
+                        </div>
+                        <div class="card-body">
+                            @if ($order->cancel_reason)
+                                <div class="mb-3">
+                                    <div class="fw-bold text-danger mb-2">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Lý do hủy đơn:
+                                    </div>
+                                    <div class="p-3 bg-light rounded border">
+                                        {{ $order->cancel_reason }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($order->cancel_note)
+                                <div class="mb-3">
+                                    <div class="fw-bold text-secondary mb-2">
+                                        <i class="fas fa-sticky-note me-2"></i>Ghi chú hủy đơn:
+                                    </div>
+                                    <div class="p-3 bg-light rounded border">
+                                        {{ $order->cancel_note }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($order->cancelled_at)
+                                <div class="mb-3">
+                                    <div class="fw-bold text-secondary mb-2">
+                                        <i class="fas fa-clock me-2"></i>Thời gian hủy đơn:
+                                    </div>
+                                    <div class="p-3 bg-light rounded border">
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        {{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i:s') }}
+                                        <br>
+                                        <small class="text-muted">
+                                            ({{ \Carbon\Carbon::parse($order->cancelled_at)->diffForHumans() }})
+                                        </small>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Lưu ý:</strong> Đơn hàng này đã được khách hàng hủy. Vui lòng kiểm tra và xử lý theo
+                                quy trình của công ty.
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        @if($order->cancel_reason)
-                        <div class="mb-3">
-                            <div class="fw-bold text-danger mb-2">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Lý do hủy đơn:
-                            </div>
-                            <div class="p-3 bg-light rounded border">
-                                {{ $order->cancel_reason }}
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($order->cancel_note)
-                        <div class="mb-3">
-                            <div class="fw-bold text-secondary mb-2">
-                                <i class="fas fa-sticky-note me-2"></i>Ghi chú hủy đơn:
-                            </div>
-                            <div class="p-3 bg-light rounded border">
-                                {{ $order->cancel_note }}
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($order->cancelled_at)
-                        <div class="mb-3">
-                            <div class="fw-bold text-secondary mb-2">
-                                <i class="fas fa-clock me-2"></i>Thời gian hủy đơn:
-                            </div>
-                            <div class="p-3 bg-light rounded border">
-                                <i class="fas fa-calendar-alt me-2"></i>
-                                {{ \Carbon\Carbon::parse($order->cancelled_at)->format('d/m/Y H:i:s') }}
-                                <br>
-                                <small class="text-muted">
-                                    ({{ \Carbon\Carbon::parse($order->cancelled_at)->diffForHumans() }})
-                                </small>
-                            </div>
-                        </div>
-                        @endif
-
-                        <div class="alert alert-warning mb-0">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Lưu ý:</strong> Đơn hàng này đã được khách hàng hủy. Vui lòng kiểm tra và xử lý theo quy trình của công ty.
-                        </div>
-                    </div>
-                </div>
                 @endif
             </div>
             <div class="col-lg-4 mb-4">
@@ -296,7 +301,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Lịch sử trạng thái đơn hàng - Full width -->
         <div class="row">
             <div class="col-12">
@@ -355,4 +360,3 @@
         </div>
     </div>
 @endsection
-

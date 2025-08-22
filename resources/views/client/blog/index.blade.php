@@ -1,295 +1,352 @@
 @extends('client.layouts.default')
 
-@section('title', 'Blog - ' . config('app.name'))
+@section('title', 'Tin Tức - ' . config('app.name'))
 
-@push('styles')
+
 <style>
-    /* Blog item styles */
-    .tp-blog-item {
+    :root {
+        --text: #222;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --thin: #f3f4f6;
+        --accent: #111827;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+        margin: 0; 
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; 
+        color: var(--text);
         background: #fff;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 0 15px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-        margin-bottom: 30px;
-        height: 100%;
+        line-height: 1.6;
     }
-    .tp-blog-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    
+    /* Layout */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 18px 40px;
     }
-    .tp-blog-thumb {
-        position: relative;
-        overflow: hidden;
+    
+    .layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 28px;
     }
-    .tp-blog-thumb img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        transition: all 0.5s ease;
+    
+    /* Sidebar widgets */
+    .widget {
+        border: 1px solid var(--line);
+        padding: 18px;
+        background: #fff;
+        margin-bottom: 24px;
     }
-    .tp-blog-item:hover .tp-blog-thumb img {
-        transform: scale(1.05);
-    }
-    .tp-blog-tag {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-    }
-    .tp-blog-tag a {
-        display: inline-block;
-        background: var(--tp-theme-1);
-        color: #fff;
-        padding: 4px 15px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
+    
+    .widget-title {
+        font-size: 16px;
         text-transform: uppercase;
+        letter-spacing: .04em;
+        text-align: center;
+        margin: 0 0 14px;
+        position: relative;
+        padding-bottom: 10px;
     }
-    .tp-blog-content {
-        padding: 25px 30px 30px;
+    
+    .widget-title:after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        width: 160px;
+        height: 2px;
+        background: #111;
     }
-    .tp-blog-meta {
+    
+    /* Latest posts */
+    .latest-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .latest-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+    }
+    
+    .latest-item:first-child {
+        border-top: 0;
+    }
+    
+    .latest-thumb {
+        flex: 0 0 64px;
+        height: 64px;
+        border: 1px solid var(--line);
+        background: var(--thin);
+        object-fit: cover;
+    }
+    
+    .latest-title {
+        font-size: 14px;
+        margin: 0 0 6px;
+    }
+    
+    .latest-title a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+    
+    .latest-meta {
+        font-size: 12px;
+        color: var(--muted);
+    }
+    
+    /* Categories */
+    .cat-list {
+        list-style: none;
+        margin: 0;
+        padding: 8px 0;
+    }
+    
+    .cat-list li {
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+    }
+    
+    .cat-list li:first-child {
+        border-top: 0;
+    }
+    
+    .cat-list a {
+        color: var(--text);
+        text-decoration: none;
+    }
+    
+    /* Main content */
+    .page-title {
+        font-size: 36px;
+        margin: 6px 0 18px;
+    }
+    
+    .article {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 26px;
+        padding: 26px 0;
+        border-bottom: 1px solid var(--line);
+    }
+    
+    .article:first-of-type {
+        padding-top: 0;
+    }
+    
+    .thumb {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        background: var(--thin);
+        border: 1px solid var(--line);
+    }
+    
+    .article h3 {
+        font-size: 20px;
+        margin: 0 0 8px;
+    }
+    
+    .article h3 a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+    
+    .article h3 a:hover {
+        text-decoration: underline;
+    }
+    
+    .meta {
+        font-size: 13px;
+        color: var(--muted);
         margin-bottom: 10px;
     }
-    .tp-blog-meta span {
+    
+    .excerpt {
+        color: #333;
+        line-height: 1.6;
+    }
+    
+    /* Breadcrumb */
+    .breadcrumb {
+        max-width: 1200px;
+        margin: 10px auto 0;
+        padding: 10px 18px;
+        color: var(--muted);
         font-size: 14px;
-        color: #6B7280;
-        margin-right: 15px;
     }
-    .tp-blog-meta i {
-        margin-right: 5px;
-    }
-    .tp-blog-title {
-        font-size: 20px;
-        line-height: 1.4;
-        margin-bottom: 15px;
-    }
-    .tp-blog-title a {
-        color: #1F2937;
-        transition: all 0.3s ease;
-    }
-    .tp-blog-title a:hover {
-        color: var(--tp-theme-1);
+    
+    .breadcrumb a {
+        color: inherit;
         text-decoration: none;
     }
-    .tp-blog-btn a {
-        color: var(--tp-theme-1);
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        transition: all 0.3s ease;
+    
+    /* Responsive */
+    @media (max-width: 980px) {
+        .layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .article {
+            grid-template-columns: 1fr;
+        }
+        
+        .thumb {
+            height: 260px;
+        }
     }
-    .tp-blog-btn a i {
-        margin-left: 5px;
-        transition: all 0.3s ease;
-    }
-    .tp-blog-btn a:hover {
-        color: var(--tp-theme-2);
-        text-decoration: none;
-    }
-    .tp-blog-btn a:hover i {
-        transform: translateX(5px);
+    .tp-breadcrumb-height {
+        height: 550px;  /* chỉnh tùy ý, ví dụ 400px */
     }
 </style>
-@endpush
+
 
 @section('content')
-<!-- breadcrumb area start -->
-<div class="tp-breadcrumb__area p-relative fix tp-breadcrumb-height" data-background="{{ asset('assets2/img/breadcrumb/breadcrumb-bg-1.jpg') }}">
-    <div class="tp-breadcrumb__shape-1">
-        <img src="{{ asset('assets2/img/breadcrumb/breadcrumb-shape-1.png') }}" alt="">
+<div class="container py-5">
+    <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
+        <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
+        <span class="mx-2">/</span>
+        <span class="text-muted">Tin Tức</span>
     </div>
-    <div class="tp-breadcrumb__shape-2">
-        <img src="{{ asset('assets2/img/breadcrumb/breadcrumb-shape-2.png') }}" alt="">
-    </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="tp-breadcrumb__content text-center">
-                    <div class="tp-breadcrumb__content-left">
-                        <h3 class="tp-breadcrumb__title">Blog của chúng tôi</h3>
-                        <p class="tp-breadcrumb__text">Khám phá những bài viết mới nhất, mẹo vặt và tin tức hữu ích từ chúng tôi</p>
-                    </div>
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <aside>
+            <!-- Search Widget -->
+            <div class="widget">
+                <h3 class="widget-title">Tìm kiếm tin tức</h3>
+                <div class="search-form">
+                    <form action="{{ route('blog.index') }}" method="GET">
+                        <input type="text" 
+                               name="search" 
+                               placeholder="Nhập từ khóa tìm kiếm..." 
+                               value="{{ request('search') }}"
+                               class="w-100 p-2 border">
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            <i class="fa fa-search"></i> Tìm kiếm
+                        </button>
+                    </form>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<!-- breadcrumb area end -->
 
-<!-- blog area start -->
-<section class="tp-blog-area pt-120 pb-120">
-    <div class="container">
-        <div class="row">
-            <!-- Main Content -->
-            <div class="col-xl-8 col-lg-8">
-                @php
-                    $currentCategory = null;
-                    if (request('category')) {
-                        $currentCategory = \App\Models\BlogCategory::where('slug', request('category'))->first();
-                    }
-                @endphp
-                
-                @if($currentCategory)
-                    <div class="tp-blog-details-category mb-30">
-                        <h4 class="tp-blog-details-category-title">Danh mục: {{ $currentCategory->name }}</h4>
-                        <p>{{ $posts->total() }} bài viết trong danh mục này</p>
-                    </div>
-                @elseif(request('search'))
-                    <div class="tp-blog-details-category mb-30">
-                        <h4 class="tp-blog-details-category-title">Kết quả tìm kiếm cho: "{{ request('search') }}"</h4>
-                        <p>{{ $posts->total() }} kết quả được tìm thấy</p>
-                    </div>
-                @endif
-
-                <div class="tp-blog-main-wrapper">
-                    @if($posts->count() > 0)
-                        <div class="row">
-                            @foreach($posts as $post)
-                                <div class="col-md-6">
-                                    <div class="tp-blog-item mb-50">
-                                        <div class="tp-blog-thumb fix">
-                                            <a href="{{ route('blog.show', $post->slug) }}">
-                                                <img src="{{ $post->thumbnail ? Storage::url($post->thumbnail) : asset('assets2/img/blog/blog-thumb-1.jpg') }}" alt="{{ $post->title }}">
-                                            </a>
-                                            @if($post->category)
-                                            <div class="tp-blog-tag">
-                                                <a href="{{ route('blog.index', ['category' => $post->category->slug]) }}">
-                                                    {{ $post->category->name }}
-                                                </a>
-                                            </div>
-                                            @endif
-                                        </div>
-                                        <div class="tp-blog-content">
-                                            <div class="tp-blog-meta">
-                                                <span><i class="fa-regular fa-user"></i> {{ $post->author->name ?? 'Quản trị viên' }}</span>
-                                                <span><i class="fa-regular fa-calendar-days"></i> {{ $post->published_at ? $post->published_at->format('d M, Y') : $post->created_at->format('d M, Y') }}</span>
-                                                <span><i class="fa-regular fa-eye"></i> {{ number_format($post->views) }}</span>
-                                            </div>
-                                            <h3 class="tp-blog-title">
-                                                <a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a>
-                                            </h3>
-                                            <p>{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 150, '...') }}</p>
-                                            <div class="tp-blog-btn">
-                                                <a href="{{ route('blog.show', $post->slug) }}">
-                                                    Đọc thêm <i class="fa-regular fa-arrow-right"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Pagination -->
-                        @if($posts->hasPages())
-                        <div class="tp-blog-pagination mt-10">
-                            {{ $posts->links() }}
-                        </div>
-                        @endif
-                    @else
-                        <div class="tp-blog-no-results text-center py-5">
-                            <div class="tp-blog-no-results-icon mb-30">
-                                <i class="fa-regular fa-file-lines"></i>
-                            </div>
-                            <h3>Chưa có bài viết nào</h3>
-                            <p class="mb-30">Hãy quay lại sau để xem các bài viết mới nhất.</p>
-                            <a href="{{ route('home') }}" class="tp-btn">
-                                <i class="fa-regular fa-arrow-left me-2"></i> Về trang chủ
+            <!-- Recent Posts Widget -->
+            <div class="widget">
+                <h3 class="widget-title">Bài viết mới nhất</h3>
+                <ul class="latest-list">
+                    @foreach(\App\Models\BlogPost::published()->latest()->take(5)->get() as $recentPost)
+                        <li class="latest-item">
+                            <a href="{{ route('blog.show', $recentPost->slug) }}">
+                                <img class="latest-thumb" 
+                                     src="{{ $recentPost->thumbnail ? Storage::url($recentPost->thumbnail) : asset('assets2/img/blog/rc-blog-1.jpg') }}" 
+                                     alt="{{ $recentPost->title }}">
                             </a>
-                        </div>
-                    @endif
-                </div>
+                            <div>
+                                <h4 class="latest-title">
+                                    <a href="{{ route('blog.show', $recentPost->slug) }}">
+                                        {{ Str::limit($recentPost->title, 50) }}
+                                    </a>
+                                </h4>
+                                <div class="latest-meta">
+                                    {{ $recentPost->author->name ?? 'Quản trị viên' }} · 
+                                    {{ $recentPost->published_at ? $recentPost->published_at->format('d.m.Y') : $recentPost->created_at->format('d.m.Y') }}
+                                </div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-xl-4 col-lg-4">
-                <!-- Search Widget -->
-                <div class="tp-blog-sidebar-widget mb-40">
-                    <h4 class="tp-blog-sidebar-widget-title position-relative pb-3 mb-4">
-                        <span class="position-relative">Tìm kiếm</span>
-                    </h4>
-                    <div class="tp-blog-sidebar-search">
-                        <form action="{{ route('blog.index') }}" method="GET" class="position-relative">
-                            <div class="tp-blog-sidebar-search-input">
-                                <input type="text" 
-                                       name="search" 
-                                       placeholder="Nhập từ khóa tìm kiếm..." 
-                                       value="{{ request('search') }}"
-                                       class="w-100 px-4 py-3 border-0 rounded-pill shadow-sm"
-                                       style="padding-right: 50px;">
-                                <button type="submit" class="position-absolute end-0 top-0 h-100 bg-transparent border-0" style="width: 50px; outline: none;">
-                                    <i class="fa-regular fa-magnifying-glass text-primary"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Categories Widget -->
-                <div class="tp-blog-sidebar-widget mb-40">
-                    <h4 class="tp-blog-sidebar-widget-title position-relative pb-3 mb-4">
-                        <span class="position-relative">Danh mục</span>
-                    </h4>
-                    <div class="tp-blog-sidebar-category">
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <a href="{{ route('blog.index') }}" 
-                                   class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3 {{ !request('category') ? 'bg-primary text-white' : 'text-dark bg-light-hover' }}">
-                                    <span>Tất cả bài viết</span>
-                                    <span class="badge {{ !request('category') ? 'bg-white text-primary' : 'bg-secondary' }} rounded-pill">
-                                        {{ \App\Models\BlogPost::published()->count() }}
-                                    </span>
+            <!-- Categories Widget -->
+            <div class="widget">
+                <h3 class="widget-title">Danh mục Blog</h3>
+                <ul class="cat-list">
+                    @php
+                        $currentCategory = request('category');
+                        $searchQuery = request('search') ? '&search=' . request('search') : '';
+                    @endphp
+                    <li>
+                        <a href="?{{ $searchQuery ? ltrim($searchQuery, '&') : '' }}" class="{{ !$currentCategory ? 'active' : '' }}">
+                            Tất cả bài viết
+                            <span class="float-end">({{ \App\Models\BlogPost::where('is_active', true)->count() }})</span>
+                        </a>
+                    </li>
+                    @foreach(\App\Models\BlogCategory::withCount(['posts' => function($query) {
+                        $query->where('is_active', true);
+                    }])->orderBy('name')->get() as $category)
+                        @if($category->posts_count > 0)
+                            <li>
+                                <a href="?category={{ $category->id }}{{ $searchQuery }}" class="{{ $currentCategory == $category->id ? 'active' : '' }}">
+                                    {{ $category->name }}
+                                    <span class="float-end">({{ $category->posts_count }})</span>
                                 </a>
                             </li>
-                            @foreach(\App\Models\BlogCategory::withCount(['posts' => function($query) {
-                                $query->published();
-                            }])->orderBy('name')->get() as $category)
-                                @if($category->posts_count > 0)
-                                    <li class="mb-2">
-                                        <a href="{{ route('blog.index', ['category' => $category->slug]) }}" 
-                                           class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3 {{ request('category') == $category->slug ? 'bg-primary text-white' : 'text-dark bg-light-hover' }}">
-                                            <span>{{ $category->name }}</span>
-                                            <span class="badge {{ request('category') == $category->slug ? 'bg-white text-primary' : 'bg-light text-dark' }} rounded-pill">
-                                                {{ $category->posts_count }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Recent Posts Widget -->
-                <div class="tp-blog-sidebar-widget mb-40">
-                    <h4 class="tp-blog-sidebar-widget-title">Bài viết gần đây</h4>
-                    <div class="tp-blog-sidebar-rc-post">
-                        @foreach(\App\Models\BlogPost::published()->latest()->take(3)->get() as $recentPost)
-                            <div class="tp-blog-sidebar-rc-post-item">
-                                <div class="tp-blog-sidebar-rc-post-thumb">
-                                    <a href="{{ route('blog.show', $recentPost->slug) }}">
-                                        <img src="{{ $recentPost->thumbnail ? Storage::url($recentPost->thumbnail) : asset('assets2/img/blog/rc-blog-1.jpg') }}" alt="{{ $recentPost->title }}" style="width: 200px; height: 150px; object-fit: cover">
-                                    </a>
-                                </div>
-                                <div class="tp-blog-sidebar-rc-post-content">
-                                    <h5 class="tp-blog-sidebar-rc-post-title">
-                                        <a href="{{ route('blog.show', $recentPost->slug) }}">{{ $recentPost->title }}</a>
-                                    </h5>
-                                    <div class="tp-blog-sidebar-rc-post-meta">
-                                        <span><i class="fa-regular fa-calendar-days"></i> {{ $recentPost->published_at ? $recentPost->published_at->format('d M, Y') : $recentPost->created_at->format('d M, Y') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Tags and Banner Widgets have been removed -->
+                        @endif
+                    @endforeach
+                </ul>
             </div>
-        </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main>
+            <h1 class="page-title">
+                @if(isset($searchTerm) && $searchTerm)
+                    Kết quả tìm kiếm cho: "{{ $searchTerm }}"
+                @else
+                    Tin Tức
+                @endif
+            </h1>
+
+            @if(isset($hasSearchResults) && $hasSearchResults === false)
+                <div class="alert alert-info">
+                    Không tìm thấy bài viết nào phù hợp với từ khóa "{{ $searchTerm }}".
+                    <a href="{{ route('blog.index') }}" class="text-primary">Xem tất cả bài viết</a>
+                </div>
+            @elseif($posts->count() > 0)
+                @foreach($posts as $post)
+                    <article class="article">
+                        <img class="thumb" 
+                             src="{{ $post->thumbnail ? Storage::url($post->thumbnail) : asset('assets2/img/blog/blog-thumb-1.jpg') }}" 
+                             alt="{{ $post->title }}">
+                        <div>
+                            <h3>
+                                <a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a>
+                            </h3>
+                            <div class="meta">
+                                Người viết: {{ $post->author->name ?? 'Quản trị viên' }} / 
+                                {{ $post->published_at ? $post->published_at->format('d.m.Y') : $post->created_at->format('d.m.Y') }}
+                            </div>
+                            <p class="excerpt">
+                                {{ $post->excerpt ?? Str::limit(strip_tags($post->content), 200) }}
+                            </p>
+                        </div>
+                    </article>
+                @endforeach
+
+                <!-- Pagination -->
+                @if($posts->hasPages())
+                    <div class="mt-4">
+                        {{ $posts->links() }}
+                    </div>
+                @endif
+            @else
+                <div class="text-center py-5">
+                    <h3>Không tìm thấy bài viết nào</h3>
+                    <p>Xin lỗi, không có bài viết nào phù hợp với tìm kiếm của bạn.</p>
+                    <a href="{{ route('blog.index') }}" class="btn btn-primary">
+                        Quay lại trang tin tức
+                    </a>
+                </div>
+            @endif
+        </main>
     </div>
-</section>
-<!-- blog area end -->
+</div>
 @endsection

@@ -35,11 +35,6 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th width="40">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="checkAll">
-                                </div>
-                            </th>
                             <th>Tên danh mục</th>
                             <th>Danh mục cha</th>
                             <th>Bài viết</th>
@@ -51,11 +46,6 @@
                     <tbody>
                         @foreach($categories as $category)
                         <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input category-checkbox" value="{{ $category->id }}" id="category-{{ $category->id }}">
-                                </div>
-                            </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     @if($category->icon)

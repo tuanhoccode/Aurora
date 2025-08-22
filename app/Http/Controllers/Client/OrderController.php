@@ -556,10 +556,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi xác nhận nhận hàng: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xác nhận nhận hàng: ' . $e->getMessage());
         }
     }
 }

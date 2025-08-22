@@ -512,7 +512,7 @@
 
                                     <span id="unit-price" data-unit="{{ $unit }}" style="display: none;"></span>
                                 </div>
-                                @if ($product->variants->isEmpty())
+                                <!-- @if ($product->variants->isEmpty())
                                     <div class="mt-3">
                                         <strong>Chất liệu:</strong> {{ $product->material }}
                                     </div>
@@ -523,7 +523,7 @@
                                         <strong>Chất liệu:</strong>
                                         <span id="materialText"></span>
                                     </div>
-                                @endif
+                                @endif -->
                                 {{-- Tổng tiền --}}
                                 <div class="mt-2">
                                     <strong>Tổng tiền: </strong>
@@ -1037,6 +1037,34 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const colorButtons = document.querySelectorAll(".tp-color-variation-btn");
+    const colorNameSpan = document.getElementById("selected-color-name");
+
+    if (colorButtons.length > 0) {
+        // Gán mặc định từ nút đang active
+        const activeBtn = document.querySelector(".tp-color-variation-btn.active");
+        if (activeBtn) {
+            colorNameSpan.textContent = activeBtn.getAttribute("title");
+        }
+
+        // Lắng nghe click
+        colorButtons.forEach(btn => {
+            btn.addEventListener("click", function () {
+                // Xóa active cũ
+                colorButtons.forEach(b => b.classList.remove("active"));
+                // Đặt active mới
+                this.classList.add("active");
+
+                // Lấy tên màu từ title
+                const colorName = this.getAttribute("title") || "Không rõ màu";
+                colorNameSpan.textContent = colorName;
+            });
+        });
+    }
+});
+</script>
 {{-- 2. Script chính --}}
 <script>
     const defaultImages = @json($defaultImages);

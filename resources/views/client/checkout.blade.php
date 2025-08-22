@@ -48,12 +48,12 @@
             .checkout__container {
                 flex-direction: row !important;
             }
-            
+
             .checkout__left-column {
                 flex: 2;
                 min-width: 0;
             }
-            
+
             .checkout__right-column {
                 flex: 1;
                 max-width: 480px;
@@ -570,7 +570,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s ease;
         }
 
@@ -610,7 +610,7 @@
             border: 2px solid #ee4d2d;
             background: #fff7f2;
             margin-top: 20px;
-            border-bottom: none;
+
         }
 
         .alert {
@@ -678,13 +678,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
             animation: shimmer 2s infinite;
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         .modal-title {
@@ -780,7 +785,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.6s ease;
         }
 
@@ -895,7 +900,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.6s ease;
         }
 
@@ -1046,9 +1051,17 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .coupon-modal-header {
@@ -1321,7 +1334,13 @@
                                             ),
                                         );
                                     @endphp
-                                    {{ $selectedAddress ? ($selectedAddress->fullname ?? 'Chưa cung cấp họ tên') . ' (+84) ' . ($selectedAddress->phone_number && preg_match('/^0[0-9]{9}$/', $selectedAddress->phone_number) ? $selectedAddress->phone_number : 'Số điện thoại không hợp lệ') . ' - ' . ($selectedAddress->street ? $selectedAddress->street . ', ' : '') . ($selectedAddress->ward ? $selectedAddress->ward . ', ' : '') . ($selectedAddress->district ? $selectedAddress->district . ', ' : '') . ($selectedAddress->province ?? 'Chưa cung cấp tỉnh/thành phố') : 'Chưa chọn địa chỉ' }}
+                                    <span
+                                        id="address_fullname">{{ $selectedAddress ? $selectedAddress->fullname ?? 'Chưa cung cấp họ tên' : 'Chưa chọn' }}</span>
+                                    <span id="address_phone">(+84)
+                                        {{ $selectedAddress && $selectedAddress->phone_number && preg_match('/^0[0-9]{9}$/', $selectedAddress->phone_number) ? $selectedAddress->phone_number : 'Số điện thoại không hợp lệ' }}</span>
+                                    -
+                                    <span
+                                        id="address_details">{{ $selectedAddress ? ($selectedAddress->street ? $selectedAddress->street . ', ' : '') . ($selectedAddress->ward ? $selectedAddress->ward . ', ' : '') . ($selectedAddress->district ? $selectedAddress->district . ', ' : '') . ($selectedAddress->province ?? 'Chưa cung cấp tỉnh/thành phố') : 'Chưa chọn địa chỉ' }}</span>
                                     @if ($selectedAddress && $selectedAddress->is_default)
                                         <span class="badge bg-primary">Mặc định</span>
                                     @endif
@@ -1435,104 +1454,36 @@
 
             <div class="checkout__right-column">
                 <!-- 3. Phương thức vận chuyển -->
-                <div class="checkout__block checkout__shipping-method">
+                <div class="checkout__shipping-method">
                     <div class="checkout__block-title">🚚 Phương thức vận chuyển</div>
-                    @php
-                        // Danh sách tỉnh lân cận Hà Nội
-                        $nearbyProvinces = ['Hà Nội', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Hải Phòng', 'Quảng Ninh'];
-                        $centralProvinces = [
-                            'Thanh Hóa',
-                            'Nghệ An',
-                            'Hà Tĩnh',
-                            'Quảng Bình',
-                            'Quảng Trị',
-                            'Thừa Thiên Huế',
-                            'Đà Nẵng',
-                            'Quảng Nam',
-                            'Quảng Ngãi',
-                            'Bình Định',
-                            'Phú Yên',
-                            'Khánh Hòa',
-                            'Ninh Thuận',
-                            'Bình Thuận',
-                        ];
-                        $southProvinces = [
-                            'TP Hồ Chí Minh',
-                            'Bình Dương',
-                            'Đồng Nai',
-                            'Bà Rịa - Vũng Tàu',
-                            'Long An',
-                            'Tiền Giang',
-                            'Bến Tre',
-                            'Trà Vinh',
-                            'Vĩnh Long',
-                            'Đồng Tháp',
-                            'An Giang',
-                            'Kiên Giang',
-                            'Cần Thơ',
-                            'Hậu Giang',
-                            'Sóc Trăng',
-                            'Bạc Liêu',
-                            'Cà Mau',
-                        ];
-
-                        $shopProvince = 'Hà Nội';
-                        $destinationProvince = $selectedAddress->province ?? 'Hà Nội';
-
-                        // Logic phí vận chuyển
-                        $normalShippingFee = 16500; // Giao thường: 16.500 VNĐ cho tất cả khu vực
-                        $fastShippingFee = in_array($destinationProvince, $nearbyProvinces)
-                            ? 50000
-                            : (in_array($destinationProvince, $centralProvinces) ||
-                            in_array($destinationProvince, $southProvinces)
-                                ? 50000
-                                : 60000);
-
-                        // Logic thời gian giao hàng
-                        $normalShippingDates =
-                            \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') .
-                            ' - ' .
-                            \Carbon\Carbon::today()->addDays(4)->format('d/m/Y');
-                        $fastShippingDates = in_array($destinationProvince, $nearbyProvinces)
-                            ? 'Trong 4 giờ nếu đặt trước 16:00'
-                            : \Carbon\Carbon::today()->addDays(1)->format('d/m/Y') .
-                                ' - ' .
-                                \Carbon\Carbon::today()->addDays(2)->format('d/m/Y');
-
-                        $shippingFee =
-                            old('shipping_type', session('shipping_type', 'thường')) === 'thường'
-                                ? $normalShippingFee
-                                : $fastShippingFee;
-                    @endphp
                     <form action="{{ route('checkout.update') }}" method="POST" id="shippingForm">
                         @csrf
-                        <div
-                            class="form-check {{ old('shipping_type', session('shipping_type', 'thường')) === 'thường' ? 'selected' : '' }}">
+                        <div class="form-check {{ session('shipping_type', 'thường') === 'thường' ? 'selected' : '' }}">
                             <input class="form-check-input" type="radio" id="normal_shipping" name="shipping_type"
-                                value="thường"
-                                {{ old('shipping_type', session('shipping_type', 'thường')) === 'thường' ? 'checked' : '' }}
-                                onchange="this.form.submit()" required>
+                                value="thường" {{ session('shipping_type', 'thường') === 'thường' ? 'checked' : '' }}
+                                required>
                             <div>
                                 <label class="form-check-label" for="normal_shipping">
-                                    Giao hàng thường - ₫{{ number_format($normalShippingFee) }}
+                                    Giao hàng thường - ₫<span
+                                        id="normal_shipping_fee">{{ number_format(session('normal_shipping_fee', 16500)) }}</span>
                                 </label>
                                 <p class="text-muted small">
-                                    Dự kiến: {{ $normalShippingDates }}
+                                    Dự kiến: <span
+                                        id="normal_shipping_dates">{{ session('normal_shipping_dates', \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y')) }}</span>
                                 </p>
                             </div>
                         </div>
-                        <div
-                            class="form-check {{ old('shipping_type', session('shipping_type', 'thường')) === 'nhanh' ? 'selected' : '' }}">
+                        <div class="form-check {{ session('shipping_type', 'thường') === 'nhanh' ? 'selected' : '' }}">
                             <input class="form-check-input" type="radio" id="fast_shipping" name="shipping_type"
-                                value="nhanh"
-                                {{ old('shipping_type', session('shipping_type', 'thường')) === 'nhanh' ? 'checked' : '' }}
-                                onchange="this.form.submit()">
+                                value="nhanh" {{ session('shipping_type', 'thường') === 'nhanh' ? 'checked' : '' }}>
                             <div>
                                 <label class="form-check-label" for="fast_shipping">
-                                    Giao hàng nhanh - ₫{{ number_format($fastShippingFee) }}
+                                    Giao hàng nhanh - ₫<span
+                                        id="fast_shipping_fee">{{ number_format(session('fast_shipping_fee', 30000)) }}</span>
                                 </label>
                                 <p class="text-muted small">
-                                    Dự kiến: {{ $fastShippingDates }}
+                                    Dự kiến: <span
+                                        id="fast_shipping_dates">{{ session('fast_shipping_dates', 'Trong 4 giờ nếu đặt trước 16:00') }}</span>
                                 </p>
                                 <p class="text-muted small">
                                     Hỗ trợ <strong>đồng kiểm</strong> (kiểm tra hàng trước khi nhận)
@@ -1660,24 +1611,27 @@
                 <div class="checkout__block">
                     <div class="checkout__block-title">💰 Tổng thanh toán</div>
                     <ul class="checkout__summary-list">
-                        <li><span>Tổng tiền hàng</span><span>{{ number_format($cartTotal) }} ₫</span></li>
-                        <li><span>Phí vận chuyển</span><span>{{ number_format($shippingFee) }} ₫</span></li>
+                        <li><span>Tổng tiền hàng</span><span id="cart_total">{{ number_format($cartTotal) }} ₫</span></li>
+                        <li><span>Phí vận chuyển</span><span id="shipping_fee">{{ number_format($shippingFee) }} ₫</span>
+                        </li>
                         @if ($coupon)
-                            <li><span>Giảm giá ({{ $coupon->code }})</span><span
+                            <li><span>Giảm giá ({{ $coupon->code }})</span><span id="discount"
                                     class="text-danger">-{{ number_format($discount) }} ₫</span></li>
                         @endif
-                        <li class="total"><span>Tổng thanh
-                                toán</span><span>{{ number_format($cartTotal + $shippingFee - $discount) }} ₫</span></li>
+                        <li class="total"><span>Tổng thanh toán</span><span
+                                id="total_payment">{{ number_format($cartTotal + $shippingFee - $discount) }} ₫</span>
+                        </li>
                     </ul>
                     <form id="checkoutForm" action="{{ route('checkout.process') }}" method="POST">
                         @csrf
-                        <input type="hidden" name="shipping_type"
+                        <input type="hidden" name="shipping_type" id="shipping_type_input"
                             value="{{ old('shipping_type', session('shipping_type', 'thường')) }}">
-                        <input type="hidden" name="payment_method"
+                        <input type="hidden" name="payment_method" id="payment_method_input"
                             value="{{ old('payment_method', session('payment_method', 'cod')) }}">
-                        <input type="hidden" name="address_id"
+                        <input type="hidden" name="address_id" id="address_id_input"
                             value="{{ old('address_id', session('checkout_address_id', $defaultAddress->id ?? '')) }}">
-                        <input type="hidden" name="note" value="{{ old('note', session('note', '')) }}">
+                        <input type="hidden" name="note" id="note_input"
+                            value="{{ old('note', session('note', '')) }}">
                         <button type="submit" class="checkout__submit-btn">🛒 Đặt hàng ngay</button>
                         <p class="text-muted small mt-2" style="text-align: center; line-height: 1.4;">
                             Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo <a href="#"
@@ -1695,412 +1649,590 @@
                     </form>
                 </div>
             </div>
-        </div>
 
-        <!-- Address Modal -->
-        <div class="modal fade" id="addressModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fa fa-map-marker me-2"></i>
-                            Chọn địa chỉ nhận hàng
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form action="{{ route('checkout.update') }}" method="POST" id="addressForm">
-                        @csrf
-                        <div class="modal-body p-4">
-                            @if (auth()->check() && $addresses->count() > 0)
-                                <div class="row g-3" id="addressList">
-                                    @foreach ($addresses as $address)
-                                        <div class="col-12 address-item" data-address-id="{{ $address->id }}">
-                                            <div class="card border-2 h-100"
-                                                style="cursor: pointer; transition: all 0.3s ease;">
-                                                <div class="card-body p-3">
-                                                    <div class="row align-items-start">
-                                                        <div class="col-auto">
-                                                            <div class="form-check">
-                                                                <input type="radio" id="address_{{ $address->id }}"
-                                                                    name="selected_address" value="{{ $address->id }}"
-                                                                    class="form-check-input address-radio"
-                                                                    {{ $address->id == old('selected_address', session('checkout_address_id', $defaultAddress->id ?? '')) ? 'checked' : '' }}>
+            <!-- Address Modal -->
+            <div class="modal fade" id="addressModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa fa-map-marker me-2"></i>
+                                Chọn địa chỉ nhận hàng
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="{{ route('checkout.update') }}" method="POST" id="addressForm">
+                            @csrf
+                            <div class="modal-body p-4">
+                                @if (auth()->check() && $addresses->count() > 0)
+                                    <div class="row g-3" id="addressList">
+                                        @foreach ($addresses as $address)
+                                            <div class="col-12 address-item" data-address-id="{{ $address->id }}">
+                                                <div class="card border-2 h-100"
+                                                    style="cursor: pointer; transition: all 0.3s ease;">
+                                                    <div class="card-body p-3">
+                                                        <div class="row align-items-start">
+                                                            <div class="col-auto">
+                                                                <div class="form-check">
+                                                                    <input type="radio"
+                                                                        id="address_{{ $address->id }}"
+                                                                        name="selected_address"
+                                                                        value="{{ $address->id }}"
+                                                                        class="form-check-input address-radio"
+                                                                        {{ $address->id == old('selected_address', session('checkout_address_id', $defaultAddress->id ?? '')) ? 'checked' : '' }}>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="d-flex align-items-center mb-2">
-                                                                <h6 class="mb-0 fw-bold text-dark me-2">
-                                                                    {{ $address->fullname ?? 'Chưa cung cấp họ tên' }}
-                                                                </h6>
-                                                                @if ($address->is_default)
-                                                                    <span class="badge bg-primary">Mặc định</span>
+                                                            <div class="col">
+                                                                <div class="d-flex align-items-center mb-2">
+                                                                    <h6 class="mb-0 fw-bold text-dark me-2">
+                                                                        {{ $address->fullname ?? 'Chưa cung cấp họ tên' }}
+                                                                    </h6>
+                                                                    @if ($address->is_default)
+                                                                        <span class="badge bg-primary">Mặc định</span>
+                                                                    @endif
+                                                                </div>
+                                                                <p class="text-muted mb-1">
+                                                                    <i class="fa fa-phone me-1"></i>
+                                                                    (+84)
+                                                                    {{ $address->phone_number && preg_match('/^0[0-9]{9}$/', $address->phone_number) ? $address->phone_number : 'Số điện thoại không hợp lệ' }}
+                                                                </p>
+                                                                <p class="text-muted mb-2">
+                                                                    <i class="fa fa-map-marker me-1"></i>
+                                                                    {{ $address->street ? $address->street . ', ' : '' }}
+                                                                    {{ $address->ward ? $address->ward . ', ' : '' }}
+                                                                    {{ $address->district ? $address->district . ', ' : '' }}
+                                                                    {{ $address->province ?? 'Chưa cung cấp tỉnh/thành phố' }}
+                                                                </p>
+                                                                @if (
+                                                                    !$address->fullname ||
+                                                                        !$address->phone_number ||
+                                                                        !$address->province ||
+                                                                        !$address->district ||
+                                                                        !$address->ward ||
+                                                                        !$address->street)
+                                                                    <div class="alert alert-warning py-2 mb-0">
+                                                                        <i class="fa fa-exclamation-triangle me-1"></i>
+                                                                        <small>Thông tin chưa đầy đủ</small>
+                                                                    </div>
                                                                 @endif
                                                             </div>
-                                                            <p class="text-muted mb-1">
-                                                                <i class="fa fa-phone me-1"></i>
-                                                                (+84)
-                                                                {{ $address->phone_number && preg_match('/^0[0-9]{9}$/', $address->phone_number) ? $address->phone_number : 'Số điện thoại không hợp lệ' }}
-                                                            </p>
-                                                            <p class="text-muted mb-2">
-                                                                <i class="fa fa-map-marker me-1"></i>
-                                                                {{ $address->street ? $address->street . ', ' : '' }}
-                                                                {{ $address->ward ? $address->ward . ', ' : '' }}
-                                                                {{ $address->district ? $address->district . ', ' : '' }}
-                                                                {{ $address->province ?? 'Chưa cung cấp tỉnh/thành phố' }}
-                                                            </p>
-                                                            @if (
-                                                                !$address->fullname ||
-                                                                    !$address->phone_number ||
-                                                                    !$address->province ||
-                                                                    !$address->district ||
-                                                                    !$address->ward ||
-                                                                    !$address->street)
-                                                                <div class="alert alert-warning py-2 mb-0">
-                                                                    <i class="fa fa-exclamation-triangle me-1"></i>
-                                                                    <small>Thông tin chưa đầy đủ</small>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <a href="{{ route('address.edit', ['id' => $address->id]) }}"
-                                                                class="btn btn-outline-primary btn-sm">
-                                                                <i class="fa fa-edit me-1"></i>
-                                                                Cập nhật
-                                                            </a>
-                                                            @if (!$address->is_default)
-                                                                <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm delete-address"
-                                                                    data-address-id="{{ $address->id }}">
-                                                                    <i class="fa fa-trash me-1"></i>
-                                                                    Xóa
-                                                                </button>
-                                                            @endif
+                                                            <div class="col-auto">
+                                                                <a href="{{ route('address.edit', ['id' => $address->id]) }}"
+                                                                    class="btn btn-outline-primary btn-sm">
+                                                                    <i class="fa fa-edit me-1"></i>
+                                                                    Cập nhật
+                                                                </a>
+                                                                @if (!$address->is_default)
+                                                                    <button type="button"
+                                                                        class="btn btn-outline-danger btn-sm delete-address"
+                                                                        data-address-id="{{ $address->id }}">
+                                                                        <i class="fa fa-trash me-1"></i>
+                                                                        Xóa
+                                                                    </button>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="text-center mt-4 pt-3 border-top">
+                                        <a href="{{ route('address.create') }}" class="btn btn-primary btn-lg">
+                                            <i class="fa fa-plus me-2"></i>
+                                            Thêm địa chỉ mới
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="text-center py-5">
+                                        <div class="mb-4">
+                                            <i class="fa fa-map-marker"
+                                                style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
                                         </div>
-                                    @endforeach
-                                </div>
-                                <div class="text-center mt-4 pt-3 border-top">
-                                    <a href="{{ route('address.create') }}" class="btn btn-primary btn-lg">
-                                        <i class="fa fa-plus me-2"></i>
-                                        Thêm địa chỉ mới
-                                    </a>
-                                </div>
-                            @else
+                                        <h5 class="fw-bold text-dark mb-2">Chưa có địa chỉ</h5>
+                                        <p class="text-muted mb-4">Vui lòng thêm địa chỉ mới để tiếp tục thanh toán.</p>
+                                        <a href="{{ route('address.create') }}" class="btn btn-primary btn-lg">
+                                            <i class="fa fa-plus me-2"></i>
+                                            Thêm địa chỉ
+                                        </a>
+                                    </div>
+                                @endif
+                                @error('selected_address')
+                                    <div class="alert alert-danger mt-3">
+                                        <i class="fa fa-exclamation-circle me-2"></i>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-times me-1"></i>
+                                    Hủy
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-check me-1"></i>
+                                    Xác nhận
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coupon Modal -->
+            <div class="modal fade" id="couponModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa fa-gift me-2"></i>
+                                Chọn mã giảm giá
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                @foreach ($availableCoupons as $availableCoupon)
+                                    @php
+                                        $isApplied = $coupon && $coupon->id === $availableCoupon->id;
+                                        $discountAmount =
+                                            $availableCoupon->discount_type === 'percent'
+                                                ? ($cartTotal * $availableCoupon->discount_value) / 100
+                                                : $availableCoupon->discount_value;
+                                    @endphp
+                                    <div class="col-12">
+                                        <div class="coupon-modal-card {{ $isApplied ? 'applied' : '' }}"
+                                            onclick="applySelectedCoupon('{{ $availableCoupon->id }}')">
+                                            <div class="coupon-modal-header">
+                                                <div class="coupon-modal-code">
+                                                    <span class="coupon-code-text">{{ $availableCoupon->code }}</span>
+                                                    @if ($isApplied)
+                                                        <span class="badge bg-success ms-2">Đã áp dụng</span>
+                                                    @endif
+                                                </div>
+                                                <div class="coupon-modal-discount">
+                                                    -{{ number_format($discountAmount) }} ₫
+                                                </div>
+                                            </div>
+                                            <div class="coupon-modal-details">
+                                                @if ($availableCoupon->discount_type === 'percent')
+                                                    <span class="discount-type">Giảm
+                                                        {{ $availableCoupon->discount_value }}%
+                                                        giá trị đơn hàng</span>
+                                                @else
+                                                    <span class="discount-type">Giảm
+                                                        {{ number_format($availableCoupon->discount_value) }} ₫</span>
+                                                @endif
+                                                @if ($availableCoupon->title)
+                                                    <span class="coupon-title">• {{ $availableCoupon->title }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="coupon-modal-footer">
+                                                <span class="coupon-expiry">
+                                                    <i class="fa fa-clock me-1"></i>
+                                                    Hết hạn: {{ $availableCoupon->end_date->format('d/m/Y') }}
+                                                </span>
+                                                @if (!$isApplied)
+                                                    <span class="apply-text">Nhấn để áp dụng</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @if ($availableCoupons->count() === 0)
                                 <div class="text-center py-5">
                                     <div class="mb-4">
-                                        <i class="fa fa-map-marker"
-                                            style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
+                                        <i class="fa fa-gift" style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
                                     </div>
-                                    <h5 class="fw-bold text-dark mb-2">Chưa có địa chỉ</h5>
-                                    <p class="text-muted mb-4">Vui lòng thêm địa chỉ mới để tiếp tục thanh toán.</p>
-                                    <a href="{{ route('address.create') }}" class="btn btn-primary btn-lg">
-                                        <i class="fa fa-plus me-2"></i>
-                                        Thêm địa chỉ
-                                    </a>
+                                    <h5 class="fw-bold text-dark mb-2">Không có mã giảm giá</h5>
+                                    <p class="text-muted mb-0">Hiện tại không có mã giảm giá nào khả dụng cho đơn hàng của
+                                        bạn
+                                    </p>
                                 </div>
                             @endif
-                            @error('selected_address')
-                                <div class="alert alert-danger mt-3">
-                                    <i class="fa fa-exclamation-circle me-2"></i>
-                                    {{ $message }}
-                                </div>
-                            @enderror
                         </div>
                         <div class="modal-footer bg-light">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="fa fa-times me-1"></i>
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-check me-1"></i>
-                                Xác nhận
+                                Đóng
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Coupon Modal -->
-        <div class="modal fade" id="couponModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fa fa-gift me-2"></i>
-                            Chọn mã giảm giá
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="row g-3">
-                            @foreach ($availableCoupons as $availableCoupon)
-                                @php
-                                    $isApplied = $coupon && $coupon->id === $availableCoupon->id;
-                                    $discountAmount =
-                                        $availableCoupon->discount_type === 'percent'
-                                            ? ($cartTotal * $availableCoupon->discount_value) / 100
-                                            : $availableCoupon->discount_value;
-                                @endphp
-                                <div class="col-12">
-                                    <div class="coupon-modal-card {{ $isApplied ? 'applied' : '' }}"
-                                        onclick="applySelectedCoupon('{{ $availableCoupon->id }}')">
-                                        <div class="coupon-modal-header">
-                                            <div class="coupon-modal-code">
-                                                <span class="coupon-code-text">{{ $availableCoupon->code }}</span>
-                                                @if ($isApplied)
-                                                    <span class="badge bg-success ms-2">Đã áp dụng</span>
-                                                @endif
-                                            </div>
-                                            <div class="coupon-modal-discount">
-                                                -{{ number_format($discountAmount) }} ₫
-                                            </div>
-                                        </div>
-                                        <div class="coupon-modal-details">
-                                            @if ($availableCoupon->discount_type === 'percent')
-                                                <span class="discount-type">Giảm {{ $availableCoupon->discount_value }}%
-                                                    giá trị đơn hàng</span>
-                                            @else
-                                                <span class="discount-type">Giảm
-                                                    {{ number_format($availableCoupon->discount_value) }} ₫</span>
-                                            @endif
-                                            @if ($availableCoupon->title)
-                                                <span class="coupon-title">• {{ $availableCoupon->title }}</span>
-                                            @endif
-                                        </div>
-                                        <div class="coupon-modal-footer">
-                                            <span class="coupon-expiry">
-                                                <i class="fa fa-clock me-1"></i>
-                                                Hết hạn: {{ $availableCoupon->end_date->format('d/m/Y') }}
-                                            </span>
-                                            @if (!$isApplied)
-                                                <span class="apply-text">Nhấn để áp dụng</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        @if ($availableCoupons->count() === 0)
-                            <div class="text-center py-5">
-                                <div class="mb-4">
-                                    <i class="fa fa-gift" style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
-                                </div>
-                                <h5 class="fw-bold text-dark mb-2">Không có mã giảm giá</h5>
-                                <p class="text-muted mb-0">Hiện tại không có mã giảm giá nào khả dụng cho đơn hàng của bạn
-                                </p>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fa fa-times me-1"></i>
-                            Đóng
-                        </button>
                     </div>
                 </div>
             </div>
-        </div>
     </section>
 
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             $(document).ready(function() {
+                // Hàm debounce để hạn chế tần suất gọi AJAX
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+
+                // Hàm cập nhật trạng thái giao diện phương thức vận chuyển
+                function updateShippingState() {
+                    $('.checkout__shipping-method .form-check').each(function() {
+                        $(this).toggleClass('selected', $(this).find('input').is(':checked'));
+                    });
+                }
+
+                // Hàm cập nhật trạng thái giao diện phương thức thanh toán
+                function updatePaymentState() {
+                    $('.checkout__payment-method .form-check').each(function() {
+                        $(this).toggleClass('selected', $(this).find('input').is(':checked'));
+                    });
+                }
+
+                // Khởi tạo trạng thái ban đầu
+                updateShippingState();
+                updatePaymentState();
+
                 // Xử lý chọn địa chỉ
                 $('.address-item').on('click', function(e) {
                     if (!$(e.target).is('.btn, .btn *')) {
                         const radio = $(this).find('.address-radio');
-                        radio.prop('checked', true);
+                        radio.prop('checked', true); // Chỉ chọn radio, không gửi AJAX
                     }
                 });
 
+                // Xử lý submit form khi nhấn nút "Xác nhận" trong modal địa chỉ
+                $('#addressForm').on('submit', function(e) {
+                    e.preventDefault(); // Ngăn form submit mặc định
+                    const selectedAddressId = $('.address-radio:checked').val();
+                    console.log('Sending AJAX request with selected_address:', selectedAddressId);
+
+                    $.ajax({
+                        url: '{{ route('checkout.update') }}',
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            console.log('Response data:', response);
+                            if (response.success) {
+                                // Cập nhật phí vận chuyển và ngày giao hàng
+                                $('#normal_shipping_fee').text(new Intl.NumberFormat('vi-VN')
+                                    .format(response.normal_shipping_fee || 16500));
+                                $('#fast_shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
+                                    response.fast_shipping_fee || 30000));
+                                $('#normal_shipping_dates').text(response.normal_shipping_dates ||
+                                    '{{ \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}'
+                                    );
+                                $('#fast_shipping_dates').text(response.fast_shipping_dates ||
+                                    'Trong 4 giờ nếu đặt trước 16:00');
+
+                                // Cập nhật thông tin địa chỉ
+                                $('#address_fullname').text(response.selected_address.fullname ||
+                                    'Chưa cung cấp');
+                                $('#address_phone').text(response.selected_address.phone_number ?
+                                    '(+84) ' + response.selected_address.phone_number :
+                                    'Chưa cung cấp');
+                                $('#address_details').text(response.selected_address.address ||
+                                    'Chưa cung cấp');
+
+                                // Cập nhật phí vận chuyển và tổng thanh toán
+                                const shippingFee = response.shipping_fee ||
+                                16500; // Fallback nếu thiếu
+                                $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
+                                    shippingFee));
+                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
+                                    '')) || 0;
+                                const discount = parseFloat('{{ $discount }}'.replace(/,/g,
+                                    '')) || 0;
+                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
+                                    cartTotal + shippingFee - discount));
+
+                                // Cập nhật input ẩn trong checkoutForm
+                                $('#shipping_type_input').val(response.shipping_type || 'thường');
+                                $('#address_id_input').val(response.selected_address.id || '');
+
+                                // Đóng modal
+                                $('#addressModal').modal('hide');
+                            } else {
+                                console.error('Response error:', response.message);
+                                alert(response.message || 'Đã xảy ra lỗi khi cập nhật địa chỉ!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi gửi yêu cầu, vui lòng thử lại!');
+                        }
+                    });
+                });
+
+                // Xử lý thay đổi phương thức vận chuyển với debounce
+                const updateShipping = debounce(function() {
+                    $('#shippingForm').submit();
+                }, 500);
+
+                $('.checkout__shipping-method .form-check input[name="shipping_type"]').on('change', updateShipping);
+
+                $('#shippingForm').on('submit', function(e) {
+                    e.preventDefault(); // Ngăn form submit mặc định
+                    const shippingType = $(this).find('input[name="shipping_type"]:checked').val();
+                    console.log('Sending AJAX request with shipping_type:', shippingType);
+
+                    $.ajax({
+                        url: '{{ route('checkout.update') }}',
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            console.log('Response data:', response);
+                            if (response.success) {
+                                // Cập nhật phí vận chuyển và ngày giao hàng
+                                $('#normal_shipping_fee').text(new Intl.NumberFormat('vi-VN')
+                                    .format(response.normal_shipping_fee || 16500));
+                                $('#fast_shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
+                                    response.fast_shipping_fee || 30000));
+                                $('#normal_shipping_dates').text(response.normal_shipping_dates ||
+                                    '{{ \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}'
+                                    );
+                                $('#fast_shipping_dates').text(response.fast_shipping_dates ||
+                                    'Trong 4 giờ nếu đặt trước 16:00');
+
+                                // Cập nhật phí vận chuyển và tổng thanh toán
+                                const shippingFee = response.shipping_fee ||
+                                16500; // Fallback nếu thiếu
+                                $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
+                                    shippingFee));
+                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
+                                    '')) || 0;
+                                const discount = parseFloat('{{ $discount }}'.replace(/,/g,
+                                    '')) || 0;
+                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
+                                    cartTotal + shippingFee - discount));
+
+                                // Cập nhật input ẩn trong checkoutForm
+                                $('#shipping_type_input').val(response.shipping_type || 'thường');
+
+                                // Cập nhật trạng thái giao diện
+                                updateShippingState();
+                            } else {
+                                console.error('Response error:', response.message);
+                                alert(response.message ||
+                                    'Đã xảy ra lỗi khi cập nhật phương thức vận chuyển!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi gửi yêu cầu, vui lòng thử lại!');
+                        }
+                    });
+                });
+
+                // Xử lý thay đổi phương thức thanh toán
+                $('.checkout__payment-method .form-check input[name="payment_method"]').on('change', function() {
+                    const form = $(this).closest('form');
+                    const paymentMethod = $(this).val();
+                    console.log('Sending AJAX request with payment_method:', paymentMethod);
+
+                    $.ajax({
+                        url: '{{ route('checkout.update') }}',
+                        method: 'POST',
+                        data: form.serialize(),
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            console.log('Response data:', response);
+                            if (response.success) {
+                                updatePaymentState();
+                            } else {
+                                console.error('Response error:', response.message);
+                                alert(response.message ||
+                                    'Đã xảy ra lỗi khi cập nhật phương thức thanh toán!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi gửi yêu cầu, vui lòng thử lại!');
+                        }
+                    });
+                });
+
                 // Xử lý xóa địa chỉ
-                $('.delete-address').on('click', function() {
+                $('.delete-address-btn').on('click', function(e) {
+                    e.preventDefault();
                     const addressId = $(this).data('address-id');
-                    if (confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
+                    if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
                         $.ajax({
-                            url: '{{ route('address.delete', ':addressId') }}'.replace(':addressId',
-                                addressId),
+                            url: '/address/' + addressId, // Sử dụng URL tĩnh
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
                             success: function(response) {
+                                console.log('Delete address response:', response);
                                 if (response.success) {
                                     $(`.address-item[data-address-id="${addressId}"]`).remove();
-                                    if ($('#addressList .address-item').length === 0) {
-                                        $('#addressList').replaceWith(`
-                                        <div class="text-center py-5">
-                                            <div class="mb-4">
-                                                <i class="fa fa-map-marker" style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
-                                            </div>
-                                            <h5 class="fw-bold text-dark mb-2">Chưa có địa chỉ</h5>
-                                            <p class="text-muted mb-4">Vui lòng thêm địa chỉ mới để tiếp tục thanh toán.</p>
-                                            <a href="{{ route('address.create') }}" class="btn btn-primary btn-lg">
-                                                <i class="fa fa-plus me-2"></i>
-                                                Thêm địa chỉ
-                                            </a>
-                                        </div>
-                                    `);
+                                    alert(response.message || 'Xóa địa chỉ thành công!');
+                                    // Cập nhật lại địa chỉ nếu đang chọn
+                                    if ($('#address_id_input').val() == addressId) {
+                                        $('#addressForm')
+                                    .submit(); // Gửi lại để cập nhật địa chỉ mặc định
                                     }
-                                    alert('Địa chỉ đã được xóa thành công!');
                                 } else {
-                                    alert(response.message ||
-                                        'Không thể xóa địa chỉ. Vui lòng thử lại.');
+                                    console.error('Delete address error:', response.message);
+                                    alert(response.message || 'Xóa địa chỉ thất bại!');
                                 }
                             },
                             error: function(xhr) {
-                                console.error('Error deleting address:', xhr.status, xhr.statusText,
-                                    xhr.responseText);
-                                alert('Không thể xóa địa chỉ. Vui lòng thử lại.');
+                                console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                    .responseText);
+                                alert('Đã xảy ra lỗi khi xóa địa chỉ, vui lòng thử lại!');
                             }
                         });
                     }
                 });
-            });
 
-            document.addEventListener('DOMContentLoaded', function() {
-                // Handle shipping method selection
-                const shippingOptions = document.querySelectorAll('.checkout__shipping-method .form-check');
-                shippingOptions.forEach(option => {
-                    const radio = option.querySelector('input[type="radio"]');
-                    if (radio.checked) {
-                        option.classList.add('selected');
+                // Xử lý áp dụng mã giảm giá
+                $('#applyCouponForm').on('submit', function(e) {
+                    e.preventDefault();
+                    const couponCode = $('#coupon_code').val().trim();
+                    if (!couponCode) {
+                        alert('Vui lòng nhập mã giảm giá!');
+                        return;
                     }
-                    option.addEventListener('click', function(e) {
-                        if (e.target !== radio) {
-                            radio.checked = true;
-                            updateShippingState();
-                            radio.form.submit();
+
+                    $.ajax({
+                        url: '{{ route('checkout.apply-coupon') }}',
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            coupon_code: couponCode
+                        },
+                        success: function(response) {
+                            console.log('Coupon response:', response);
+                            if (response.success) {
+                                $('#coupon-section').html(response.coupon_view);
+                                const discount = response.discount || 0;
+                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
+                                    '')) || 0;
+                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
+                                    /,/g, '')) || 16500;
+                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
+                                    cartTotal + shippingFee - discount));
+                            } else {
+                                alert(response.message || 'Mã giảm giá không hợp lệ!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi áp dụng mã giảm giá!');
                         }
-                    });
-                    radio.addEventListener('change', function() {
-                        updateShippingState();
                     });
                 });
 
-                function updateShippingState() {
-                    shippingOptions.forEach(option => {
-                        const radio = option.querySelector('input[type="radio"]');
-                        if (radio.checked) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
+                // Xử lý xóa mã giảm giá
+                $(document).on('click', '#remove-coupon', function(e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: '{{ route('checkout.remove-coupon') }}',
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                $('#coupon-section').html(response.coupon_view);
+                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
+                                    '')) || 0;
+                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
+                                    /,/g, '')) || 16500;
+                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
+                                    cartTotal + shippingFee));
+                            } else {
+                                alert(response.message || 'Xóa mã giảm giá thất bại!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi xóa mã giảm giá!');
                         }
                     });
-                }
+                });
 
-                // Handle payment method selection
-                const paymentOptions = document.querySelectorAll('.checkout__payment-method .form-check');
-                paymentOptions.forEach(option => {
-                    const radio = option.querySelector('input[type="radio"]');
-                    if (radio.checked) {
-                        option.classList.add('selected');
+                // Xử lý chọn mã giảm giá từ danh sách
+                $('.coupon-card').on('click', function() {
+                    const couponId = $(this).data('coupon-id');
+                    $.ajax({
+                        url: '{{ route('checkout.apply-coupon') }}',
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            coupon_id: couponId
+                        },
+                        success: function(response) {
+                            console.log('Coupon response:', response);
+                            if (response.success) {
+                                $('#coupon-section').html(response.coupon_view);
+                                const discount = response.discount || 0;
+                                const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
+                                    '')) || 0;
+                                const shippingFee = parseFloat($('#shipping_fee').text().replace(
+                                    /,/g, '')) || 16500;
+                                $('#total_payment').text(new Intl.NumberFormat('vi-VN').format(
+                                    cartTotal + shippingFee - discount));
+                            } else {
+                                alert(response.message || 'Áp dụng mã giảm giá thất bại!');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.status, xhr.statusText, xhr
+                                .responseText);
+                            alert('Đã xảy ra lỗi khi áp dụng mã giảm giá!');
+                        }
+                    });
+                });
+
+                // Xử lý submit checkout form
+                $('#checkoutForm').on('submit', function(e) {
+                    const addressId = $('#address_id_input').val();
+                    const shippingType = $('#shipping_type_input').val();
+                    const paymentMethod = $('input[name="payment_method"]:checked').val();
+
+                    console.log('Submitting checkout form:', {
+                        addressId,
+                        shippingType,
+                        paymentMethod
+                    });
+
+                    if (!addressId) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn địa chỉ giao hàng!');
+                        $('#addressModal').modal('show');
+                        return false;
+                    } else if (!shippingType) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn phương thức vận chuyển!');
+                        return false;
+                    } else if (!paymentMethod) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn phương thức thanh toán!');
+                        return false;
                     }
-                    option.addEventListener('click', function(e) {
-                        if (e.target !== radio) {
-                            radio.checked = true;
-                            updatePaymentState();
-                            radio.form.submit();
-                        }
-                    });
-                    radio.addEventListener('change', function() {
-                        updatePaymentState();
-                    });
                 });
-
-                function updatePaymentState() {
-                    paymentOptions.forEach(option => {
-                        const radio = option.querySelector('input[type="radio"]');
-                        if (radio.checked) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
-                        }
-                    });
-                }
-            });
-
-            function applySelectedCoupon(couponId) {
-                if (!couponId) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('checkout.remove-coupon') }}';
-
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfToken);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                    return;
-                }
-
-                // Hiển thị loading state cho modal coupon
-                const couponModalCard = event.target.closest('.coupon-modal-card');
-                if (couponModalCard) {
-                    couponModalCard.style.opacity = '0.6';
-                    couponModalCard.style.pointerEvents = 'none';
-                    couponModalCard.innerHTML =
-                        '<div class="text-center p-4"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 mb-0">Đang áp dụng mã giảm giá...</p></div>';
-                }
-
-                // Tạo form ẩn để submit
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ route('checkout.apply-coupon-by-id') }}';
-
-                // Thêm CSRF token
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                form.appendChild(csrfToken);
-
-                // Thêm ID mã giảm giá
-                const couponInput = document.createElement('input');
-                couponInput.type = 'hidden';
-                couponInput.name = 'coupon_id';
-                couponInput.value = couponId;
-                form.appendChild(couponInput);
-
-                // Submit form
-                document.body.appendChild(form);
-                form.submit();
-            }
-
-            // Thêm hiệu ứng hover cho coupon modal cards
-            document.addEventListener('DOMContentLoaded', function() {
-                const couponModalCards = document.querySelectorAll('.coupon-modal-card:not(.applied)');
-                couponModalCards.forEach(card => {
-                    card.addEventListener('mouseenter', function() {
-                        this.style.transform = 'translateY(-3px) scale(1.02)';
-                    });
-
-                    card.addEventListener('mouseleave', function() {
-                        this.style.transform = 'translateY(0) scale(1)';
-                    });
-                });
-
-                // Đóng modal coupon sau khi áp dụng thành công
-                const couponModal = document.getElementById('couponModal');
-                if (couponModal) {
-                    couponModal.addEventListener('hidden.bs.modal', function() {
-                        // Reset loading state nếu có
-                        const loadingCards = this.querySelectorAll('.coupon-modal-card[style*="opacity: 0.6"]');
-                        loadingCards.forEach(card => {
-                            card.style.opacity = '';
-                            card.style.pointerEvents = '';
-                        });
-                    });
-                }
             });
         </script>
     @endpush

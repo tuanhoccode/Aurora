@@ -28,7 +28,7 @@
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body p-4">
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <form action="{{ route('admin.orders.index') }}" method="GET" class="d-flex gap-2">
                             <div class="input-group">
                                 <input type="text" name="search" class="form-control" placeholder="Tìm kiếm "

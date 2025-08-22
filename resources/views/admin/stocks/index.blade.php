@@ -6,12 +6,12 @@
 <div class="container py-4">
     <h1 class="mb-4">Quản lý tồn kho</h1>
 
-    <form method="GET" class="row g-3 mb-4">
+    <form method="GET" class="row g-1 mb-4">
         <div class="col-md-3">
             <input type="text" name="search" class="form-control" placeholder="Tìm kiếm tên sản phẩm" value="{{ request('search') }}">
         </div>
         <div class="col-md-2">
-            <select name="filter" class="form-select">
+            <select name="filter" class="form-control">
                 <option value="">Tất cả loại</option>
                 <option value="product" {{ request('filter') == 'product' ? 'selected' : '' }}>Sản phẩm</option>
                 <option value="variant" {{ request('filter') == 'variant' ? 'selected' : '' }}>Biến thể</option>
@@ -19,7 +19,7 @@
             </select>
         </div>
         <div class="col-md-2">
-            <select name="stock_level" class="form-select">
+            <select name="stock_level" class="form-control">
                 <option value="">Tất cả tồn kho</option>
                 <option value="low" {{ request('stock_level') == 'low' ? 'selected' : '' }}>Thấp (&le;10)</option>
                 <option value="normal" {{ request('stock_level') == 'normal' ? 'selected' : '' }}>Bình thường (&gt;10)</option>
@@ -27,7 +27,7 @@
             </select>
         </div>
         <div class="col-md-2">
-            <select name="sort" class="form-select">
+            <select name="sort" class="form-control">
                 <option value="">Sắp xếp theo</option>
                 <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Tên</option>
                 <option value="stock" {{ request('sort') == 'stock' ? 'selected' : '' }}>Số lượng</option>
@@ -35,7 +35,7 @@
             </select>
         </div>
         {{-- <div class="col-md-1">
-            <select name="order" class="form-select">
+            <select name="order" class="form-control">
                 <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Tăng</option>
                 <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Giảm</option>
             </select>

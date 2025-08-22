@@ -126,11 +126,62 @@ class CheckoutController extends Controller
 
             $paymentMethod = session('payment_method', 'cod');
             $shippingType = session('shipping_type', 'thường');
-            $shippingFee = $shippingType === 'nhanh' ? 30000 : 16500;
+
+            // Tính phí vận chuyển dựa trên địa chỉ (copy logic từ update)
+            $addressId = session('checkout_address_id', $defaultAddress->id ?? null);
+            $selectedAddress = $addressId ? UserAddress::find($addressId) : null;
+            $destinationProvince = $selectedAddress ? $selectedAddress->province : 'Hà Nội';
+            $normalizedProvince = preg_replace('/^(Thành phố|Tỉnh)\s+/', '', $destinationProvince);
+
+            // Define regions (copy từ update)
+            $northernProvinces = ['Hà Nội', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Phú Thọ', 'Vĩnh Phúc', 'Ninh Bình', 'Thái Bình', 'Nam Định', 'Hà Nam', 'Hòa Bình', 'Sơn La', 'Điện Biên', 'Lai Châu', 'Lào Cai', 'Yên Bái', 'Tuyên Quang', 'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Lạng Sơn', 'Thái Nguyên'];
+            $centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+            $southernProvinces = ['Hồ Chí Minh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau', 'Bình Phước', 'Tây Ninh'];
+
+            $region = 'northern';
+            if (in_array($normalizedProvince, $centralProvinces)) {
+                $region = 'central';
+            } elseif (in_array($normalizedProvince, $southernProvinces)) {
+                $region = 'southern';
+            }
+
+            $normalShippingFee = 16500;
+            $fastShippingFee = match ($region) {
+                'northern' => $normalizedProvince === 'Hà Nội' ? 30000 : 40000,
+                'central' => 50000,
+                'southern' => 60000,
+            };
+
+            $shippingFee = $shippingType === 'nhanh' ? $fastShippingFee : $normalShippingFee;
+
+            $normalShippingDates = match ($region) {
+                'northern' => \Carbon\Carbon::today()->addDays($normalizedProvince === 'Hà Nội' ? 1 : 2)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays($normalizedProvince === 'Hà Nội' ? 2 : 4)->format('d/m/Y'),
+                'central' => \Carbon\Carbon::today()->addDays(3)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(5)->format('d/m/Y'),
+                'southern' => \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(6)->format('d/m/Y'),
+            };
+
+            $fastShippingDates = match ($region) {
+                'northern' => $normalizedProvince === 'Hà Nội'
+                    ? 'Trong 4 giờ nếu đặt trước 16:00'
+                    : \Carbon\Carbon::today()->addDay()->format('d/m/Y'),
+                'central' => \Carbon\Carbon::today()->addDays(1)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(2)->format('d/m/Y'),
+                'southern' => \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(3)->format('d/m/Y'),
+            };
+
+            // Lưu đầy đủ session
             session([
                 'payment_method' => $paymentMethod,
                 'shipping_type' => $shippingType,
-                'shipping_fee' => $shippingFee
+                'shipping_fee' => $shippingFee,
+                'normal_shipping_fee' => $normalShippingFee,
+                'fast_shipping_fee' => $fastShippingFee,
+                'normal_shipping_dates' => $normalShippingDates,
+                'fast_shipping_dates' => $fastShippingDates,
             ]);
 
             $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
@@ -200,33 +251,134 @@ class CheckoutController extends Controller
                 'note' => 'nullable|string|max:500',
             ]);
 
-            $shippingFee = $request->shipping_type === 'nhanh' ? 30000 : 16500;
-            session([
-                'checkout_address_id' => $request->selected_address ?? session('checkout_address_id', null),
-                'shipping_type' => $request->shipping_type ?? session('shipping_type', 'thường'),
-                'payment_method' => $request->payment_method ?? session('payment_method', 'cod'),
-                'note' => $request->note ?? session('note', ''),
-                'shipping_fee' => $shippingFee,
+            // Get the selected address or fallback to session/default
+            $selectedAddressId = $request->input('selected_address', session('checkout_address_id'));
+            $selectedAddress = $selectedAddressId ? \App\Models\UserAddress::find($selectedAddressId) : null; // Sử dụng find() để tránh exception
+            $destinationProvince = $selectedAddress ? $selectedAddress->province : 'Hà Nội';
+            $shopProvince = 'Hà Nội';
+
+            // Normalize province name (remove "Thành phố" or "Tỉnh" for matching)
+            $normalizedProvince = preg_replace('/^(Thành phố|Tỉnh)\s+/', '', $destinationProvince);
+
+            // Log for debugging
+            Log::info('Selected Address', [
+                'selected_address_id' => $selectedAddressId,
+                'destination_province' => $destinationProvince,
+                'normalized_province' => $normalizedProvince,
+                'session_id' => Session::getId()
             ]);
 
-            if (!session('selected_items')) {
-                \Log::warning('No selected items in session, redirecting to cart', ['user_id' => Auth::id(), 'session_id' => Session::getId()]);
-                return redirect()->route('shopping-cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán!');
+            // Define Vietnam's regions (normalized names)
+            $northernProvinces = ['Hà Nội', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Phú Thọ', 'Vĩnh Phúc', 'Ninh Bình', 'Thái Bình', 'Nam Định', 'Hà Nam', 'Hòa Bình', 'Sơn La', 'Điện Biên', 'Lai Châu', 'Lào Cai', 'Yên Bái', 'Tuyên Quang', 'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Lạng Sơn', 'Thái Nguyên'];
+            $centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+            $southernProvinces = ['Hồ Chí Minh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau', 'Bình Phước', 'Tây Ninh'];
+
+            // Determine region
+            $region = 'northern';
+            if (in_array($normalizedProvince, $centralProvinces)) {
+                $region = 'central';
+            } elseif (in_array($normalizedProvince, $southernProvinces)) {
+                $region = 'southern';
             }
 
-            \Log::info('Checkout updated', [
+            // Log region for debugging
+            Log::info('Region Determined', [
+                'region' => $region,
+                'normalized_province' => $normalizedProvince,
+                'session_id' => Session::getId()
+            ]);
+
+            // Calculate shipping fee and delivery dates
+            $shippingType = $request->input('shipping_type', session('shipping_type', 'thường'));
+            $normalShippingFee = 16500;
+            $fastShippingFee = match ($region) {
+                'northern' => $normalizedProvince === 'Hà Nội' ? 30000 : 40000,
+                'central' => 50000,
+                'southern' => 60000,
+            };
+
+            $shippingFee = $shippingType === 'nhanh' ? $fastShippingFee : $normalShippingFee;
+
+            $normalShippingDates = match ($region) {
+                'northern' => \Carbon\Carbon::today()->addDays($normalizedProvince === 'Hà Nội' ? 1 : 2)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays($normalizedProvince === 'Hà Nội' ? 2 : 4)->format('d/m/Y'),
+                'central' => \Carbon\Carbon::today()->addDays(3)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(5)->format('d/m/Y'),
+                'southern' => \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(6)->format('d/m/Y'),
+            };
+
+            $fastShippingDates = match ($region) {
+                'northern' => $normalizedProvince === 'Hà Nội'
+                    ? 'Trong 4 giờ nếu đặt trước 16:00'
+                    : \Carbon\Carbon::today()->addDay()->format('d/m/Y'),
+                'central' => \Carbon\Carbon::today()->addDays(1)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(2)->format('d/m/Y'),
+                'southern' => \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' .
+                    \Carbon\Carbon::today()->addDays(3)->format('d/m/Y'),
+            };
+
+            // Store in session
+            session([
+                'checkout_address_id' => $selectedAddressId,
+                'shipping_type' => $shippingType,
+                'payment_method' => $request->input('payment_method', session('payment_method', 'cod')),
+                'note' => $request->input('note', session('note', '')),
+                'shipping_fee' => $shippingFee,
+                'normal_shipping_fee' => $normalShippingFee,
+                'fast_shipping_fee' => $fastShippingFee,
+                'normal_shipping_dates' => $normalShippingDates,
+                'fast_shipping_dates' => $fastShippingDates,
+            ]);
+
+            // Log checkout update
+            Log::info('Checkout updated', [
                 'checkout_address_id' => session('checkout_address_id'),
                 'shipping_type' => session('shipping_type'),
                 'payment_method' => session('payment_method'),
                 'note' => session('note'),
                 'shipping_fee' => $shippingFee,
+                'normal_shipping_fee' => $normalShippingFee,
+                'fast_shipping_fee' => $fastShippingFee,
+                'normal_shipping_dates' => $normalShippingDates,
+                'fast_shipping_dates' => $fastShippingDates,
                 'selected_items' => session('selected_items'),
                 'session_id' => Session::getId()
             ]);
 
+            // Return JSON for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'shipping_fee' => $shippingFee, // Thêm để script sử dụng
+                    'shipping_type' => $shippingType, // Thêm để script tính đúng
+                    'normal_shipping_fee' => $normalShippingFee,
+                    'fast_shipping_fee' => $fastShippingFee,
+                    'normal_shipping_dates' => $normalShippingDates,
+                    'fast_shipping_dates' => $fastShippingDates,
+                    'selected_address' => [
+                        'id' => $selectedAddressId,
+                        'fullname' => $selectedAddress ? ($selectedAddress->fullname ?? 'Chưa cung cấp họ tên') : 'Chưa chọn',
+                        'phone_number' => $selectedAddress && $selectedAddress->phone_number && preg_match('/^0[0-9]{9}$/', $selectedAddress->phone_number) ? $selectedAddress->phone_number : 'Số điện thoại không hợp lệ',
+                        'address' => $selectedAddress ? (($selectedAddress->street ? $selectedAddress->street . ', ' : '') . ($selectedAddress->ward ? $selectedAddress->ward . ', ' : '') . ($selectedAddress->district ? $selectedAddress->district . ', ' : '') . ($selectedAddress->province ?? 'Chưa cung cấp tỉnh/thành phố')) : 'Chưa chọn địa chỉ'
+                    ]
+                ]);
+            }
+
             return redirect()->route('checkout')->with('success', 'Cập nhật thông tin thành công!');
         } catch (\Exception $e) {
-            \Log::error('Checkout Update Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString(), 'session_id' => Session::getId()]);
+            Log::error('Checkout Update Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'session_id' => Session::getId()
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Đã xảy ra lỗi khi cập nhật, vui lòng thử lại!'
+                ], 500);
+            }
+
             return redirect()->route('checkout')->with('error', 'Đã xảy ra lỗi khi cập nhật, vui lòng thử lại!');
         }
     }
@@ -685,7 +837,7 @@ class CheckoutController extends Controller
                 return $price * $quantity;
             });
 
-            $shippingFee = $request->shipping_type === 'thường' ? 16500 : 30000;
+            $shippingFee = $this->calculateShippingFee($address, $request->shipping_type);
             $coupon = session('coupon') ? Coupon::find(session('coupon')->id) : null;
             $discount = 0;
             if ($coupon && $this->isValidCoupon($coupon, $subtotal)) {
@@ -781,7 +933,47 @@ class CheckoutController extends Controller
                 ->with('error', 'Đã xảy ra lỗi khi xử lý đơn hàng: ' . $e->getMessage());
         }
     }
+    protected function calculateShippingFee($address, $shippingType)
+    {
+        // Normalize province name (remove "Thành phố" or "Tỉnh" for matching)
+        $destinationProvince = $address ? $address->province : 'Hà Nội';
+        $normalizedProvince = preg_replace('/^(Thành phố|Tỉnh)\s+/', '', $destinationProvince);
 
+        // Define Vietnam's regions (normalized names)
+        $northernProvinces = ['Hà Nội', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Phú Thọ', 'Vĩnh Phúc', 'Ninh Bình', 'Thái Bình', 'Nam Định', 'Hà Nam', 'Hòa Bình', 'Sơn La', 'Điện Biên', 'Lai Châu', 'Lào Cai', 'Yên Bái', 'Tuyên Quang', 'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Lạng Sơn', 'Thái Nguyên'];
+        $centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+        $southernProvinces = ['Hồ Chí Minh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau', 'Bình Phước', 'Tây Ninh'];
+
+        // Determine region
+        $region = 'northern';
+        if (in_array($normalizedProvince, $centralProvinces)) {
+            $region = 'central';
+        } elseif (in_array($normalizedProvince, $southernProvinces)) {
+            $region = 'southern';
+        }
+
+        // Calculate shipping fee
+        $normalShippingFee = 16500;
+        $fastShippingFee = match ($region) {
+            'northern' => $normalizedProvince === 'Hà Nội' ? 30000 : 40000,
+            'central' => 50000,
+            'southern' => 60000,
+        };
+
+        $shippingFee = $shippingType === 'nhanh' ? $fastShippingFee : $normalShippingFee;
+
+        \Log::info('Calculated shipping fee', [
+            'province' => $normalizedProvince,
+            'shipping_type' => $shippingType,
+            'region' => $region,
+            'normal_shipping_fee' => $normalShippingFee,
+            'fast_shipping_fee' => $fastShippingFee,
+            'total_shipping_fee' => $shippingFee,
+            'session_id' => \Session::getId()
+        ]);
+
+        return $shippingFee;
+    }
     protected function clearCartAndSession($cart, $cartItems)
     {
         try {

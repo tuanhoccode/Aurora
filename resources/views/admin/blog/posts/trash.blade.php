@@ -14,6 +14,24 @@
         </div>
     </div>
 
+    {{-- Bulk Actions --}}
+    <div class="bulk-actions bg-light rounded-3 p-3 mb-3" style="display: none;">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success bulk-action" data-action="restore">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Khôi phục
+            </button>
+            <button type="button" class="btn btn-danger bulk-action" data-action="force-delete">
+                <i class="bi bi-trash"></i>
+                Xóa vĩnh viễn
+            </button>
+            <button type="button" class="btn btn-light ms-auto cancel-bulk">
+                <i class="bi bi-x-lg"></i>
+                Hủy
+            </button>
+        </div>
+    </div>
+
     <div class="card shadow-sm rounded-3 border-0">
         <div class="card-body">
             @if(session('success'))
@@ -207,8 +225,104 @@
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Bulk actions
+        $(document).ready(function() {
+            // Select all checkbox
+            $('#checkAll').change(function() {
+                $('.post-checkbox').prop('checked', $(this).prop('checked'));
+                toggleBulkActions();
+            });
+
+            // Individual checkbox
+            $(document).on('change', '.post-checkbox', function() {
+                if ($('.post-checkbox:checked').length === $('.post-checkbox').length) {
+                    $('#checkAll').prop('checked', true);
+                } else {
+                    $('#checkAll').prop('checked', false);
+                }
+                toggleBulkActions();
+            });
+
+            // Toggle bulk actions visibility
+            function toggleBulkActions() {
+                if ($('.post-checkbox:checked').length > 0) {
+                    $('.bulk-actions').slideDown();
+                } else {
+                    $('.bulk-actions').slideUp();
+                }
+            }
+
+            // Cancel bulk actions
+            $('.cancel-bulk').click(function() {
+                $('.post-checkbox, #checkAll').prop('checked', false);
+                $('.bulk-actions').slideUp();
+            });
+
+            // Bulk actions
+            $('.bulk-action').click(function() {
+                const action = $(this).data('action');
+                const postIds = [];
+                $('.post-checkbox:checked').each(function() {
+                    postIds.push($(this).val());
+                });
+
+                if (postIds.length === 0) {
+                    alert('Vui lòng chọn ít nhất một bài viết');
+                    return;
+                }
+
+                let confirmMessage = '';
+                let formAction = '';
+                
+                if (action === 'restore') {
+                    confirmMessage = 'Bạn có chắc muốn khôi phục ' + postIds.length + ' bài viết đã chọn?';
+                    formAction = '{{ route("admin.blog.posts.bulk-restore") }}';
+                } else if (action === 'force-delete') {
+                    confirmMessage = 'Bạn có chắc muốn xóa vĩnh viễn ' + postIds.length + ' bài viết đã chọn? Hành động này không thể hoàn tác!';
+                    formAction = '{{ route("admin.blog.posts.bulk-force-delete") }}';
+                }
+
+                if (confirm(confirmMessage)) {
+                    // Tạo form ẩn để submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = formAction;
+                    form.style.display = 'none';
+                    
+                    // Thêm CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    
+                    // Thêm method spoofing cho force delete
+                    if (action === 'force-delete') {
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                    }
+                    
+                    // Thêm các ID bài viết
+                    postIds.forEach(function(id) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+                    
+                    // Thêm form vào body và submit
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
         // Check/Uncheck all
         const checkAll = document.getElementById('checkAll');
         if (checkAll) {

@@ -389,15 +389,7 @@
 
     .sp-ok {
         color: #00a67c;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #f0faf8;
-        padding: 6px 12px;
-        border-radius: 4px;
-        border: 1px solid #d1f2eb;
-        font-weight: 500;
-        font-size: 14px;
+       
     }
 
     .sp-ok i {
@@ -406,15 +398,7 @@
 
     .sp-done {
         color: #00a67c;
-        font-weight: 600;
-        padding: 6px 12px;
-        background: #e6f7f5;
-        border-radius: 4px;
-        border: 1px solid #a7e1d7;
-        text-transform: uppercase;
-        font-size: 13px;
-        letter-spacing: 0.5px;
-        margin-left: 8px;
+        
     }
 
     .sp-row {
@@ -720,7 +704,7 @@
             </div>
         </div>
 
-        @if (session('success'))
+        <!-- @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -732,7 +716,7 @@
                 <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        @endif -->
 
         <div class="mb-4">
             <form action="{{ route('client.orders') }}" method="GET" class="w-100">
@@ -801,20 +785,6 @@
             </li>
         </ul>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
     @if($orders->isEmpty())
         <div class="card text-center p-5" style="background: #fff;">
             <div class="card-body">
@@ -875,10 +845,10 @@
                                         <span class="shop ms-2">{{ $shopName }}</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
-                                        @if ($statusId == 4)
+                                        @if ($statusId == 10)
                                             <span class="sp-ok"><i class="fas fa-truck"></i> Giao hàng thành công</span>
                                             <span>|</span>
-                                            <span class="sp-done">HOÀN THÀNH</span>
+                                            <span class="sp-done">ĐÃ HOÀN THÀNH</span>
                                         @else
                                             <span class="text-muted">{{ $statusName }}</span>
                                         @endif
@@ -887,9 +857,12 @@
 
                                 @foreach ($order->items as $item)
                                     @php
-                                        $img = $item->product->thumbnail
-                                            ? asset('storage/' . $item->product->thumbnail)
-                                            : asset('assets2/img/product/2/prodcut-1.jpg');
+                                        // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
+                                        $img = $item->variant && $item->variant->img 
+                                            ? asset('storage/' . $item->variant->img)
+                                            : ($item->product->thumbnail 
+                                                ? asset('storage/' . $item->product->thumbnail)
+                                                : asset('assets2/img/product/2/prodcut-1.jpg'));
                                         $old =
                                             $item->original_price ??
                                             (data_get($item, 'variant.original_price') ??
@@ -945,6 +918,12 @@
                                                         <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
                                                     </button>
                                                 @elseif($order->isCancelled())
+                                                    <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-outline-primary me-2">
+                                                            <i class="fas fa-shopping-cart me-1"></i> Mua lại
+                                                        </button>
+                                                    </form>
                                                     <button type="button" class="btn btn-danger" disabled>
                                                         <i class="fas fa-ban me-1"></i> Đã hủy
                                                     </button>
@@ -952,10 +931,10 @@
 
                                                 @php
                                                     $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
-                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 5; // 5 = Hoàn thành
+                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 10; // 10 = Nhận hàng thành công
                                                 @endphp
                                                 
-                                                @if($isDelivered)
+                                                @if($isDelivered && !$order->isConfirmationExpired())
                                                     <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
                                                         @csrf
                                                         @method('POST')
@@ -964,37 +943,15 @@
                                                         </button>
                                                     </form>
                                                 @elseif($order->isCompleted())
-                                                    <button type="button" class="btn btn-success me-2" disabled>
-                                                        <i class="fas fa-check-double me-1"></i> Đã nhận hàng
-                                                    </button>
-                                                    <button type="button" 
-                                                            class="btn btn-outline-primary me-2 reorder-btn" 
-                                                            data-order-id="{{ $order->id }}"
-                                                            title="Mua lại các sản phẩm trong đơn hàng này"
-                                                            onclick="event.preventDefault(); 
-                                                                     const button = this; 
-                                                                     button.disabled = true; 
-                                                                     button.innerHTML = '<i class=\'fas fa-spinner fa-spin me-1\'></i> Đang xử lý...'; 
-                                                                     // Tạo form ẩn
-                                                                     const form = document.createElement('form'); 
-                                                                     form.method = 'POST'; 
-                                                                     form.action = '/client/orders/{{ $order->id }}/reorder'; 
-                                                                     form.style.display = 'none'; 
-                                                                     
-                                                                     // Thêm CSRF token và method spoofing
-                                                                     const csrfToken = document.querySelector('meta[name=\'csrf-token\']').content; 
-                                                                     form.innerHTML = `
-                                                                         <input type='hidden' name='_token' value='${csrfToken}'>
-                                                                         <input type='hidden' name='_method' value='POST'>
-                                                                     `; 
-                                                                     
-                                                                     // Thêm form vào body và submit
-                                                                     document.body.appendChild(form); 
-                                                                     form.submit();">
-                                                        <i class="fas fa-redo-alt me-1"></i> Mua lại
-                                                    </button>
+                                                   
+                                                    <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-outline-primary me-2">
+                                                            <i class="fas fa-shopping-cart me-1"></i> Mua lại
+                                                        </button>
+                                                    </form>
                                                 @endif
-                                                @if ($statusId == 4)
+                                                @if ($statusId == 10)
                                                     @if ($item->review)
                                                         <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
                                                             <button 
@@ -1030,8 +987,9 @@
                                                 @endif
                                                 <a href="{{ route('client.orders.show', $order->id) }}"
                                                     class="btn btn-primary d-flex align-items-center gap-1 btn-sm">
-                                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                                    <i class="fas fa-eye"></i> {{ $order->isCancelled() ? 'Xem chi tiết hủy đơn' : 'Xem chi tiết' }}
                                                 </a>
+                                            
                                                 @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
                                                     <a href="{{ route('checkout.retry-payment', $order->code) }}"
                                                         class="btn btn-warning d-flex align-items-center gap-1 btn-sm">
@@ -1039,17 +997,15 @@
                                                     </a>
                                                 @endif
                                                 
-                                                 @if (
-                                                    $order->is_paid == 1 &&
-                                                        $order->cancelled_at == null &&
-                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
-                                                        !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
-                                                    <a href="{{ route('refund.form', $order->code) }}"
-                                                    class="btn btn-outline-primary me-2 reorder-btn">
-                                                        <i class="fas fa-undo"></i> Yêu cầu hoàn trả
-                                                    </a>
-                                                    
-                                                @endif
+                                                 @if ($order->is_paid == 1 &&
+                                                $order->cancelled_at == null &&
+                                                $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
+                                                !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
+                                                <a href="{{ route('refund.form', $order->code) }}"
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                                                    <i class="fas fa-undo"></i> Yêu cầu hoàn trả
+                                                </a>
+                                            @endif
                                                 
                                             </div>
                                         </div>
@@ -2046,65 +2002,15 @@
     
     // Xử lý form xác nhận đã nhận hàng
     $(document).on('submit', 'form.confirm-delivery-form', function(e) {
-        e.preventDefault();
+        // Không cần ngăn chặn hành vi mặc định nữa
         const form = $(this);
         const button = form.find('button[type="submit"]');
-        const originalButtonText = button.html();
         
         // Vô hiệu hóa nút để tránh submit nhiều lần
         button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
         
-        // Gửi form bằng AJAX
-        $.ajax({
-            url: form.attr('action'),
-            type: 'POST',
-            data: form.serialize(),
-            success: function(response) {
-                if (response.success) {
-                    // Hiển thị thông báo thành công
-                    Swal.fire({
-                        title: 'Thành công!',
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#28a745'
-                    }).then((result) => {
-                        // Lọc lại danh sách đơn hàng theo trạng thái đã hoàn thành
-                        if (response.filter) {
-                            window.location.href = '{{ route("client.orders") }}?filter=' + response.filter;
-                        } else {
-                            window.location.reload();
-                        }
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Lỗi!',
-                        text: response.message || 'Có lỗi xảy ra, vui lòng thử lại sau',
-                        icon: 'error',
-                        confirmButtonText: 'Đóng',
-                        confirmButtonColor: '#dc3545'
-                    });
-                }
-            },
-            error: function(xhr) {
-                let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại sau';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                
-                Swal.fire({
-                    title: 'Lỗi!',
-                    text: errorMessage,
-                    icon: 'error',
-                    confirmButtonText: 'Đóng',
-                    confirmButtonColor: '#dc3545'
-                });
-            },
-            complete: function() {
-                // Kích hoạt lại nút sau khi hoàn thành
-                button.prop('disabled', false).html(originalButtonText);
-            }
-        });
+        // Cho phép form submit bình thường
+        return true;
     });
 </script>
 @endpush
