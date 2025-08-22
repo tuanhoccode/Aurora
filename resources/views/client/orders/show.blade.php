@@ -914,7 +914,15 @@
 
                 @foreach ($order->items as $item)
                     <div style="padding: 12px; border-bottom: 1px solid #f5f5f5; display: flex;">
-                        <img src="{{ $item->product->image_url ?? asset('assets2/img/product/2/default.png') }}"
+                        @php
+                            // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
+                            $imageUrl = $item->variant && $item->variant->img 
+                                ? asset('storage/' . $item->variant->img)
+                                : ($item->product->thumbnail 
+                                    ? asset('storage/' . $item->product->thumbnail)
+                                    : asset('assets2/img/product/2/default.png'));
+                        @endphp
+                        <img src="{{ $imageUrl }}"
                             alt="{{ $item->product->name }}"
                             style="width: 80px; height: 80px; object-fit: cover; margin-right: 12px; border: 1px solid #f0f0f0;">
                         <div style="flex: 1;">

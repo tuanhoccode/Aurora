@@ -148,8 +148,43 @@ class Order extends Model
      */
     public function isCompleted()
     {
-        $currentStatusName = optional(optional($this->currentStatus)->status)->name;
-        return $currentStatusName === 'Nhận hàng thành công';
+        return $this->currentStatus && $this->currentStatus->order_status_id == 10; // 10 = Nhận hàng thành công
+    }
+    
+    /**
+     * Kiểm tra xem đã quá thời hạn 3 ngày kể từ khi giao hàng thành công chưa
+     *
+     * @return bool
+     */
+    public function isConfirmationExpired()
+    {
+        // Lấy thời gian chuyển sang trạng thái giao hàng thành công (status_id = 4)
+        $deliveredStatus = $this->statusHistories()
+            ->where('order_status_id', 4)
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        if (!$deliveredStatus) {
+            return false;
+        }
+        
+        $deliveredAt = $deliveredStatus->created_at;
+        $isExpired = now()->diffInDays($deliveredAt) > 3;
+        
+        // Nếu đã quá 3 ngày và chưa được chuyển sang trạng thái hoàn thành
+        if ($isExpired && $this->currentStatus->order_status_id == 4) {
+            // Tự động chuyển sang trạng thái hoàn thành
+            $this->statusHistories()->create([
+                'order_status_id' => 10, // 10 = Nhận hàng thành công
+                'is_current' => true,
+                'note' => 'Tự động xác nhận đã nhận hàng sau 3 ngày',
+            ]);
+            
+            // Cập nhật trạng thái hiện tại
+            $this->currentStatus()->update(['is_current' => false]);
+        }
+        
+        return $isExpired;
     }
     
     public function getShippingFeeFormattedAttribute()
