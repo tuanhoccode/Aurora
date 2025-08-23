@@ -30,7 +30,7 @@ class BannerRequest extends FormRequest
                 'max:255',
                 'min:2',
                 // Đảm bảo tiêu đề không trùng, loại trừ bản ghi hiện tại khi update
-                'unique:banners,title' . ($bannerId ? ',' . $bannerId : ''),
+                'unique:banners,title' . ($bannerId ? ',' . $bannerId->id : ''),
             ],
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',

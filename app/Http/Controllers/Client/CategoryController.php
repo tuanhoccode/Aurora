@@ -89,7 +89,7 @@ class CategoryController extends Controller
         $query->latest();
     }
 
-    $products = $query->get();
+    $products = $query->with(['variants', 'brand', 'reviews'])->get();
     $brands = Brand::where('is_active', 1)->where('is_visible', 1)->get();
     $statuses = [
         'active' => 'Đang bán',
