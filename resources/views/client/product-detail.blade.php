@@ -333,11 +333,11 @@
     }
     /* Css ảnh bình luận */
     .review-image {
-        width: 100px; 
-        height: 100px; 
+        width: 100px;
+        height: 100px;
         object-fit: cover; /* cắt ảnh để vừa khung mà không méo */
-        border-radius: 6px; 
-        border: 1px solid #ddd; 
+        border-radius: 6px;
+        border: 1px solid #ddd;
         transition: transform 0.2s ease-in-out;
     }
     .review-image:hover {
@@ -660,7 +660,7 @@
                                     </form>
                                 </div>
                                 <div class="tp-product-details-action-sm">
-                                    
+
                                     <button type="button" id="add-to-wishlist-btn"
                                         class="tp-product-details-action-sm-btn btn-add-wishlist"
                                         data-product-id="{{ $product->id }}">
@@ -836,7 +836,7 @@
                                                                     {{ $review->user->fullname }}
                                                                 </h3>
                                                                 <span
-                                                                    class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }} 
+                                                                    class="tp-product-details-review-avater-meta d-block mb-1">{{ $review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}
 
                                                                 </span>
                                                                 <!-- Hiển thị phân loại đã mua  -->
@@ -891,7 +891,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col -->
-                                  
+
                                 </div>
                             </div>
                         </div>

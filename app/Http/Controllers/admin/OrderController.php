@@ -120,7 +120,7 @@ class OrderController extends Controller
         $order = Order::with('items.product')->findOrFail($id);
         $statuses = OrderStatus::all();
         $currentStatus = $order->statusHistory()->where('is_current', true)->first();
-
+        OrderStatusHistory::with('orderStatus')->get();
         // Tính toán trạng thái thanh toán
         $paymentStatus = $currentStatus ? match ($currentStatus->order_status_id) {
             7 => 'Đã hoàn tiền',

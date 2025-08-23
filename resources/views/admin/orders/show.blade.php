@@ -276,22 +276,6 @@
                                         {{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="mb-3">
-                                <label for="customer_confirmation" class="form-label"><i
-                                        class="fas fa-user-check me-1"></i> Xác nhận của khách hàng</label>
-                                <select name="customer_confirmation" id="customer_confirmation" class="form-control">
-                                    <option value="1"
-                                        {{ old('customer_confirmation', $currentStatus?->customer_confirmation) == 1 ? 'selected' : '' }}>
-                                        Đã xác nhận</option>
-                                    <option value="0"
-                                        {{ old('customer_confirmation', $currentStatus?->customer_confirmation) == 0 ? 'selected' : '' }}>
-                                        Chưa xác nhận</option>
-                                </select>
-                                @error('customer_confirmation')
-                                    <div class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>
-                                        {{ $message }}</div>
-                                @enderror
-                            </div>
                             <button type="submit" class="btn btn-primary w-100 mb-2"><i class="fas fa-save me-1"></i>
                                 Cập nhật</button>
                             <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary w-100"><i
@@ -320,7 +304,6 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th><i class="fas fa-list-ol me-1"></i> STT</th>
-                                            {{-- <th><i class="fas fa-id-badge me-1"></i> ID</th> --}}
                                             <th><i class="fas fa-info me-1"></i> Trạng thái</th>
                                             <th><i class="fas fa-sticky-note me-1"></i> Ghi chú</th>
                                             <th><i class="fas fa-user-edit me-1"></i> Người cập nhật</th>
@@ -332,13 +315,24 @@
                                         @foreach ($order->statusHistory as $status)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                {{-- <td>{{ $status->id }}</td> --}}
                                                 <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
                                                 <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
                                                 <td>
                                                     {{ $status->modifier?->fullname ?? 'Hệ thống' }}
-                                                    @if($status->modifier)
-                                                        ({{$status->modifier->role == 'admin' ? 'Admin' : 'Nhân viên'}})
+                                                    @if ($status->modifier)
+                                                        @switch($status->modifier->role)
+                                                            @case('admin')
+                                                                <span style="color: red;">(Admin)</span>
+                                                            @break
+
+                                                            @case('employee')
+                                                                <span style="color: green;">(Nhân viên)</span>
+                                                            @break
+
+                                                            @case('customer')
+                                                                <span style="color: blue;">(Khách hàng)</span>
+                                                            @break
+                                                        @endswitch
                                                     @endif
                                                 </td>
                                                 <td>{{ $status->created_at->format('d/m/Y H:i:s') }}</td>

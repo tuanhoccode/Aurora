@@ -254,6 +254,12 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+    public function productVariants()
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+
     public function getDefaultVariantIdAttribute()
     {
         // Lấy biến thể đầu tiên còn hàng, hoặc biến thể đầu tiên nếu không còn hàng
