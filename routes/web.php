@@ -193,9 +193,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::post('/', [ProductController::class, 'store'])->name('store');
         // Product Gallery Images
         // Xóa ảnh gallery của sản phẩm
-        // Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
-        //     ->name('delete-gallery-image');
-        Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryImage'])
+        Route::delete('/gallery-image/{id}', [ProductController::class, 'deleteGalleryImage'])
             ->name('delete-gallery-image');
 
 
