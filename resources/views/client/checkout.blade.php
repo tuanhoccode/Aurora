@@ -1801,7 +1801,7 @@
                                                 : $availableCoupon->discount_value;
                                     @endphp
                                     <div class="col-12">
-                                        <div class="coupon-modal-card {{ $isApplied ? 'applied' : '' }}"
+                                        <div class="coupon-card {{ $isApplied ? 'applied' : '' }}"
                                             onclick="applySelectedCoupon('{{ $availableCoupon->id }}')">
                                             <div class="coupon-modal-header">
                                                 <div class="coupon-modal-code">
@@ -2031,7 +2031,7 @@
                                     response.fast_shipping_fee || 30000));
                                 $('#normal_shipping_dates').text(response.normal_shipping_dates ||
                                     '{{ \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}'
-                                    );
+                                );
                                 $('#fast_shipping_dates').text(response.fast_shipping_dates ||
                                     'Trong 4 giờ nếu đặt trước 16:00');
                                 $('#address_fullname').text(response.selected_address.fullname ||
@@ -2041,7 +2041,10 @@
                                     'Chưa cung cấp');
                                 $('#address_details').text(response.selected_address.address ||
                                     'Chưa cung cấp');
-                                const shippingFee = response.shipping_fee || 16500;
+
+                                // Cập nhật phí vận chuyển và tổng thanh toán
+                                const shippingFee = response.shipping_fee ||
+                                    16500; // Fallback nếu thiếu
                                 $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
                                     shippingFee));
                                 const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
@@ -2094,10 +2097,13 @@
                                     response.fast_shipping_fee || 30000));
                                 $('#normal_shipping_dates').text(response.normal_shipping_dates ||
                                     '{{ \Carbon\Carbon::today()->addDays(2)->format('d/m/Y') . ' - ' . \Carbon\Carbon::today()->addDays(4)->format('d/m/Y') }}'
-                                    );
+                                );
                                 $('#fast_shipping_dates').text(response.fast_shipping_dates ||
                                     'Trong 4 giờ nếu đặt trước 16:00');
-                                const shippingFee = response.shipping_fee || 16500;
+
+                                // Cập nhật phí vận chuyển và tổng thanh toán
+                                const shippingFee = response.shipping_fee ||
+                                    16500; // Fallback nếu thiếu
                                 $('#shipping_fee').text(new Intl.NumberFormat('vi-VN').format(
                                     shippingFee));
                                 const cartTotal = parseFloat('{{ $cartTotal }}'.replace(/,/g,
@@ -2170,7 +2176,8 @@
                                     $(`.address-item[data-address-id="${addressId}"]`).remove();
                                     alert(response.message || 'Xóa địa chỉ thành công!');
                                     if ($('#address_id_input').val() == addressId) {
-                                        $('#addressForm').submit();
+                                        $('#addressForm')
+                                            .submit(); // Gửi lại để cập nhật địa chỉ mặc định
                                     }
                                 } else {
                                     console.error('Delete address error:', response.message);
@@ -2212,17 +2219,6 @@
                     });
                 });
 
-                // Reset loading state khi đóng modal
-                $('#couponModal').on('hidden.bs.modal', function() {
-                    const loadingCards = $(this).find('.coupon-modal-card[style*="opacity: 0.6"]');
-                    loadingCards.each(function() {
-                        $(this).css({
-                            opacity: '',
-                            pointerEvents: ''
-                        });
-                    });
-                });
-
                 // Xử lý submit checkout form
                 $('#checkoutForm').on('submit', function(e) {
                     const addressId = $('#address_id_input').val();
@@ -2250,6 +2246,83 @@
                         return false;
                     }
                 });
+            });
+
+            function applySelectedCoupon(couponId) {
+                if (!couponId) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('checkout.remove-coupon') }}';
+
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
+                }
+
+                // Hiển thị loading state cho modal coupon
+                const couponModalCard = event.target.closest('.coupon-modal-card');
+                if (couponModalCard) {
+                    couponModalCard.style.opacity = '0.6';
+                    couponModalCard.style.pointerEvents = 'none';
+                    couponModalCard.innerHTML =
+                        '<div class="text-center p-4"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 mb-0">Đang áp dụng mã giảm giá...</p></div>';
+                }
+
+                // Tạo form ẩn để submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('checkout.apply-coupon-by-id') }}';
+
+                // Thêm CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Thêm ID mã giảm giá
+                const couponInput = document.createElement('input');
+                couponInput.type = 'hidden';
+                couponInput.name = 'coupon_id';
+                couponInput.value = couponId;
+                form.appendChild(couponInput);
+
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            // Thêm hiệu ứng hover cho coupon modal cards
+            document.addEventListener('DOMContentLoaded', function() {
+                const couponModalCards = document.querySelectorAll('.coupon-modal-card:not(.applied)');
+                couponModalCards.forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-3px) scale(1.02)';
+                    });
+
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    });
+                });
+
+                // Đóng modal coupon sau khi áp dụng thành công
+                const couponModal = document.getElementById('couponModal');
+                if (couponModal) {
+                    couponModal.addEventListener('hidden.bs.modal', function() {
+                        // Reset loading state nếu có
+                        const loadingCards = this.querySelectorAll('.coupon-modal-card[style*="opacity: 0.6"]');
+                        loadingCards.forEach(card => {
+                            card.style.opacity = '';
+                            card.style.pointerEvents = '';
+                        });
+                    });
+                }
             });
         </script>
     @endpush
