@@ -91,10 +91,15 @@
               @enderror
               <div id="gallery-upload-wrapper" @if($product->type === 'variant') style="display: none;" @endif>
                 <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" id="gallery-upload" name="gallery_images[]" accept="image/*" multiple>
                 @error('gallery_images')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                
+                <!-- Preview for new images -->
+                <div class="row mt-2" id="image-preview-container"></div>
+                
+                <!-- Existing images -->
                 @if(isset($product) && $product->images && $product->images->count())
                   <div class="row mt-2" id="product-gallery-images">
                     @foreach($product->images->where('product_variant_id', null) as $img)
@@ -109,8 +114,64 @@
                 @endif
               </div>
               
-             
+              <script>
+              // Xử lý xem trước ảnh khi chọn
+              document.getElementById('gallery-upload').addEventListener('change', function(e) {
+                const container = document.getElementById('image-preview-container');
+                container.innerHTML = ''; // Xóa preview cũ
+                
+                const files = e.target.files;
+                if (files.length > 0) {
+                  for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type.match('image.*')) {
+                      const reader = new FileReader();
+                      reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'col-3 mb-2 position-relative';
+                        previewDiv.innerHTML = `
+                          <div class="position-relative">
+                            <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1 remove-preview" data-index="${i}" style="width: 20px; height: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center;">
+                              <i class="fas fa-times" style="font-size: 10px;"></i>
+                            </button>
+                          </div>
+                        `;
+                        container.appendChild(previewDiv);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }
+                }
+              });
+
+              // Xử lý xóa ảnh preview
+              document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-preview')) {
+                  const button = e.target.closest('.remove-preview');
+                  const index = button.dataset.index;
+                  const input = document.getElementById('gallery-upload');
+                  
+                  // Tạo FileList mới không bao gồm file bị xóa
+                  const dt = new DataTransfer();
+                  const { files } = input;
+                  
+                  for (let i = 0; i < files.length; i++) {
+                    if (index !== i) {
+                      dt.items.add(files[i]);
+                    }
+                  }
+                  
+                  input.files = dt.files;
+                  
+                  // Cập nhật preview
+                  const event = new Event('change');
+                  input.dispatchEvent(event);
+                }
+              });
+              </script>
               
+             
             </div>
           </div>
           <!-- Card: Kiểu sản phẩm -->
@@ -204,7 +265,7 @@
               </small>
 
               <label class="form-label">Tồn kho</label>
-              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0" max="100">
+              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror

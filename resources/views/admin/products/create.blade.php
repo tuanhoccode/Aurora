@@ -175,7 +175,7 @@
                 </div>
               </div>
               <label class="form-label">Tồn kho</label>
-              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0" max="100">
+              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -369,25 +369,12 @@
   });
 
 
-
-
-
-
-
-
   $('.variant-attribute-select').select2({
     theme: 'bootstrap-5',
     width: '100%',
     placeholder: 'Chọn thuộc tính',
     allowClear: true
   });
-
-
-
-
-
-
-
 
   // Bảng chuyển đổi tiếng Việt sang tiếng Anh cho SKU
   const viToEn = {
@@ -413,13 +400,6 @@
     // ... bổ sung thêm nếu cần
   };
 
-
-
-
-
-
-
-
   function viToEnConvert(str) {
     let lower = str.toLowerCase().trim();
     if (viToEn[lower]) return viToEn[lower];
@@ -432,36 +412,15 @@
       .toUpperCase();
   }
 
-
-
-
-
-
-
-
   function removeVietnameseTones(str) {
     return str.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
   }
-
-
-
-
-
-
-
 
   function getSkuPrefix(productName) {
     let words = removeVietnameseTones(productName.trim()).split(/\s+/);
     let prefix = words.slice(0, 2).map(w => w[0] ? w[0].toUpperCase() : '').join('');
     return prefix;
   }
-
-
-
-
-
-
-
 
   const colorMap = {
     'Đỏ': 'DO',
@@ -472,13 +431,6 @@
     'Xanh': 'XA',
     // ... bổ sung nếu có thêm màu
   };
-
-
-
-
-
-
-
 
   // Tính toán số lượng biến thể sẽ được tạo
   function calculateVariantCount() {
@@ -500,24 +452,10 @@
     $('#variantPreview').show();
   }
 
-
-
-
-
-
-
-
   // Tính toán khi thay đổi thuộc tính
   $('.variant-attribute-select').on('change', function() {
     calculateVariantCount();
   });
-
-
-
-
-
-
-
 
   // Tự động cập nhật SKU cho sản phẩm đơn giản
   $('input[name="name"]').on('input', function() {
@@ -533,24 +471,10 @@
     $('input[name="sku"]').val(sku);
   });
 
-
-
-
-
-
-
-
   // Khi thay đổi size hoặc màu (nếu có input riêng cho sản phẩm đơn giản)
   $('input[name="size"], input[name="color"]').on('input', function() {
     $('input[name="name"]').trigger('input');
   });
-
-
-
-
-
-
-
 
   // Khôi phục dữ liệu từ session khi có lỗi validate
   function restoreVariantData() {
@@ -606,13 +530,6 @@
     @endif
   }
 
-
-
-
-
-
-
-
   // Gọi hàm khôi phục khi trang load
   restoreVariantData();
  
@@ -622,13 +539,6 @@
       $('#list-tab').tab('show');
     }, 200);
   @endif
-
-
-
-
-
-
-
 
   // Tự động tạo SKU cho biến thể khi sinh dòng mới
   $('#generateVariantsBtn').on('click', function() {
@@ -648,24 +558,10 @@
       }
     });
 
-
-
-
-
-
-
-
     // Lấy tên sản phẩm
     let productName = $('input[name="name"]').val();
     let skuPrefix = getSkuPrefix(productName);
     if (!skuPrefix) skuPrefix = 'SP'; // fallback nếu tên sản phẩm rỗng
-
-
-
-
-
-
-
 
     // Sinh tổ hợp biến thể (cartesian product)
     function cartesian(arr) {
@@ -673,13 +569,6 @@
         return a.flatMap(d => b.values.map(e => d.concat([{attr: b.name, value: e, attr_id: b.id, value_id: b.valueIds[b.values.indexOf(e)]}])));
       }, [[]]);
     }
-
-
-
-
-
-
-
 
     console.log('attributes:', attributes);
     if(attributes.length === 0) {
@@ -739,8 +628,6 @@
       const oldEnd = (typeof oldVariants !== 'undefined' && oldVariants && oldVariants[idx] && oldVariants[idx].sale_ends_at) ? oldVariants[idx].sale_ends_at : '';
 
 
-
-
       tbody += `<tr>
         <td>${attrStr}</td>
         <td><input type="text" class="form-control form-control-sm" name="variants[${idx}][sku]" value="${oldSku || sku}" placeholder="Để trống để tự tạo"></td>
@@ -755,7 +642,17 @@
         <td><input type="number" class="form-control form-control-sm" name="variants[${idx}][stock]" min="0" max="100" placeholder="Kho" value="${oldStock}"></td>
         <td class="text-nowrap">
           <!-- Ảnh đại diện -->
-          <input type="file" class="form-control mb-2" name="variants[${idx}][image]" accept="image/*">
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-1 d-block">Ảnh đại diện</label>
+            <input type="file" 
+                   class="form-control form-control-sm variant-thumbnail" 
+                   data-variant-index="${idx}"
+                   name="variants[${idx}][image]" 
+                   accept="image/*">
+            <div class="variant-thumbnail-preview mt-2" id="variant-thumbnail-${idx}">
+              <!-- Ảnh đại diện sẽ được hiển thị ở đây -->
+            </div>
+          </div>
          
           <!-- Gallery ảnh cho biến thể -->
           <div class="variant-gallery-upload">
@@ -780,23 +677,9 @@
     // Cập nhật badge số lượng biến thể
     $('#variantCountBadge').text(combos.length + ' biến thể');
 
-
-
-
-
-
-
-
     if (duplicateCombos.length > 0) {
       alert('Đã bỏ qua các biến thể bị trùng thuộc tính!');
     }
-
-
-
-
-
-
-
 
     // Kiểm tra trùng lặp SKU trong danh sách biến thể
     let skuList = [];
@@ -812,13 +695,6 @@
       alert('Có SKU trùng lặp trong danh sách biến thể: ' + [...new Set(duplicateSkus)].join(', '));
     }
 
-
-
-
-
-
-
-
     // Xóa dòng biến thể
     $('#variantTable').off('click', '.remove-variant-row').on('click', '.remove-variant-row', function() {
       $(this).closest('tr').remove();
@@ -828,13 +704,6 @@
         $('#noVariantsMessage').show();
       }
     });
-
-
-
-
-
-
-
 
     // Validate giá khuyến mãi không lớn hơn giá gốc và tính phần trăm giảm giá
     $('#variantTable').on('input', 'input[name*="[sale_price]"], input[name*="[price]"]', function() {
@@ -868,13 +737,6 @@
     });
   });
 
-
-
-
-
-
-
-
   // Xử lý khi chọn ảnh gallery cho biến thể (tạo mới)
   $(document).on('change', '.variant-gallery-input', function() {
     const variantIndex = $(this).data('variant-index');
@@ -907,6 +769,65 @@
     }
   });
  
+  // Xử lý khi chọn ảnh đại diện cho biến thể
+  $(document).on('change', '.variant-thumbnail', function() {
+    const file = this.files[0];
+    const variantIndex = $(this).data('variant-index');
+    const previewContainer = $(`#variant-thumbnail-${variantIndex}`);
+    
+    // Xóa preview cũ
+    previewContainer.empty();
+    
+    if (file) {
+      // Kiểm tra định dạng file
+      if (!file.type.match('image.*')) {
+        alert('Vui lòng chọn file ảnh hợp lệ (JPG, PNG, JPEG, GIF)');
+        this.value = '';
+        return;
+      }
+      
+      // Kiểm tra kích thước file (tối đa 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Kích thước ảnh không được vượt quá 5MB');
+        this.value = '';
+        return;
+      }
+      
+      // Hiển thị preview
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const previewHtml = `
+          <div class="position-relative d-inline-block">
+            <img src="${ev.target.result}" 
+                 class="img-thumbnail" 
+                 style="width: 80px; height: 80px; object-fit: cover;">
+            <button type="button" 
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 remove-variant-thumbnail"
+                    style="width: 20px; height: 20px; line-height: 18px; font-size: 10px;"
+                    data-variant-index="${variantIndex}"
+                    title="Xóa ảnh">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `;
+        previewContainer.html(previewHtml);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Xử lý khi xóa ảnh đại diện biến thể
+  $(document).on('click', '.remove-variant-thumbnail', function() {
+    const variantIndex = $(this).data('variant-index');
+    const input = $(`.variant-thumbnail[data-variant-index="${variantIndex}"]`);
+    const previewContainer = $(`#variant-thumbnail-${variantIndex}`);
+    
+    if (confirm('Bạn có chắc chắn muốn xóa ảnh đại diện này?')) {
+      input.val('');
+      previewContainer.empty();
+    }
+  });
+  
   // Xóa ảnh khỏi gallery của biến thể
   $(document).on('click', '.remove-variant-gallery-image', function() {
     const variantIndex = parseInt($(this).data('variant-index'));
@@ -931,13 +852,6 @@
       $(`.variant-gallery-input[data-variant-index="${variantIndex}"]`).trigger('change');
     }
   });
-
-
-
-
-
-
-
 
   // --- Preview ảnh đại diện và thư viện ảnh khi chọn file ---
   $(document).ready(function() {
@@ -964,13 +878,6 @@
         reader.readAsDataURL(file);
       }
     });
-
-
-
-
-
-
-
 
     // Preview thư viện ảnh
     $('#gallery-input').on('change', function(e) {
@@ -1030,13 +937,6 @@
     });
   });
 
-
-
-
-
-
-
-
   // Ẩn/hiện card biến thể theo kiểu sản phẩm
   $('#productTypeSelect').on('change', function() {
     if ($(this).val() === 'variant') {
@@ -1091,46 +991,39 @@
     @endif
   });
 </script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const typeSelect = document.getElementById('productTypeSelect');
-    const galleryWrapper = document.getElementById('gallery-upload-wrapper');
-    function toggleGalleryField() {
-      if (typeSelect.value === 'simple') {
-        galleryWrapper.style.display = 'block';
-      } else {
-        galleryWrapper.style.display = 'none';
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const typeSelect = document.getElementById('productTypeSelect');
+      const galleryWrapper = document.getElementById('gallery-upload-wrapper');
+      function toggleGalleryField() {
+        if (typeSelect.value === 'simple') {
+          galleryWrapper.style.display = 'block';
+        } else {
+          galleryWrapper.style.display = 'none';
+        }
       }
-    }
-    typeSelect.addEventListener('change', toggleGalleryField);
-    toggleGalleryField(); // init on load
-  });
-</script>
-<!-- CKEditor cho mô tả chi tiết -->
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-<script>
-ClassicEditor.create(document.querySelector('#ckeditor-description'))
-  .then(editor => {
-    // Khôi phục nội dung nếu có lỗi validation
-    @if(old('description'))
-      editor.setData(@json(old('description')));
-    @endif
-  });
+      typeSelect.addEventListener('change', toggleGalleryField);
+      toggleGalleryField(); // init on load
+    });
+  </script>
+  <!-- CKEditor cho mô tả chi tiết -->
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <script>
+    ClassicEditor.create(document.querySelector('#ckeditor-description'))
+    .then(editor => {
+      // Khôi phục nội dung nếu có lỗi validation
+      @if(old('description'))
+        editor.setData(@json(old('description')));
+      @endif
+    });
 
-
-
-
-
-
-
-
-ClassicEditor.create(document.querySelector('#ckeditor-short-description'))
-  .then(editor => {
-    // Khôi phục nội dung nếu có lỗi validation
-    @if(old('short_description'))
-      editor.setData(@json(old('short_description')));
-    @endif
-  });
-</script>
+    ClassicEditor.create(document.querySelector('#ckeditor-short-description'))
+    .then(editor => {
+      // Khôi phục nội dung nếu có lỗi validation
+      @if(old('short_description'))
+        editor.setData(@json(old('short_description')));
+      @endif
+    });
+  </script>
 @endpush
 @endsection

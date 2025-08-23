@@ -13,6 +13,13 @@
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
+        {{-- Bán hàng --}}
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.statistics*') ? 'active' : '' }}"
+                href="{{ route('admin.statistics.index') }}">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span> Thống kê bán hàng
+            </a>
+        </li>
 
         <hr>
 
@@ -47,7 +54,7 @@
 
         <hr>
 
-        {{-- Bán hàng --}}
+       
         <li class="sidebar-heading">Bán hàng</li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}"
