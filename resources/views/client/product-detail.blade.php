@@ -916,13 +916,12 @@
     @endphp
 
     <!-- //Sản phẩm tương tự -->
-    <section class="tp-related-product pt-95 pb-120">
-        <div class="container">
-            <div class="row">
-                <div class="tp-section-title-wrapper-6 text-center mb-40">
-                    <span class="tp-section-title-pre-6">Sản Phẩm Tương Tự</span>
-                    <h3 class="tp-section-title-6">Có Thể Bạn Thích</h3>
-                </div>
+   <section class="tp-related-product pt-95 pb-120">
+    <div class="container">
+        <div class="row">
+            <div class="tp-section-title-wrapper-6 text-center mb-40">
+                <span class="tp-section-title-pre-6">Sản Phẩm Tương Tự</span>
+                <h3 class="tp-section-title-6">Có Thể Bạn Thích</h3>
             </div>
             <div class="position-relative">
                 <div class="tp-product-related-slider">
@@ -954,9 +953,19 @@
                                                     <span>{{ $related->name }}</span>
                                                 @endif
                                             </h3>
+
                                             <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                                                @for ($i = 0; $i < 5; $i++)
-                                                    <span><i class="fa-solid fa-star"></i></span>
+                                                @php
+                                                    $avg = $related->average_rating ?? 0
+                                                @endphp
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    @if($i <= floor($avg))
+                                                         <span><i class="fa-solid fa-star text-warning"></i></span>
+                                                    @elseif ($i == ceil($avg) && $avg - floor($avg) >= 0.5)
+                                                        <span><i class="fa-solid fa-star-half-stroke text-warning"></i></span>
+                                                    @else
+                                                        <span><i class="fa-regular fa-star text-warning"></i></span>
+                                                    @endif
                                                 @endfor
                                             </div>
                                             <div class="tp-product-price-wrapper-2">
@@ -976,24 +985,61 @@
                                 </div>
                             @endforelse
                         </div>
-                        <!-- Nút điều hướng -->
-                        <div class="swiper-button-prev">
-                            <svg viewBox="0 0 32 32" width="28" height="28">
-                                <polyline points="20 8 12 16 20 24" fill="none" stroke="currentColor" stroke-width="3"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+        <div class="row">
+            @forelse ($relatedProducts->take(4) as $related)
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-40">
+                    <div class="tp-product-item-2">
+                        <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                            @if (!empty($related->slug))
+                                <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                    <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
+                                </a>
+                            @else
+                                <span>
+                                    <img src="{{ $related->image_url }}" alt="{{ $related->name }}">
+                                </span>
+                            @endif
                         </div>
-                        <div class="swiper-button-next">
-                            <svg viewBox="0 0 32 32" width="28" height="28">
-                                <polyline points="12 8 20 16 12 24" fill="none" stroke="currentColor" stroke-width="3"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+
+                        <div class="tp-product-content-2 pt-15">
+                            <div class="tp-product-tag-2">
+                                <a href="#">{{ $related->brand->name ?? 'Không có thương hiệu' }}</a>
+                            </div>
+                            <h3 class="tp-product-title-2">
+                                @if (!empty($related->slug))
+                                    <a href="{{ route('client.product.show', ['slug' => $related->slug]) }}">
+                                        {{ $related->name }}
+                                    </a>
+                                @else
+                                    <span>{{ $related->name }}</span>
+                                @endif
+                            </h3>
+
+                            <div class="tp-product-price-wrapper-2">
+                                @php
+                                    // Lấy giá hiển thị: nếu có biến thể thì lấy giá biến thể, không thì giá gốc
+                                    $displayPrice = $related->variants->first()?->sale_price ?? $related->sale_price ?? $related->price;
+                                    $originalPrice = $related->variants->first()?->price ?? $related->original_price ?? null;
+                                @endphp
+
+                                <span class="tp-product-price-2 new-price">{{ number_format($displayPrice, 0, ',', '.') }}₫</span>
+
+                                @if ($originalPrice && $originalPrice > $displayPrice)
+                                    <span class="tp-product-price-2 old-price">{{ number_format($originalPrice, 0, ',', '.') }}₫</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="col-12 d-flex justify-content-center align-items-center" style="height: 150px;">
+                    <p class="mb-0 text-center">Không có sản phẩm liên quan</p>
+                </div>
+            @endforelse
         </div>
-    </section>
+    </div>
+</section>
+
 </main>
 <script>
     document.addEventListener('DOMContentLoaded', function () {

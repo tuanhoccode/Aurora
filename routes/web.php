@@ -398,7 +398,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     });
 
     // Banner Routes
-    Route::middleware('admin.only')->prefix('banners')->name('banners.')->group(function () {
+    Route::prefix('banners')->name('banners.')->group(function () {
         Route::get('/', [BannerController::class, 'index'])->name('index');
         Route::get('/create', [BannerController::class, 'create'])->name('create');
         Route::post('/', [BannerController::class, 'store'])->name('store');

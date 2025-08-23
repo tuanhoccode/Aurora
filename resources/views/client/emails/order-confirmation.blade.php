@@ -111,15 +111,16 @@
                         <div class="product-item">
                             <div class="row align-items-center">
                                 <div class="col-md-2">
-                                    @if($item->product && $item->product->thumbnail)
-                                        <img src="{{ $item->product->image_url }}" 
-                                             alt="{{ $item->name }}" 
-                                             class="product-image">
-                                    @else
-                                        <div class="product-image-placeholder">
-                                            <i class="bi bi-image text-muted"></i>
-                                        </div>
-                                    @endif
+                                    @php
+                                        $imageUrl = $item->product && $item->product->thumbnail 
+                                            ? Storage::url($item->product->thumbnail) 
+                                            : ($item->variant && $item->variant->img 
+                                                ? Storage::url($item->variant->img) 
+                                                : asset('assets/img/product/placeholder.jpg'));
+                                    @endphp
+                                    <img src="{{ $imageUrl }}" 
+                                         alt="{{ $item->name }}" 
+                                         class="product-image">
                                 </div>
                                 <div class="col-md-6">
                                     <h6 class="mb-1">{{ $item->name }}</h6>
@@ -211,4 +212,4 @@
     </div>
 </body>
 
-</html> 
+</html>

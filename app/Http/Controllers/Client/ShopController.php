@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 
 class ShopController extends Controller
 {
@@ -73,10 +75,76 @@ class ShopController extends Controller
             }
         }
 
+        // Lấy danh sách thuộc tính dùng làm biến thể
+        $variantAttributes = Attribute::with(['attributeValues' => function($query) {
+            $query->select('id', 'attribute_id', 'value', 'color_code', 'is_active')
+                  ->where('is_active', true);
+        }])
+        ->where('is_variant', true)
+        ->where('is_active', true)
+        ->get();
+
+        // Lấy danh sách ID thuộc tính biến thể
+        $variantAttributeIds = $variantAttributes->pluck('id')->toArray();
+
+        // Áp dụng bộ lọc biến thể nếu có
+        if ($request->filled('variant_attributes')) {
+            $variantFilters = $request->input('variant_attributes');
+            
+            // Lọc các thuộc tính có giá trị được chọn
+            $activeAttributes = array_filter($variantFilters, function($value) {
+                return !empty($value);
+            });
+            
+            if (!empty($activeAttributes)) {
+                // Với mỗi thuộc tính được chọn, đảm bảo sản phẩm có ít nhất một biến thể thỏa mãn
+                foreach ($activeAttributes as $attributeId => $valueIds) {
+                    if (empty($valueIds)) continue;
+                    
+                    $query->whereHas('variants', function($q) use ($attributeId, $valueIds) {
+                        $q->whereHas('attributeValues', function($subQuery) use ($attributeId, $valueIds) {
+                            $subQuery->where('attribute_id', $attributeId)
+                                    ->whereIn('attribute_value_id', (array)$valueIds);
+                        });
+                    });
+                }
+                
+                // Đảm bảo tất cả các thuộc tính được chọn đều được thỏa mãn bởi cùng một biến thể
+                $query->whereHas('variants', function($q) use ($activeAttributes) {
+                    $q->where(function($subQuery) use ($activeAttributes) {
+                        $subQuery->whereHas('attributeValues', function($q) use ($activeAttributes) {
+                            $first = true;
+                            foreach ($activeAttributes as $attributeId => $valueIds) {
+                                if (empty($valueIds)) continue;
+                                
+                                if ($first) {
+                                    $q->where(function($q) use ($attributeId, $valueIds) {
+                                        $q->where('attribute_id', $attributeId)
+                                          ->whereIn('attribute_value_id', (array)$valueIds);
+                                    });
+                                    $first = false;
+                                } else {
+                                    $q->orWhere(function($q) use ($attributeId, $valueIds) {
+                                        $q->where('attribute_id', $attributeId)
+                                          ->whereIn('attribute_value_id', (array)$valueIds);
+                                    });
+                                }
+                            }
+                        }, '>=', count($activeAttributes));
+                    });
+                });
+            }
+        }
+
         $products = $query->get();
         $categories = Category::all();
         $brands = Brand::where('is_active', 1)->where('is_visible', 1)->get();
 
-        return view('client.list-product', compact('products', 'categories', 'brands'));
+        return view('client.list-product', compact(
+            'products', 
+            'categories', 
+            'brands',
+            'variantAttributes'
+        ));
     }
 } 

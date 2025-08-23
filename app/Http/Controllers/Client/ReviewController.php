@@ -57,6 +57,7 @@ class ReviewController extends Controller
         'order_item_id'=> $orderItem->id,
         'rating'       => $req->rating,
         'review_text'  => $req->review_text,
+        'is_active'  => 1,
     ]);
     //upload ảnh 
     if ($req->hasFile('images')) {
