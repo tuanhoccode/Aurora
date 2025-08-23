@@ -455,9 +455,9 @@
                    <div class="tp-product-tag-2">
                      <a href="#">{{ $product->brand->name ?? 'Không có thương hiệu' }}</a>
                    </div>
-                   <h3 class="tp-product-title-2">
+                   <h3 class="tp-product-title-2" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
                      <a
-                       href="{{ route('client.product.show', ['slug' => $product->slug]) }}">{{ $product->name }}</a>
+                       href="{{ route('client.product.show', ['slug' => $product->slug]) }}" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis;">{{ $product->name }}</a>
                    </h3>
                    @php
                    $validReviews = $product->reviews
@@ -538,9 +538,9 @@
                      </a>
                    </div>
                    <div class="tp-product-content-2 pt-15">
-                     <h3 class="tp-product-title-2">
-                        <a href="{{ route('client.product.show', $prod->slug) }}">
-                          {{ Str::limit($prod->name, 30) }}
+                     <h3 class="tp-product-title-2" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                        <a href="{{ route('client.product.show', $prod->slug) }}" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis;">
+                          {{ $prod->name }}
                         </a>
                      </h3>
                      <div class="tp-product-rating-icon tp-product-rating-icon-2">
