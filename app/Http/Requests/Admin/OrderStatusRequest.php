@@ -17,7 +17,6 @@ class OrderStatusRequest extends FormRequest
             'order_status_id' => 'required|exists:order_statuses,id',
             'is_paid' => 'required|boolean',
             'note' => 'nullable|string|max:255',
-            'customer_confirmation' => 'required|boolean',
         ];
     }
 
@@ -28,8 +27,6 @@ class OrderStatusRequest extends FormRequest
             'order_status_id.exists' => 'Trạng thái đơn hàng không hợp lệ.',
             'is_paid.required' => 'Vui lòng chọn trạng thái thanh toán.',
             'is_paid.boolean' => 'Trạng thái thanh toán không hợp lệ.',
-            'customer_confirmation.required' => 'Vui lòng chọn trạng thái xác nhận của khách hàng.',
-            'customer_confirmation.boolean' => 'Trạng thái xác nhận không hợp lệ.',
         ];
     }
 }
