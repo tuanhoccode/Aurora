@@ -57,6 +57,25 @@
 
                                 <div class="col-12">
                                     <div class="mb-4">
+                                        <label for="color_code" class="form-label small fw-bold text-muted mb-1">Mã màu (Hex)</label>
+                                        <div class="d-flex align-items-center">
+                                            <div id="color_picker" class="me-3"></div>
+                                            <input type="hidden" 
+                                                   name="color_code" 
+                                                   id="color_code" 
+                                                   class="form-control rounded-3 @error('color_code') is-invalid @enderror" 
+                                                   value="{{ old('color_code', '#000000') }}" 
+                                                   required>
+                                            @error('color_code')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <small class="text-muted">Nhấn vào ô màu để chọn từ bảng màu</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="mb-4">
                                         <label for="is_active" class="form-label small fw-bold text-muted mb-1">Trạng thái</label>
                                         <select name="is_active" 
                                                 id="is_active" 
@@ -88,3 +107,55 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const colorInput = document.getElementById('color_code');
+        
+        const pickr = Pickr.create({
+            el: '#color_picker',
+            theme: 'classic',
+            default: colorInput.value || '#000000',
+            swatches: [
+                '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff',
+                '#ffff00', '#00ffff', '#ff00ff', '#ff8000', '#800080',
+                '#008000', '#000080', '#800000', '#808000', '#008080',
+                '#808080', '#c0c0c0', '#ffc0cb', '#ffa500', '#a52a2a'
+            ],
+            components: {
+                preview: true,
+                opacity: true,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    hsla: true,
+                    hsva: true,
+                    cmyk: true,
+                    input: true,
+                    clear: false,
+                    save: true
+                }
+            }
+        });
+
+        // Khi chọn màu
+        pickr.on('save', (color, instance) => {
+            const hexColor = color.toHEXA().toString();
+            colorInput.value = hexColor;
+            pickr.hide();
+        });
+
+        // Khởi tạo giá trị ban đầu
+        if (colorInput.value) {
+            pickr.setColor(colorInput.value);
+        }
+    });
+</script>
+@endpush
