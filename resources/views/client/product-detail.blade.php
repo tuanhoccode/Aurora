@@ -929,6 +929,7 @@
                     <div class="swiper tp-product-related-slider-active">
                         <div class="swiper-wrapper">
                             @forelse ($relatedByCategory as $related)
+      
                                 <div class="swiper-slide">
                                     <div class="tp-product-item-2 mb-40">
                                         <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
@@ -954,9 +955,19 @@
                                                     <span>{{ $related->name }}</span>
                                                 @endif
                                             </h3>
+
                                             <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                                                @for ($i = 0; $i < 5; $i++)
-                                                    <span><i class="fa-solid fa-star"></i></span>
+                                                @php
+                                                    $avg = $related->average_rating ?? 0
+                                                @endphp 
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    @if($i <= floor($avg))
+                                                         <span><i class="fa-solid fa-star text-warning"></i></span>
+                                                    @elseif ($i == ceil($avg) && $avg - floor($avg) >= 0.5)
+                                                        <span><i class="fa-solid fa-star-half-stroke text-warning"></i></span>
+                                                    @else
+                                                        <span><i class="fa-regular fa-star text-warning"></i></span>
+                                                    @endif
                                                 @endfor
                                             </div>
                                             <div class="tp-product-price-wrapper-2">
