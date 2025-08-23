@@ -31,6 +31,15 @@
             color: #777;
             margin-top: 20px;
         }
+        .image-container {
+            margin-top: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -40,13 +49,25 @@
         </div>
         <div class="content">
             <p>Kính gửi Quý khách,</p>
-            <p>Yêu cầu hoàn tiền của bạn cho đơn hàng <strong>#{{ $order_code }}</strong> đã được cập nhật trạng thái:</p>
-            <p><strong>Trạng Thái:</strong> {{ $status }}</p>
-            @if ($admin_reason)
-                <p><strong>Lý Do:</strong> {{ $admin_reason }}</p>
+            <p>Yêu cầu hoàn tiền của bạn cho đơn hàng <strong>#{{ $refund->order->code }}</strong> đã được cập nhật trạng thái:</p>
+            <p><strong>Trạng Thái:</strong> {{ \App\Http\Controllers\RefundController::getReasonText($refund->status) }}</p>
+            @if ($refund->admin_reason)
+                <p><strong>Lý Do:</strong> {{ $refund->admin_reason }}</p>
             @endif
             <p><strong>Mã Yêu Cầu:</strong> {{ $refund->id }}</p>
             <p><strong>Tổng Số Tiền:</strong> {{ number_format($refund->total_amount, 2) }} VNĐ</p>
+            @if ($refund->reason_image)
+                <div class="image-container">
+                    <p><strong>Hình Ảnh Minh Chứng (Người Dùng):</strong></p>
+                    <img src="{{ Storage::url($refund->reason_image) }}" alt="Hình ảnh minh chứng người dùng">
+                </div>
+            @endif
+            @if ($refund->status === 'completed' && $refund->admin_reason_image)
+                <div class="image-container">
+                    <p><strong>Hình Ảnh Minh Chứng (Admin):</strong></p>
+                    <img src="{{ Storage::url($refund->admin_reason_image) }}" alt="Hình ảnh minh chứng admin">
+                </div>
+            @endif
             <p>Chi tiết sản phẩm hoàn tiền:</p>
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <thead>

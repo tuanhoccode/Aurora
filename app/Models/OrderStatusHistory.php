@@ -33,7 +33,10 @@ class OrderStatusHistory extends Model
     {
         return $this->belongsTo(OrderStatus::class, 'order_status_id');
     }
-
+    public function orderStatus(): BelongsTo
+    {
+        return $this->belongsTo(OrderStatus::class, 'order_status_id');
+    }
     public function modifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'modifier_id');

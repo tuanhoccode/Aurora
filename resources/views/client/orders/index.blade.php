@@ -704,20 +704,6 @@
             </div>
         </div>
 
-        <!-- @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif -->
-
         <div class="mb-4">
             <form action="{{ route('client.orders') }}" method="GET" class="w-100">
                 <div class="input-group">
@@ -887,6 +873,7 @@
                                             <a href="{{ route('client.orders.show', $order->id) }}" class="text-dark text-decoration-none">
                                                 <div class="sp-title">{{ $item->product->name }}</div>
                                             </a>
+                                            <div class="shop">Thương hiệu: {{ $shopName }}</div>
                                             @if ($variantText)
                                                 <div class="sp-variant">Phân loại hàng: {{ $variantText }}</div>
                                             @endif

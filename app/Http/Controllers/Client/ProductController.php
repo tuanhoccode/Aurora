@@ -22,7 +22,7 @@ class ProductController extends Controller
         $product = Product::with([
             'variants.images',
             'images',
-            'reviews'=> fn($q) => $q->where('is_active', 1)->whereNull('review_id')->where('rating', '>=', 1),
+            'reviews' => fn($q) => $q->where('is_active', 1)->whereNull('review_id')->where('rating', '>=', 1),
             'reviews.user',
             'reviews.orderItem',
             'reviews.images',
@@ -30,9 +30,14 @@ class ProductController extends Controller
             'categories',
             'variants.attributeValues.attribute',
         ])->where('slug', $slug)->firstOrFail();
-        
+
         //Tăng lượt xem lên 1
-        $product->increment('views');
+        $viewed = session()->get('viewed_products', []);
+
+        if (!in_array($product->id, $viewed)) {
+            $product->increment('views');
+            session()->push('viewed_products', $product->id);
+        }
 
         $productVariants = $product->variants;
 
@@ -85,23 +90,26 @@ class ProductController extends Controller
         $averageRating = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->avg('rating');
         $reviewCount = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->count();
 
-        $relatedProducts = Product::where('id', '!=', $product->id)
-            ->where('is_active', 1)
-            ->inRandomOrder()
-            ->take(5)
-            ->get();
+$relatedProducts = Product::where('brand_id', $product->brand_id)
+    ->where('id', '!=', $product->id)
+    ->where('is_active', 1)
+    ->inRandomOrder()
+    ->take(10)
+    ->get();
+
+
 
         // Lấy review kèm biến thể từ order_item
         $reviews = $product->reviews()->where('is_active', 1)->whereNull('review_id')
-        ->where('rating', '>=', 1)
-        ->with(['user', 'orderItem', 'images', 'replies.user' ])
-        ->latest()->paginate(6);
+            ->where('rating', '>=', 1)
+            ->with(['user', 'orderItem', 'images', 'replies.user'])
+            ->latest()->paginate(6);
         $orderIds = $reviews->pluck('order_id')->unique();
         $orderItems = OrderItem::WhereIn('order_id', $orderIds)
-        ->where('product_id', $product->id)->get();
+            ->where('product_id', $product->id)->get();
 
-        foreach($reviews as $review){
-            $review->orderItem = $orderItems->firstWhere(function ($item) use ($review){
+        foreach ($reviews as $review) {
+            $review->orderItem = $orderItems->firstWhere(function ($item) use ($review) {
                 return $item->order_id == $review->order_id && $item->product_id == $review->product_id;
             });
         }
@@ -109,12 +117,12 @@ class ProductController extends Controller
         $orderItem = null;
         if (Auth::check()) {
             $orderItem = OrderItem::where('product_id', $product->id)
-            ->whereHas('order', function($q){
-                $q->where('user_id', Auth::id())
-                ->where('is_paid', 1);
-            })->latest()->first();
+                ->whereHas('order', function ($q) {
+                    $q->where('user_id', Auth::id())
+                        ->where('is_paid', 1);
+                })->latest()->first();
         }
-        
+
         return view('client.product-detail', [
             'product' => $product,
             'productVariants' => $productVariants,
@@ -124,7 +132,7 @@ class ProductController extends Controller
             'variantsWithImages' => $variantsWithImages,
             'variants' => $productVariants,
             'defaultImages' => $defaultImages,
-            'orderItem' => $orderItem,//Truyền sang view
+            'orderItem' => $orderItem, //Truyền sang view
             'reviews' => $reviews, //truyền reviews vào view
         ]);
     }

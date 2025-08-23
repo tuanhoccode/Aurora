@@ -254,13 +254,10 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
-
-    public function comments()
+    public function productVariants()
     {
-        return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
+        return $this->hasMany(ProductVariant::class, 'product_id');
     }
-
-
 
 
     public function getDefaultVariantIdAttribute()

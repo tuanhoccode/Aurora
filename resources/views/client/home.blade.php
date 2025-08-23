@@ -418,7 +418,7 @@
          </div>
       </section>
       @endif
-
+      <br>
       <!-- product area start -->
       <section class="tp-product-area pb-90">
          <div class="container">
@@ -544,22 +544,22 @@
                         </a>
                      </h3>
                      <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                                    @if ($validReviews->count() > 0)
-                                        <div class="review-item">
-                                            <div class="text-warning">
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($i <= $avg)
-                                                        ★
-                                                    @else
-                                                        ☆
-                                                    @endif
-                                                @endfor
-                                            </div>
-                                        </div>
-                                    @else
-                                        <p>Chưa có đánh giá.</p>
-                                    @endif
+                        @if ($validReviews->count() > 0)
+                            <div class="review-item">
+                                <div class="text-warning">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        @if ($i <= $avg)
+                                            ★
+                                        @else
+                                            ☆
+                                        @endif
+                                    @endfor
                                 </div>
+                            </div>
+                        @else
+                            <p>Chưa có đánh giá.</p>
+                        @endif
+                     </div>
                      <div class="tp-product-price-wrapper-2">
                         <span class="tp-product-price-2 new-price">
                           {{ number_format($prod->display_price, 0, ',', '.') }}
