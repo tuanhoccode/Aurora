@@ -90,13 +90,12 @@ class ProductController extends Controller
         $averageRating = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->avg('rating');
         $reviewCount = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->count();
 
-$relatedProducts = Product::where('brand_id', $product->brand_id)
-    ->where('id', '!=', $product->id)
-    ->where('is_active', 1)
-    ->inRandomOrder()
-    ->take(10)
-    ->get();
-
+        $relatedProducts = Product::where('brand_id', $product->brand_id)
+            ->where('id', '!=', $product->id)
+            ->where('is_active', 1)
+            ->inRandomOrder()
+            ->take(10)
+            ->get();
 
 
         // Lấy review kèm biến thể từ order_item

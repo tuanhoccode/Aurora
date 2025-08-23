@@ -1634,6 +1634,7 @@
                                                             </span>
                                                         </div>
                                                     </td>
+                                                    </form>
                                                     <td class="align-middle text-end pe-0 ps-3">
                                                         <form action="{{ url('/shopping-cart/remove/' . $item->id) }}"
                                                             method="POST"
@@ -1653,7 +1654,7 @@
                                     </table>
                                 </div>
                             </div>
-                        </form>
+
                     </div>
                     <div class="col-12 col-lg-4">
                         <div class="cart-summary-box">
