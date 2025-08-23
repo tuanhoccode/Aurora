@@ -262,25 +262,8 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Brand Filter -->
-                    <div class="tp-shop-widget mb-35">
-                        <h3 class="tp-shop-widget-title">Thương hiệu</h3>
-                        <div class="tp-shop-widget-content">
-                            <div class="tp-shop-widget-checkbox">
-                                <ul class="filter-items filter-checkbox">
-                                    @foreach($brands as $brand)
-                                    <li class="d-flex justify-content-between mb-10">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="brands[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brands'))->contains($brand->id) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="brand_{{ $brand->id }}">{{ $brand->name }}</label>
-                                        </div>
-                                    </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Price Filter (Multi-checkbox) -->
+
+                    <!-- Price Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Lọc theo giá</h3>
                         <div class="tp-shop-widget-content">
@@ -306,6 +289,93 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Brand Filter -->
+                    <div class="tp-shop-widget mb-35">
+                        <h3 class="tp-shop-widget-title">Thương hiệu</h3>
+                        <div class="tp-shop-widget-content">
+                            <div class="tp-shop-widget-checkbox">
+                                <ul class="filter-items filter-checkbox">
+                                    @foreach($brands as $brand)
+                                    <li class="d-flex justify-content-between mb-10">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="brands[]" value="{{ $brand->id }}" id="brand_{{ $brand->id }}" {{ collect(request('brands'))->contains($brand->id) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="brand_{{ $brand->id }}">{{ $brand->name }}</label>
+                                        </div>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Variant Attributes Filter -->
+                    @if(isset($variantAttributes) && $variantAttributes->count() > 0)
+                        @foreach($variantAttributes as $attribute)
+                            @php
+                                $isColorAttribute = in_array(strtolower(trim($attribute->name)), ['màu sắc', 'màu', 'color', 'mau', 'mau sac']);
+                            @endphp
+                            <div class="tp-shop-widget mb-35">
+                                <h3 class="tp-shop-widget-title">{{ $attribute->name }}</h3>
+                                <div class="tp-shop-widget-content">
+                                    @if($isColorAttribute)
+                                        <div class="color-filter">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($attribute->attributeValues as $value)
+                                                    @php
+                                                        $isActive = is_array(request('variant_attributes.'.$attribute->id)) && in_array($value->id, request('variant_attributes.'.$attribute->id, []));
+                                                        $colorCode = $value->color_code ?: '#cccccc';
+                                                        $colorStyle = "background-color: $colorCode; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd;";
+                                                        if (strpos($colorCode, 'http') === 0) {
+                                                            $colorStyle = "background-image: url('$colorCode'); background-size: cover; background-position: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd;";
+                                                        }
+                                                    @endphp
+                                                    <div class="color-option {{ $isActive ? 'active' : '' }}" 
+                                                         data-attribute-id="{{ $attribute->id }}" 
+                                                         data-value-id="{{ $value->id }}"
+                                                         title="{{ $value->value }}"
+                                                         style="cursor: pointer; display: inline-block; margin: 3px; border: 2px solid {{ $isActive ? '#000' : '#ddd' }}; border-radius: 50%;">
+                                                        <div class="color-swatch" style="{{ $colorStyle }}">
+                                                            <input type="checkbox" 
+                                                                   name="variant_attributes[{{ $attribute->id }}][]" 
+                                                                   value="{{ $value->id }}" 
+                                                                   id="variant_attr_{{ $attribute->id }}_{{ $value->id }}"
+                                                                   style="display: none;"
+                                                                   {{ $isActive ? 'checked' : '' }}>
+                                                            <span class="checkmark" style="display: {{ $isActive ? 'block' : 'none' }}; color: white; text-align: center; line-height: 26px;">✓</span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="tp-shop-widget-checkbox">
+                                            <ul class="filter-items filter-checkbox">
+                                                @foreach($attribute->attributeValues as $value)
+                                                    <li class="d-flex justify-content-between mb-2">
+                                                        <div class="form-check">
+                                                            <input 
+                                                                class="form-check-input" 
+                                                                type="checkbox" 
+                                                                name="variant_attributes[{{ $attribute->id }}][]" 
+                                                                value="{{ $value->id }}" 
+                                                                id="variant_attr_{{ $attribute->id }}_{{ $value->id }}"
+                                                                {{ is_array(request('variant_attributes.'.$attribute->id)) && in_array($value->id, request('variant_attributes.'.$attribute->id, [])) ? 'checked' : '' }}
+                                                            >
+                                                            <label class="form-check-label" for="variant_attr_{{ $attribute->id }}_{{ $value->id }}">
+                                                                {{ $value->value }}
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+
                     <div class="tp-shop-widget-btn">
                         <button type="submit"  class="btn btn-primary w-100" >Lọc sản phẩm</button>
                     </div>
@@ -405,6 +475,69 @@
 
 @section('scripts')
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hàm cập nhật tên checkbox
+        function updateCheckboxNames() {
+            document.querySelectorAll('.color-option').forEach(option => {
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                const attributeId = option.dataset.attributeId;
+                if (checkbox && attributeId) {
+                    checkbox.name = `variant_attributes[${attributeId}][]`;
+                }
+            });
+        }
+
+        // Xử lý sự kiện click vào ô màu
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                const isActive = this.classList.contains('active');
+                const checkmark = this.querySelector('.checkmark');
+                
+                // Toggle trạng thái active
+                if (isActive) {
+                    this.classList.remove('active');
+                    checkbox.checked = false;
+                    this.style.borderColor = '#ddd';
+                    if (checkmark) checkmark.style.display = 'none';
+                } else {
+                    this.classList.add('active');
+                    checkbox.checked = true;
+                    this.style.borderColor = '#000';
+                    if (checkmark) checkmark.style.display = 'block';
+                }
+                
+                updateCheckboxNames();
+            });
+        });
+        
+        // Khởi tạo trạng thái ban đầu cho các ô màu
+        document.querySelectorAll('.color-option').forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            const checkmark = option.querySelector('.checkmark');
+            if (checkbox && checkbox.checked) {
+                option.classList.add('active');
+                option.style.borderColor = '#000';
+                if (checkmark) checkmark.style.display = 'block';
+            }
+        });
+        
+        // Gọi hàm cập nhật tên checkbox khi tải trang
+        updateCheckboxNames();
+        
+        // Xử lý sự kiện submit form
+        const filterForm = document.querySelector('.tp-shop-sidebar form');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lọc...';
+                }
+            });
+        }
+    });
     const defaultShow = {{ $defaultShow }};
     const total = {{ $products->count() }};
     const items = document.querySelectorAll('.product-item');

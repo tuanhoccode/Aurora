@@ -108,7 +108,12 @@
                                     <tr class="position-relative">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <span class="fw-medium">{{ $value->value }}</span>
+                                                @if($value->color_code)
+                                                    <span class="color-preview me-2" style="display: inline-block; width: 20px; height: 20px; background-color: {{ $value->color_code }}; border: 1px solid #dee2e6; border-radius: 4px;"></span>
+                                                    {{ $value->value }} ({{ $value->color_code }})
+                                                @else
+                                                    {{ $value->value }}
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="text-center">

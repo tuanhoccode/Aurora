@@ -56,6 +56,7 @@ class AttributeValueController extends Controller
         // Xác thực dữ liệu
         $request->validate([
             'value' => 'required|string|max:255',
+            'color_code' => 'required|string|max:7|regex:/^#[0-9A-Fa-f]{6}$/i',
             'is_active' => 'required|boolean',
         ]);
 
@@ -74,6 +75,7 @@ class AttributeValueController extends Controller
         AttributeValue::create([
             'attribute_id' => $attributeId,
             'value' => $request->value,
+            'color_code' => $request->color_code,
             'is_active' => $request->is_active,
         ]);
 
@@ -92,12 +94,14 @@ class AttributeValueController extends Controller
     {
         $request->validate([
             'value' => 'required|string|max:255',
+            'color_code' => 'required|string|max:7|regex:/^#[0-9A-Fa-f]{6}$/i',
             'is_active' => 'required|boolean',
         ]);
 
         $value = AttributeValue::findOrFail($id);
         $value->update([
             'value' => $request->value,
+            'color_code' => $request->color_code,
             'is_active' => $request->is_active,
         ]);
 
