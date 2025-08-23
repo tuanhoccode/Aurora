@@ -444,14 +444,41 @@
                                     @endif
                                 </div>
                                 <div class="tp-product-price-wrapper-2">
-                                    <span class="tp-product-price-2 new-price">
-                                        {{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span>
-                                    </span>
-                                    @if ($product->original_price && $product->original_price > $product->price)
-                                        <span class="tp-product-price-2 old-price">
-                                            {{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                 @php
+                                    if ($product->type === 'variant' && $product->variants->count()) {
+                                        // Lấy giá áp dụng: ưu tiên sale_price nếu có
+                                        $prices = $product->variants->map(function($v) {
+                                            return $v->sale_price && $v->sale_price > 0 ? $v->sale_price : $v->price;
+                                        });
+                                        $minPrice = $prices->min();
+                                        $maxPrice = $prices->max();
+                                    } else {
+                                        $minPrice = $product->sale_price && $product->sale_price > 0 ? $product->sale_price : $product->price;
+                                        $maxPrice = $product->price;
+                                    }
+                                @endphp
+                                <div class="tp-product-price-wrapper-2">
+                                    @if($product->type === 'variant')
+                                        @if($minPrice === $maxPrice)
+                                            <span class="tp-product-price-2 new-price">
+                                                {{ number_format($minPrice,0,',','.') }} <span style="color:red;"> đ</span>
+                                            </span>
+                                        @else
+                                            <span class="tp-product-price-2 new-price">
+                                                {{ number_format($minPrice,0,',','.') }} – {{ number_format($maxPrice,0,',','.') }} <span style="color:red;"> đ</span>
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="tp-product-price-2 new-price">
+                                            {{ number_format($minPrice,0,',','.') }} <span style="color:red;"> đ</span>
                                         </span>
+                                        @if($product->sale_price > 0 && $product->price > $product->sale_price)
+                                            <span class="tp-product-price-2 old-price">
+                                                {{ number_format($maxPrice,0,',','.') }} <span style="color:red;"> đ</span>
+                                            </span>
+                                        @endif
                                     @endif
+                                </div>
                                 </div>
                             </div>
                         </div>
