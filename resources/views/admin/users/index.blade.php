@@ -100,7 +100,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <form
+                                                    {{-- <form
                                                         action="{{ route('admin.users.destroy', ['user' => $user->id, 'page' => request('page')]) }}"
                                                         method="POST"
                                                         onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?')">
@@ -110,7 +110,7 @@
                                                         <button class="dropdown-item text-danger" type="submit">
                                                             <i class="fas fa-trash me-2"></i>Xóa
                                                         </button>
-                                                    </form>
+                                                    </form> --}}
                                                 </li>
                                             </ul>
                                         </div>
