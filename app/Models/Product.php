@@ -254,15 +254,6 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
-
-    public function comments()
-    {
-        return $this->hasMany(\App\Models\Comment::class)->where('is_active', 1);
-    }
-
-
-
-
     public function getDefaultVariantIdAttribute()
     {
         // Lấy biến thể đầu tiên còn hàng, hoặc biến thể đầu tiên nếu không còn hàng

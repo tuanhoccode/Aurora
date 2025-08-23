@@ -335,7 +335,12 @@
                                                 {{-- <td>{{ $status->id }}</td> --}}
                                                 <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
                                                 <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
-                                                <td>{{ $status->modifier?->name ?? 'Hệ thống' }}</td>
+                                                <td>
+                                                    {{ $status->modifier?->fullname ?? 'Hệ thống' }}
+                                                    @if($status->modifier)
+                                                        ({{$status->modifier->role == 'admin' ? 'Admin' : 'Nhân viên'}})
+                                                    @endif
+                                                </td>
                                                 <td>{{ $status->created_at->format('d/m/Y H:i:s') }}</td>
                                                 <td>
                                                     @if ($status->is_current)

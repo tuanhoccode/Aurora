@@ -164,14 +164,12 @@
                 Đánh giá sản phẩm
             </a>
         </li>
-        @if (Auth::user()->role === 'admin')
-            <li>
-                <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
-                    href="{{ route('admin.banners.index') }}">
-                    <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
-                </a>
-            </li>
-        @endif
+        <li>
+            <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
+                href="{{ route('admin.banners.index') }}">
+                <span class="nav-icon"><i class="fas fa-image"></i></span> Banner
+            </a>
+        </li>
         <li class="has-submenu {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
             <a href="#" class="nav-link d-flex justify-content-between align-items-center">
                 <div>
