@@ -448,15 +448,21 @@
                                             <div class="text-warning">
                                                 @for ($i = 1; $i <= 5; $i++)
                                                     @if ($i <= $avg)
-                                                        ★
+                                                        <i class="fa-solid fa-star text-warning"></i>
                                                     @else
-                                                        ☆
+                                                        <i class="fa-regular fa-star text-warning"></i>
                                                     @endif
                                                 @endfor
                                             </div>
                                         </div>
                                     @else
-                                        <p>Chưa có đánh giá.</p>
+                                        @php
+                                            $avg = $related->average_rating ?? 0
+                                        @endphp
+                                        @for($i = 1; $i <= 5; $i++)
+                                            
+                                                <span><i class="fa-regular fa-star text-warning"></i></span>
+                                        @endfor
                                     @endif
                                 </div>
                                 {{-- Debug info --}}

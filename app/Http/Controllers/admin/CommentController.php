@@ -10,6 +10,7 @@ use App\Models\Comment;
 use App\Models\Product;
 use App\Models\Review;
 use App\Notifications\AdminRepliedNotification;
+use App\Notifications\ReviewRejectedNotification;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -51,8 +52,14 @@ class CommentController extends Controller
         $comment->is_active = 0;
         $comment->reason = $req->reason;
         $comment->save();
+
+        //Gửi email lý do từ chối
+        $user = $comment->user;
+        if ($user && $user->email) {
+            $user->notify(new ReviewRejectedNotification($comment, $req->reason));
+        }
         return redirect()->route('admin.reviews.comments')
-            ->with('success', 'Đã từ đánh giá và lưu lý do');
+            ->with('success', 'Đã từ chối đánh giá và lưu lý do');
     }
     public function destroyComment($id)
     {
