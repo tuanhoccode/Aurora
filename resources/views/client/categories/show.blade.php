@@ -1,9 +1,12 @@
 @extends('client.layouts.default')
 
+
+
+
 @section('content')
 <style>
     .d-none-by-js { display: none !important; }
-
+   
     /* Cải thiện layout sản phẩm */
     .tp-product-item-2 {
         background: #fff;
@@ -14,12 +17,12 @@
         flex-direction: column;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
+   
     .tp-product-item-2:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
-
+   
     /* Cố định kích thước ảnh sản phẩm */
     .tp-product-thumb-2 {
         position: relative;
@@ -28,18 +31,18 @@
         overflow: hidden;
         border-radius: 8px 8px 0 0;
     }
-
+   
     .tp-product-thumb-2 img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s ease;
     }
-
+   
     .tp-product-item-2:hover .tp-product-thumb-2 img {
         transform: scale(1.05);
     }
-
+   
     /* Cố định kích thước content */
     .tp-product-content-2 {
         padding: 15px;
@@ -48,7 +51,7 @@
         flex-direction: column;
         justify-content: space-between;
     }
-
+   
     /* Giới hạn độ dài tên sản phẩm */
     .tp-product-title-2 {
         margin: 8px 0;
@@ -60,25 +63,25 @@
         -webkit-box-orient: vertical;
         text-overflow: ellipsis;
     }
-
+   
     .tp-product-title-2 a {
         color: #333;
         text-decoration: none;
         font-weight: 500;
         font-size: 0.95rem;
     }
-
+   
     .tp-product-title-2 a:hover {
         color: #007bff;
     }
-
+   
     /* Cố định kích thước brand tag */
     .tp-product-tag-2 {
         margin-bottom: 8px;
         height: 20px;
         overflow: hidden;
     }
-
+   
     .tp-product-tag-2 a {
         font-size: 0.8rem;
         color: #666;
@@ -92,7 +95,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-
+   
     /* Cố định kích thước rating */
     .tp-product-rating-icon {
         margin: 8px 0;
@@ -100,52 +103,52 @@
         display: flex;
         align-items: center;
     }
-
+   
     .tp-product-rating-icon p {
         margin: 0;
         font-size: 0.85rem;
         color: #999;
     }
-
+   
     .review-item {
         padding-bottom: 0 !important;
     }
-
+   
     .review-item .text-warning {
         font-size: 0.9rem;
     }
-
+   
     /* Cố định kích thước price */
     .tp-product-price-wrapper-2 {
         margin-top: auto;
         padding-top: 8px;
         border-top: 1px solid #f0f0f0;
     }
-
+   
     .tp-product-price-2.new-price {
         font-size: 1.1rem;
         font-weight: bold;
         color: #333;
     }
-
+   
     .tp-product-price-2.old-price {
         font-size: 0.9rem;
         color: #999;
         text-decoration: line-through;
         margin-left: 8px;
     }
-
+   
     /* Cải thiện sidebar */
     .sidebar-filter h5 {
         font-size: 1.1rem;
         margin-bottom: 0.5rem;
         margin-top: 1.5rem;
     }
-
+   
     .sidebar-filter .form-check {
         margin-bottom: 0.5rem;
     }
-
+   
     .sidebar-filter {
         background: #fff;
         border-radius: 12px;
@@ -154,7 +157,7 @@
         position: sticky;
         top: 20px;
     }
-
+   
     /* Badge hết hàng */
     .product-badge-outofstock {
         position: absolute;
@@ -169,7 +172,7 @@
         z-index: 20;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-
+   
     .product-out-of-stock-overlay {
         position: absolute;
         top: 0;
@@ -188,46 +191,49 @@
         border-radius: 8px;
         gap: 8px;
     }
-
+   
     .tp-product-thumb-2.out-of-stock img {
         filter: grayscale(1) brightness(0.85);
         opacity: 0.7;
     }
-
+   
     .tp-product-thumb-2.out-of-stock {
         pointer-events: none;
     }
-
+   
     .tp-product-thumb-2.out-of-stock .tp-product-action-2 {
         display: none;
     }
-
+   
     /* Responsive */
     @media (max-width: 768px) {
         .tp-product-thumb-2 {
             height: 220px;
         }
-
+       
         .tp-product-title-2 {
             font-size: 0.9rem;
             height: 2.6em;
         }
-
+       
         .tp-product-price-2.new-price {
             font-size: 1rem;
         }
     }
-
+   
     @media (max-width: 576px) {
         .tp-product-thumb-2 {
             height: 200px;
         }
-
+       
         .tp-product-content-2 {
             padding: 12px;
         }
     }
 </style>
+
+
+
 
 <div class="container mt-5">
     <div class="row">
@@ -263,6 +269,7 @@
                         </div>
                     </div>
 
+
                     <!-- Price Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Lọc theo giá</h3>
@@ -290,6 +297,7 @@
                         </div>
                     </div>
 
+
                     <!-- Brand Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Thương hiệu</h3>
@@ -308,6 +316,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Variant Attributes Filter -->
                     @if(isset($variantAttributes) && $variantAttributes->count() > 0)
@@ -376,8 +385,9 @@
                         @endforeach
                     @endif
 
+
                     <div class="tp-shop-widget-btn">
-                        <button type="submit"  class="btn btn-primary w-100" >Lọc sản phẩm</button>
+                        <button type="submit" class="tp-btn w-100">Lọc sản phẩm</button>
                     </div>
                 </form>
             </div>
@@ -423,8 +433,14 @@
                                        ->where('review_id', null)
                                        ->where('rating', '>', 0);
 
+
+
+
                                    $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
                                 @endphp
+
+
+
 
                                 <div class="tp-product-rating-icon tp-product-rating-icon-2">
                                     @if ($validReviews->count() > 0)
@@ -443,13 +459,61 @@
                                         <p>Chưa có đánh giá.</p>
                                     @endif
                                 </div>
+                                {{-- Debug info --}}
+                                @if(config('app.debug') && $product->type === 'variant')
+                                    <div class="debug-info" style="font-size: 10px; color: #999; margin-bottom: 5px;">
+                                        Debug: Type={{ $product->type }}, Variants={{ $product->variants->count() }},
+                                        @if($product->variants->count() > 0)
+                                            First variant: {{ $product->variants->first()->regular_price ?? 'N/A' }}
+                                        @else
+                                            No variants
+                                        @endif
+                                    </div>
+                                @endif
+                               
                                 <div class="tp-product-price-wrapper-2">
+                                    @php
+                                        if ($product->type === 'variant' && $product->variants->count() > 0) {
+                                            // Debug: Kiểm tra dữ liệu biến thể
+                                            // {{-- dd($product->variants->toArray()) --}}
+                                           
+                                            // Lấy ngẫu nhiên một biến thể để hiển thị giá
+                                            $randomVariant = $product->variants->random();
+                                           
+                                            // Lấy giá từ biến thể ngẫu nhiên
+                                            $displayPrice = $randomVariant->sale_price > 0 ? $randomVariant->sale_price : $randomVariant->regular_price;
+                                            $displayOriginalPrice = $randomVariant->sale_price > 0 ? $randomVariant->regular_price : null;
+                                           
+                                            // Đảm bảo giá không phải 0
+                                            if ($displayPrice <= 0) {
+                                                // Nếu giá vẫn 0, lấy giá từ biến thể đầu tiên
+                                                $firstVariant = $product->variants->first();
+                                                $displayPrice = $firstVariant->sale_price > 0 ? $firstVariant->sale_price : $firstVariant->regular_price;
+                                                $displayOriginalPrice = $firstVariant->sale_price > 0 ? $firstVariant->regular_price : null;
+                                            }
+                                           
+                                            // Nếu vẫn 0, lấy giá cao nhất từ tất cả biến thể
+                                            if ($displayPrice <= 0) {
+                                                $maxPrice = $product->variants->max('regular_price');
+                                                $displayPrice = $maxPrice > 0 ? $maxPrice : 0;
+                                                $displayOriginalPrice = null;
+                                            }
+                                           
+                                            // Debug: Log giá trị để kiểm tra
+                                            // \Log::info("Product: {$product->name}, Type: {$product->type}, Variants count: {$product->variants->count()}, Display price: {$displayPrice}");
+                                        } else {
+                                            // Sản phẩm thường
+                                            $displayPrice = $product->sale_price > 0 ? $product->sale_price : $product->price;
+                                            $displayOriginalPrice = $product->sale_price > 0 ? $product->price : null;
+                                        }
+                                    @endphp
+                                   
                                     <span class="tp-product-price-2 new-price">
-                                        {{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                        {{ number_format($displayPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
                                     </span>
-                                    @if ($product->original_price && $product->original_price > $product->price)
+                                    @if ($displayOriginalPrice && $displayOriginalPrice > $displayPrice)
                                         <span class="tp-product-price-2 old-price">
-                                            {{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                            {{ number_format($displayOriginalPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
                                         </span>
                                     @endif
                                 </div>
@@ -473,6 +537,9 @@
 </div>
 @endsection
 
+
+
+
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -487,6 +554,7 @@
             });
         }
 
+
         // Xử lý sự kiện click vào ô màu
         document.querySelectorAll('.color-option').forEach(option => {
             option.addEventListener('click', function(e) {
@@ -494,7 +562,7 @@
                 const checkbox = this.querySelector('input[type="checkbox"]');
                 const isActive = this.classList.contains('active');
                 const checkmark = this.querySelector('.checkmark');
-
+               
                 // Toggle trạng thái active
                 if (isActive) {
                     this.classList.remove('active');
@@ -507,11 +575,11 @@
                     this.style.borderColor = '#000';
                     if (checkmark) checkmark.style.display = 'block';
                 }
-
+               
                 updateCheckboxNames();
             });
         });
-
+       
         // Khởi tạo trạng thái ban đầu cho các ô màu
         document.querySelectorAll('.color-option').forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
@@ -522,10 +590,10 @@
                 if (checkmark) checkmark.style.display = 'block';
             }
         });
-
+       
         // Gọi hàm cập nhật tên checkbox khi tải trang
         updateCheckboxNames();
-
+       
         // Xử lý sự kiện submit form
         const filterForm = document.querySelector('.tp-shop-sidebar form');
         if (filterForm) {
@@ -545,6 +613,9 @@
     const showingCount = document.getElementById('showing-count');
     let currentVisible = defaultShow;
 
+
+
+
     if (showAllBtn) {
         showAllBtn.addEventListener('click', function() {
             let nextVisible = currentVisible + defaultShow;
@@ -560,3 +631,4 @@
     }
 </script>
 @endsection
+

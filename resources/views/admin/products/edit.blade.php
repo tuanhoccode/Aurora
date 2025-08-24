@@ -40,7 +40,6 @@
       @endif
       <div class="mt-4 mb-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
         <button class="btn btn-primary" type="submit">
           <i class="fas fa-save me-1"></i> Lưu sản phẩm
         </button>
@@ -91,26 +90,57 @@
               @enderror
               <div id="gallery-upload-wrapper" @if($product->type === 'variant') style="display: none;" @endif>
                 <label class="form-label">Thư viện ảnh (có thể chọn nhiều)</label>
-                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" name="gallery_images[]" accept="image/*" multiple>
+                <input type="file" class="form-control @error('gallery_images') is-invalid @enderror" id="gallery-upload" name="gallery_images[]" accept="image/*" multiple>
                 @error('gallery_images')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                
+                <!-- Preview for new images -->
+                <div class="row mt-2" id="image-preview-container"></div>
+                
+                <!-- Existing images -->
                 @if(isset($product) && $product->images && $product->images->count())
+                  <input type="hidden" name="deleted_gallery_images" id="deletedGalleryImages" value="">
                   <div class="row mt-2" id="product-gallery-images">
                     @foreach($product->images->where('product_variant_id', null) as $img)
-                      <div class="col-3 mb-2 position-relative">
+                      <div class="col-3 mb-2 position-relative" id="gallery-image-{{ $img->id }}">
                         <img src="{{ asset('storage/' . $img->url) }}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1" onclick="deleteGalleryImage({{ $img->id }})" style="width: 20px; height: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center;">
-                          <i class="fas fa-times" style="font-size: 10px;"></i>
-                        </button>
                       </div>
                     @endforeach
                   </div>
                 @endif
               </div>
               
-             
+              <script>
+              // Xử lý xem trước ảnh khi chọn
+              document.getElementById('gallery-upload').addEventListener('change', function(e) {
+                const container = document.getElementById('image-preview-container');
+                container.innerHTML = ''; // Xóa preview cũ
+                
+                const files = e.target.files;
+                if (files.length > 0) {
+                  for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type.match('image.*')) {
+                      const reader = new FileReader();
+                      reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'col-3 mb-2 position-relative';
+                        previewDiv.innerHTML = `
+                          <div class="position-relative">
+                            <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                          </div>
+                        `;
+                        container.appendChild(previewDiv);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }
+                }
+              });
+              </script>
               
+             
             </div>
           </div>
           <!-- Card: Kiểu sản phẩm -->
@@ -165,7 +195,7 @@
               <i class="fas fa-tag me-1"></i> Giá & Tồn kho chung
             </div>
             <div class="card-body">
-              <label class="form-label">SKU</label>
+              <label class="form-label">MÃ SP</label>
               <input type="text" class="form-control mb-2 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku', $product->sku) }}" readonly>
               @error('sku')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -204,7 +234,7 @@
               </small>
 
               <label class="form-label">Tồn kho</label>
-              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0" max="100">
+              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', $product->stock) }}" min="0">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -293,7 +323,7 @@
                         <thead class="table-light">
                           <tr>
                             <th style="min-width: 200px;">Thuộc tính</th>
-                            <th style="min-width: 120px;">SKU</th>
+                            <th style="min-width: 120px;">MÃ SP</th>
                             <th style="min-width: 120px;">Giá gốc</th>
                             <th style="min-width: 200px;">Giá khuyến mãi & Thời gian</th>
                             <th style="min-width: 100px;">Tồn kho</th>
@@ -1460,7 +1490,68 @@ $('form').on('submit', function(e) {
       });
     }
   @endif
+
+  // Hàm hiển thị thông báo
+  function showToast(type, message) {
+    const toast = `
+      <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <div class="d-flex">
+          <div class="toast-body">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    `;
+    
+    // Thêm toast vào DOM
+    $('body').append(toast);
+    
+    // Tự động ẩn sau 3 giây
+    setTimeout(() => {
+      $('.toast').fadeOut(400, function() {
+        $(this).remove();
+      });
+    }, 3000);
+  }
+
+  // Hàm xóa ảnh trong gallery sản phẩm
+  function deleteGalleryImage(button, imagePath) {
+    if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+      return false;
+    }
+
+    const token = $('meta[name="csrf-token"]').attr('content');
+    const imageElement = $(button).closest('.gallery-image');
+    
+    // Gửi yêu cầu xóa ảnh sản phẩm
+    $.ajax({
+      url: '{{ route("admin.products.delete-gallery-image", $product->id) }}',
+      type: 'DELETE',
+      data: {
+        _token: token,
+        path: imagePath  // Gửi path thay vì image_id
+      },
+      success: function(response) {
+        if (response.success) {
+          imageElement.remove();
+          // Kiểm tra xem còn ảnh nào không
+          const galleryContainer = $('.gallery-container');
+          if (galleryContainer.find('.gallery-image').length === 0) {
+            galleryContainer.append('<p class="text-muted text-center">Chưa có ảnh nào</p>');
+          }
+          showToast('success', 'Xóa ảnh thành công');
+        } else {
+          showToast('danger', response.message || 'Có lỗi xảy ra khi xóa ảnh');
+        }
+      },
+      error: function(xhr) {
+        showToast('danger', xhr.responseJSON?.message || 'Có lỗi xảy ra khi xóa ảnh');
+      }
+    });
+  }
 </script>
+ 
 @endpush
 
 @endsection

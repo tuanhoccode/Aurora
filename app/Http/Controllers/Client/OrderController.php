@@ -29,55 +29,65 @@ class OrderController extends Controller
                 'orderItems',
                 'items.review',
                 'currentOrderStatus.status',
-                'payment'
+                'payment',
+                'statusHistory.status'
             ])
+            ->withCount(['statusHistory as current_status' => function($q) {
+                $q->where('is_current', true);
+            }])
             ->orderBy('created_at', 'desc');
             
         // Apply status filter
-        if ($filter = $request->query('filter')) {
+        if ($filter) {
             switch ($filter) {
                 case 'pending_payment':
-                    // Chờ thanh toán
+                    // Chờ thanh toán - đơn chưa thanh toán và có trạng thái chờ xác nhận
                     $query->where('is_paid', false)
-                        ->whereHas('statusHistory', function ($q) {
+                        ->whereHas('statusHistory', function($q) {
                             $q->where('is_current', true)
-                              ->whereNotIn('order_status_id', [4, 7, 8]); // Không phải đã giao, đã hoàn tiền hoặc đã hủy
+                              ->where('order_status_id', 1);
                         });
                     break;
+                    
                 case 'processing':
-                    // Đang xử lý (Chờ xác nhận)
-                    $query->whereHas('statusHistory', function ($q) {
-                        $q->where('is_current', true)
-                          ->whereIn('order_status_id', [1]); // Chờ xác nhận
-                    });
+                    // Đang xử lý - đơn đã thanh toán và đang chờ xác nhận
+                    $query->where('is_paid', true)
+                        ->whereHas('statusHistory', function($q) {
+                            $q->where('is_current', true)
+                              ->where('order_status_id', 1);
+                        });
                     break;
+                    
                 case 'shipping':
-                    // Đang giao hàng
-                    $query->whereHas('statusHistory', function ($q) {
+                    // Đang giao hàng - đơn đang trong quá trình vận chuyển
+                    $query->whereHas('statusHistory', function($q) {
                         $q->where('is_current', true)
                           ->whereIn('order_status_id', [2, 3]); // Chờ lấy hàng, Đang giao
                     });
                     break;
+                    
                 case 'delivered':
-                    // Giao hàng thành công (chưa xác nhận)
-                    $query->whereHas('statusHistory', function ($q) {
+                    // Đã giao hàng - đã giao nhưng chưa xác nhận
+                    $query->whereHas('statusHistory', function($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 4) // Giao hàng thành công
+                          ->where('order_status_id', 4) // Đã giao
                           ->whereDoesntHave('order.statusHistory', function($q) {
-                              $q->where('order_status_id', 10); // Chưa chuyển sang trạng thái Hoàn thành (10)
+                              $q->where('order_status_id', 10); // Chưa hoàn thành
                           });
                     });
                     break;
+                    
                 case 'completed':
-                    // Đã hoàn thành (đã xác nhận nhận hàng)
-                    $query->whereHas('statusHistory', function ($q) {
+                    // Đã hoàn thành - đã xác nhận nhận hàng
+                    $query->whereHas('statusHistory', function($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 10); // Hoàn thành (10)
+                          ->where('order_status_id', 10); // Hoàn thành
                     });
                     break;
+                    
                 case 'cancelled':
                     // Đã hủy
-                    $query->whereHas('statusHistory', function ($q) {
+                    $query->whereHas('statusHistory', function($q) {
                         $q->where('is_current', true)
                           ->where('order_status_id', 8); // Đã hủy
                     });
@@ -85,7 +95,7 @@ class OrderController extends Controller
                     
                 case 'return_refund':
                     // Trả hàng/Hoàn tiền
-                    $query->whereHas('statusHistory', function ($q) {
+                    $query->whereHas('statusHistory', function($q) {
                         $q->where('is_current', true)
                           ->whereIn('order_status_id', [5, 6, 7]); // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
                     });
@@ -100,6 +110,9 @@ class OrderController extends Controller
                   ->orWhere('id', $search)
                   ->orWhereHas('items.product', function($q) use ($search) {
                       $q->where('name', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('items.product', function($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
                   });
             });
         }
@@ -109,10 +122,14 @@ class OrderController extends Controller
         // Đếm số lượng đơn hàng theo từng trạng thái
         $user = Auth::user();
         
-        // Lấy tất cả đơn hàng của user
-        $allOrders = $user->orders()->with('statusHistory')->get();
+        // Lấy tất cả đơn hàng của user với trạng thái hiện tại
+        $allOrders = $user->orders()
+            ->with(['statusHistory' => function($q) {
+                $q->where('is_current', true);
+            }])
+            ->get();
         
-// Khởi tạo các biến đếm
+        // Khởi tạo các biến đếm
         $allCount = $allOrders->count();
         $pendingPaymentCount = 0;
         $processingCount = 0;
@@ -124,7 +141,7 @@ class OrderController extends Controller
         
         // Đếm số lượng đơn hàng theo từng trạng thái
         foreach ($allOrders as $order) {
-            $currentStatus = $order->statusHistory->where('is_current', true)->first();
+            $currentStatus = $order->statusHistory->first();
             
             if (!$currentStatus) {
                 continue;
@@ -133,16 +150,21 @@ class OrderController extends Controller
             $statusId = $currentStatus->order_status_id;
             
             // Xử lý từng trạng thái đơn hàng
-            switch (true) {
-                case $statusId == 1:
-                    $processingCount++;
+            switch ($statusId) {
+                case 1: // Chờ xác nhận
+                    if ($order->is_paid) {
+                        $processingCount++;
+                    } else {
+                        $pendingPaymentCount++;
+                    }
                     break;
                     
-                case in_array($statusId, [2, 3]):
+                case 2: // Chờ lấy hàng
+                case 3: // Đang giao
                     $shippingCount++;
                     break;
                     
-                case $statusId == 4:
+                case 4: // Đã giao
                     // Kiểm tra xem đã có trạng thái hoàn thành (10) chưa
                     $hasCompleted = $order->statusHistory->contains('order_status_id', 10);
                     if (!$hasCompleted) {
@@ -150,23 +172,19 @@ class OrderController extends Controller
                     }
                     break;
                     
-                case $statusId == 10:
+                case 10: // Hoàn thành
                     $completedCount++;
                     break;
                     
-                case $statusId == 8:
+                case 8: // Đã hủy
                     $cancelledCount++;
                     break;
                     
-                case in_array($statusId, [5, 6, 7]):
-                    // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
+                case 5: // Đang xử lý hoàn tiền
+                case 6: // Đã hoàn tiền
+                case 7: // Từ chối hoàn tiền
                     $returnRefundCount++;
                     break;
-            }
-            
-            // Đếm đơn hàng chờ thanh toán
-            if (!$order->is_paid && !in_array($statusId, [4, 7, 8, 10])) {
-                $pendingPaymentCount++;
             }
         }
 
