@@ -938,7 +938,7 @@
                                                         </button>
                                                     </form>
                                                 @endif
-                                                @if ($statusId == 10)
+                                                @if ($statusId == 10 && !$order->refund()->whereIn('status', ['pending','approved'])->exists())
                                                     @if ($item->review)
                                                         <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
                                                             <button 
@@ -957,7 +957,7 @@
                                                             </button>
                                                             
                                                         </div>
-                                                    @elseif($item->order->canReview())
+                                                    @elseif($item->canReviewItem())
                                                         <div class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
                                                             <button
                                                                 data-bs-toggle="modal"
@@ -1116,6 +1116,7 @@
                 <form id="reviewForm" action="" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="product_id" id="review_product_id"> 
+                    <input type="hidden" name="order_item_id" id="review_order_item_id"> 
                     <div class="modal-header">
                         <h5 class="modal-title">Đánh giá sản phẩm</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1171,8 +1172,9 @@
         
         // Cập nhật URL form với product_id
         const form = document.getElementById('reviewForm');
-        form.action = '{{ url("client/reviews") }}/' + productId;
-        document.getElementById('review_product_id').value = productId;
+            form.action = '{{ url("client/reviews") }}/' + productId;
+            document.getElementById('review_product_id').value = productId;
+            document.getElementById('review_order_item_id').value = orderItemId;
 
             //Gán tên sp phân loại
             const productName = button.getAttribute('data-product-name');
