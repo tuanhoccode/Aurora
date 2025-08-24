@@ -30,6 +30,11 @@ class ReviewRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'rating.required' => 'Bạn phải chọn số sao đánh giá.',
+            'rating.integer'  => 'Giá trị đánh giá phải là số.',
+            'rating.min'      => 'Số sao nhỏ nhất là :min.',
+            'rating.max'      => 'Số sao lớn nhất là :max.',  
+
             'review_text.required' => 'Vui lòng nhập nội dung đánh giá.',
             'review_text.string' => 'Nội dung đánh giá không hợp lệ.',
             'review_text.max' => 'Nội dung đánh giá tối đa 200 ký tự.',

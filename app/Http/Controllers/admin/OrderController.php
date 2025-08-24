@@ -93,10 +93,7 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ];
 
-                // Thêm customer_confirmation nếu cột tồn tại
-                if (Schema::hasColumn('order_status_histories', 'customer_confirmation')) {
-                    $data['customer_confirmation'] = 0;
-                }
+              
 
                 OrderStatusHistory::create($data);
                 $order->update(['order_status_id' => 1]);
@@ -120,7 +117,7 @@ class OrderController extends Controller
         $order = Order::with('items.product')->findOrFail($id);
         $statuses = OrderStatus::all();
         $currentStatus = $order->statusHistory()->where('is_current', true)->first();
-        OrderStatusHistory::with('orderStatus')->get();
+
         // Tính toán trạng thái thanh toán
         $paymentStatus = $currentStatus ? match ($currentStatus->order_status_id) {
             7 => 'Đã hoàn tiền',
@@ -206,10 +203,6 @@ class OrderController extends Controller
                 'updated_at' => now(),
             ];
 
-            // Thêm customer_confirmation nếu cột tồn tại
-            if (Schema::hasColumn('order_status_histories', 'customer_confirmation')) {
-                $data['customer_confirmation'] = $request->customer_confirmation ?? 0;
-            }
 
             // Thêm bản ghi mới vào lịch sử
             $history = OrderStatusHistory::create($data);
