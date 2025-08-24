@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\StatisticController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ShopController;
@@ -60,6 +61,7 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
 Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
+
     // Media Upload Route
     Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
 
@@ -175,9 +177,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
         Route::post('/', [ProductController::class, 'store'])->name('store');
         // Product Gallery Images
         // Xóa ảnh gallery của sản phẩm
-        // Route::delete('/{product}/gallery/{image}', [ProductGalleryController::class, 'delete'])
-        //     ->name('delete-gallery-image');
-        Route::delete('/{product}/gallery', [ProductController::class, 'deleteGalleryImage'])
+        Route::delete('/gallery-image/{id}', [ProductController::class, 'deleteGalleryImage'])
             ->name('delete-gallery-image');
 
 

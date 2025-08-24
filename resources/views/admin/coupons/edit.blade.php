@@ -106,10 +106,10 @@
             <label class="form-check-label" for="is_active">Kích hoạt</label>
         </div>
 
-        <div class="form-check form-switch mb-4">
+        {{-- <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" id="is_notified" name="is_notified" value="1" {{ old('is_notified', $coupon->is_notified) ? 'checked' : '' }}>
             <label class="form-check-label" for="is_notified">Đã thông báo</label>
-        </div>
+        </div> --}}
 
         <button type="submit" class="btn btn-primary rounded-pill px-4">Cập nhật</button>
         <a href="{{ route('admin.coupons.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Hủy</a>

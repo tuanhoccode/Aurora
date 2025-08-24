@@ -13,7 +13,6 @@
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
-
         <hr>
 
         {{-- Danh mục --}}
@@ -47,7 +46,7 @@
 
         <hr>
 
-        {{-- Bán hàng --}}
+       
         <li class="sidebar-heading">Bán hàng</li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}"
