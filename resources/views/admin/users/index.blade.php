@@ -66,9 +66,9 @@
                                                 default => 'bg-secondary text-white',
                                             };
                                             $roleLabel = match ($user->role) {
-                                                'admin' => 'Admin',
-                                                'employee' => 'Employee',
-                                                default => 'Customer',
+                                                'admin' => 'Quản trị viên',
+                                                'employee' => 'Nhân viên',
+                                                default => 'Khách hàng',
                                             };
                                         @endphp
                                         <span class="badge {{ $roleClass }} role-editable" data-id="{{ $user->id }}"
@@ -82,7 +82,7 @@
                                             class="badge {{ $user->status === 'active' ? 'bg-success' : 'bg-danger' }} status-editable"
                                             data-id="{{ $user->id }}" data-status="{{ $user->status }}"
                                             style="cursor: pointer;">
-                                            {{ $user->status === 'active' ? 'Active' : 'Inactive' }}
+                                            {{ $user->status === 'active' ? 'Hoạt động' : 'Đã khóa' }}
                                         </span>
                                     </td>
                                     <td class="text-center align-middle">
@@ -158,14 +158,14 @@
                 let userId = $span.data('id');
 
                 let select = `
-                        <select class="form-select form-select-sm status-select" 
-                                data-id="${userId}"
-                                data-old-status="${oldStatus}"
-                                style="min-width:100px;">
-                            <option value="active" ${oldStatus === 'active' ? 'selected' : ''}>Active</option>
-                            <option value="inactive" ${oldStatus === 'inactive' ? 'selected' : ''}>Inactive</option>
-                        </select>
-                    `;
+                                    <select class="form-select form-select-sm status-select" 
+                                            data-id="${userId}"
+                                            data-old-status="${oldStatus}"
+                                            style="min-width:100px;">
+                                        <option value="active" ${oldStatus === 'active' ? 'selected' : ''}>Hoạt động</option>
+                                        <option value="inactive" ${oldStatus === 'inactive' ? 'selected' : ''}>Đã khóa</option>
+                                    </select>
+                                `;
                 $span.replaceWith(select);
                 select = $(`select[data-id=${userId}]`);
                 select.focus();
@@ -183,30 +183,30 @@
                     data: { status: newStatus, _token: '{{ csrf_token() }}' },
                     success: function () {
                         let badgeClass = newStatus === 'active' ? 'bg-success' : 'bg-danger';
-                        let badgeText = newStatus === 'active' ? 'Active' : 'Inactive';
+                        let badgeText = newStatus === 'active' ? 'Hoạt động' : 'Đã khóa';
                         let span = `
-                                <span class="badge ${badgeClass} status-editable"
-                                      data-id="${userId}"
-                                      data-status="${newStatus}"
-                                      style="cursor: pointer;">
-                                    ${badgeText}
-                                </span>
-                            `;
+                                            <span class="badge ${badgeClass} status-editable"
+                                                  data-id="${userId}"
+                                                  data-status="${newStatus}"
+                                                  style="cursor: pointer;">
+                                                ${badgeText}
+                                            </span>
+                                        `;
                         $select.replaceWith(span);
                         toastr.success('Cập nhật trạng thái thành công.');
                     },
                     error: function () {
                         toastr.error('Cập nhật trạng thái thất bại.');
                         let badgeClass = oldStatus === 'active' ? 'bg-success' : 'bg-danger';
-                        let badgeText = oldStatus === 'active' ? 'Active' : 'Inactive';
+                        let badgeText = oldStatus === 'active' ? 'Hoạt động' : 'Đã khóa';
                         let span = `
-                                <span class="badge ${badgeClass} status-editable"
-                                      data-id="${userId}"
-                                      data-status="${oldStatus}"
-                                      style="cursor: pointer;">
-                                    ${badgeText}
-                                </span>
-                            `;
+                                            <span class="badge ${badgeClass} status-editable"
+                                                  data-id="${userId}"
+                                                  data-status="${oldStatus}"
+                                                  style="cursor: pointer;">
+                                                ${badgeText}
+                                            </span>
+                                        `;
                         $select.replaceWith(span);
                     }
                 });
@@ -219,15 +219,15 @@
                 let userId = $span.data('id');
 
                 let select = `
-                        <select class="form-select form-select-sm role-select" 
-                                data-id="${userId}"
-                                data-old-role="${oldRole}"
-                                style="min-width:120px;">
-                            <option value="customer" ${oldRole === 'customer' ? 'selected' : ''}>Customer</option>
-                            <option value="employee" ${oldRole === 'employee' ? 'selected' : ''}>Employee</option>
-                            <option value="admin" ${oldRole === 'admin' ? 'selected' : ''}>Admin</option>
-                        </select>
-                    `;
+                                    <select class="form-select form-select-sm role-select" 
+                                            data-id="${userId}"
+                                            data-old-role="${oldRole}"
+                                            style="min-width:120px;">
+                                        <option value="customer" ${oldRole === 'customer' ? 'selected' : ''}>Khách hàng</option>
+                                        <option value="employee" ${oldRole === 'employee' ? 'selected' : ''}>Nhân viên</option>
+                                        <option value="admin" ${oldRole === 'admin' ? 'selected' : ''}>Quản trị viên</option>
+                                    </select>
+                                `;
                 $span.replaceWith(select);
                 select = $(`select[data-id=${userId}]`);
                 select.focus();
@@ -247,15 +247,17 @@
                         let roleClass = newRole === 'admin' ? 'bg-primary text-white' :
                             newRole === 'employee' ? 'bg-warning text-dark' :
                                 'bg-secondary text-white';
-                        let roleLabel = newRole.charAt(0).toUpperCase() + newRole.slice(1);
+                        let roleLabel = newRole === 'admin' ? 'Quản trị viên' :
+                            newRole === 'employee' ? 'Nhân viên' :
+                                'Khách hàng';
                         let span = `
-                                <span class="badge ${roleClass} role-editable"
-                                      data-id="${userId}"
-                                      data-role="${newRole}"
-                                      style="cursor: pointer;">
-                                    ${roleLabel}
-                                </span>
-                            `;
+                                            <span class="badge ${roleClass} role-editable"
+                                                  data-id="${userId}"
+                                                  data-role="${newRole}"
+                                                  style="cursor: pointer;">
+                                                ${roleLabel}
+                                            </span>
+                                        `;
                         $select.replaceWith(span);
                         toastr.success('Cập nhật vai trò thành công.');
                     },
@@ -264,15 +266,17 @@
                         let roleClass = oldRole === 'admin' ? 'bg-primary text-white' :
                             oldRole === 'employee' ? 'bg-warning text-dark' :
                                 'bg-secondary text-white';
-                        let roleLabel = oldRole.charAt(0).toUpperCase() + oldRole.slice(1);
+                        let roleLabel = oldRole === 'admin' ? 'Quản trị viên' :
+                            oldRole === 'employee' ? 'Nhân viên' :
+                                'Khách hàng';
                         let span = `
-                                <span class="badge ${roleClass} role-editable"
-                                      data-id="${userId}"
-                                      data-role="${oldRole}"
-                                      style="cursor: pointer;">
-                                    ${roleLabel}
-                                </span>
-                            `;
+                                            <span class="badge ${roleClass} role-editable"
+                                                  data-id="${userId}"
+                                                  data-role="${oldRole}"
+                                                  style="cursor: pointer;">
+                                                ${roleLabel}
+                                            </span>
+                                        `;
                         $select.replaceWith(span);
                     }
                 });
