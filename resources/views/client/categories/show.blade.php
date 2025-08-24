@@ -1,5 +1,8 @@
 @extends('client.layouts.default')
 
+
+
+
 @section('content')
 <style>
     .d-none-by-js { display: none !important; }
@@ -229,6 +232,9 @@
     }
 </style>
 
+
+
+
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
@@ -263,6 +269,7 @@
                         </div>
                     </div>
 
+
                     <!-- Price Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Lọc theo giá</h3>
@@ -290,6 +297,7 @@
                         </div>
                     </div>
 
+
                     <!-- Brand Filter -->
                     <div class="tp-shop-widget mb-35">
                         <h3 class="tp-shop-widget-title">Thương hiệu</h3>
@@ -308,6 +316,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Variant Attributes Filter -->
                     @if(isset($variantAttributes) && $variantAttributes->count() > 0)
@@ -376,8 +385,9 @@
                         @endforeach
                     @endif
 
+
                     <div class="tp-shop-widget-btn">
-                        <button type="submit"  class="btn btn-primary w-100" >Lọc sản phẩm</button>
+                        <button type="submit" class="tp-btn w-100">Lọc sản phẩm</button>
                     </div>
                 </form>
             </div>
@@ -423,8 +433,14 @@
                                        ->where('review_id', null)
                                        ->where('rating', '>', 0);
 
+
+
+
                                    $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
                                 @endphp
+
+
+
 
                                 <div class="tp-product-rating-icon tp-product-rating-icon-2">
                                     @if ($validReviews->count() > 0)
@@ -432,17 +448,35 @@
                                             <div class="text-warning">
                                                 @for ($i = 1; $i <= 5; $i++)
                                                     @if ($i <= $avg)
-                                                        ★
+                                                        <i class="fa-solid fa-star text-warning"></i>
                                                     @else
-                                                        ☆
+                                                        <i class="fa-regular fa-star text-warning"></i>
                                                     @endif
                                                 @endfor
                                             </div>
                                         </div>
                                     @else
-                                        <p>Chưa có đánh giá.</p>
+                                        @php
+                                            $avg = $related->average_rating ?? 0
+                                        @endphp
+                                        @for($i = 1; $i <= 5; $i++)
+
+                                                <span><i class="fa-regular fa-star text-warning"></i></span>
+                                        @endfor
                                     @endif
                                 </div>
+                                {{-- Debug info --}}
+                                @if(config('app.debug') && $product->type === 'variant')
+                                    <div class="debug-info" style="font-size: 10px; color: #999; margin-bottom: 5px;">
+                                        Debug: Type={{ $product->type }}, Variants={{ $product->variants->count() }},
+                                        @if($product->variants->count() > 0)
+                                            First variant: {{ $product->variants->first()->regular_price ?? 'N/A' }}
+                                        @else
+                                            No variants
+                                        @endif
+                                    </div>
+                                @endif
+
                                 <div class="tp-product-price-wrapper-2">
                                  @php
                                     if ($product->type === 'variant' && $product->variants->count()) {
@@ -500,6 +534,9 @@
 </div>
 @endsection
 
+
+
+
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -513,6 +550,7 @@
                 }
             });
         }
+
 
         // Xử lý sự kiện click vào ô màu
         document.querySelectorAll('.color-option').forEach(option => {
@@ -572,6 +610,9 @@
     const showingCount = document.getElementById('showing-count');
     let currentVisible = defaultShow;
 
+
+
+
     if (showAllBtn) {
         showAllBtn.addEventListener('click', function() {
             let nextVisible = currentVisible + defaultShow;
@@ -587,3 +628,4 @@
     }
 </script>
 @endsection
+

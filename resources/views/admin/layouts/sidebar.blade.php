@@ -13,7 +13,6 @@
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
-
         <hr>
 
         {{-- Danh mục --}}
@@ -47,7 +46,7 @@
 
         <hr>
 
-        {{-- Bán hàng --}}
+       
         <li class="sidebar-heading">Bán hàng</li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}"
@@ -230,8 +229,8 @@
 
         <hr>
 
-        {{-- Cài đặt --}}
-        <li class="sidebar-heading">Cài đặt</li>
+        <!-- {{-- Cài đặt --}} -->
+        <!-- <li class="sidebar-heading">Cài đặt</li>
         <li>
             <a class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}"
                 href="{{ route('admin.dashboard') }}">
@@ -243,7 +242,7 @@
                 href="{{ route('admin.dashboard') }}">
                 <span class="nav-icon"><i class="fas fa-cogs"></i></span> Thiết lập hệ thống
             </a>
-        </li>
+        </li> -->
 
     </ul>
 </aside>

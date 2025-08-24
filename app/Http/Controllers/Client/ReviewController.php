@@ -20,7 +20,11 @@ class ReviewController extends Controller
 {
     $productId = $req->product_id;
     $user = Auth::user();
-    //Lấy tất cả đơn hàng của user với sản phẩm này đã được giao
+    //Admin và nhân viên k đươjc đánh giá sp
+    if (in_array($user->role, ['admin', 'employee'])) {
+        return back()->with('error', 'Quản trị viên và nhân viên không được đánh giá sản phẩm');
+    }
+    // Lấy tất cả đơn hàng của user với sản phẩm này đã được giao
     $orders = Order::where('user_id', $user->id)
         ->whereHas('items', fn($q)=>$q->where('product_id', $productId))
         ->whereHas('currentStatus.status', fn($q)
@@ -33,8 +37,9 @@ class ReviewController extends Controller
     //Kiểm tra xem đon hàng này đã được đánh giá chưa 
     $reviewedOrderItemIds  = Review::where('user_id', $user->id)
     ->where('product_id', $productId)
-    ->pluck('order_item_id')->toArray();
-
+    ->pluck('order_item_id')
+    ->toArray();
+    
     //Lấy order_item nào chưa được đánh giá 
     $orderItem = null;
     foreach($orders as $order){

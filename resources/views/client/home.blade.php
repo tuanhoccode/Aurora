@@ -459,31 +459,36 @@
                      <a
                        href="{{ route('client.product.show', ['slug' => $product->slug]) }}" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis;">{{ $product->name }}</a>
                    </h3>
-                   @php
-                   $validReviews = $product->reviews
-                    ->where('is_active', 1)
-                    ->where('review_id', null)
-                    ->where('rating', '>', 0);
+                  @php
+                     $validReviews = $product->reviews
+                      ->where('is_active', 1)
+                      ->where('review_id', null)
+                      ->where('rating', '>', 0);
 
-                   $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
+                     $avg = $validReviews->count() > 0 ? round($validReviews->avg('rating')) : 0;
                   @endphp
-                   <div class="tp-product-rating-icon tp-product-rating-icon-2">
-                     @if ($validReviews->count() > 0)
-                        <div class="review-item pb-3">
-                           <div class="text-warning mb-1">
-                              @for ($i = 1; $i <= 5; $i++)
-                                 @if ($i <= $avg)
-                                    ★
-                                 @else
-                                    ☆
-                                 @endif
-                              @endfor
-                           </div>
-                        </div>
-                     @else
-                        <p>Chưa có đánh giá.</p>
-                     @endif
-                   </div>
+                  <div class="tp-product-rating-icon tp-product-rating-icon-2">
+                    @if ($validReviews->count() > 0)
+                       <div class="review-item pb-3">
+                          <div class="text-warning mb-1">
+                             @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= $avg)
+                                   <i class="fa-solid fa-star text-warning"></i>
+                                @else
+                                   <i class="fa-regular fa-star text-warning"></i>
+                                @endif
+                             @endfor
+                          </div>
+                       </div>
+                    @else
+                       @php
+                          $avg = $related->average_rating ?? 0
+                       @endphp
+                       @for($i = 1; $i <= 5; $i++) 
+                          <span><i class="fa-regular fa-star text-warning"></i></span>
+                       @endfor
+                    @endif
+                  </div>
 
                    <div class="tp-product-price-wrapper-2">
                      <span class="tp-product-price-2 new-price">{{ number_format($product->display_price, 0, ',', '.') }}
@@ -549,15 +554,20 @@
                                 <div class="text-warning">
                                     @for ($i = 1; $i <= 5; $i++)
                                         @if ($i <= $avg)
-                                            ★
+                                            <i class="fa-solid fa-star text-warning"></i>
                                         @else
-                                            ☆
+                                            <i class="fa-regular fa-star text-warning"></i>
                                         @endif
                                     @endfor
                                 </div>
                             </div>
                         @else
-                            <p>Chưa có đánh giá.</p>
+                           @php
+                              $avg = $related->average_rating ?? 0
+                           @endphp
+                           @for($i = 1; $i <= 5; $i++)
+                              <span><i class="fa-regular fa-star text-warning"></i></span>
+                           @endfor
                         @endif
                      </div>
                      <div class="tp-product-price-wrapper-2">
