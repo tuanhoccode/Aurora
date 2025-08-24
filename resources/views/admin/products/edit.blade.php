@@ -40,7 +40,6 @@
       @endif
       <div class="mt-4 mb-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
         <button class="btn btn-primary" type="submit">
           <i class="fas fa-save me-1"></i> Lưu sản phẩm
         </button>
@@ -106,9 +105,6 @@
                     @foreach($product->images->where('product_variant_id', null) as $img)
                       <div class="col-3 mb-2 position-relative" id="gallery-image-{{ $img->id }}">
                         <img src="{{ asset('storage/' . $img->url) }}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1" onclick="deleteGalleryImage({{ $img->id }})" style="width: 20px; height: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center;">
-                          <i class="fas fa-times" style="font-size: 10px;"></i>
-                        </button>
                       </div>
                     @endforeach
                   </div>
@@ -133,9 +129,6 @@
                         previewDiv.innerHTML = `
                           <div class="position-relative">
                             <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1 remove-preview" data-index="${i}" style="width: 20px; height: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center;">
-                              <i class="fas fa-times" style="font-size: 10px;"></i>
-                            </button>
                           </div>
                         `;
                         container.appendChild(previewDiv);
@@ -143,84 +136,6 @@
                       reader.readAsDataURL(file);
                     }
                   }
-                }
-              });
-
-              // Hàm xóa ảnh đã lưu
-              function deleteGalleryImage(imageId) {
-                if (confirm('Bạn có chắc chắn muốn xóa ảnh này không?')) {
-                  // Thêm ID vào danh sách ảnh đã xóa
-                  const deletedInput = document.getElementById('deletedGalleryImages');
-                  const deletedIds = deletedInput.value ? deletedInput.value.split(',') : [];
-                  
-                  if (!deletedIds.includes(imageId.toString())) {
-                    deletedIds.push(imageId);
-                    deletedInput.value = deletedIds.join(',');
-                  }
-                  
-                  // Ẩn ảnh khỏi giao diện
-                  const imageElement = document.getElementById('gallery-image-' + imageId);
-                  if (imageElement) {
-                    imageElement.style.display = 'none';
-                  }
-                  
-                  // Tạo form ẩn để gửi yêu cầu
-                  const form = document.createElement('form');
-                  form.method = 'POST';
-                  form.action = '/admin/products/delete-gallery-image';
-                  form.style.display = 'none';
-                  
-                  // Thêm CSRF token
-                  const csrfToken = document.createElement('input');
-                  csrfToken.type = 'hidden';
-                  csrfToken.name = '_token';
-                  csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                  
-                  // Thêm image_id
-                  const imageIdInput = document.createElement('input');
-                  imageIdInput.type = 'hidden';
-                  imageIdInput.name = 'image_id';
-                  imageIdInput.value = imageId;
-                  
-                  // Thêm method spoofing cho Laravel
-                  const methodInput = document.createElement('input');
-                  methodInput.type = 'hidden';
-                  methodInput.name = '_method';
-                  methodInput.value = 'DELETE';
-                  
-                  // Thêm các input vào form
-                  form.appendChild(csrfToken);
-                  form.appendChild(imageIdInput);
-                  form.appendChild(methodInput);
-                  
-                  // Thêm form vào body và submit
-                  document.body.appendChild(form);
-                  form.submit();
-                }
-              }
-              
-              // Xử lý xóa ảnh preview
-              document.addEventListener('click', function(e) {
-                if (e.target.closest('.remove-preview')) {
-                  const button = e.target.closest('.remove-preview');
-                  const index = button.dataset.index;
-                  const input = document.getElementById('gallery-upload');
-                  
-                  // Tạo FileList mới không bao gồm file bị xóa
-                  const dt = new DataTransfer();
-                  const { files } = input;
-                  
-                  for (let i = 0; i < files.length; i++) {
-                    if (index !== i) {
-                      dt.items.add(files[i]);
-                    }
-                  }
-                  
-                  input.files = dt.files;
-                  
-                  // Cập nhật preview
-                  const event = new Event('change');
-                  input.dispatchEvent(event);
                 }
               });
               </script>

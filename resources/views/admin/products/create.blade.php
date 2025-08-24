@@ -283,7 +283,6 @@
      
       <div class="mt-4 text-end">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-        <button class="btn btn-outline-primary me-2" type="submit" name="save_draft" value="1">Lưu nháp</button>
         <button class="btn btn-primary" type="submit">
           <i class="fas fa-save me-1"></i> Lưu sản phẩm
         </button>

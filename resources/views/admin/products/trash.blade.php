@@ -56,7 +56,7 @@
                             <th width="40">
                                 <input type="checkbox" class="form-check-input" id="selectAll">
                             </th>
-                            <th width="60">ID</th>
+                         
                             <th width="80">Ảnh</th>
                             <th>Tên sản phẩm</th>
                             <th>Loại</th>
@@ -75,7 +75,6 @@
                             <td>
                                 <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}">
                             </td>
-                            <td>{{ $product->id }}</td>
                             <td>
                                 @if($product->thumbnail)
                                     <img src="{{ asset('storage/' . $product->thumbnail) }}" 
@@ -89,12 +88,14 @@
                             </td>
                             <td>
                                 <div class="fw-medium text-primary">{{ $product->name }}</div>
-                                <small class="text-muted d-block">{{ Str::limit($product->short_description, 100) }}</small>
+                                <small class="text-muted d-block">{!! Str::limit($product->short_description, 40) !!}</small>
                             </td>
                             <td>
-                                <span class="badge {{ $product->type === 'digital' ? 'bg-info' : 'bg-secondary' }}">
-                                    {{ $product->type === 'digital' ? 'Sản phẩm số' : 'Sản phẩm đơn giản' }}
-                                </span>
+                                @if ($product->type === 'variant')
+                                    <span class="badge bg-primary"><i class="bi bi-boxes"></i> Biến thể</span>
+                                @else
+                                    <span class="badge bg-info"><i class="bi bi-box"></i> Đơn giản</span>
+                                @endif
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">{{ $product->sku }}</span>
@@ -112,20 +113,40 @@
                                 @endif
                             </td>
                             <td>
-                                @if($product->is_sale)
-                                    <div class="text-decoration-line-through text-muted small">{{ number_format($product->price) }}đ</div>
-                                    <div class="text-danger fw-bold">{{ number_format($product->sale_price) }}đ</div>
-                                    <small class="text-success">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100) }}%</small>
+                                @if ($product->type === 'variant' && $product->variants->count() > 0)
+                                    @php $variant = $product->variants->first(); @endphp
+                                    @if ($variant->is_on_sale)
+                                        <span class="text-decoration-line-through text-muted">{{ number_format($variant->regular_price) }}đ</span>
+                                        <span class="text-danger fw-bold ms-1">{{ number_format($variant->sale_price) }}đ</span>
+                                        <span class="badge bg-danger ms-1">-{{ number_format((($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100, 1) }}%</span>
+                                    @else
+                                        <span>{{ number_format($variant->regular_price) }}đ</span>
+                                    @endif
                                 @else
-                                    <div class="fw-bold">{{ number_format($product->price) }}đ</div>
+                                    @if ($product->is_on_sale)
+                                        <span class="text-decoration-line-through text-muted">{{ number_format($product->price) }}đ</span>
+                                        <span class="text-danger fw-bold ms-1">{{ number_format($product->sale_price) }}đ</span>
+                                        <span class="badge bg-danger ms-1">-{{ number_format((($product->price - $product->sale_price) / $product->price) * 100, 1) }}%</span>
+                                    @else
+                                        <span>{{ number_format($product->price) }}đ</span>
+                                    @endif
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex align-items-center">
-                                    <span class="badge {{ $product->stock > 10 ? 'bg-success' : ($product->stock > 0 ? 'bg-warning' : 'bg-danger') }} me-2">
-                                        {{ number_format($product->stock) }}
-                                    </span>
-                                </div>
+                                @if ($product->type === 'variant')
+                                    @php $totalStock = $product->variants->sum('stock'); @endphp
+                                    @if ($totalStock > 0)
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ number_format($totalStock) }}</span>
+                                    @else
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Hết hàng</span>
+                                    @endif
+                                @else
+                                    @if ($product->stock > 0)
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ number_format($product->stock) }}</span>
+                                    @else
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Hết hàng</span>
+                                    @endif
+                                @endif
                             </td>
                             <td>
                                 {{ $product->deleted_at->format('d/m/Y H:i') }}

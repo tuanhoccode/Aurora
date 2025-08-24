@@ -61,6 +61,11 @@
                 color: #991b1b;
             }
             
+            .status-refunded {
+                background-color: #e0e7ff;
+                color: #3730a3;
+            }
+            
             .product-item {
                 display: flex;
                 padding: 16px 0;
@@ -398,6 +403,11 @@
             background: #dc3545;
             color: #fff;
         }
+        
+        #order-detail-container .status-refunded {
+            background: #4f46e5;
+            color: #fff;
+        }
 
         /* Timeline ngang */
         .timeline-horizontal {
@@ -599,7 +609,9 @@
             $statusText = '';
             
             // Map status to display text
-            if ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
+            if ($currentStatusName === 'Hoàn tiền') {
+                $statusText = 'HOÀN TIỀN';
+            } elseif ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
                 $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
             } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
                 $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
@@ -612,6 +624,11 @@
             }
         @endphp
         <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
+        @if($order->refund_status === 'refunded')
+            <div class="status-badge status-refunded">
+                HOÀN TIỀN
+            </div>
+        @endif
     </div>
 
 
@@ -638,8 +655,8 @@
                             'icon' => 'fa-shopping-cart',
                             'title' => 'Chờ xác nhận',
                             'status' => 'Chờ xác nhận',
-                            'active' => $currentStatusId == 1,
-                            'completed' => $currentStatusId >= 1,
+                            'active' => $currentStatus === 'Chờ xác nhận',
+                            'completed' => in_array($currentStatus, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đang giao', 'Nhận hàng thành công', 'Giao hàng thành công']),
                             'time' => $order->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i'),
                             'desc' => 'Đơn hàng mới được tạo, đang chờ xác nhận.',
                         ],
@@ -648,58 +665,47 @@
                             'icon' => 'fa-box',
                             'title' => 'Chờ lấy hàng',
                             'status' => 'Chờ lấy hàng',
-                            'active' => $currentStatusId == 2,
-                            'completed' => $currentStatusId >= 2 && $currentStatusId != 8, // Không hiển thị đã hoàn thành nếu đã hủy
-                            'time' => isset($statusTimes['Chờ lấy hàng'])
-                                ? $statusTimes['Chờ lấy hàng']->format('d/m/Y H:i')
-                                : '',
+                            'active' => $currentStatus === 'Chờ lấy hàng',
+                            'completed' => in_array($currentStatus, ['Gửi hàng', 'Đang giao', 'Nhận hàng thành công', 'Giao hàng thành công']),
+                            'time' => isset($statusTimes['Chờ lấy hàng']) ? $statusTimes['Chờ lấy hàng']->format('d/m/Y H:i') : '',
                             'desc' => 'Đơn hàng đang chờ lấy hàng.',
                         ],
                         [
                             'id' => 3,
                             'icon' => 'fa-truck',
-                            'title' => 'Đang giao',
+                            'title' => 'Đang giao hàng',
                             'status' => 'Đang giao',
-                            'active' => $currentStatusId == 3,
-                            'completed' =>
-                                ($currentStatusId >= 3 && $currentStatusId < 5) ||
-                                ($currentStatusId > 5 && $currentStatusId != 8),
-                            'time' => isset($statusTimes['Đang giao'])
-                                ? $statusTimes['Đang giao']->format('d/m/Y H:i')
-                                : '',
-                            'desc' => 'Đơn hàng đang được giao.',
+                            'active' => in_array($currentStatus, ['Đang giao', 'Gửi hàng']),
+                            'completed' => in_array($currentStatus, ['Nhận hàng thành công', 'Giao hàng thành công']),
+                            'time' => isset($statusTimes['Đang giao']) ? $statusTimes['Đang giao']->format('d/m/Y H:i') : 
+                                     (isset($statusTimes['Gửi hàng']) ? $statusTimes['Gửi hàng']->format('d/m/Y H:i') : ''),
+                            'desc' => $currentStatus === 'Gửi hàng' ? 'Đơn hàng đã được gửi đi.' : 'Đơn hàng đang được giao.',
                         ],
                         [
                             'id' => 4,
                             'icon' => 'fa-check-circle',
                             'title' => 'Giao hàng thành công',
                             'status' => 'Giao hàng thành công',
-                            'active' => $currentStatusId == 4,
-                            'completed' => $currentStatusId == 4 || $currentStatusId == 7, // Chỉ hoàn thành khi đã giao hoặc đã hoàn tiền
-                            'time' => isset($statusTimes['Giao hàng thành công'])
-                                ? $statusTimes['Giao hàng thành công']->format('d/m/Y H:i')
-                                : '',
+                            'active' => in_array($currentStatus, ['Nhận hàng thành công', 'Giao hàng thành công']),
+                            'completed' => in_array($currentStatus, ['Nhận hàng thành công', 'Giao hàng thành công']),
+                            'time' => isset($statusTimes['Giao hàng thành công']) ? $statusTimes['Giao hàng thành công']->format('d/m/Y H:i') :
+                                     (isset($statusTimes['Nhận hàng thành công']) ? $statusTimes['Nhận hàng thành công']->format('d/m/Y H:i') : ''),
                             'desc' => 'Đơn hàng đã giao thành công.',
                         ],
                     ];
 
                     // Lọc các bước không cần hiển thị
-                    $filteredSteps = array_filter($timelineSteps, function ($step) use ($currentStatusId) {
-                        // Nếu là trạng thái đã hủy, chỉ hiển thị trạng thái hủy
-                        if ($currentStatusId == 8) {
-                            return $step['id'] == 8;
-                        }
-
-                        // Ẩn các bước trả hàng nếu không phải là đơn hàng trả
-                        if (in_array($step['id'], [5, 6, 7]) && $currentStatusId < 5) {
+                    $filteredSteps = array_filter($timelineSteps, function ($step) use ($currentStatus) {
+                        // Nếu là trạng thái đã hủy, không hiển thị timeline nữa
+                        if ($currentStatus === 'Đã hủy') {
                             return false;
                         }
-
-                        // Ẩn bước đã gửi hàng nếu không phải là đơn hàng đã gửi
-                        if ($step['id'] == 9 && $currentStatusId != 9) {
+                        
+                        // Ẩn các bước không cần thiết
+                        if (in_array($step['status'], ['Đã hủy', 'Hoàn tiền'])) {
                             return false;
                         }
-
+                        
                         return true;
                     });
 
@@ -714,7 +720,12 @@
                     $cancelledTime = isset($statusTimes['Đã hủy']) ? $statusTimes['Đã hủy']->format('H:i d/m/Y') : '';
                 @endphp
 
-                @if ($currentStatus === 'Đã hủy')
+                @php
+                    // Lấy thông tin hoàn tiền từ bảng refunds nếu có
+                    $refund = $order->refund;
+                @endphp
+                @if ($currentStatus === 'Đã hủy' || $currentStatus === 'Hoàn tiền' || $order->refund_status === 'refunded')
+                    @if($currentStatus === 'Đã hủy')
                     <div class="container-fluid py-3 mb-4"
                         style="border-left: 4px solid #fecaca; background-color: #fef2f2;">
                         <div class="container">
@@ -739,9 +750,84 @@
                                         </div>
                                     @endif
                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    @elseif(($currentStatus === 'Hoàn tiền' || $order->refund_status === 'refunded') && $refund)
+                    <div class="container-fluid py-3 mb-4"
+                        style="border-left: 4px solid #dbeafe; background-color: #eff6ff;">
+                        <div class="container">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-undo-alt mt-1 me-3" style="color: #60a5fa; font-size: 1.25rem;"></i>
+                                <div>
+                                    <h5 class="mb-1" style="color: #1e40af; font-weight: 500;">Đơn hàng đã hoàn tiền</h5>
+                                    <div class="text-sm mb-2" style="color: #6b7280;">
+                                        Thời gian hoàn tiền: {{ $refund->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}
+                                    </div>
+                                    <div class="row" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #dbeafe; margin-top: 8px;">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <h6 style="color: #1e40af; font-weight: 500; border-bottom: 1px solid #dbeafe; padding-bottom: 5px; margin-bottom: 10px;">Thông tin hoàn tiền</h6>
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Số tiền hoàn trả:</span> 
+                                                    <span style="color: #1e40af; font-weight: 500;">{{ number_format($refund->total_amount) }} đ</span>
+                                                </p>
+                                                @if($refund->reason)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Lý do hoàn tiền:</span> 
+                                                    <span style="color: #1e40af;">{{ \App\Http\Controllers\RefundController::getReasonText($refund->reason) }}</span>
+                                                </p>
+                                                @endif
+                                                @if($refund->status)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Trạng thái:</span> 
+                                                    @if($refund->status === 'completed' || $refund->status === 'processing' || $refund->status === 'rejected' || $refund->status === 'pending' || $refund->status === 'failed' || $refund->status === 'cancel')
+                                                        <span class="badge 
+                                                            @if($refund->status === 'completed') bg-success
+                                                            @elseif($refund->status === 'processing') bg-warning
+                                                            @elseif($refund->status === 'rejected') bg-danger
+                                                            @elseif($refund->status === 'pending') bg-info
+                                                            @elseif($refund->status === 'failed') bg-dark
+                                                            @elseif($refund->status === 'cancel') bg-secondary
+                                                            @endif">
+                                                            {{ \App\Http\Controllers\RefundController::getReasonText($refund->status) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary">{{ $refund->status }}</span>
+                                                    @endif
+                                                </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <h6 style="color: #1e40af; font-weight: 500; border-bottom: 1px solid #dbeafe; padding-bottom: 5px; margin-bottom: 10px;">Thông tin ngân hàng</h6>
+                                                @if($refund->bank_account)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Số tài khoản:</span> 
+                                                    <span style="color: #1e40af;">{{ $refund->bank_account }}</span>
+                                                </p>
+                                                @endif
+                                                @if($refund->bank_name)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Ngân hàng:</span> 
+                                                    <span style="color: #1e40af;">{{ $refund->bank_name }}</span>
+                                                </p>
+                                                @endif
+                                                @if($refund->user_bank_name)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Tên chủ tài khoản:</span> 
+                                                    <span style="color: #1e40af;">{{ $refund->user_bank_name }}</span>
+                                                </p>
+                                                @endif
+                                                @if($refund->admin_reason)
+                                                <p class="mb-2"><span style="font-weight: 500; color: #4b5563;">Ghi chú từ quản trị viên:</span> 
+                                                    <span style="color: #1e40af; font-style: italic;">{{ $refund->admin_reason }}</span>
+                                                </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 @else
                     @foreach ($timelineSteps as $index => $step)
                         @php
@@ -852,11 +938,21 @@
                       'desc'  => 'Đơn #'.$order->code.' đã tạo thành công.',
                     ];
                     foreach ($order->statusHistory as $h) {
-                      $__events[] = [
+                      $event = [
                         'time'  => $h->created_at->setTimezone('Asia/Ho_Chi_Minh'),
                         'title' => $h->status->name,
                         'desc'  => $h->note ?? 'Cập nhật trạng thái đơn hàng.',
                       ];
+
+                      // Add refund reason and admin response if this is a refund status
+                      if ($currentStatusName === 'Hoàn tiền' && $h->refund_reason) {
+                          $event['desc'] = "Lý do hoàn tiền: " . $h->refund_reason;
+                          if ($h->admin_note) {
+                              $event['desc'] .= "\nPhản hồi từ quản trị viên: " . $h->admin_note;
+                          }
+                      }
+                      
+                      $__events[] = $event;
                     }
                     $__events = collect($__events)->sortByDesc('time')->values();
                     $__showAll = request()->has('show_all_events');
@@ -921,11 +1017,15 @@
                                     ? asset('storage/' . $item->product->thumbnail)
                                     : asset('assets2/img/product/2/default.png'));
                         @endphp
-                        <img src="{{ $imageUrl }}"
-                            alt="{{ $item->product->name }}"
-                            style="width: 80px; height: 80px; object-fit: cover; margin-right: 12px; border: 1px solid #f0f0f0;">
+                        <a href="{{ route('client.products.show', $item->product->slug) }}" style="display: inline-block;">
+                            <img src="{{ $imageUrl }}"
+                                alt="{{ $item->product->name }}"
+                                style="width: 80px; height: 80px; object-fit: cover; margin-right: 12px; border: 1px solid #f0f0f0;">
+                        </a>
                         <div style="flex: 1;">
-                            <div style="font-size: 14px; color: #333;">{{ $item->product->name }}</div>
+                            <a href="{{ route('client.products.show', $item->product->slug) }}" style="font-size: 14px; color: #1890ff; text-decoration: none;">
+                                {{ $item->product->name }}
+                            </a>
                             @php
                                 $variantAttributes = $item->attributes_variant
                                     ? json_decode($item->attributes_variant, true)

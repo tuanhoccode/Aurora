@@ -61,22 +61,6 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 //Admin
 Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('admin.')->group(function () {
-    // Statistics Dashboard Routes
-    Route::prefix('statistics')->name('statistics.')->group(function () {
-        Route::get('/', [StatisticController::class, 'index'])->name('index');
-        
-        // Dashboard API Endpoints
-        Route::get('/dashboard', [StatisticController::class, 'dashboard'])->name('dashboard');
-        Route::get('/recent-orders', [StatisticController::class, 'recentOrders'])->name('recent-orders');
-        
-        // Legacy routes (keep for backward compatibility)
-        Route::get('/daily', [StatisticController::class, 'getDailySales'])->name('daily');
-        Route::get('/weekly', [StatisticController::class, 'getWeeklySales'])->name('weekly');
-        Route::get('/monthly', [StatisticController::class, 'getMonthlySales'])->name('monthly');
-        Route::get('/monthly-revenue', [StatisticController::class, 'getMonthlyRevenue'])->name('monthly-revenue');
-        Route::get('/dashboard-stats', [StatisticController::class, 'getDashboardStats'])->name('dashboard-stats');
-        Route::get('/revenue-chart', [StatisticController::class, 'getRevenueChartData'])->name('revenue-chart');
-    });
 
     // Media Upload Route
     Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');

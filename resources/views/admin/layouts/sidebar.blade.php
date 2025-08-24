@@ -13,14 +13,6 @@
                 <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Bảng điều khiển
             </a>
         </li>
-        {{-- Bán hàng --}}
-        <li>
-            <a class="nav-link {{ request()->routeIs('admin.statistics*') ? 'active' : '' }}"
-                href="{{ route('admin.statistics.index') }}">
-                <span class="nav-icon"><i class="fas fa-chart-line"></i></span> Thống kê bán hàng
-            </a>
-        </li>
-
         <hr>
 
         {{-- Danh mục --}}
