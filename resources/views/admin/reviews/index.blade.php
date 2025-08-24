@@ -59,7 +59,6 @@
                                 <th>Nội dung</th>
                                 <th>Đánh giá</th>
                                 <th>Trạng thái</th>
-                                <th>Lý do</th>
                                 <th>Ngày bình luận</th>
                                 <th>Thao tác</th>
                             </tr>
@@ -76,9 +75,15 @@
                                     </td>
                                     <td>
                                         {{ $review->review_text }}
-                                        @if(optional($review->user)-> role === 'admin')
-                                            <br>
-                                            <span class="badge bg-primary">Phản hồi từ Admin</span>
+                                        @if(optional($review->user)->role === 'admin' || optional($review->user)->role === 'employee')                                                <br>
+                                                <span class="badge bg-primary">
+                                                    @if(optional($review->user)->role === 'admin')
+                                                        Phản hồi Qtrị viên
+                                                    @elseif (optional($review->user)->role === 'employee')
+                                                        Phản hồi Nhân viên
+                                                    @endif
+                                                </span>
+                                           
                                         @endif
                                     </td>
                                     <td>
@@ -88,11 +93,11 @@
                                     
                                     <td>
                                         @if ($review->is_active === 1)
-                                            <span class="badge d-inline-block text-center bg-success w-100" style="min-width: 110px;">
+                                            <span class="badge d-inline-block text-center bg-success w-80" style="min-width: 110px;">
                                             <i class="fas fa-check-circle me-1"></i> Đã duyệt
                                             </span>
                                         @elseif ($review->is_active === 0 && $review->reason)
-                                            <span class="badge d-inline-block text-center bg-danger w-100" style="min-width: 110px;">
+                                            <span class="badge d-inline-block text-center bg-danger w-800" style="min-width: 110px;">
                                                 <i class="fas fa-times-circle me-1"></i> Không duyệt
                                             </span>
                                         @else
@@ -100,9 +105,6 @@
                                                 <i class="fas fa-clock me-1"></i> Chờ duyệt
                                             </span>
                                         @endif
-                                    </td>
-                                    <td>
-                                        {{$review->reason}}
                                     </td>
                                     <td>
                                         {{$review->created_at->timezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i')}}
