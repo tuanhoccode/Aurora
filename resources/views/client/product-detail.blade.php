@@ -691,7 +691,7 @@
                                     </div>
                                 </div>
                                 <div class="tp-product-details-query-item d-flex align-items-center">
-                                    <span>Category: </span>
+                                    <span>Danh mục: </span>
                                     <p>
                                         {{ $product->categories->first()->name ?? 'Đang cập nhật' }}
                                     </p>
@@ -927,7 +927,7 @@
                 <div class="tp-product-related-slider">
                     <div class="swiper tp-product-related-slider-active">
                         <div class="swiper-wrapper">
-                            @forelse ($relatedByCategory as $related)
+                            @forelse ($relatedProducts as $related)
                                 <div class="swiper-slide">
                                     <div class="tp-product-item-2 mb-40">
                                         <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
@@ -969,12 +969,43 @@
                                                 @endfor
                                             </div>
                                             <div class="tp-product-price-wrapper-2">
-                                                <span
-                                                    class="tp-product-price-2 new-price">{{ number_format($related->price, 0, ',', '.') }}₫</span>
-                                                @if ($related->original_price && $related->original_price > $related->price)
-                                                    <span
-                                                        class="tp-product-price-2 old-price">{{ number_format($related->original_price, 0, ',', '.') }}₫</span>
-                                                @endif
+                                                @php
+                                                    $minPrice = null;
+                                                    $maxPrice = null;
+
+                                                    if ($related->variants->count()) {
+                                                        // Nếu có biến thể → tính giá từ variants
+                                                        $prices = $related->variants->map(function($variant) {
+                                                            $now = now();
+                                                            $price = $variant->regular_price;
+
+                                                            if ($variant->sale_price
+                                                                && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                                                                && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now)) {
+                                                                $price = $variant->sale_price;
+                                                            }
+
+                                                            return $price;
+                                                        });
+
+                                                        $minPrice = $prices->min();
+                                                        $maxPrice = $prices->max();
+                                                    } else {
+                                                        // Nếu là sản phẩm đơn → lấy trực tiếp
+                                                        $price = $related->price;
+                                                        $minPrice = $price;
+                                                        $maxPrice = $price;
+                                                    }
+                                                @endphp
+
+                                                <div class="tp-product-price-wrapper-2">
+                                                    <span class="tp-product-price-2 new-price">
+                                                        {{ number_format($minPrice, 0, ',', '.') }}₫
+                                                        @if ($maxPrice > $minPrice)
+                                                            - {{ number_format($maxPrice, 0, ',', '.') }}₫
+                                                        @endif
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -985,7 +1016,7 @@
                                 </div>
                             @endforelse
                         </div>
-        <div class="row">
+        {{-- <div class="row">
             @forelse ($relatedProducts->take(4) as $related)
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-40">
                     <div class="tp-product-item-2">
@@ -1036,7 +1067,7 @@
                     <p class="mb-0 text-center">Không có sản phẩm liên quan</p>
                 </div>
             @endforelse
-        </div>
+        </div> --}}
     </div>
 </section>
 
