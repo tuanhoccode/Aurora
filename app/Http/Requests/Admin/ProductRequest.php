@@ -174,7 +174,8 @@ class ProductRequest extends FormRequest
             'brand_id.exists' => 'Thương hiệu không tồn tại',
             'short_description.max' => 'Mô tả ngắn không được vượt quá 255 ký tự',
             'description.string' => 'Mô tả chi tiết phải là chuỗi',
-            'price.required' => 'Giá sản phẩm là bắt buộc',
+            'price.required' => 'Trường Giá sản phẩm là bắt buộc khi chọn Loại sản phẩm là Simple',
+            'price.required_if' => 'Trường Giá sản phẩm là bắt buộc khi chọn Loại sản phẩm là Simple',
             'price.numeric' => 'Giá sản phẩm phải là số',
             'price.min' => 'Giá sản phẩm không được âm',
             'sale_price.numeric' => 'Giá khuyến mãi phải là số',
@@ -199,9 +200,10 @@ class ProductRequest extends FormRequest
             'type.in' => 'Loại sản phẩm không hợp lệ',
            
             // Messages cho biến thể
+            'variants.required' => 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể',
             'variants.required_if' => 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể',
             'variants.array' => 'Dữ liệu biến thể không hợp lệ',
-            'variants.min' => 'Vui lòng tạo ít nhất một biến thể',
+            'variants.min' => 'Vui lòng thêm ít nhất một biến thể cho sản phẩm biến thể',
             'variants.*.sku.string' => 'SKU phải là chuỗi',
             'variants.*.sku.max' => 'SKU không được vượt quá 50 ký tự',
             'variants.*.sku.unique' => 'SKU đã tồn tại trong hệ thống',
