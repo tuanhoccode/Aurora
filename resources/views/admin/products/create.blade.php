@@ -143,7 +143,7 @@
               <i class="fas fa-tag me-1"></i> Giá & Tồn kho chung
             </div>
             <div class="card-body">
-              <label class="form-label">SKU</label>
+              <label class="form-label">MÃ SP</label>
               <input type="text" class="form-control mb-2 @error('sku') is-invalid @enderror" name="sku" value="{{ old('sku') }}">
               @error('sku')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -256,7 +256,7 @@
                         <thead class="table-light">
                           <tr>
                             <th class="w-25">Thuộc tính</th>
-                            <th class="text-nowrap">SKU</th>
+                            <th class="text-nowrap">MÃ SP</th>
                             <th class="text-nowrap">Giá</th>
                             <th class="text-nowrap">Giá KM</th>
                             <th class="text-nowrap">Kho</th>
