@@ -477,40 +477,89 @@
                             <div class="tp-product-details-price-wrapper mb-20">
                                 @php
                                     if ($product->variants->count()) {
-                                        $unit = $product->variants->min(function ($variant) {
-                                            return $variant->sale_price ?? $variant->price ?? PHP_INT_MAX;
+                                        // Tính giá hiện tại của từng variant (ưu tiên sale_price nếu đang trong thời gian khuyến mãi)
+                                        $variantPrices = $product->variants->map(function($variant) {
+                                            $now = now();
+                                            $price = $variant->regular_price;
+
+                                            if ($variant->sale_price
+                                                && $variant->sale_price > 0
+                                                && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                                                && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now)) {
+                                                $price = $variant->sale_price;
+                                            }
+
+                                            return $price;
+                                        })->filter(function($price) {
+                                            return $price > 0;
                                         });
 
-                                        $original = $product->variants->min(function ($variant) {
-                                            return $variant->price ?? PHP_INT_MAX;
+                                        $minPrice = $variantPrices->count() > 0 ? $variantPrices->min() : 0;
+                                        $maxPrice = $variantPrices->count() > 0 ? $variantPrices->max() : 0;
+
+                                        // Tính giá gốc (regular_price) để hiển thị giá cũ
+                                        $regularPrices = $product->variants->map(function($variant) {
+                                            return $variant->regular_price;
+                                        })->filter(function($price) {
+                                            return $price > 0;
                                         });
 
-                                        if ($unit === PHP_INT_MAX) {
-                                            $unit = 0;
-                                        }
+                                        $minRegularPrice = $regularPrices->count() > 0 ? $regularPrices->min() : 0;
+                                        $maxRegularPrice = $regularPrices->count() > 0 ? $regularPrices->max() : 0;
 
-                                        if ($original === PHP_INT_MAX) {
-                                            $original = null;
-                                        }
+                                        // Kiểm tra có variant nào đang giảm giá không
+                                        $hasSale = $product->variants->some(function($variant) {
+                                            $now = now();
+                                            return $variant->sale_price
+                                                && $variant->sale_price > 0
+                                                && $variant->sale_price < $variant->regular_price
+                                                && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                                                && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now);
+                                        });
+
+                                        $unit = $minPrice;
+                                        $original = $hasSale ? $minRegularPrice : null;
                                     } else {
                                         $unit = $product->sale_price ?? $product->price ?? 0;
                                         $original = $product->sale_price ? $product->price : null;
                                     }
                                 @endphp
                                 <div class="tp-product-details-price-wrapper mb-20">
-                                    <span class="tp-product-details-price new-price" id="product-price">
-                                        {{ number_format($unit, 0, ',', '.') }}₫
-                                    </span>
-                                    @if ($product->sale_price)
-                                        <span class="tp-product-details-price old-price" id="product-old-price">
-                                            {{ number_format($product->price, 0, ',', '.') }}₫
+                                    @if ($product->variants->count() > 0)
+                                        {{-- Hiển thị khoảng giá cho sản phẩm variant --}}
+                                        <span class="tp-product-details-price new-price" id="product-price">
+                                            @if ($minPrice == $maxPrice)
+                                                {{ number_format($minPrice, 0, ',', '.') }}₫
+                                            @else
+                                                {{ number_format($minPrice, 0, ',', '.') }}₫ - {{ number_format($maxPrice, 0, ',', '.') }}₫
+                                            @endif
                                         </span>
+                                        @if ($hasSale)
+                                            <span class="tp-product-details-price old-price" id="product-old-price">
+                                                @if ($minRegularPrice == $maxRegularPrice)
+                                                    {{ number_format($minRegularPrice, 0, ',', '.') }}₫
+                                                @else
+                                                    {{ number_format($minRegularPrice, 0, ',', '.') }}₫ - {{ number_format($maxRegularPrice, 0, ',', '.') }}₫
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="tp-product-details-price old-price" id="product-old-price" style="display: none;"></span>
+                                        @endif
                                     @else
-                                        <span class="tp-product-details-price old-price" id="product-old-price"
-                                            style="display: none;"></span>
+                                        {{-- Hiển thị giá cho sản phẩm thường --}}
+                                        <span class="tp-product-details-price new-price" id="product-price">
+                                            {{ number_format($unit, 0, ',', '.') }}₫
+                                        </span>
+                                        @if ($original)
+                                            <span class="tp-product-details-price old-price" id="product-old-price">
+                                                {{ number_format($original, 0, ',', '.') }}₫
+                                            </span>
+                                        @else
+                                            <span class="tp-product-details-price old-price" id="product-old-price" style="display: none;"></span>
+                                        @endif
                                     @endif
 
-                                    <span id="unit-price" data-unit="{{ $unit }}" style="display: none;"></span>
+                                    <span id="unit-price" data-unit="{{ $unit }}" data-min-price="{{ $minPrice ?? 0 }}" data-max-price="{{ $maxPrice ?? 0 }}" data-min-regular-price="{{ $minRegularPrice ?? 0 }}" data-max-regular-price="{{ $maxRegularPrice ?? 0 }}" style="display: none;"></span>
                                 </div>
                                 <!-- @if ($product->variants->isEmpty())
                                     <div class="mt-3">
@@ -527,7 +576,11 @@
                                 {{-- Tổng tiền --}}
                                 <div class="mt-2">
                                     <strong>Tổng tiền: </strong>
-                                    <span id="total-price">{{ number_format($unit, 0, ',', '.') }}₫</span>
+                                    @if ($product->variants->count() > 0)
+                                        <span id="total-price">0₫</span>
+                                    @else
+                                        <span id="total-price">{{ number_format($unit, 0, ',', '.') }}₫</span>
+                                    @endif
                                 </div>
 
 
@@ -1161,6 +1214,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const unitPriceEl = document.getElementById('unit-price');
         const quantityInput = document.getElementById('quantity') || document.querySelector('.tp-cart-input');
         const totalPriceEl = document.getElementById('total-price');
+
+        // Chỉ cập nhật tổng tiền khi đã chọn biến thể (có selectedColorCode và selectedSize)
+        if (!selectedColorCode || !selectedSize) {
+            totalPriceEl.textContent = '0₫';
+            return;
+        }
+
         const unit = parseFloat(unitPriceEl.dataset.unit || 0);
         let qty = parseInt(quantityInput.value) || 1;
         qty = qty < 1 ? 1 : qty;
@@ -1169,7 +1229,54 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateVariantInfo() {
-        if (!selectedColorCode || !selectedSize) return;
+        if (!selectedColorCode || !selectedSize) {
+            // Nếu chưa chọn đủ biến thể, hiển thị thông báo và khoảng giá
+            const stockEl = document.getElementById('product-stock');
+            if (stockEl) {
+                stockEl.textContent = 'Vui lòng phân loại hàng!';
+            }
+
+                        // Hiển thị khoảng giá khi chưa chọn biến thể
+            const priceEl = document.getElementById('product-price');
+            const totalPriceEl = document.getElementById('total-price');
+            const unitPriceEl = document.getElementById('unit-price');
+            if (priceEl && totalPriceEl && unitPriceEl) {
+                // Lấy khoảng giá từ data attributes
+                const minPrice = parseFloat(unitPriceEl.dataset.minPrice || 0);
+                const maxPrice = parseFloat(unitPriceEl.dataset.maxPrice || 0);
+
+                if (minPrice > 0) {
+                    if (minPrice === maxPrice) {
+                        priceEl.textContent = formatCurrency(minPrice);
+                    } else {
+                        priceEl.textContent = `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
+                    }
+
+                    // Tổng tiền vẫn giữ nguyên 0₫ khi chưa chọn biến thể
+                    totalPriceEl.textContent = '0₫';
+
+                    // Cập nhật giá cũ nếu có
+                    const oldPriceEl = document.getElementById('product-old-price');
+                    if (oldPriceEl) {
+                        const minRegularPrice = parseFloat(unitPriceEl.dataset.minRegularPrice || 0);
+                        const maxRegularPrice = parseFloat(unitPriceEl.dataset.maxRegularPrice || 0);
+
+                        if (minRegularPrice > 0 && minRegularPrice > minPrice) {
+                            if (minRegularPrice === maxRegularPrice) {
+                                oldPriceEl.textContent = formatCurrency(minRegularPrice);
+                            } else {
+                                oldPriceEl.textContent = `${formatCurrency(minRegularPrice)} - ${formatCurrency(maxRegularPrice)}`;
+                            }
+                            oldPriceEl.style.display = 'inline';
+                        } else {
+                            oldPriceEl.style.display = 'none';
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
         const variant = variants.find(v => {
             const [_, size, color] = v.sku.toUpperCase().split('-');
             return size === selectedSize && color === selectedColorCode;
