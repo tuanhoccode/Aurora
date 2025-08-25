@@ -40,38 +40,54 @@
               <!-- Giá tiền -->
               @php
                 $product = $wishlist->product;
-                $price = null;
-                $originalPrice = null;
+                $now = now();
+                $displayHtml = '';
 
-                if ($product->variants->count() > 0) {
-                    $validVariants = $product->variants->filter(function ($variant) {
-                        return ($variant->sale_price ?? 0) > 0 || ($variant->price ?? 0) > 0;
-                    });
+                if ($product->type === 'variant' && $product->variants->count() > 0) {
+                    // Tính giá hiện tại của từng variant theo khung thời gian sale
+                    $prices = $product->variants->map(function($variant) use ($now) {
+                        $price = $variant->regular_price;
+                        if ($variant->sale_price
+                            && $variant->sale_price > 0
+                            && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                            && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now)
+                            && $variant->sale_price < $variant->regular_price) {
+                            $price = $variant->sale_price;
+                        }
+                        return (float) $price;
+                    })->filter(fn($p) => $p > 0);
 
-                    if ($validVariants->isNotEmpty()) {
-                        $minSale = $validVariants->where('sale_price', '>', 0)->min('sale_price');
-                        $minPrice = $validVariants->min('price');
+                    $minPrice = $prices->count() ? $prices->min() : 0;
+                    $maxPrice = $prices->count() ? $prices->max() : 0;
 
-                        $price = $minSale ?? $minPrice;
-                        $originalPrice = $minSale ? $minPrice : null;
+                    if ($minPrice > 0) {
+                        if ($minPrice == $maxPrice) {
+                            $displayHtml = '<span class="text-danger fs-4">' . number_format($minPrice, 0, ',', '.') . '₫</span>';
+                        } else {
+                            $displayHtml = '<span class="text-danger fs-4">' . number_format($minPrice, 0, ',', '.') . '₫ - ' . number_format($maxPrice, 0, ',', '.') . '₫</span>';
+                        }
                     }
                 } else {
-                    $price = $product->sale_price > 0 ? $product->sale_price : $product->price;
-                    $originalPrice = $product->sale_price > 0 ? $product->price : null;
+                    // Sản phẩm thường
+                    $current = $product->sale_price
+                        && (!$product->sale_starts_at || $product->sale_starts_at <= $now)
+                        && (!$product->sale_ends_at || $product->sale_ends_at >= $now)
+                        && $product->sale_price < $product->price
+                        ? $product->sale_price
+                        : $product->price;
+                    $original = ($current != $product->price && $product->price > 0) ? $product->price : null;
+
+                    if ($current > 0) {
+                        if ($original) {
+                            $displayHtml = '<span class="text-muted text-decoration-line-through me-2">' . number_format($original, 0, ',', '.') . '₫</span>';
+                        }
+                        $displayHtml .= '<span class="text-danger fs-4">' . number_format($current, 0, ',', '.') . '₫</span>';
+                    }
                 }
               @endphp
 
               <p class="text-center mt-2 fw-semibold fs-5">
-                @if ($price > 0)
-                  @if ($originalPrice)
-                    <span class="text-muted text-decoration-line-through me-2">
-                      {{ number_format($originalPrice, 0, ',', '.') }}₫
-                    </span>
-                  @endif
-                  <span class="text-danger fs-4">{{ number_format($price, 0, ',', '.') }}₫</span>
-                @else
-                  <span class="text-muted">Liên hệ</span>
-                @endif
+                {!! $displayHtml !== '' ? $displayHtml : '<span class="text-muted">Đang cập nhật</span>' !!}
               </p>
 
               <form action="{{ route('wishlist.destroy', $wishlist->id) }}" method="POST" class="mt-auto text-center">
