@@ -1007,7 +1007,6 @@
                                                         <i class="fas fa-undo"></i> Yêu cầu hoàn trả
                                                     </a>
                                                 @endif
-                        @endif
 
                     </div>
                 </div>
