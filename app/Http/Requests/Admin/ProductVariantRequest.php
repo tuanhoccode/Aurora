@@ -35,7 +35,7 @@ class ProductVariantRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'variants.required' => 'Phải có ít nhất một biến thể',
+            'variants.required' => 'Vui lòng chọn ít nhất một thuộc tính cho sản phẩm',
             'variants.array' => 'Dữ liệu biến thể không hợp lệ',
             'variants.min' => 'Phải có ít nhất một biến thể',
             'variants.*.sku.unique' => 'Mã SKU đã tồn tại',

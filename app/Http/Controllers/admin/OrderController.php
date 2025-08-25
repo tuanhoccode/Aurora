@@ -136,6 +136,7 @@ class OrderController extends Controller
             7 => 'Đã hoàn tiền',
             8 => 'Đã hủy',
             9 => 'Sẵn sàng nhận hàng',
+            10 => 'Nhận hàng thành công',
             default => 'Chưa hoàn thành',
         } : 'Chưa hoàn thành';
 

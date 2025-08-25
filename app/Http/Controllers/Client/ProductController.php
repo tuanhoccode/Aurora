@@ -90,12 +90,13 @@ class ProductController extends Controller
         $averageRating = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->avg('rating');
         $reviewCount = $product->reviews()->where('is_active', 1)->where('rating', '>', 0)->count();
 
-        $relatedProducts = Product::where('brand_id', $product->brand_id)
-            ->where('id', '!=', $product->id)
-            ->where('is_active', 1)
-            ->inRandomOrder()
-            ->take(10)
-            ->get();
+       $relatedProducts = Product::with('variants')
+        ->where('brand_id', $product->brand_id)
+        ->where('id', '!=', $product->id)
+        ->where('is_active', 1)
+        ->inRandomOrder()
+        ->limit(4)
+        ->get();
 
 
         // Lấy review kèm biến thể từ order_item
@@ -131,8 +132,8 @@ class ProductController extends Controller
             'variantsWithImages' => $variantsWithImages,
             'variants' => $productVariants,
             'defaultImages' => $defaultImages,
-            'orderItem' => $orderItem, //Truyền sang view
-            'reviews' => $reviews, //truyền reviews vào view
+            'orderItem' => $orderItem, 
+            'reviews' => $reviews,
         ]);
     }
 
