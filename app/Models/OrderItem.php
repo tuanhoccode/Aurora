@@ -54,7 +54,7 @@ class OrderItem extends Model
         return $this->review()->exists();
     }
     public function canReviewItem(){
-        $order = $this->order();
+        $order = $this->order;
         $deliveredStatus = $order->statusHistory()
         ->where('order_status_id', 10)
         ->latest()

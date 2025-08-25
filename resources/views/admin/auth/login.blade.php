@@ -40,14 +40,14 @@
 <body class="h-100">
     <div class="d-flex flex-column h-100 p-3">
         <div class="d-flex flex-column flex-grow-1">
-            <div class="row h-100">
+            <div class="row h-100 align-items-start">
                 <div class="col-xxl-7">
                     <div class="row justify-content-center h-100">
                         <div class="col-lg-6 py-lg-5">
                             <div class="d-flex flex-column h-100 justify-content-center">
-                                <div class="auth-logo mb-4">
-                                    <a href="route('home')" class="logo-dark">
-                                        <img src="{{asset('assets1/images/logo.svg')}}" height="45px" alt="logo dark">
+                                <div class="auth-logo mb-3 d-flex justify-content-between align-items-center">
+                                    <a href="{{route('home')}}" class="logo-dark">
+                                        <img src="{{asset('assets1/images/logo.svg')}}" style="padding-left: 100px;" height="45px" alt="logo dark">
                                     </a>
 
                                     <a href="index.html" class="logo-light">
@@ -55,7 +55,7 @@
                                     </a>
                                 </div>
 
-                                <h2 class="fw-bold fs-24">Đăng Nhập</h2>
+                                <h2 class="fw-bold fs-24" style="padding-left: 150px;" >Đăng Nhập</h2>
 
                                 <p class="text-muted mt-1 mb-4">Nhập địa chỉ email và mật khẩu của bạn để truy cập vào bảng quản trị.</p>
 

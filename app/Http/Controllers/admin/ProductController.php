@@ -977,38 +977,38 @@ class ProductController extends Controller
     }
 
 
-    public function deleteGalleryImage(Request $request, Product $product)
+    public function deleteGalleryImage(ProductGallery $gallery)
     {
         try {
-            if (Auth::user()->role !== 'admin') {
-                abort(403, 'Bạn không có quyền xóa hình ảnh.');
-            }
-            $path = $request->json('path');
+            $image = $gallery;
            
-            // Tìm và xóa gallery image
-            $gallery = $product->galleries()->where('image', $path)->first();
+            // Kiểm tra quyền truy cập (chỉ admin hoặc người tạo sản phẩm mới được xóa)
+            if (Auth::user()->role !== 'admin' && $image->product->user_id !== Auth::id()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Bạn không có quyền xóa hình ảnh này.'
+                ], 403);
+            }
            
-            if (!$gallery) {
-                return response()->json(['success' => false, 'message' => 'Hình ảnh không tồn tại'], 404);
+            // Xóa file ảnh từ storage nếu tồn tại
+            if ($image->url && Storage::disk('public')->exists($image->url)) {
+                Storage::disk('public')->delete($image->url);
             }
-
-
-            // Xóa file từ storage
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
-
-
-            // Xóa record từ database
-            $gallery->delete();
-
-
-            return response()->json(['success' => true]);
-
-
+           
+            // Xóa bản ghi trong database
+            $image->delete();
+           
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa ảnh thành công.'
+            ]);
+           
         } catch (\Exception $e) {
             Log::error('Error deleting gallery image: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi xóa hình ảnh'], 500);
-        }
+            return response()->json([
+                'success' => false, 
+                'message' => 'Có lỗi xảy ra khi xóa hình ảnh: ' . $e->getMessage()
+            ], 500);
+        } 
     }
 }
