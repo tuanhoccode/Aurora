@@ -34,7 +34,7 @@ class DashboardController extends Controller
 
         $currentYear = now()->year;
         $revenueByMonth = Order::whereHas('currentStatus', function($q) {
-                $q->where('order_status_id', 4)->where('is_current', 1);
+                $q->where('order_status_id', 10)->where('is_current', 1);
             })
             ->whereYear('created_at', $currentYear)
             ->selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
