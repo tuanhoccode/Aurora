@@ -5,17 +5,67 @@
 @section('content')
     <!-- CSS nhanh: bạn có thể chuyển vào file CSS chung nếu muốn -->
     <style>
+        .scroll-5 { max-height: 320px; overflow-y: auto; }
+        .scroll-5 table thead th { position: sticky; top: 0; background: #ffffff; z-index: 2; }
         /* Reviews table alignment */
-        .table-reviews td, .table-reviews th { vertical-align: middle; }
+        .table-reviews td,
+        .table-reviews th {
+            vertical-align: middle;
+        }
+
         .table-reviews thead th.col-rating,
-        .table-reviews thead th.col-status { text-align: center; }
-        .table-reviews thead th.col-date { text-align: right; }
-        .table-reviews .col-product { width: 22%; }
-        .table-reviews .col-rating { width: 110px; text-align: center; white-space: nowrap; }
-        .table-reviews .col-content { width: auto; line-height: 1.6; word-break: break-word; }
-        .table-reviews .col-status { width: 120px; text-align: center; white-space: nowrap; }
-        .table-reviews .col-date { width: 140px; white-space: nowrap; text-align: right; }
-        .table-reviews .stars i { margin-right: 2px; }
+        .table-reviews thead th.col-status {
+            text-align: center;
+        }
+
+        .table-reviews thead th.col-date {
+            text-align: right;
+        }
+
+        .table-reviews .col-product {
+            width: 22%;
+        }
+
+        .table-reviews .col-rating {
+            width: 110px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .table-reviews .col-content {
+            width: auto;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .table-reviews .col-status {
+            width: 120px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .table-reviews .col-date {
+            width: 140px;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .table-reviews .stars i {
+            margin-right: 2px;
+        }
+
+        /* Scroll containers showing ~5 rows */
+        .scroll-5 {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .scroll-5 table thead th {
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 2;
+        }
     </style>
 
     <div class="container-fluid px-4">
@@ -128,10 +178,11 @@
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header fw-bold d-flex justify-content-between align-items-center">
                         <span>Đơn hàng ({{ is_countable($orders) ? count($orders) : 0 }})</span>
-                        <span class="text-muted small">Tổng chi tiêu: {{ number_format((float) $totalSpent, 0, ',', '.') }} ₫</span>
+                        <span class="text-muted small">Tổng chi tiêu: {{ number_format((float) $totalSpent, 0, ',', '.') }}
+                            ₫</span>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive scroll-5">
                         <table class="table table-hover table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -162,7 +213,7 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-header fw-bold">Đánh giá ({{ is_countable($reviews) ? count($reviews) : 0 }})</div>
-                    <div class="table-responsive">
+                    <div class="table-responsive scroll-5">
                         <table class="table table-sm mb-0 table-reviews">
                             <thead class="table-light">
                                 <tr>
@@ -180,13 +231,13 @@
                                         <td class="col-product">{{ $review->product->name }}</td>
                                         <td class="col-rating">
                                             <span class="stars">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                @if ($i <= $review->rating)
-                                                    <i class="fas fa-star text-warning"></i>
-                                                @else
-                                                    <i class="far fa-star text-warning"></i>
-                                                @endif
-                                            @endfor
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($i <= $review->rating)
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    @else
+                                                        <i class="far fa-star text-warning"></i>
+                                                    @endif
+                                                @endfor
                                             </span>
                                         </td>
                                         <td class="col-content text-break">{{ $review->content }}</td>
@@ -205,12 +256,12 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm border-0 mb-4">
+                               <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header fw-bold">
                         Sản phẩm yêu thích ({{ is_countable($wishlists) ? count($wishlists) : 0 }})
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive scroll-5">
                         <table class="table table-hover table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -225,16 +276,64 @@
                                     <tr>
                                         <td>
                                             <img src="{{ $wishlist->product->thumbnail ? asset('storage/' . $wishlist->product->thumbnail) : 'https://via.placeholder.com/50' }}"
-                                                 alt="{{ $wishlist->product->name }}" width="50">
+                                                alt="{{ $wishlist->product->name }}" width="50">
                                         </td>
                                         <td>
-                                            <a href="{{ route('client.product.show', ['slug' => $wishlist->product->slug]) }}" target="_blank">
+                                            <a href="{{ route('client.product.show', ['slug' => $wishlist->product->slug]) }}"
+                                                target="_blank">
                                                 {{ $wishlist->product->name }}
                                             </a>
                                         </td>
                                         <td>
-                                            {{ number_format($wishlist->product->price, 0, ',', '.') }} ₫
+                                            @php
+                                                $product = $wishlist->product;
+
+                                                if ($product->type === 'variant' && $product->variants->count() > 0) {
+                                                    $regularMin = $product->variants->min('regular_price');
+                                                    $regularMax = $product->variants->max('regular_price');
+
+                                                    $saleMin = $product->variants->where('sale_price', '>', 0)->min('sale_price');
+                                                    $saleMax = $product->variants->where('sale_price', '>', 0)->max('sale_price');
+
+                                                    if ($saleMin && $saleMax) {
+                                                        // Có giảm giá trong biến thể
+                                                        echo '<span class="text-danger fw-bold">';
+                                                        echo ($saleMin == $saleMax)
+                                                            ? number_format($saleMin, 0, ',', '.') . ' ₫'
+                                                            : number_format($saleMin, 0, ',', '.') . ' ₫ - ' . number_format($saleMax, 0, ',', '.') . ' ₫';
+                                                        echo '</span><br>';
+
+                                                        echo '<span class="text-muted text-decoration-line-through">';
+                                                        echo ($regularMin == $regularMax)
+                                                            ? number_format($regularMin, 0, ',', '.') . ' ₫'
+                                                            : number_format($regularMin, 0, ',', '.') . ' ₫ - ' . number_format($regularMax, 0, ',', '.') . ' ₫';
+                                                        echo '</span>';
+                                                    } else {
+                                                        // Không giảm giá
+                                                        echo '<span>';
+                                                        echo ($regularMin == $regularMax)
+                                                            ? number_format($regularMin, 0, ',', '.') . ' ₫'
+                                                            : number_format($regularMin, 0, ',', '.') . ' ₫ - ' . number_format($regularMax, 0, ',', '.') . ' ₫';
+                                                        echo '</span>';
+                                                    }
+                                                } else {
+                                                    // Sản phẩm thường
+                                                    $regular = $product->price;
+                                                    $sale = $product->sale_price > 0 ? $product->sale_price : 0;
+
+                                                    if ($sale > 0 && $sale < $regular) {
+                                                        echo '<span class="text-danger fw-bold">'
+                                                            . number_format($sale, 0, ',', '.') . ' ₫</span><br>';
+                                                        echo '<span class="text-muted text-decoration-line-through">'
+                                                            . number_format($regular, 0, ',', '.') . ' ₫</span>';
+                                                    } else {
+                                                        echo '<span>' . number_format($regular, 0, ',', '.') . ' ₫</span>';
+                                                    }
+                                                }
+                                            @endphp
+
                                         </td>
+
                                         <td>
                                             {{ $wishlist->created_at->format('d/m/Y') }}
                                         </td>

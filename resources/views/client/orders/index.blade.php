@@ -766,7 +766,7 @@
             <li class="nav-item">
                 <a class="nav-link {{ request('filter') === 'return_refund' ? 'active' : '' }}" 
                    href="{{ route('client.orders', ['filter' => 'return_refund']) }}">
-                    <i class="fas fa-undo-alt me-1"></i> Trả hàng/Hoàn tiền ({{ $statusCounts['return_refund'] ?? 0 }})
+                    <i class="fas fa-undo-alt me-1"></i> Trả hàng ({{ $statusCounts['return_refund'] ?? 0 }})
                 </a>
             </li>
         </ul>
