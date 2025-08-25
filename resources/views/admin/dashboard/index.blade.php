@@ -168,26 +168,10 @@
         <div class="col-12 col-lg-4">
             <div class="chart-card bg-white h-100">
                 <div class="card-header bg-transparent border-0 p-4 pb-2">
-                    <h5 class="card-title mb-0 fw-bold">Sản Phẩm Mới</h5>
+                    <h5 class="card-title mb-0 fw-bold">Trạng Thái Đơn Hàng</h5>
                 </div>
                 <div class="card-body pt-0">
-                    <div class="list-group list-group-flush">
-                        @foreach($recentProducts as $product)
-                        <div class="list-group-item py-3 px-0 border-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1 fw-semibold">{{ $product->name }}</h6>
-                                    <small class="text-muted">{{ $product->created_at->format('d/m/Y') }}</small>
-                                </div>
-                                <div>
-                                    <span class="badge bg-{{ $product->is_active ? 'success' : 'danger' }} px-3 py-2">
-                                        {{ $product->is_active ? 'Hoạt động' : 'Ngừng hoạt động' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
+                    <canvas id="orderStatusChart" height="350"></canvas>
                 </div>
             </div>
         </div>
@@ -336,6 +320,101 @@ const revenueChart = new Chart(ctx, {
     },
     plugins: [ChartDataLabels]
 });
+
+// Order status doughnut chart (fixed colors, center total, clickable slices)
+const statusCtx = document.getElementById('orderStatusChart')?.getContext('2d');
+if (statusCtx) {
+    const statusLabels = @json($orderStatusLabels ?? []);
+    const statusCounts = @json($orderStatusCounts ?? []);
+
+    // Tổng số đơn để hiển thị phần trăm và center label
+    const totalOrders = statusCounts.reduce((a, b) => a + (Number(b) || 0), 0);
+
+    // Bảng màu cố định theo nhãn (tham chiếu theo các sàn lớn)
+    // Phối màu theo nghĩa trạng thái (gợi nhớ trực quan)
+    const statusColorMap = {
+        // Đang chờ/đang xử lý → xanh dương
+        'Chờ xác nhận': '#0d6efd',
+        'Chờ lấy hàng': '#fd7e14',     // chuẩn bị lấy → cam
+        'Đang giao': '#0dcaf0',        // vận chuyển → cyan
+        // Thành công/hoàn tất → xanh lá
+        'Giao hàng thành công': '#198754',
+        'Nhận hàng thành công': '#2eb85c',
+        // Quy trình trả/đổi → tím
+        'Chờ trả hàng': '#6f42c1',
+        'Đã trả hàng': '#845ef7',
+        // Tiền/hoàn tiền → vàng/amber
+        'Hoàn tiền': '#e6a700',
+        // Hủy/ lỗi → đỏ
+        'Đã hủy': '#dc3545',
+        // Đã gửi đi (handover) → teal
+        'Gửi hàng': '#20c997'
+    };
+
+    const sliceColors = statusLabels.map(l => statusColorMap[l] || '#6c757d');
+
+    // Plugin hiển thị tổng số đơn ở giữa donut
+    const centerText = {
+        id: 'centerText',
+        afterDraw(chart) {
+            const {ctx, chartArea: {left, right, top, bottom}} = chart;
+            ctx.save();
+            const x = (left + right) / 2;
+            const y = (top + bottom) / 2;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#333';
+            ctx.font = '600 18px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+            ctx.fillText(totalOrders.toLocaleString('vi-VN'), x, y - 6);
+            ctx.fillStyle = '#6c757d';
+            ctx.font = '400 12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+            ctx.fillText('tổng đơn', x, y + 12);
+            ctx.restore();
+        }
+    };
+
+    const orderStatusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: sliceColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const value = Number(context.parsed) || 0;
+                            return `${context.label}: ${value.toLocaleString('vi-VN')}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#fff',
+                    formatter: (value) => {
+                        const v = Number(value) || 0;
+                        return v > 0 ? v.toLocaleString('vi-VN') : '';
+                    }
+                }
+            },
+            onClick: (evt, elements) => {
+                if (!elements.length) return;
+                const idx = elements[0].index;
+                const label = statusLabels[idx];
+                const baseUrl = `{{ route('admin.orders.index') }}`;
+                window.location.href = `${baseUrl}?status=${encodeURIComponent(label)}`;
+            }
+        },
+        plugins: [ChartDataLabels, centerText]
+    });
+}
 </script>
 @endpush
 @endsection
