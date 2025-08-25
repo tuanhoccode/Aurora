@@ -11,9 +11,9 @@
         --line: #f5f5f5;
         --bg: #f5f5f5;
         --border-radius: 4px;
-        --box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
+        --box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .13);
     }
-    
+
     /* Tabs */
     .tabs {
         display: flex;
@@ -25,9 +25,9 @@
         border-bottom: 2px solid var(--brand);
         margin-bottom: 20px;
     }
-    
-    .tabs::-webkit-scrollbar { 
-        display: none; 
+
+    .tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tab-btn {
@@ -43,10 +43,10 @@
         position: relative;
         margin-right: 2px;
     }
-    
-    .tab-btn:hover { 
-        color: #111; 
-        background: #f0f0f0; 
+
+    .tab-btn:hover {
+        color: #111;
+        background: #f0f0f0;
     }
 
     .tab-btn.active {
@@ -54,12 +54,12 @@
         background: #fff;
         font-weight: 500;
     }
-    
+
     .tab-btn.active::after {
         content: "";
         position: absolute;
-        left: 0; 
-        right: 0; 
+        left: 0;
+        right: 0;
         bottom: -2px;
         height: 2px;
         background: var(--brand);
@@ -73,7 +73,7 @@
         box-shadow: var(--box-shadow);
         margin-bottom: 20px;
     }
-    
+
     .search-input {
         display: flex;
         align-items: center;
@@ -85,12 +85,12 @@
         max-width: 600px;
         transition: all .2s;
     }
-    
+
     .search-input:focus-within {
         border-color: var(--brand);
         box-shadow: 0 0 0 1px var(--brand);
     }
-    
+
     .search-input input {
         border: none;
         outline: none;
@@ -98,11 +98,12 @@
         font-size: 14px;
         color: #333;
     }
-    
-    .search-input svg { 
-        flex: 0 0 auto; 
+
+    .search-input svg {
+        flex: 0 0 auto;
         color: var(--muted);
     }
+
     .order-card {
         border: none;
         border-radius: var(--border-radius);
@@ -222,7 +223,7 @@
     }
 
     .order-actions .btn {
-        
+
         padding: 6px 16px;
         font-weight: 500;
         transition: all 0.2s;
@@ -355,7 +356,7 @@
         border: 1px solid #d8d8d8;
         color: #555;
     }
-    
+
     .btn-danger:hover {
         background: #f8f8f8;
         border-color: #d8d8d8;
@@ -389,7 +390,7 @@
 
     .sp-ok {
         color: #00a67c;
-       
+
     }
 
     .sp-ok i {
@@ -398,7 +399,7 @@
 
     .sp-done {
         color: #00a67c;
-        
+
     }
 
     .sp-row {
@@ -484,7 +485,7 @@
         border: 1px solid var(--brand);
         color: #fff;
     }
-    
+
     .btn-primary:hover {
         background: #f05d40;
         border-color: #f05d40;
@@ -496,7 +497,7 @@
         border: 1px solid #d8d8d8;
         color: #555;
     }
-    
+
     .sp-btn-ghost:hover {
         background: #f8f8f8;
     }
@@ -506,7 +507,7 @@
         color: var(--brand);
         background: #fff;
     }
-    
+
     .btn-outline-primary:hover {
         background: rgba(238, 77, 45, 0.1);
         color: var(--brand);
@@ -523,176 +524,177 @@
             text-align: left
         }
     }
-     /* Search bar styling */
-     .input-group .form-control-lg {
-            border: 1px solid #e5e7eb;
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-            box-shadow: none;
-        }
-        
+
+    /* Search bar styling */
+    .input-group .form-control-lg {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        box-shadow: none;
+    }
+
+    .input-group .btn-primary {
+        background-color: #ff4d2d;
+        border-color: #ff4d2d;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s;
+    }
+
+    .input-group .btn-primary:hover {
+        background-color: #f04120;
+        border-color: #f04120;
+    }
+
+    /* Enhanced Tabs styling */
+    .nav-tabs {
+        border: none;
+        background: #fff;
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        display: block;
+        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        width: 100%;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6b7280;
+        border: none;
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        border-radius: 0.25rem 0.25rem 0 0;
+        transition: all 0.2s;
+    }
+
+    .nav-tabs .nav-link:hover:not(.active) {
+        color: #ee4d2d;
+        border-color: #ee4d2d;
+        background: #fff9f8;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #fff;
+        background: #ee4d2d;
+        border-color: #ee4d2d;
+        box-shadow: 0 2px 8px rgba(238, 77, 45, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .nav-tabs .badge {
+        margin-left: 6px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 11px;
+        min-width: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-tabs .nav-link:not(.active) .badge {
+        background: #f1f1f1;
+        color: #666;
+    }
+
+    .nav-tabs .nav-link.active .badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
         .input-group .btn-primary {
-            background-color: #ff4d2d;
-            border-color: #ff4d2d;
-            font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.2s;
+            padding: 0.75rem 1rem;
         }
-        
-        .input-group .btn-primary:hover {
-            background-color: #f04120;
-            border-color: #f04120;
-        }
-        
-        /* Enhanced Tabs styling */
-       .nav-tabs {
-            border: none;
-            background: #fff;
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            margin-bottom: 24px;
-            display: block;
-            white-space: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            width: 100%;
-        }
-        
-       .nav-tabs::-webkit-scrollbar {
-            display: none;
-        }
-        
-       .nav-tabs .nav-link {
-            color: #6b7280;
-            border: none;
-            font-weight: 500;
-            padding: 0.75rem 1.25rem;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            border-radius: 0.25rem 0.25rem 0 0;
-            transition: all 0.2s;
-        }
-        
-       .nav-tabs .nav-link:hover:not(.active) {
-            color: #ee4d2d;
-            border-color: #ee4d2d;
-            background: #fff9f8;
-        }
-        
-       .nav-tabs .nav-link.active {
-            color: #fff;
-            background: #ee4d2d;
-            border-color: #ee4d2d;
-            box-shadow: 0 2px 8px rgba(238, 77, 45, 0.25);
-            transform: translateY(-2px);
-        }
-        
-       .nav-tabs .badge {
-            margin-left: 6px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            min-width: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-       .nav-tabs .nav-link:not(.active) .badge {
-            background: #f1f1f1;
-            color: #666;
-        }
-        
-       .nav-tabs .nav-link.active .badge {
-            background: rgba(255,255,255,0.25);
-            color: #fff;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .input-group .btn-primary {
-                padding: 0.75rem 1rem;
-            }
-            
-            .nav-tabs .nav-link {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.875rem;
-            }
-        }
-        /* Shopee-like button styles */
-.card-footer .btn {
-    padding: 8px 20px;
-    font-size: 14px;
-    border-radius: 2px;
-    font-weight: 400;
-    text-transform: none;
-    min-width: 120px;
-    text-align: center;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 120px;
-    height: 40px;
-}
 
-/* Primary button (Xem chi tiết) */
-.card-footer .btn-primary {
-    background-color: #ee4d2d;
-    border: 1px solid #ee4d2d;
-    color: #fff;
-}
+        .nav-tabs .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    }
 
-.card-footer .btn-primary:hover {
-    background-color: #d7381d;
-    border-color: #d7381d;
-}
+    /* Shopee-like button styles */
+    .card-footer .btn {
+        padding: 8px 20px;
+        font-size: 14px;
+        border-radius: 2px;
+        font-weight: 400;
+        text-transform: none;
+        min-width: 120px;
+        text-align: center;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        height: 40px;
+    }
 
-/* Success button (Xác nhận đã nhận hàng) */
-.card-footer .btn-success {
-    background-color: #00bfa5;
-    border: 1px solid #00bfa5;
-    color: #fff;
-}
+    /* Primary button (Xem chi tiết) */
+    .card-footer .btn-primary {
+        background-color: #ee4d2d;
+        border: 1px solid #ee4d2d;
+        color: #fff;
+    }
 
-.card-footer .btn-success:hover {
-    background-color: #00a08a;
-    border-color: #00a08a;
-}
+    .card-footer .btn-primary:hover {
+        background-color: #d7381d;
+        border-color: #d7381d;
+    }
 
-/* Danger button (Hủy đơn hàng) */
-.card-footer .btn-danger {
-    background-color: #fff;
-    color: #ee4d2d;
-}
+    /* Success button (Xác nhận đã nhận hàng) */
+    .card-footer .btn-success {
+        background-color: #00bfa5;
+        border: 1px solid #00bfa5;
+        color: #fff;
+    }
 
-.card-footer .btn-danger:hover {
-    background-color: #f5f5f5;
-    border-color: #d9d9d9;
-    color: #ee4d2d;
-}
+    .card-footer .btn-success:hover {
+        background-color: #00a08a;
+        border-color: #00a08a;
+    }
 
-/* Disabled state */
-.card-footer .btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
+    /* Danger button (Hủy đơn hàng) */
+    .card-footer .btn-danger {
+        background-color: #fff;
+        color: #ee4d2d;
+    }
 
-/* Button group spacing */
-.card-footer .order-actions .d-flex.gap-2 {
-    gap: 12px !important;
-}
+    .card-footer .btn-danger:hover {
+        background-color: #f5f5f5;
+        border-color: #d9d9d9;
+        color: #ee4d2d;
+    }
 
-/* Button icons */
-.card-footer .btn i {
-    margin-right: 6px;
-    font-size: 14px;
-}
-        
+    /* Disabled state */
+    .card-footer .btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Button group spacing */
+    .card-footer .order-actions .d-flex.gap-2 {
+        gap: 12px !important;
+    }
+
+    /* Button icons */
+    .card-footer .btn i {
+        margin-right: 6px;
+        font-size: 14px;
+    }
 </style>
 
 @section('content')
@@ -707,114 +709,114 @@
         <div class="mb-4">
             <form action="{{ route('client.orders') }}" method="GET" class="w-100">
                 <div class="input-group">
-                    <input type="text" 
-                           name="search" 
-                           class="form-control form-control-lg" 
-                           placeholder="Tìm kiếm theo tên sản phẩm hoặc mã đơn hàng..." 
-                           value="{{ request('search') }}"
-                           style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                    <input type="text" name="search" class="form-control form-control-lg"
+                        placeholder="Tìm kiếm theo tên sản phẩm hoặc mã đơn hàng..." value="{{ request('search') }}"
+                        style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="fas fa-search me-2"></i>Tìm kiếm
                     </button>
                 </div>
             </form>
         </div>
-        
+
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link {{ !request('filter') ? 'active' : '' }}" 
-                   href="{{ route('client.orders') }}">
+                <a class="nav-link {{ !request('filter') ? 'active' : '' }}" href="{{ route('client.orders') }}">
                     <i class="fas fa-list me-1"></i> Tất cả ({{ $statusCounts['all'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'pending_payment' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'pending_payment']) }}">
+                <a class="nav-link {{ request('filter') === 'pending_payment' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'pending_payment']) }}">
                     <i class="fas fa-money-bill-wave me-1"></i> Chờ thanh toán ({{ $statusCounts['pending_payment'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'processing' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'processing']) }}">
+                <a class="nav-link {{ request('filter') === 'processing' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'processing']) }}">
                     <i class="fas fa-tasks me-1"></i> Đang xử lý ({{ $statusCounts['processing'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'shipping' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'shipping']) }}">
+                <a class="nav-link {{ request('filter') === 'shipping' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'shipping']) }}">
                     <i class="fas fa-truck me-1"></i> Vận chuyển ({{ $statusCounts['shipping'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'delivered' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'delivered']) }}">
+                <a class="nav-link {{ request('filter') === 'delivered' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'delivered']) }}">
                     <i class="fas fa-truck-arrow-right me-1"></i> Giao thành công ({{ $statusCounts['delivered'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'completed' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'completed']) }}">
+                <a class="nav-link {{ request('filter') === 'completed' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'completed']) }}">
                     <i class="fas fa-check-circle me-1"></i> Hoàn thành ({{ $statusCounts['completed'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'cancelled' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'cancelled']) }}">
+                <a class="nav-link {{ request('filter') === 'cancelled' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'cancelled']) }}">
                     <i class="fas fa-ban me-1"></i> Đã hủy ({{ $statusCounts['cancelled'] ?? 0 }})
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request('filter') === 'return_refund' ? 'active' : '' }}" 
-                   href="{{ route('client.orders', ['filter' => 'return_refund']) }}">
-                    <i class="fas fa-undo-alt me-1"></i> Trả hàng/Hoàn tiền ({{ $statusCounts['return_refund'] ?? 0 }})
+                <a class="nav-link {{ request('filter') === 'return_refund' ? 'active' : '' }}"
+                    href="{{ route('client.orders', ['filter' => 'return_refund']) }}">
+                    <i class="fas fa-undo-alt me-1"></i> Trả hàng ({{ $statusCounts['return_refund'] ?? 0 }})
                 </a>
             </li>
         </ul>
 
-    @if($orders->isEmpty())
-        <div class="card text-center p-5" style="background: #fff;">
-            <div class="card-body">
-                <div class="mb-4">
-                    <i class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-bag' }} fa-4x" style="color: #f5f5f5;"></i>
-                </div>
-                @if(request()->has('search'))
-                    <h4 class="text-muted">Không tìm thấy đơn hàng phù hợp</h4>
-                    <p class="text-muted">Không có đơn hàng nào khớp với từ khóa "{{ request('search') }}"</p>
-                @else
-                    <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
-                    <p class="text-muted">Hãy mua sắm và tạo đơn hàng mới</p>
-                @endif
-                <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
-                    <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
-                </a>
-                @if(request()->has('search'))
-                    <a href="{{ route('client.orders') }}" class="btn btn-outline-secondary mt-3 ms-2">
-                        <i class="fas fa-times me-2"></i>Xóa bộ lọc
+        @if ($orders->isEmpty())
+            <div class="card text-center p-5" style="background: #fff;">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="fas {{ request()->has('search') ? 'fa-search' : 'fa-shopping-bag' }} fa-4x"
+                            style="color: #f5f5f5;"></i>
+                    </div>
+                    @if (request()->has('search'))
+                        <h4 class="text-muted">Không tìm thấy đơn hàng phù hợp</h4>
+                        <p class="text-muted">Không có đơn hàng nào khớp với từ khóa "{{ request('search') }}"</p>
+                    @else
+                        <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
+                        <p class="text-muted">Hãy mua sắm và tạo đơn hàng mới</p>
+                    @endif
+                    <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
+                        <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
                     </a>
-                @endif
+                    @if (request()->has('search'))
+                        <a href="{{ route('client.orders') }}" class="btn btn-outline-secondary mt-3 ms-2">
+                            <i class="fas fa-times me-2"></i>Xóa bộ lọc
+                        </a>
+                    @endif
+                </div>
             </div>
-        </div>
-    @else
-    <div class="card shadow-sm rounded-3 border-0">
-        <div class="card-body p-4">
-            <div class="order-list">
-                @foreach($orders as $order)
-                    @php
-                        $currentStatus = $order->currentStatus;
-                        $statusId = $currentStatus ? $currentStatus->order_status_id : 1;
-                        $statusName = $currentStatus && $currentStatus->status ? $currentStatus->status->name : 'Chờ xác nhận';
-                        
-                        $badgeClass = match ($statusId) {
-                            1 => 'warning',
-                            2 => 'info',
-                            3 => 'primary',
-                            4 => 'success',
-                            5, 6, 7, 8 => 'danger',
-                            default => 'secondary',
-                        };
-                        
-                        $paymentStatus = $order->is_paid ? 'Đã thanh toán' : 'Chờ thanh toán';
-                        $paymentBadgeClass = $order->is_paid ? 'success' : 'warning';
+        @else
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="order-list">
+                        @foreach ($orders as $order)
+                            @php
+                                $currentStatus = $order->currentStatus;
+                                $statusId = $currentStatus ? $currentStatus->order_status_id : 1;
+                                $statusName =
+                                    $currentStatus && $currentStatus->status
+                                        ? $currentStatus->status->name
+                                        : 'Chờ xác nhận';
+
+                                $badgeClass = match ($statusId) {
+                                    1 => 'warning',
+                                    2 => 'info',
+                                    3 => 'primary',
+                                    4 => 'success',
+                                    5, 6, 7, 8 => 'danger',
+                                    default => 'secondary',
+                                };
+
+                                $paymentStatus = $order->is_paid ? 'Đã thanh toán' : 'Chờ thanh toán';
+                                $paymentBadgeClass = $order->is_paid ? 'success' : 'warning';
 
                                 // get first item shop name fallback
                                 $firstItem = $order->items->first();
@@ -844,11 +846,12 @@
                                 @foreach ($order->items as $item)
                                     @php
                                         // Ưu tiên lấy ảnh từ biến thể, nếu không có thì lấy từ sản phẩm cha
-                                        $img = $item->variant && $item->variant->img 
-                                            ? asset('storage/' . $item->variant->img)
-                                            : ($item->product->thumbnail 
-                                                ? asset('storage/' . $item->product->thumbnail)
-                                                : asset('assets2/img/product/2/prodcut-1.jpg'));
+                                        $img =
+                                            $item->variant && $item->variant->img
+                                                ? asset('storage/' . $item->variant->img)
+                                                : ($item->product->thumbnail
+                                                    ? asset('storage/' . $item->product->thumbnail)
+                                                    : asset('assets2/img/product/2/prodcut-1.jpg'));
                                         $old =
                                             $item->original_price ??
                                             (data_get($item, 'variant.original_price') ??
@@ -861,16 +864,17 @@
                                                 : $item->variant->attributeValues()->with('attribute')->get();
                                             $variantText = $vals->pluck('value')->filter()->implode(' / ');
                                         }
+                                    @endphp
 
-                                        @endphp
-                                       
 
                                     <div class="sp-row">
                                         <a href="{{ route('client.orders.show', $order->id) }}" class="d-block">
-                                            <img class="sp-thumb" src="{{ $img }}" alt="{{ $item->product->name }}">
+                                            <img class="sp-thumb" src="{{ $img }}"
+                                                alt="{{ $item->product->name }}">
                                         </a>
                                         <div class="flex-grow-1">
-                                            <a href="{{ route('client.orders.show', $order->id) }}" class="text-dark text-decoration-none">
+                                            <a href="{{ route('client.orders.show', $order->id) }}"
+                                                class="text-dark text-decoration-none">
                                                 <div class="sp-title">{{ $item->product->name }}</div>
                                             </a>
                                             <div class="shop">Thương hiệu: {{ $shopName }}</div>
@@ -905,7 +909,8 @@
                                                         <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
                                                     </button>
                                                 @elseif($order->isCancelled())
-                                                    <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('client.orders.reorder', $order) }}"
+                                                        method="POST" class="d-inline">
                                                         @csrf
                                                         <button type="submit" class="btn btn-outline-primary me-2">
                                                             <i class="fas fa-shopping-cart me-1"></i> Mua lại
@@ -917,56 +922,62 @@
                                                 @endif
 
                                                 @php
-                                                    $isDelivered = $order->currentStatus && $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
-                                                    $isCompleted = $order->currentStatus && $order->currentStatus->order_status_id == 10; // 10 = Nhận hàng thành công
+                                                    $isDelivered =
+                                                        $order->currentStatus &&
+                                                        $order->currentStatus->order_status_id == 4; // 4 = Giao hàng thành công
+                                                    $isCompleted =
+                                                        $order->currentStatus &&
+                                                        $order->currentStatus->order_status_id == 10; // 10 = Nhận hàng thành công
                                                 @endphp
-                                                
-                                                @if($isDelivered && !$order->isConfirmationExpired())
-                                                    <form action="{{ route('client.orders.confirm-delivery', $order->id) }}" method="POST" class="d-inline confirm-delivery-form">
+
+                                                @if ($isDelivered && !$order->isConfirmationExpired())
+                                                    <form
+                                                        action="{{ route('client.orders.confirm-delivery', $order->id) }}"
+                                                        method="POST" class="d-inline confirm-delivery-form">
                                                         @csrf
                                                         @method('POST')
-                                                        <button type="submit" class="btn btn-success me-2" onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
+                                                        <button type="submit" class="btn btn-success me-2"
+                                                            onclick="return confirm('Bạn có chắc chắn đã nhận được hàng?');">
                                                             <i class="fas fa-check-circle me-1"></i> Xác nhận đã nhận hàng
                                                         </button>
                                                     </form>
                                                 @elseif($order->isCompleted())
-                                                   
-                                                    <form action="{{ route('client.orders.reorder', $order) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('client.orders.reorder', $order) }}"
+                                                        method="POST" class="d-inline">
                                                         @csrf
                                                         <button type="submit" class="btn btn-outline-primary me-2">
                                                             <i class="fas fa-shopping-cart me-1"></i> Mua lại
                                                         </button>
                                                     </form>
                                                 @endif
-                                                @if ($statusId == 10 && !$order->refund()->whereIn('status', ['pending','approved'])->exists())
+                                                @if (
+                                                    $statusId == 10 &&
+                                                        !$order->refund()->whereIn('status', ['pending', 'approved'])->exists())
                                                     @if ($item->review)
-                                                        <div class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
-                                                            <button 
-                                                                data-bs-toggle = "modal"
+                                                        <div
+                                                            class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
+                                                            <button data-bs-toggle = "modal"
                                                                 data-bs-target = "#viewReviewModal"
-                                                                data-rating = "{{$item->review->rating}}"
-                                                                data-text = "{{$item->review->review_text}}"
-                                                                data-images='@json($item->review->images->map(fn($img) => asset("storage/" . $img->image_path)))'
-                                                                data-product-name = "{{$item->product->name}}"
-                                                                data-variant = "{{$variantText}}"
-                                                                data-thumb="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail)
-                                                                : asset('assets2/img/product/2/prodcut-1.jpg') }}"
-                                    
-                                                            >
+                                                                data-rating = "{{ $item->review->rating }}"
+                                                                data-text = "{{ $item->review->review_text }}"
+                                                                data-images='@json($item->review->images->map(fn($img) => asset('storage/' . $img->image_path)))'
+                                                                data-product-name = "{{ $item->product->name }}"
+                                                                data-variant = "{{ $variantText }}"
+                                                                data-thumb="{{ $item->product->thumbnail
+                                                                    ? asset('storage/' . $item->product->thumbnail)
+                                                                    : asset('assets2/img/product/2/prodcut-1.jpg') }}">
                                                                 <i class="fas fa-eye me-1"></i> Xem đánh giá
                                                             </button>
-                                                            
+
                                                         </div>
                                                     @elseif($item->canReviewItem())
-                                                        <div class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
-                                                            <button
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#reviewModal"
+                                                        <div
+                                                            class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
+                                                            <button data-bs-toggle="modal" data-bs-target="#reviewModal"
                                                                 data-product-id="{{ $item->product->id }}"
                                                                 data-order-item-id="{{ $item->id }}"
                                                                 data-product-name="{{ $item->product->name }}"
-                                                                data-variant="{{ $variantText }}"
-                                                                >
+                                                                data-variant="{{ $variantText }}">
                                                                 <i class="fas fa-star"></i>Đánh giá sản phẩm
                                                             </button>
                                                         </div>
@@ -974,47 +985,50 @@
                                                 @endif
                                                 <a href="{{ route('client.orders.show', $order->id) }}"
                                                     class="btn btn-primary d-flex align-items-center gap-1 btn-sm">
-                                                    <i class="fas fa-eye"></i> {{ $order->isCancelled() ? 'Xem chi tiết hủy đơn' : 'Xem chi tiết' }}
+                                                    <i class="fas fa-eye"></i>
+                                                    {{ $order->isCancelled() ? 'Xem chi tiết hủy đơn' : 'Xem chi tiết' }}
                                                 </a>
-                                            
-                                                @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at==NULL)
+
+                                                @if ($order->is_paid == 0 && $order->payment_id == 2 && $order->cancelled_at == null)
                                                     <a href="{{ route('checkout.retry-payment', $order->code) }}"
                                                         class="btn btn-warning d-flex align-items-center gap-1 btn-sm">
                                                         <i class="fas fa-redo"></i> Quay lại thanh toán
                                                     </a>
                                                 @endif
-                                                
-                                                 @if ($order->is_paid == 1 &&
-                                                $order->cancelled_at == null &&
-                                                $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
-                                                !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists())
-                                                <a href="{{ route('refund.form', $order->code) }}"
-                                                class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-                                                    <i class="fas fa-undo"></i> Yêu cầu hoàn trả
-                                                </a>
-                                            @endif
-                                                
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- /Shopee-like card -->
-                        @endforeach
 
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="text-muted">
-                                Hiển thị {{ $orders->firstItem() }} đến {{ $orders->lastItem() }} trong tổng số
-                                {{ $orders->total() }} đơn hàng
-                            </div>
-                            <div>
-                                {{ $orders->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
-                            </div>
-                        </div>
+                                                @if (
+                                                    $order->is_paid == 1 &&
+                                                        $order->cancelled_at == null &&
+                                                        $order->statusHistories()->where('order_status_id', 10)->where('is_current', 1)->exists() &&
+                                                        !\App\Models\Refund::where('order_id', $order->id)->where('status', 'pending')->exists() &&
+                                                        $order->created_at >= now()->subDays(7))
+                                                    <a href="{{ route('refund.form', $order->code) }}"
+                                                        class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                                                        <i class="fas fa-undo"></i> Yêu cầu hoàn trả
+                                                    </a>
+                                                @endif
+
                     </div>
                 </div>
             </div>
-        @endif
+    </div>
+    </div>
+    <!-- /Shopee-like card -->
+    @endforeach
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted">
+            Hiển thị {{ $orders->firstItem() }} đến {{ $orders->lastItem() }} trong tổng số
+            {{ $orders->total() }} đơn hàng
+        </div>
+        <div>
+            {{ $orders->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    @endif
     </div>
 
     <!-- Modal Hủy đơn hàng -->
@@ -1115,8 +1129,8 @@
             <div class="modal-content">
                 <form id="reviewForm" action="" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="product_id" id="review_product_id"> 
-                    <input type="hidden" name="order_item_id" id="review_order_item_id"> 
+                    <input type="hidden" name="product_id" id="review_product_id">
+                    <input type="hidden" name="order_item_id" id="review_order_item_id">
                     <div class="modal-header">
                         <h5 class="modal-title">Đánh giá sản phẩm</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1129,25 +1143,29 @@
                         <div class="mb-3">
                             <label>Đánh giá của bạn:</label>
                             <div class="d-flex gap-1 rating-group">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}" class="d-none" {{ old('rating') == $i ? 'checked' : '' }}>
-                                <label for="star{{ $i }}" class="star-label" data-index="{{ $i }}">
-                                    <i class="fa-regular fa-star" style="color: #ccc;"></i>
-                                </label>
-                            @endfor
-                        </div>
-                        @error('rating')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <input type="radio" name="rating" id="star{{ $i }}"
+                                        value="{{ $i }}" class="d-none"
+                                        {{ old('rating') == $i ? 'checked' : '' }}>
+                                    <label for="star{{ $i }}" class="star-label"
+                                        data-index="{{ $i }}">
+                                        <i class="fa-regular fa-star" style="color: #ccc;"></i>
+                                    </label>
+                                @endfor
+                            </div>
+                            @error('rating')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <textarea name="review_text" class="form-control" placeholder="Viết đánh giá của bạn..."></textarea>
                         </div>
                         @error('review_text')
                             <span class="text-danger">{{ $message }}</span>
-                            @enderror
+                        @enderror
                         <div class="mb-3">
-                            <input type="file" name="images[]" multiple accept="images/*" class="form-control" id="reviewImagesInput">
+                            <input type="file" name="images[]" multiple accept="images/*" class="form-control"
+                                id="reviewImagesInput">
                         </div>
                         <div id="reviewImagesPreview" class="d-flex flex-wrap gap-2 mb-3"></div>
                         @error('images.*')
@@ -1164,23 +1182,24 @@
     <!-- Script modal đánh giá sp -->
     <script>
         // Gán product_id khi mở modal
-    var reviewModal = document.getElementById('reviewModal');
-    reviewModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        const productId = button.getAttribute('data-product-id');
-        const orderItemId = button.getAttribute('data-order-item-id');
-        
-        // Cập nhật URL form với product_id
-        const form = document.getElementById('reviewForm');
-            form.action = '{{ url("client/reviews") }}/' + productId;
+        var reviewModal = document.getElementById('reviewModal');
+        reviewModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const productId = button.getAttribute('data-product-id');
+            const orderItemId = button.getAttribute('data-order-item-id');
+
+            // Cập nhật URL form với product_id
+            const form = document.getElementById('reviewForm');
+            form.action = '{{ url('client/reviews') }}/' + productId;
             document.getElementById('review_product_id').value = productId;
             document.getElementById('review_order_item_id').value = orderItemId;
 
             //Gán tên sp phân loại
             const productName = button.getAttribute('data-product-name');
-            const variantText  = button.getAttribute('data-variant');
+            const variantText = button.getAttribute('data-variant');
             document.getElementById('reviewProductName').textContent = productName;
-            document.getElementById('reviewVariantText').textContent = variantText ? `Phân loại: ${variantText}` : '';
+            document.getElementById('reviewVariantText').textContent = variantText ? `Phân loại: ${variantText}` :
+                '';
         });
 
 
@@ -1198,7 +1217,7 @@
                         // Update màu sao
                         labels.forEach((lbl, i) => {
                             const icon = lbl.querySelector('i');
-                            if(i <= idx){
+                            if (i <= idx) {
                                 icon.classList.remove('fa-regular');
                                 icon.classList.add('fa-solid');
                                 icon.style.color = '#ffc107';
@@ -1210,14 +1229,14 @@
                         });
                     });
                 });
-            
+
                 // Giữ màu nếu form validation fail
                 const checkedRadio = group.querySelector('input[name="rating"]:checked');
-                if(checkedRadio){
+                if (checkedRadio) {
                     const idx = Array.from(radios).indexOf(checkedRadio);
                     labels.forEach((lbl, i) => {
                         const icon = lbl.querySelector('i');
-                        if(i <= idx){
+                        if (i <= idx) {
                             icon.classList.remove('fa-regular');
                             icon.classList.add('fa-solid');
                             icon.style.color = '#ffc107';
@@ -1231,29 +1250,28 @@
             });
             //Thêm hiển thị khung ảnh
             document.getElementById('reviewImagesInput').addEventListener('change', function(event) {
-            const previewContainer = document.getElementById('reviewImagesPreview');
-            previewContainer.innerHTML = ''; // Xóa các ảnh cũ
+                const previewContainer = document.getElementById('reviewImagesPreview');
+                previewContainer.innerHTML = ''; // Xóa các ảnh cũ
 
-            const files = event.target.files;
+                const files = event.target.files;
 
-            if (files) {
-                Array.from(files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.width = '80px';
-                        img.style.height = '80px';
-                        img.style.objectFit = 'cover';
-                        img.classList.add('rounded'); // có thể thêm class tùy ý
-                        previewContainer.appendChild(img);
-                    }
-                    reader.readAsDataURL(file);
-                });
-            }
+                if (files) {
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '80px';
+                            img.style.height = '80px';
+                            img.style.objectFit = 'cover';
+                            img.classList.add('rounded'); // có thể thêm class tùy ý
+                            previewContainer.appendChild(img);
+                        }
+                        reader.readAsDataURL(file);
+                    });
+                }
             });
-        }); 
-
+        });
     </script>
 
     <!-- Modal hiển thị xem đánh giá -->
@@ -1266,7 +1284,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex align-items-start mb-3 border-bottom pb-3">
-                        <img id="viewReviewThumb" class="rounded me-3" width="80" height="80" style="object-fit:cover" alt="Ảnh sản phẩm">
+                        <img id="viewReviewThumb" class="rounded me-3" width="80" height="80"
+                            style="object-fit:cover" alt="Ảnh sản phẩm">
                         <div>
                             <h6 id="viewReviewProduct" class="mb-1"></h6>
                             <p id="viewReviewVariant" class="text-muted small mb-1"></p>
@@ -1275,55 +1294,57 @@
                     </div>
                     <p id="viewReviewText" class="mb-3"></p>
                     <div id="viewReviewImages" class="d-flex flex-wrap gap-2"></div>
-                    
+
                 </div>
             </div>
 
         </div>
     </div>
     <!-- script xem đánh giá  -->
-     <script>
-    var viewReviewModal = document.getElementById('viewReviewModal');
-    viewReviewModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
+    <script>
+        var viewReviewModal = document.getElementById('viewReviewModal');
+        viewReviewModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
 
-        const rating = button.getAttribute('data-rating');
-        const text = button.getAttribute('data-text');
-        const images = JSON.parse(button.getAttribute('data-images') || '[]');
-        const product = button.getAttribute('data-product-name');
-        const variant = button.getAttribute('data-variant') || '';
-        const thumb = button.getAttribute('data-thumb');
+            const rating = button.getAttribute('data-rating');
+            const text = button.getAttribute('data-text');
+            const images = JSON.parse(button.getAttribute('data-images') || '[]');
+            const product = button.getAttribute('data-product-name');
+            const variant = button.getAttribute('data-variant') || '';
+            const thumb = button.getAttribute('data-thumb');
 
-        // Hiển thị sao
-        const stars = Array.from({ length: 5 }, (_, i) =>
-            `<i class="fa${i < rating ? 's' : 'r'} fa-star" style="color:${i < rating ? '#ffc107' : '#ccc'}"></i>`
-        ).join('');
-        document.getElementById('viewReviewRating').innerHTML = stars;
+            // Hiển thị sao
+            const stars = Array.from({
+                    length: 5
+                }, (_, i) =>
+                `<i class="fa${i < rating ? 's' : 'r'} fa-star" style="color:${i < rating ? '#ffc107' : '#ccc'}"></i>`
+            ).join('');
+            document.getElementById('viewReviewRating').innerHTML = stars;
 
-        // Text
-        document.getElementById('viewReviewText').textContent = text || '';
+            // Text
+            document.getElementById('viewReviewText').textContent = text || '';
 
-        // Product info
-        document.getElementById('viewReviewProduct').textContent = product;
-        document.getElementById('viewReviewVariant').textContent = variant ? 'Phân loại: ' + variant : '';
-        document.getElementById('viewReviewThumb').src = thumb;
+            // Product info
+            document.getElementById('viewReviewProduct').textContent = product;
+            document.getElementById('viewReviewVariant').textContent = variant ? 'Phân loại: ' + variant : '';
+            document.getElementById('viewReviewThumb').src = thumb;
 
-        // Xóa ảnh cũ trước khi thêm ảnh mới
-        const imgContainer = document.getElementById('viewReviewImages');
-        imgContainer.innerHTML = ''; // Xóa nội dung cũ
+            // Xóa ảnh cũ trước khi thêm ảnh mới
+            const imgContainer = document.getElementById('viewReviewImages');
+            imgContainer.innerHTML = ''; // Xóa nội dung cũ
 
-        // Thêm ảnh mới
-        images.forEach(url => {
-            let img = document.createElement('img');
-            img.src = url; // Đường dẫn đã được xử lý trong Blade
-            img.className = "rounded border";
-            img.style.width = "100px";
-            img.style.height = "100px";
-            img.style.objectFit = "cover";
-            imgContainer.appendChild(img);
+            // Thêm ảnh mới
+            images.forEach(url => {
+                let img = document.createElement('img');
+                img.src = url; // Đường dẫn đã được xử lý trong Blade
+                img.className = "rounded border";
+                img.style.width = "100px";
+                img.style.height = "100px";
+                img.style.objectFit = "cover";
+                imgContainer.appendChild(img);
+            });
         });
-    });
-</script>
+    </script>
 
 @endsection
 
@@ -1336,7 +1357,7 @@
             font-size: 1rem;
             box-shadow: none;
         }
-        
+
         .input-group .btn-primary {
             background-color: #ff4d2d;
             border-color: #ff4d2d;
@@ -1344,14 +1365,14 @@
             padding: 0.75rem 1.5rem;
             transition: all 0.2s;
         }
-        
+
         .input-group .btn-primary:hover {
             background-color: #f04120;
             border-color: #f04120;
         }
-        
+
         /* Tabs styling */
-       .nav-tabs {
+        .nav-tabs {
             border-bottom: 1px solid #e5e7eb;
             flex-wrap: nowrap;
             overflow-x: auto;
@@ -1359,12 +1380,12 @@
             -ms-overflow-style: -ms-autohiding-scrollbar;
             scrollbar-width: none;
         }
-        
-       .nav-tabs::-webkit-scrollbar {
+
+        .nav-tabs::-webkit-scrollbar {
             display: none;
         }
-        
-       .nav-tabs .nav-link {
+
+        .nav-tabs .nav-link {
             color: #666;
             border: 1px solid #e8e8e8;
             font-weight: 500;
@@ -1374,36 +1395,36 @@
             border-radius: 0.25rem 0.25rem 0 0;
             transition: all 0.2s;
         }
-        
+
         .nav-tabs .nav-link:hover {
             color: #ff4d2d;
             background-color: rgba(0, 0, 0, 0.025);
             border-color: transparent;
         }
-        
+
         .nav-tabs .nav-link.active {
             color: #ff4d2d;
             background-color: #fff;
             border-bottom: 3px solid #ff4d2d;
         }
-        
-       .nav-tabs .nav-link i {
+
+        .nav-tabs .nav-link i {
             margin-right: 0.25rem;
         }
-        
+
         @media (max-width: 768px) {
             .input-group .btn-primary {
                 padding: 0.75rem 1rem;
             }
-            
+
             .nav-tabs .nav-link {
                 padding: 0.5rem 0.75rem;
                 font-size: 0.875rem;
             }
         }
-        
+
         /* Table styling */
-        
+
 
         .table th {
             font-weight: 600;
@@ -1560,227 +1581,103 @@
         }
 
         /* Màu sao */
-    .star-label {
-        cursor: pointer;
-        font-size: 24px;
-    }
-    .star-label i {
-        transition: color 0.2s;
-    }
-    /* hover màu vàng */
-    .star-label:hover ~ .star-label i,
-    .star-label:hover i {
-        color: #ffc107 !important;
-    }
-    /* sao được chọn */
-    input[type="radio"]:checked ~ label i {
-        color: #ffc107 !important;
-    }
+        .star-label {
+            cursor: pointer;
+            font-size: 24px;
+        }
 
+        .star-label i {
+            transition: color 0.2s;
+        }
+
+        /* hover màu vàng */
+        .star-label:hover~.star-label i,
+        .star-label:hover i {
+            color: #ffc107 !important;
+        }
+
+        /* sao được chọn */
+        input[type="radio"]:checked~label i {
+            color: #ffc107 !important;
+        }
     </style>
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    // Function to handle reorder
-    function handleReorder(button) {
-        const orderId = button.getAttribute('data-order-id');
-        console.log('Handling reorder for order:', orderId);
-        
-        if (!orderId) {
-            console.error('No order ID found');
-            return;
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Function to handle reorder
+        function handleReorder(button) {
+            const orderId = button.getAttribute('data-order-id');
+            console.log('Handling reorder for order:', orderId);
+
+            if (!orderId) {
+                console.error('No order ID found');
+                return;
+            }
+
+            // Show loading state
+            const originalHTML = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+
+            // Create form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/orders/' + orderId + '/reorder';
+            form.style.display = 'none';
+
+            // Add CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+
+            // Add method spoofing
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'POST';
+            form.appendChild(methodInput);
+
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
         }
-        
-        // Show loading state
-        const originalHTML = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
-        
-        // Create form
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/orders/' + orderId + '/reorder';
-        form.style.display = 'none';
-        
-        // Add CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-        
-        // Add method spoofing
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'POST';
-        form.appendChild(methodInput);
-        
-        // Submit form
-        document.body.appendChild(form);
-        form.submit();
-    }
-    
-    // Add click handler when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
+
+        // Add click handler when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
         const buttons = document.querySelectorAll('.reorder-btn');
         console.log('Found', buttons.length, 'reorder buttons');
-        
+
         buttons.forEach(button => {
             button.onclick = function(e) {
                 e.preventDefault();
                 handleReorder(this);
             };
-                
-                console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
-                console.log('Order ID:', orderId);
-                
-                if (!orderId) {
-                    console.error('Không tìm thấy orderId');
-                    alert('Không tìm thấy thông tin đơn hàng');
-                    return false;
-                }
-                
-                // Vô hiệu hóa nút và hiển thị loading
-                button.disabled = true;
-                const originalHTML = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
-                
-                // Tạo form ẩn để gửi request
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/orders/' + orderId + '/reorder';
-                form.style.display = 'none';
-                
-                // Thêm CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
-                
-                // Thêm method spoofing cho POST
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'POST';
-                form.appendChild(methodInput);
-                
-                // Thêm form vào body và submit
-                document.body.appendChild(form);
-                form.submit();
-                
-                // Đảm bảo form được submit
-                setTimeout(() => {
-                    if (document.body.contains(form)) {
-                        document.body.removeChild(form);
-                    }
-                    button.disabled = false;
-                    button.innerHTML = originalHTML;
-                }, 1000);
-            });
-        });
-    });
-</script>
 
-<script>
-    // Hàm xử lý nút Mua lại
-    window.handleReorder = function(button, event, orderId) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
-        console.log('Order ID:', orderId);
-        
-        if (!orderId) {
-            console.error('Không tìm thấy orderId');
-            alert('Không tìm thấy thông tin đơn hàng');
-            return false;
-        }
-        
-        // Vô hiệu hóa nút và hiển thị loading
-        button.disabled = true;
-        const originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
-        
-        // Tạo form ẩn để gửi request
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/orders/' + orderId + '/reorder';
-        form.style.display = 'none';
-        
-        // Thêm CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-        
-        // Thêm method spoofing cho POST
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'POST';
-        form.appendChild(methodInput);
-        
-        // Thêm form vào body và submit
-        document.body.appendChild(form);
-        form.submit();
-        
-        // Đảm bảo form được submit
-        setTimeout(() => {
-            if (document.body.contains(form)) {
-                document.body.removeChild(form);
-            }
-            button.disabled = false;
-            button.innerHTML = originalHTML;
-            alert('Đang xử lý yêu cầu mua lại đơn hàng...');
-        }, 1000);
-    }
-    // Hàm hiển thị lỗi
-    function showError(message) {
-        console.error('Error:', message);
-        Swal.fire({
-            title: 'Lỗi!',
-            text: message,
-            icon: 'error',
-            confirmButtonText: 'Đóng',
-            confirmButtonColor: '#dc3545'
-        });
-    }
-    
-    // Xử lý nút Mua lại - phiên bản đơn giản
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.reorder-btn')) {
-            e.preventDefault();
-            const button = e.target.closest('.reorder-btn');
-            const orderId = button.getAttribute('data-order-id');
-            const originalHTML = button.innerHTML;
-            
             console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
             console.log('Order ID:', orderId);
-            
+
             if (!orderId) {
                 console.error('Không tìm thấy orderId');
                 alert('Không tìm thấy thông tin đơn hàng');
                 return false;
             }
-            
+
             // Vô hiệu hóa nút và hiển thị loading
             button.disabled = true;
+            const originalHTML = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
-            
+
             // Tạo form ẩn để gửi request
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '/orders/' + orderId + '/reorder';
             form.style.display = 'none';
-            
+
             // Thêm CSRF token
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const csrfInput = document.createElement('input');
@@ -1788,190 +1685,317 @@
             csrfInput.name = '_token';
             csrfInput.value = csrfToken;
             form.appendChild(csrfInput);
-            
+
             // Thêm method spoofing cho POST
             const methodInput = document.createElement('input');
             methodInput.type = 'hidden';
             methodInput.name = '_method';
             methodInput.value = 'POST';
             form.appendChild(methodInput);
-            
+
             // Thêm form vào body và submit
             document.body.appendChild(form);
             form.submit();
-        }
-    });
-    // Khởi tạo tooltip
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-    
-    // Xử lý khi chọn "Khác" trong lý do hủy
-    document.addEventListener('DOMContentLoaded', function() {
-        var cancelReasonSelect = document.getElementById('cancel_reason');
-        if (cancelReasonSelect) {
-            cancelReasonSelect.addEventListener('change', function() {
-                if (this.value === 'Khác') {
-                    this.style.display = 'none';
-                    var otherReasonInput = document.createElement('input');
-                    otherReasonInput.type = 'text';
-                    otherReasonInput.name = 'cancel_reason';
-                    otherReasonInput.className = 'form-control';
-                    otherReasonInput.placeholder = 'Nhập lý do hủy đơn...';
-                    otherReasonInput.required = true;
-                    this.parentNode.appendChild(otherReasonInput);
-                    otherReasonInput.focus();
-                }
-            });
-        }
-        
-        // Reset modal khi đóng
-        var cancelModal = document.getElementById('cancelOrderModal');
-        if (cancelModal) {
-            cancelModal.addEventListener('hidden.bs.modal', function() {
-                var select = document.getElementById('cancel_reason');
-                if (select) {
-                    select.style.display = 'block';
-                    select.value = '';
-                    
-                    // Xóa input "Khác" nếu có
-                    var otherInput = select.parentNode.querySelector('input[name="cancel_reason"]');
-                    if (otherInput) {
-                        otherInput.remove();
-                    }
-                    
-                    var cancelNote = document.getElementById('cancel_note');
-                    if (cancelNote) {
-                        cancelNote.value = '';
-                    }
-                }
-            });
-        }
-    });
-    
-    // Hàm mở modal hủy đơn hàng
-    function openCancelModal(orderId, orderCode) {
-        var orderCodeInput = document.getElementById('orderCode');
-        var cancelOrderForm = document.getElementById('cancelOrderForm');
-        if (orderCodeInput) orderCodeInput.value = orderCode;
-        if (cancelOrderForm) cancelOrderForm.action = '{{ route("client.orders.cancel", ":orderId") }}'.replace(':orderId', orderId);
-        
-        // Reset form
-        var cancelReason = document.getElementById('cancel_reason');
-        if (cancelReason) {
-            cancelReason.value = '';
-        }
-        
-        var cancelNote = document.getElementById('cancel_note');
-        if (cancelNote) {
-            cancelNote.value = '';
-        }
-        
-        // Hiển thị modal
-        var modalEl = document.getElementById('cancelOrderModal');
-        if (modalEl) {
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        }
-    }
-    
-    // Hàm hiển thị lỗi
-    function showError(message) {
-        console.error('Error:', message);
-        Swal.fire({
-            title: 'Lỗi!',
-            text: message,
-            icon: 'error',
-            confirmButtonText: 'Đóng',
-            confirmButtonColor: '#dc3545'
-        });
-    }
 
-    // Xử lý nút Mua lại
-    $(document).on('click', '.reorder-btn', function(e) {
-        e.preventDefault();
-        const button = $(this);
-        const orderId = button.data('order-id');
-        const originalText = button.html();
-        
-        console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
-        console.log('Order ID:', orderId);
-        console.log('Button:', button);
-        
-        // Kiểm tra orderId
-        if (!orderId) {
-            console.error('Không tìm thấy orderId');
-            showError('Không tìm thấy thông tin đơn hàng');
-            return false;
+            // Đảm bảo form được submit
+            setTimeout(() => {
+                if (document.body.contains(form)) {
+                    document.body.removeChild(form);
+                }
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            }, 1000);
+        });
+        });
+        });
+    </script>
+
+    <script>
+        // Hàm xử lý nút Mua lại
+        window.handleReorder = function(button, event, orderId) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+            console.log('Order ID:', orderId);
+
+            if (!orderId) {
+                console.error('Không tìm thấy orderId');
+                alert('Không tìm thấy thông tin đơn hàng');
+                return false;
+            }
+
+            // Vô hiệu hóa nút và hiển thị loading
+            button.disabled = true;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+
+            // Tạo form ẩn để gửi request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/orders/' + orderId + '/reorder';
+            form.style.display = 'none';
+
+            // Thêm CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+
+            // Thêm method spoofing cho POST
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'POST';
+            form.appendChild(methodInput);
+
+            // Thêm form vào body và submit
+            document.body.appendChild(form);
+            form.submit();
+
+            // Đảm bảo form được submit
+            setTimeout(() => {
+                if (document.body.contains(form)) {
+                    document.body.removeChild(form);
+                }
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+                alert('Đang xử lý yêu cầu mua lại đơn hàng...');
+            }, 1000);
         }
-        
-        // Vô hiệu hóa nút và hiển thị loading
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
-        
-        // Gửi yêu cầu AJAX
-        const url = '{{ url("orders") }}/' + orderId + '/reorder';
-        console.log('Gửi yêu cầu AJAX đến:', url);
-        
-        $.ajax({
-            url: url,
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(response) {
-                console.log('=== Phản hồi từ máy chủ ===');
-                console.log('Response:', response);
-                
-                // Bật lại nút
-                button.prop('disabled', false).html(originalText);
-                
-                if (response && response.success) {
-                    // Chuyển hướng trực tiếp đến giỏ hàng
-                    if (response.redirect) {
-                        window.location.href = response.redirect;
-                        return;
-                    }
-                    
-                    // Nếu không có redirect URL, chuyển hướng đến giỏ hàng mặc định
-                    window.location.href = '{{ route("client.shopping-cart.index") }}';
-                } else {
-                    // Xử lý khi response không có success = true
-                    const errorMessage = response && response.message 
-                        ? response.message 
-                        : 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.';
-                    showError(errorMessage);
+        // Hàm hiển thị lỗi
+        function showError(message) {
+            console.error('Error:', message);
+            Swal.fire({
+                title: 'Lỗi!',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+
+        // Xử lý nút Mua lại - phiên bản đơn giản
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.reorder-btn')) {
+                e.preventDefault();
+                const button = e.target.closest('.reorder-btn');
+                const orderId = button.getAttribute('data-order-id');
+                const originalHTML = button.innerHTML;
+
+                console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+                console.log('Order ID:', orderId);
+
+                if (!orderId) {
+                    console.error('Không tìm thấy orderId');
+                    alert('Không tìm thấy thông tin đơn hàng');
+                    return false;
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error);
-                console.error('Response:', xhr.responseText);
-                
-                // Bật lại nút
-                button.prop('disabled', false).html(originalText);
-                
-                // Hiển thị thông báo lỗi
-                let errorMessage = 'Có lỗi xảy ra khi xử lý yêu cầu';
-                try {
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        const response = JSON.parse(xhr.responseText);
-                        errorMessage = response.message || errorMessage;
+
+                // Vô hiệu hóa nút và hiển thị loading
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+
+                // Tạo form ẩn để gửi request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/orders/' + orderId + '/reorder';
+                form.style.display = 'none';
+
+                // Thêm CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                // Thêm method spoofing cho POST
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'POST';
+                form.appendChild(methodInput);
+
+                // Thêm form vào body và submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+        // Khởi tạo tooltip
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Xử lý khi chọn "Khác" trong lý do hủy
+        document.addEventListener('DOMContentLoaded', function() {
+            var cancelReasonSelect = document.getElementById('cancel_reason');
+            if (cancelReasonSelect) {
+                cancelReasonSelect.addEventListener('change', function() {
+                    if (this.value === 'Khác') {
+                        this.style.display = 'none';
+                        var otherReasonInput = document.createElement('input');
+                        otherReasonInput.type = 'text';
+                        otherReasonInput.name = 'cancel_reason';
+                        otherReasonInput.className = 'form-control';
+                        otherReasonInput.placeholder = 'Nhập lý do hủy đơn...';
+                        otherReasonInput.required = true;
+                        this.parentNode.appendChild(otherReasonInput);
+                        otherReasonInput.focus();
                     }
-                } catch (e) {
-                    console.error('Error parsing error response:', e);
-                    errorMessage = xhr.responseText || errorMessage;
-                }
-                
-                // Hiển thị thông báo lỗi chi tiết hơn
-                Swal.fire({
-                    title: 'Lỗi!',
-                    html: `<div style="text-align: left;">
+                });
+            }
+
+            // Reset modal khi đóng
+            var cancelModal = document.getElementById('cancelOrderModal');
+            if (cancelModal) {
+                cancelModal.addEventListener('hidden.bs.modal', function() {
+                    var select = document.getElementById('cancel_reason');
+                    if (select) {
+                        select.style.display = 'block';
+                        select.value = '';
+
+                        // Xóa input "Khác" nếu có
+                        var otherInput = select.parentNode.querySelector('input[name="cancel_reason"]');
+                        if (otherInput) {
+                            otherInput.remove();
+                        }
+
+                        var cancelNote = document.getElementById('cancel_note');
+                        if (cancelNote) {
+                            cancelNote.value = '';
+                        }
+                    }
+                });
+            }
+        });
+
+        // Hàm mở modal hủy đơn hàng
+        function openCancelModal(orderId, orderCode) {
+            var orderCodeInput = document.getElementById('orderCode');
+            var cancelOrderForm = document.getElementById('cancelOrderForm');
+            if (orderCodeInput) orderCodeInput.value = orderCode;
+            if (cancelOrderForm) cancelOrderForm.action = '{{ route('client.orders.cancel', ':orderId') }}'.replace(
+                ':orderId', orderId);
+
+            // Reset form
+            var cancelReason = document.getElementById('cancel_reason');
+            if (cancelReason) {
+                cancelReason.value = '';
+            }
+
+            var cancelNote = document.getElementById('cancel_note');
+            if (cancelNote) {
+                cancelNote.value = '';
+            }
+
+            // Hiển thị modal
+            var modalEl = document.getElementById('cancelOrderModal');
+            if (modalEl) {
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }
+
+        // Hàm hiển thị lỗi
+        function showError(message) {
+            console.error('Error:', message);
+            Swal.fire({
+                title: 'Lỗi!',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+
+        // Xử lý nút Mua lại
+        $(document).on('click', '.reorder-btn', function(e) {
+            e.preventDefault();
+            const button = $(this);
+            const orderId = button.data('order-id');
+            const originalText = button.html();
+
+            console.log('=== Bắt đầu xử lý mua lại đơn hàng ===');
+            console.log('Order ID:', orderId);
+            console.log('Button:', button);
+
+            // Kiểm tra orderId
+            if (!orderId) {
+                console.error('Không tìm thấy orderId');
+                showError('Không tìm thấy thông tin đơn hàng');
+                return false;
+            }
+
+            // Vô hiệu hóa nút và hiển thị loading
+            button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+
+            // Gửi yêu cầu AJAX
+            const url = '{{ url('orders') }}/' + orderId + '/reorder';
+            console.log('Gửi yêu cầu AJAX đến:', url);
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    console.log('=== Phản hồi từ máy chủ ===');
+                    console.log('Response:', response);
+
+                    // Bật lại nút
+                    button.prop('disabled', false).html(originalText);
+
+                    if (response && response.success) {
+                        // Chuyển hướng trực tiếp đến giỏ hàng
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                            return;
+                        }
+
+                        // Nếu không có redirect URL, chuyển hướng đến giỏ hàng mặc định
+                        window.location.href = '{{ route('client.shopping-cart.index') }}';
+                    } else {
+                        // Xử lý khi response không có success = true
+                        const errorMessage = response && response.message ?
+                            response.message :
+                            'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.';
+                        showError(errorMessage);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    console.error('Response:', xhr.responseText);
+
+                    // Bật lại nút
+                    button.prop('disabled', false).html(originalText);
+
+                    // Hiển thị thông báo lỗi
+                    let errorMessage = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMessage = response.message || errorMessage;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                        errorMessage = xhr.responseText || errorMessage;
+                    }
+
+                    // Hiển thị thông báo lỗi chi tiết hơn
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        html: `<div style="text-align: left;">
                         <p>${errorMessage}</p>
                         <div class="mt-3 text-muted small">
                             <div>Mã lỗi: ${xhr.status} (${xhr.statusText})</div>
@@ -1980,27 +2004,26 @@
                                 JSON.stringify(xhr.responseJSON.errors) + '</div>' : ''}
                         </div>
                     </div>`,
-                    icon: 'error',
-                    confirmButtonText: 'Đóng',
-                    confirmButtonColor: '#dc3545',
-                    width: '500px'
-                });
-            }
+                        icon: 'error',
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545',
+                        width: '500px'
+                    });
+                }
+            });
         });
-    });
-    
-    // Xử lý form xác nhận đã nhận hàng
-    $(document).on('submit', 'form.confirm-delivery-form', function(e) {
-        // Không cần ngăn chặn hành vi mặc định nữa
-        const form = $(this);
-        const button = form.find('button[type="submit"]');
-        
-        // Vô hiệu hóa nút để tránh submit nhiều lần
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
-        
-        // Cho phép form submit bình thường
-        return true;
-    });
-</script>
+
+        // Xử lý form xác nhận đã nhận hàng
+        $(document).on('submit', 'form.confirm-delivery-form', function(e) {
+            // Không cần ngăn chặn hành vi mặc định nữa
+            const form = $(this);
+            const button = form.find('button[type="submit"]');
+
+            // Vô hiệu hóa nút để tránh submit nhiều lần
+            button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
+
+            // Cho phép form submit bình thường
+            return true;
+        });
+    </script>
 @endpush
-        

@@ -30,44 +30,37 @@
                 </div>
 
                 @if($posts->count() > 0)
-                    @foreach($posts as $post)
-                        <article class="card mb-4">
-                            @if($post->thumbnail)
+                    <style>
+                        .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+                        .post-card { border: 1px solid #e5e7eb; background: #fff; display: flex; flex-direction: column; }
+                        .post-card .thumb { width: 100%; height: 210px; object-fit: cover; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
+                        .post-card .card-body { padding: 14px; }
+                        .post-card h3 { font-size: 18px; margin: 0 0 8px; }
+                        .post-card h3 a { color: #111827; text-decoration: none; }
+                        .post-card h3 a:hover { text-decoration: underline; }
+                        .post-card .meta { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+                        .post-card .excerpt { color: #333; line-height: 1.6; font-size: 14px; }
+                        @media (max-width: 1200px) { .posts-grid { grid-template-columns: repeat(2, 1fr); } }
+                        @media (max-width: 980px) { .posts-grid { grid-template-columns: 1fr; } }
+                    </style>
+                    <div class="posts-grid">
+                        @foreach($posts as $post)
+                            <article class="post-card">
                                 <a href="{{ route('blog.show', $post->slug) }}">
-                                    <img src="{{ Storage::url($post->thumbnail) }}" class="card-img-top" alt="{{ $post->title }}" style="height: 300px; object-fit: cover;">
+                                    <img src="{{ $post->thumbnail ? Storage::url($post->thumbnail) : asset('assets2/img/blog/blog-thumb-1.jpg') }}" class="thumb" alt="{{ $post->title }}">
                                 </a>
-                            @endif
-                            <div class="card-body">
-                                <div class="d-flex align-items-center mb-3">
-                                    <span class="text-muted me-3">
-                                        <i class="far fa-calendar-alt me-1"></i> 
-                                        {{ $post->published_at->format('d/m/Y') }}
-                                    </span>
-                                    <span class="text-muted">
-                                        <i class="far fa-eye me-1"></i> {{ $post->views }} lượt xem
-                                    </span>
-                                </div>
-                                
-                                <h2 class="card-title h4">
-                                    <a href="{{ route('blog.show', $post->slug) }}" class="text-decoration-none">
-                                        {{ $post->title }}
-                                    </a>
-                                </h2>
-                                
-                                <p class="card-text">{{ Str::limit(strip_tags($post->excerpt ?? $post->content), 200, '...') }}</p>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <a href="{{ route('blog.show', $post->slug) }}" class="btn btn-outline-primary">
-                                        Đọc tiếp
-                                    </a>
-                                    <div class="text-muted small">
-                                        <i class="far fa-comment-alt me-1"></i> 
-                                        {{ $post->comments_count ?? 0 }} bình luận
+                                <div class="card-body">
+                                    <h3>
+                                        <a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a>
+                                    </h3>
+                                    <div class="meta">
+                                        {{ optional($post->published_at ?? $post->created_at)->format('d/m/Y') }} · {{ $post->views }} lượt xem
                                     </div>
+                                    <p class="excerpt">{{ Str::limit(strip_tags($post->excerpt ?? $post->content), 160, '...') }}</p>
                                 </div>
-                            </div>
-                        </article>
-                    @endforeach
+                            </article>
+                        @endforeach
+                    </div>
 
                     <!-- Pagination -->
                     <div class="mt-4">
@@ -84,7 +77,9 @@
 
             <!-- Sidebar -->
             <div class="col-lg-4">
-                @include('client.blog.partials.sidebar')
+                <div style="position: sticky; top: 20px;">
+                    @include('client.blog.partials.sidebar')
+                </div>
             </div>
         </div>
     </div>
