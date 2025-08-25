@@ -40,7 +40,7 @@ class UserController extends Controller
     {
         $user->load('address');
 
-        $orders = \App\Models\Order::where('user_id', $user->id)->get()->map(function ($order) {
+        $orders = \App\Models\Order::where('user_id', $user->id)->orderBy('created_at', 'desc')->get()->map(function ($order) {
             $order->payment_status_badge = $order->is_paid
                 ? '<span class="badge bg-success">Đã thanh toán</span>'
                 : '<span class="badge bg-warning text-dark">Chưa thanh toán</span>';
@@ -56,7 +56,7 @@ class UserController extends Controller
             return $order;
         });
 
-        $reviews = \App\Models\Review::where('user_id', $user->id)->get()->map(function ($review) {
+        $reviews = \App\Models\Review::where('user_id', $user->id)->orderBy('created_at', 'desc')->get()->map(function ($review) {
             $review->product_name = 'Sản phẩm #' . $review->product_id;
             $review->stars = str_repeat('★', $review->rating) . str_repeat('☆', 5 - $review->rating);
             $review->content = $review->review_text;
@@ -232,12 +232,12 @@ class UserController extends Controller
         // Lấy user cần cập nhật
         $user = User::findOrFail($id);
 
-        // ❌ Không cho phép admin tự sửa chính họ
+        //Không cho phép admin tự sửa chính họ
         if (Auth::id() === $user->id) {
             return back()->with('error', 'Bạn không thể cập nhật thông tin của chính mình.');
         }
 
-        // ❌ Không cho phép cập nhật thông tin Admin khác
+        //Không cho phép cập nhật thông tin Admin khác
         if ($user->role === 'admin') {
             return back()->with('error', 'Không được phép cập nhật thông tin của tài khoản Admin.');
         }
