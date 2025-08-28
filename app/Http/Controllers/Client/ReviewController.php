@@ -19,39 +19,26 @@ class ReviewController extends Controller
    public function store(ReviewRequest $req)
 {
     $productId = $req->product_id;
+    $orderItemId = $req->order_item_id;
     $user = Auth::user();
     //Admin và nhân viên k đươjc đánh giá sp
     if (in_array($user->role, ['admin', 'employee'])) {
         return back()->with('error', 'Quản trị viên và nhân viên không được đánh giá sản phẩm');
     }
     // Lấy tất cả đơn hàng của user với sản phẩm này đã được giao
-    $orders = Order::where('user_id', $user->id)
-        ->whereHas('items', fn($q)=>$q->where('product_id', $productId))
+    $orderItem = OrderItem::where('id', $orderItemId)
+        ->where('product_id', $productId)
+        ->whereHas('order', fn($q)=>$q->where('user_id', $user->id)
         ->whereHas('currentStatus.status', fn($q)
         => $q->where('name', 'Nhận hàng thành công'))
-        ->get();
+        )->first();
     
-    if($orders->isEmpty()){
-        return back()->with('error', 'Bạn chưa mua hoặc chưa nhận được sản phẩm này, không thể đánh giá');
+    if(!$orderItem){
+        return back()->with('error', 'Bạn chưa mua hoặc chưa nhận được sản phẩm này');
     }
-    //Kiểm tra xem đon hàng này đã được đánh giá chưa 
-    $reviewedOrderItemIds  = Review::where('user_id', $user->id)
-    ->where('product_id', $productId)
-    ->pluck('order_item_id')
-    ->toArray();
-    
-    //Lấy order_item nào chưa được đánh giá 
-    $orderItem = null;
-    foreach($orders as $order){
-        foreach($order->items as $item){
-            if (!in_array($item -> id, $reviewedOrderItemIds)) {
-                $orderItem = $item;
-                break 2; //Tìm thấy là break luôn 
-            }
-        }
-    }
-    if (!$orderItem) {
-        return back()->with('error', 'Bạn đánh giá tất cả các đơn hàng trước của sản phẩm này');
+    // Kiểm tra nếu order_item đã có review
+    if (Review::where('order_item_id', $orderItemId)->where('user_id', $user->id)->exists()) {
+        return back()->with('error', 'Bạn đã đánh giá sản phẩm này rồi.');
     }
 
     // Tạo review mới

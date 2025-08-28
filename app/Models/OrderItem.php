@@ -46,8 +46,7 @@ class OrderItem extends Model
     }
     public function review()
     {
-        return $this->hasOne(Review::class, 'order_item_id', 'id')
-                    ->where('user_id', Auth::id());
+        return $this->hasOne(Review::class, 'order_item_id', 'id');
     }
     public function hasBeenReviewed()
     {
@@ -65,7 +64,14 @@ class OrderItem extends Model
         }
 
         $expireDate = Carbon::parse($deliveredStatus->created_at)->addDays(30);
-        return now()->lessThanOrEqualTo($expireDate);
+        if (now()->greaterThan($expireDate)) {
+            return false;
+        }
+        
+        if ($this->review) {
+            return false;
+        }
+        return true;
     }
 
 }
