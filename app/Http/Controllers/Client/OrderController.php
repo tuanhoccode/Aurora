@@ -27,7 +27,7 @@ class OrderController extends Controller
             ->with([
                 'items.product',
                 'orderItems',
-                'items.review',
+                'items.review.images',
                 'currentOrderStatus.status',
                 'payment',
                 'statusHistory.status'
@@ -209,7 +209,7 @@ class OrderController extends Controller
             abort(404);
         }
 
-        $order->load(['items.product', 'statusHistory.status', 'payment']);
+        $order->load(['items.product', 'items.review.images' ,  'statusHistory.status', 'payment']);
 
         return view('client.orders.show', compact('order'));
     }

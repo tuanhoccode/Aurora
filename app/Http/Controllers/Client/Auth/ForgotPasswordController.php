@@ -18,7 +18,7 @@ class ForgotPasswordController extends Controller
     {
         $status = Password::sendResetLink($req->only('email'));
         return $status === Password::RESET_LINK_SENT
-            ? back()->with('success', 'Đã gửi email đặt lại mật khẩu! Vui lòng kiển tra hộp thư')
+            ? back()->with('success', 'Email đặt lại mật khẩu đã gửi! Vui lòng kiển tra hộp thư')
             : back()->with('error', 'Không thể gửi email! Vui lòng thử lại' );
     }
 }

@@ -10,7 +10,7 @@
 <body class="bg-light d-flex justify-content-center align-items-center vh-100">
     <div class="text-center">
         <h1 class="display-1 fw-bold text-danger">403</h1>
-        <p class="fs-3">⚠️ <span class="text-dark">Bạn không có quyền truy cập trang này.</span></p>
+        <p class="fs-3">⚠️ <span class="text-dark">Không có trang này trên hệ thống.</span></p>
         <a href="{{ route('showLoginForm') }}" class="btn btn-primary">Về trang chủ</a>
     </div>
 </body>

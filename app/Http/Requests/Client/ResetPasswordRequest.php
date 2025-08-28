@@ -34,7 +34,7 @@ class ResetPasswordRequest extends FormRequest
 
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không hợp lệ.',
-            'email.exists' => 'Email không tồn tại trong hệ thống.',
+            'email.exists' => 'Vui lòng kiểm tra lại email hoặc mật khẩu.',
             'email.max' => 'Email không được quá 255 ký tự.',
             
             'password.required' => 'Vui lòng nhập mật khẩu.',

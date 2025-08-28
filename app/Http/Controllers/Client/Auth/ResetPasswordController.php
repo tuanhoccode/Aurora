@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Client\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ResetPasswordRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class ResetPasswordController extends Controller
 {
@@ -20,6 +22,8 @@ class ResetPasswordController extends Controller
                 $user->forceFill([
                     'password' => Hash::make($password),
                 ])->save();
+                //Xóa session để logout mọi tk khi thay đổi mk
+                DB::table('sessions')->where('user_id', $user->id)->delete();
             }
         );
         if ($status === Password::PASSWORD_RESET) {
@@ -27,8 +31,8 @@ class ResetPasswordController extends Controller
         }
 
         $messages = [
-            Password::INVALID_TOKEN => 'Email khôi phục mật khẩu không hợp lệ.',
-            Password::INVALID_USER => 'Email không tồn tại trong hệ thống.',
+            Password::INVALID_TOKEN => 'Liên kết không hợp lệ hoặc đã hết hạn.',
+            Password::INVALID_USER => 'Liên kết không hợp lệ hoặc đã hết hạn.',
             Password::RESET_THROTTLED => 'Vui lòng đợi trước khi thử lại.',
             Password::RESET_LINK_SENT => 'Email đặt lại mật khẩu đã được gửi.',
         ];

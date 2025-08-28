@@ -34,7 +34,7 @@ class ClientLoginRequest extends FormRequest
 
                 'email.required' => 'Vui lòng nhập email',
                 'email.email' => 'Email không đúng định dạng',
-                'email.exists' => 'Email chưa được đăng kí',
+                'email.exists' => 'Vui lòng kiểm tra lại email hoặc mật khẩu.',
                 'email.max' => 'Email không được quá 255 ký tự',
                 'email.regex' => 'Email phải chứa ký tự @ và "."',
 

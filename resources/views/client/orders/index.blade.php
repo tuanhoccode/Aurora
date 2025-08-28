@@ -830,7 +830,6 @@
                                 <div class="sp-head">
                                     <div class="d-flex align-items-center">
                                         <span class="sp-like">Sản phẩm đã mua</span>
-                                        <span class="shop ms-2">{{ $shopName }}</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
                                         @if ($statusId == 10)
@@ -889,7 +888,35 @@
                                             @endif
                                             <span class="sp-new">{{ number_format($item->price, 0, ',', '.') }} ₫</span>
                                         </div>
-                                    </div>
+                                    </div> 
+                                    @if ($statusId == 10 && !$order->refund()->whereIn('status', ['pending', 'approved'])->exists())
+                                        <div class="d-flex gap-2 mt-2">
+                                            @if ($item->review)
+                                                <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                                                    data-bs-toggle = "modal"
+                                                    data-bs-target = "#viewReviewModal"
+                                                    data-rating = "{{ $item->review->rating }}"
+                                                    data-text = "{{ $item->review->review_text }}"
+                                                    data-images='@json($item->review->images->map(fn($img) => asset('storage/' . $img->image_path)))'
+                                                    data-product-name = "{{ $item->product->name }}"
+                                                    data-variant = "{{ $variantText }}"
+                                                    data-thumb="{{ $item->product->thumbnail
+                                                        ? asset('storage/' . $item->product->thumbnail)
+                                                        : asset('assets2/img/product/2/prodcut-1.jpg') }}">
+                                                    <i class="fas fa-eye me-1"></i> Xem đánh giá
+                                                </button>     
+                                            @elseif($item->canReviewItem()) 
+                                                <button class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1"
+                                                    data-bs-toggle="modal" data-bs-target="#reviewModal"
+                                                    data-product-id="{{ $item->product->id }}"
+                                                    data-order-item-id="{{ $item->id }}"
+                                                    data-product-name="{{ $item->product->name }}"
+                                                    data-variant="{{ $variantText }}">
+                                                    <i class="fas fa-star"></i>Đánh giá sản phẩm
+                                                </button>                                                  
+                                            @endif
+                                        </div>
+                                    @endif
                                 @endforeach
 
                                 <div class="sp-foot">
@@ -949,39 +976,6 @@
                                                             <i class="fas fa-shopping-cart me-1"></i> Mua lại
                                                         </button>
                                                     </form>
-                                                @endif
-                                                @if (
-                                                    $statusId == 10 &&
-                                                        !$order->refund()->whereIn('status', ['pending', 'approved'])->exists())
-                                                    @if ($item->review)
-                                                        <div
-                                                            class="btn btn-outline-secondary d-flex align-items-center gap-1 btn-sm">
-                                                            <button data-bs-toggle = "modal"
-                                                                data-bs-target = "#viewReviewModal"
-                                                                data-rating = "{{ $item->review->rating }}"
-                                                                data-text = "{{ $item->review->review_text }}"
-                                                                data-images='@json($item->review->images->map(fn($img) => asset('storage/' . $img->image_path)))'
-                                                                data-product-name = "{{ $item->product->name }}"
-                                                                data-variant = "{{ $variantText }}"
-                                                                data-thumb="{{ $item->product->thumbnail
-                                                                    ? asset('storage/' . $item->product->thumbnail)
-                                                                    : asset('assets2/img/product/2/prodcut-1.jpg') }}">
-                                                                <i class="fas fa-eye me-1"></i> Xem đánh giá
-                                                            </button>
-
-                                                        </div>
-                                                    @elseif($item->canReviewItem())
-                                                        <div
-                                                            class="btn btn-outline-warning d-flex align-items-center gap-1 btn-sm">
-                                                            <button data-bs-toggle="modal" data-bs-target="#reviewModal"
-                                                                data-product-id="{{ $item->product->id }}"
-                                                                data-order-item-id="{{ $item->id }}"
-                                                                data-product-name="{{ $item->product->name }}"
-                                                                data-variant="{{ $variantText }}">
-                                                                <i class="fas fa-star"></i>Đánh giá sản phẩm
-                                                            </button>
-                                                        </div>
-                                                    @endif
                                                 @endif
                                                 <a href="{{ route('client.orders.show', $order->id) }}"
                                                     class="btn btn-primary d-flex align-items-center gap-1 btn-sm">
@@ -1187,16 +1181,16 @@
             const button = event.relatedTarget;
             const productId = button.getAttribute('data-product-id');
             const orderItemId = button.getAttribute('data-order-item-id');
+            const productName = button.getAttribute('data-product-name');
+            const variantText = button.getAttribute('data-variant');
 
             // Cập nhật URL form với product_id
             const form = document.getElementById('reviewForm');
-            form.action = '{{ url('client/reviews') }}/' + productId;
+            form.action = '{{ route('client.store') }}';
             document.getElementById('review_product_id').value = productId;
             document.getElementById('review_order_item_id').value = orderItemId;
 
             //Gán tên sp phân loại
-            const productName = button.getAttribute('data-product-name');
-            const variantText = button.getAttribute('data-variant');
             document.getElementById('reviewProductName').textContent = productName;
             document.getElementById('reviewVariantText').textContent = variantText ? `Phân loại: ${variantText}` :
                 '';
