@@ -134,6 +134,14 @@
                                         {{ $order->address ?? 'Không xác định' }}</div>
                                     <div><i class="fas fa-shipping-fast me-1"></i> <strong>Phương thức vận chuyển:</strong>
                                         Giao hàng {{ $order->shipping_type ?? 'Không xác định' }}</div>
+                                    <div><i class="fas fa-credit-card me-1"></i> <strong>Phương thức thanh toán:</strong>
+                                        @php
+                                            $paymentMethod = strtolower(optional($order->payment)->name ?? 'cod');
+                                            $paymentMethod = in_array($paymentMethod, ['cod', 'vnpay']) ? $paymentMethod : 'cod';
+                                            $paymentMethodText = $paymentMethod === 'vnpay' ? 'VNPay' : 'COD';
+                                        @endphp
+                                        {{ $paymentMethodText }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
