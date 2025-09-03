@@ -69,7 +69,7 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <h1 class="h3 mb-2 fw-bold">Bảng Điều Khiển</h1>
-                <p class="text-muted mb-0">Chào mừng trở lại, {{Auth::user()->fullname}}({{Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'}})!</p>
+                <p class="text-muted mb-0">Chào mừng trở lại, {{Auth::user()->fullname}}({{Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'}}) !</p>
             </div>
             <div class="date-info">
                 <span class="badge bg-light text-dark shadow-sm fs-6 py-2 px-3">
@@ -83,16 +83,12 @@
     <!-- Quick Stats Row -->
     <div class="row g-4 mb-4">
         <!-- Tổng Sản Phẩm -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <div class="stats-card bg-white shadow-sm h-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="stats-icon bg-primary bg-opacity-10">
                             <i class="fas fa-shirt text-primary"></i>
-                        </div>
-                        <div class="stats-trend text-success fw-bold">
-                            <i class="fas fa-arrow-up me-1"></i>
-                            {{ number_format((($activeProducts ?? 0) / max(($totalProducts ?? 1),1)) * 100, 1) }}%
                         </div>
                     </div>
                     <h3 class="card-title h2 mb-2 fw-bold">{{ number_format($totalProducts ?? 0) }}</h3>
@@ -105,23 +101,19 @@
                 </div>
             </div>
         </div>
-        <!-- Sản Phẩm Hoạt Động -->
-        <div class="col-12 col-md-4">
+        <!-- Mã Giảm Giá Hoạt Động -->
+        <div class="col-12 col-md-3">
             <div class="stats-card bg-white shadow-sm h-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="stats-icon bg-success bg-opacity-10">
-                            <i class="fas fa-circle-check text-success"></i>
-                        </div>
-                        <div class="stats-trend text-success fw-bold">
-                            <i class="fas fa-arrow-up me-1"></i>
-                            {{ number_format((($activeProducts ?? 0) / max(($totalProducts ?? 1),1)) * 100, 1) }}%
+                            <i class="fas fa-ticket-alt text-success"></i>
                         </div>
                     </div>
-                    <h3 class="card-title h2 mb-2 fw-bold">{{ number_format($activeProducts ?? 0) }}</h3>
-                    <p class="card-text text-muted mb-0">Sản Phẩm Hoạt Động</p>
+                    <h3 class="card-title h2 mb-2 fw-bold">{{ number_format($activeCoupons ?? 0) }}</h3>
+                    <p class="card-text text-muted mb-0">Mã Giảm Giá Hoạt Động</p>
                     <div class="mt-3">
-                        <a href="{{ route('admin.products.index') }}" class="btn btn-link text-success p-0 text-decoration-none fw-semibold">
+                        <a href="{{ route('admin.coupons.index') }}" class="btn btn-link text-success p-0 text-decoration-none fw-semibold">
                             Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -129,22 +121,38 @@
             </div>
         </div>
         <!-- Tổng Người Dùng -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <div class="stats-card bg-white shadow-sm h-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="stats-icon bg-info bg-opacity-10">
                             <i class="fas fa-users text-info"></i>
                         </div>
-                        <div class="stats-trend text-primary fw-bold">
-                            <i class="fas fa-arrow-up me-1"></i>
-                            {{ number_format((($activeUsers ?? 0) / max(($totalUsers ?? 1),1)) * 100, 1) }}%
-                        </div>
                     </div>
                     <h3 class="card-title h2 mb-2 fw-bold">{{ number_format($totalUsers) }}</h3>
                     <p class="card-text text-muted mb-0">Tổng Người Dùng</p>
                     <div class="mt-3">
                         <a href="{{ route('admin.users.index') }}" class="btn btn-link text-info p-0 text-decoration-none fw-semibold">
+                            Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tổng Đơn Hàng -->
+        <div class="col-12 col-md-3">
+            <div class="stats-card bg-white shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stats-icon bg-warning bg-opacity-10">
+                            <i class="fas fa-shopping-cart text-warning"></i>
+                        </div>
+                    </div>
+                    <h3 class="card-title h2 mb-2 fw-bold">{{ number_format($totalOrders ?? 0) }}</h3>
+                    <p class="card-text text-muted mb-0">Tổng Đơn Hàng</p>
+                    <div class="mt-3">
+                        <a href="{{ route('admin.orders.index') }}" class="btn btn-link text-warning p-0 text-decoration-none fw-semibold">
                             Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -176,6 +184,57 @@
             </div>
         </div>
     </div>
+
+        <!-- Bảng đơn hàng mới nhất -->
+        <div class="table-card bg-white mt-4">
+        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-4 pb-2">
+            <h5 class="card-title mb-0 fw-bold">Đơn Hàng Mới Nhất</h5>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-primary btn-sm fw-semibold rounded-pill px-3">
+                <i class="fas fa-eye me-1"></i> Xem tất cả
+            </a>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Mã Đơn Hàng</th>
+                            <th>Khách Hàng</th>
+                            <th>Ngày Đặt</th>
+                            <th>Tổng Tiền</th>
+                            <th>Phương Thức Thanh Toán</th>
+                            <th>Trạng Thái</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentOrders as $order)
+                        <tr>
+                            <td class="fw-bold">#{{ $order->code }}</td>
+                            <td>{{ $order->fullname ?? $order->user->name ?? 'Khách vãng lai' }}</td>
+                            <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="fw-bold">{{ number_format($order->total_amount, 0, ',', '.') }}đ</td>
+                            <td>{{ $order->payment->name ?? 'Chưa xác định' }}</td>
+                            <td>{!! $order->fulfilment_status_badge !!}</td>
+                            <td>
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-light btn-sm rounded-pill px-3">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="text-muted">Chưa có đơn hàng nào</div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Recent Products Table -->
     <div class="table-card bg-white mt-4">
