@@ -1,5 +1,10 @@
 @extends('client.layouts.default')
 
+@push('styles')
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css">
+@endpush
+
 @section('title', 'Chi tiết đơn hàng')
 
 @section('content')
@@ -878,9 +883,18 @@
                 <div class="ship-addr">
                     <div class="order-info">
                         <h3>Địa Chỉ Nhận Hàng</h3>
-                        <p style="font-weight:600;font-size:15px">{{ $order->fullname }}</p>
-                        <p>(+84) {{ preg_replace('/^(0|\+84)/','', $order->phone_number) }}</p>
-                        <p>{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</p>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p style="font-weight:600;font-size:15px; margin-bottom: 4px;">{{ $order->fullname }}</p>
+                                <p style="margin-bottom: 4px;">(+84) {{ preg_replace('/^(0|\+84)/','', $order->phone_number) }}</p>
+                                <p style="margin-bottom: 0;">{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</p>
+                            </div>
+                            @if($currentStatusName === 'Chờ xác nhận' && $order->cancellation_status === null)
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#changeAddressModal">
+                                <i class="fas fa-edit me-1"></i>
+                            </button>
+                            @endif
+                        </div>
                     </div>
                    <!-- Trạng thái thanh toán -->
                 <div class="order-info">
@@ -1185,5 +1199,168 @@
                 @endif
             </div>
         @endif
+
+<!-- Modal Thay đổi địa chỉ -->
+<div class="modal fade" id="changeAddressModal" tabindex="-1" aria-labelledby="changeAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #ee4d2d; color: white; border-bottom: none;">
+                <h5 class="modal-title text-white" id="changeAddressModalLabel" style="font-weight: 500;">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Thay đổi địa chỉ nhận hàng
+                </h5>
+                <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="updateAddressForm" action="{{ route('client.orders.update-address', $order->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    @if($addresses->count() > 0)
+                        <div class="row g-3" id="addressList">
+                            @foreach($addresses as $address)
+                                <div class="col-12 address-item">
+                                    <div class="card border-2 h-100" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input address-radio" type="radio" 
+                                                    name="address_id" 
+                                                    id="order_address_{{ $address->id }}" 
+                                                    value="{{ $address->id }}"
+                                                    {{ $order->address_id == $address->id ? 'checked' : '' }}>
+                                                <label class="form-check-label w-100" for="order_address_{{ $address->id }}">
+                                                    <div class="d-flex justify-content-between">
+                                                        <strong>{{ $address->fullname }}</strong>
+                                                        <span class="text-muted">(+84) {{ preg_replace('/^(0|\+84)/','', $address->phone_number) }}</span>
+                                                    </div>
+                                                    <p class="mb-0">{{ $address->address }}{{ $address->city ? ', '.$address->city : '' }}</p>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{{ route('address.create') }}?return_url={{ urlencode(route('client.orders.show', $order->id)) }}" class="btn" style="background-color: #fff; color: #ee4d2d; border: 1px solid #ee4d2d;">
+                                <i class="fas fa-plus me-2"></i>Thêm địa chỉ mới
+                            </a>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Bạn chưa có địa chỉ nào được lưu</p>
+                            </div>
+                            <a href="{{ route('address.create') }}?return_url={{ urlencode(route('client.orders.show', $order->id)) }}" class="btn" style="background-color: #ee4d2d; color: white; border: none;">
+                                <i class="fas fa-plus me-2"></i>Thêm địa chỉ mới
+                            </a>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-color: #ee4d2d; color: #ee4d2d;">
+                        <i class="fas fa-times me-1"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn" id="saveAddressBtn" style="background-color: #ee4d2d; color: white; border: none;">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Xử lý khi chọn địa chỉ
+        $('.address-item').on('click', function() {
+            $(this).find('.address-radio').prop('checked', true);
+            $('.address-item').removeClass('border-primary');
+            $(this).addClass('border-primary');
+        });
+
+        // Xử lý khi submit form
+        $('#updateAddressForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalBtnText = submitBtn.html();
+            
+            // Hiển thị trạng thái đang tải
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang cập nhật...');
+            
+            // Gửi yêu cầu AJAX
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    _method: 'PUT',
+                    address_id: $('input[name="address_id"]:checked').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Cập nhật thông tin địa chỉ hiển thị
+                        const data = response.data;
+                        $('.shipping-address').html(`
+                            <p class="mb-1"><strong>${data.fullname}</strong> | ${data.phone_number}</p>
+                            <p class="mb-0">${data.address}, ${data.ward}, ${data.district}, ${data.province}</p>
+                        `);
+                        
+                        // Cập nhật lại giá trị trong form ẩn nếu có
+                        $('input[name="shipping_address"]').val(data.address);
+                        $('input[name="shipping_city"]').val(data.province);
+                        $('input[name="shipping_district"]').val(data.district);
+                        $('input[name="shipping_ward"]').val(data.ward);
+                        
+                        // Đóng modal
+                        $('#changeAddressModal').modal('hide');
+                        
+                        // Hiển thị thông báo thành công
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        // Tự động tải lại trang sau 1 giây để đảm bảo dữ liệu đồng bộ
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: response.message || 'Có lỗi xảy ra khi cập nhật địa chỉ. Vui lòng thử lại sau.'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Có lỗi xảy ra khi cập nhật địa chỉ. Vui lòng thử lại sau.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: errorMessage
+                    });
+                },
+                complete: function() {
+                    // Ẩn loading
+                    submitBtn.prop('disabled', false).html(originalBtnText);
+                }
+            });
+        });
+    });
+</script>
+@endpush
 
 @endsection
