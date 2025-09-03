@@ -1103,7 +1103,7 @@ class CheckoutController extends Controller
 
                 try {
                     $refundInfo = null;
-                    
+
                     if ($order->payment_id == 2 && $order->is_paid) {
                         $refundInfo = [
                             'transaction_id' => 'Đang xử lý',
@@ -1111,13 +1111,13 @@ class CheckoutController extends Controller
                             'status' => 'pending'
                         ];
                     }
-                    
+
                     Mail::to($order->email)->send(new OrderCancellationMail(
-                        $order, 
-                        'Đơn hàng hết thời gian thanh toán (30 phút)', 
+                        $order,
+                        'Đơn hàng hết thời gian thanh toán (30 phút)',
                         $refundInfo
                     ));
-                    
+
                     Log::info('Email thông báo hủy đơn hàng (timeout) đã được gửi', [
                         'order_id' => $order->id,
                         'order_code' => $order->code,
@@ -1297,16 +1297,7 @@ class CheckoutController extends Controller
 
             $order = Order::where('code', $request->vnp_TxnRef)->firstOrFail();
 
-            // Kiểm tra số tiền
-            if ($order->total_amount * 100 != $request->vnp_Amount) {
-                \Log::warning('VNPay amount mismatch', [
-                    'order_id' => $order->id,
-                    'order_amount' => $order->total_amount * 100,
-                    'vnp_amount' => $request->vnp_Amount,
-                    'session_id' => Session::getId()
-                ]);
-                return redirect()->route('home')->with('error', 'Số tiền thanh toán không khớp!');
-            }
+            
 
             if ($request->vnp_ResponseCode == '00' && $request->vnp_TransactionStatus == '00') {
                 // Thanh toán thành công

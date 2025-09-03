@@ -94,8 +94,9 @@
                                 <th><i class="fas fa-coins me-1"></i> TỔNG TIỀN</th>
                                 <th><i class="fas fa-user me-1"></i> KHÁCH HÀNG</th>
                                 <th><i class="fas fa-truck me-1"></i> LOẠI GIAO HÀNG</th>
+                                <th><i class="fas fa-credit-card me-1"></i> PHƯƠNG THỨC THANH TOÁN</th>
                                 <th><i class="fas fa-credit-card me-1"></i> TRẠNG THÁI THANH TOÁN</th>
-                                <th><i class="fas fa-check-square me-1"></i> TRẠNG THÁI HOÀN THÀNH</th>
+                                <th><i class="fas fa-check-square me-1"></i> TRẠNG THÁI ĐƠN HÀNG</th>
                                 <th><i class="fas fa-calendar-alt me-1"></i> NGÀY</th>
                                 <th><i class="fas fa-cog me-1"></i> HÀNH ĐỘNG</th>
                             </tr>
@@ -108,6 +109,14 @@
                                     <td>{{ number_format($order->total_amount, 0, ',', '.') }} ₫</td>
                                     <td>{{ $order->fullname }}</td>
                                     <td>{{ $order->shipping_type ?? 'Không xác định' }}</td>
+                                    <td>
+                                        @php
+                                            $paymentMethod = strtolower(optional($order->payment)->name ?? 'cod');
+                                            $paymentMethod = in_array($paymentMethod, ['cod', 'vnpay']) ? $paymentMethod : 'cod';
+                                            $paymentMethodText = $paymentMethod === 'vnpay' ? 'VNPay' : 'COD';
+                                        @endphp
+                                        <span class="badge bg-info text-dark">{{ $paymentMethodText }}</span>
+                                    </td>
                                     <td>
                                         @php
                                             $status = $order->statusHistory()->where('is_current', true)->first();
@@ -131,13 +140,21 @@
                                             @method('PATCH')
                                             <input type="hidden" name="is_paid" value="{{ $order->is_paid ? 1 : 0 }}">
                                             <input type="hidden" name="customer_confirmation" value="0">
+                                            @php
+                                                $currentStatusId = $order->statusHistory()->where('is_current', true)->first()?->order_status_id ?? 1;
+                                                $validStatuses = isset($orderStatuses[$order->id]) ? $orderStatuses[$order->id] : [1];
+                                                if (!is_array($validStatuses)) {
+                                                    $validStatuses = [$validStatuses];
+                                                }
+                                            @endphp
                                             <select name="order_status_id" onchange="this.form.submit()"
                                                 class="form-select form-select-sm rounded-pill">
                                                 @foreach ($statuses as $status)
-                                                    <option value="{{ $status->id }}"
-                                                        {{ $status->id == ($order->statusHistory()->where('is_current', true)->first()?->order_status_id ?? 1) ? 'selected' : '' }}>
-                                                        {{ $status->name }}
-                                                    </option>
+                                                    @if(in_array($status->id, $validStatuses))
+                                                        <option value="{{ $status->id }}" {{ $status->id == $currentStatusId ? 'selected' : '' }}>
+                                                            {{ $status->name }}
+                                                        </option>
+                                                    @endif
                                                 @endforeach
                                             </select>
                                             @error('order_status_id')

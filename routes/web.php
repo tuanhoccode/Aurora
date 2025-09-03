@@ -68,6 +68,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     Route::get('/refunds', [RefundController::class, 'adminIndex'])->name('refunds.index');
     Route::get('/refunds/{id}', [RefundController::class, 'adminShow'])->name('refunds.show');
     Route::put('/refunds/{id}', [RefundController::class, 'adminUpdate'])->name('refunds.update');
+    Route::post('/refunds/{id}/cancel', [RefundController::class, 'cancelRefund'])->name('refunds.cancel');
     // Blog Comments Routes
     Route::prefix('blog/comments')->name('blog.comments.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BlogCommentController::class, 'index'])->name('index');

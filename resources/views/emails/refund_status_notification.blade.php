@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Cập Nhật Trạng Thái Yêu Cầu Hoàn Tiền</title>
@@ -9,6 +10,7 @@
             line-height: 1.6;
             color: #333;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -16,24 +18,29 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
         .header {
             background-color: #f8f8f8;
             padding: 10px;
             text-align: center;
             border-bottom: 1px solid #ddd;
         }
+
         .content {
             padding: 20px;
         }
+
         .footer {
             text-align: center;
             font-size: 12px;
             color: #777;
             margin-top: 20px;
         }
+
         .image-container {
             margin-top: 20px;
         }
+
         .image-container img {
             max-width: 100%;
             height: auto;
@@ -42,6 +49,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -49,8 +57,10 @@
         </div>
         <div class="content">
             <p>Kính gửi Quý khách,</p>
-            <p>Yêu cầu hoàn tiền của bạn cho đơn hàng <strong>#{{ $refund->order->code }}</strong> đã được cập nhật trạng thái:</p>
-            <p><strong>Trạng Thái:</strong> {{ \App\Http\Controllers\RefundController::getReasonText($refund->status) }}</p>
+            <p>Yêu cầu hoàn tiền của bạn cho đơn hàng <strong>#{{ $refund->order->code }}</strong> đã được cập nhật
+                trạng thái:</p>
+            <p><strong>Trạng Thái:</strong> {{ \App\Http\Controllers\RefundController::getReasonText($refund->status) }}
+            </p>
             @if ($refund->admin_reason)
                 <p><strong>Lý Do:</strong> {{ $refund->admin_reason }}</p>
             @endif
@@ -70,7 +80,7 @@
             @endif
             <p>Chi tiết sản phẩm hoàn tiền:</p>
             @php
-                $hasVariant = $refund->items->contains(function($it){
+                $hasVariant = $refund->items->contains(function ($it) {
                     return !empty($it->variant_id);
                 });
             @endphp
@@ -110,7 +120,8 @@
                         <tr>
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->name }}</td>
                             @if($hasVariant)
-                                <td style="border: 1px solid #ddd; padding: 8px;">{{ $variantText !== '' ? $variantText : ($item->name_variant ?? 'N/A') }}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">
+                                    {{ $variantText !== '' ? $variantText : ($item->name_variant ?? 'N/A') }}</td>
                             @endif
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->quantity }}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ number_format($item->price, 2) }} VNĐ</td>
@@ -127,4 +138,5 @@
         </div>
     </div>
 </body>
+
 </html>

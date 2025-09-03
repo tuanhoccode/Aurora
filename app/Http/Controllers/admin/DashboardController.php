@@ -30,10 +30,18 @@ class DashboardController extends Controller
             ->get();
             
         // Lấy danh sách đơn hàng mới nhất
-        $recentOrders = Order::with(['currentOrderStatus.status', 'user'])
+        $recentOrders = Order::with([
+                'user',
+                'payment',
+                'currentStatus.status'
+            ])
             ->orderBy('created_at', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function($order) {
+                $order->current_status = $order->currentStatus?->status;
+                return $order;
+            });
 
         // Get user statistics
         $totalUsers = User::count();
