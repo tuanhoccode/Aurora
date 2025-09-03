@@ -600,41 +600,41 @@
         .track-more{font-size:14px;margin-top:6px}
     </style>
 
-<div class="container mt-4" style="max-width: 1200px;">
-    <div id="order-detail-container">
-    <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
-        <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
-        @php
-            // Get the latest status from status history
-            $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
-            $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
-            $statusText = '';
-            
-            // Map status to display text
-            if ($currentStatusName === 'Hoàn tiền') {
-                $statusText = 'HOÀN TIỀN';
-            } elseif ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
-                $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
-            } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
-                $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
-            } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
-                $statusText = 'ĐANG GIAO HÀNG';
-            } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đã xác nhận thanh toán'])) {
-                $statusText = 'ĐANG XỬ LÝ';
-            } else {
-                $statusText = 'CHỜ XÁC NHẬN';
-            }
-        @endphp
-        <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
-        @if($order->refund_status === 'refunded')
-            <div class="status-badge status-refunded">
-                HOÀN TIỀN
-            </div>
-        @endif
-    </div>
+    <div class="container mt-4" style="max-width: 1200px;">
+        <div id="order-detail-container">
+            <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
+                <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
+                @php
+                    // Get the latest status from status history
+                    $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
+                    $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
+                    $statusText = '';
+                    
+                    // Map status to display text
+                    if ($currentStatusName === 'Hoàn tiền') {
+                        $statusText = 'HOÀN TIỀN';
+                    } elseif ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
+                        $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
+                    } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
+                        $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
+                    } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
+                        $statusText = 'ĐANG GIAO HÀNG';
+                    } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đã xác nhận thanh toán'])) {
+                        $statusText = 'ĐANG XỬ LÝ';
+                    } else {
+                        $statusText = 'CHỜ XÁC NHẬN';
+                    }
+                @endphp
+                <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
+                @if($order->refund_status === 'refunded')
+                    <div class="status-badge status-refunded">
+                        HOÀN TIỀN
+                    </div>
+                @endif
+                </div>
 
 
             <!-- Timeline -->
@@ -1189,9 +1189,10 @@
                     </p>
                 </div>
             @endif
-        </div>
+        </div> <!-- End order-detail-container -->
+    </div> <!-- End container -->
 
-        @if(session('reorder_status'))
+    @if(session('reorder_status'))
             <div class="alert alert-{{ session('reorder_status')['type'] }} mt-3">
                 {{ session('reorder_status')['message'] }}
                 @if(session('reorder_status')['type'] === 'success')
@@ -1199,6 +1200,8 @@
                 @endif
             </div>
         @endif
+
+</div> <!-- End main container -->
 
 <!-- Modal Thay đổi địa chỉ -->
 <div class="modal fade" id="changeAddressModal" tabindex="-1" aria-labelledby="changeAddressModalLabel" aria-hidden="true">
@@ -1276,11 +1279,88 @@
 
 <script>
     $(document).ready(function() {
+        // Hàm highlight địa chỉ được chọn
+        function highlightSelectedAddress(addressId) {
+            if (!addressId) return;
+            
+            // Tìm địa chỉ hiện tại
+            const $radio = $(`input[name="address_id"][value="${addressId}"]`);
+            if ($radio.length) {
+                // Bỏ chọn tất cả trước
+                $('.address-radio').prop('checked', false);
+                $('.address-item').removeClass('border-primary')
+                    .find('.card')
+                    .css('border', '2px solid #dee2e6');
+                
+                // Chọn địa chỉ hiện tại
+                $radio.prop('checked', true);
+                const $item = $radio.closest('.address-item');
+                $item.addClass('border-primary')
+                    .find('.card')
+                    .css('border', '2px solid #0d6efd');
+                
+                // Cuộn đến địa chỉ
+                const modalContent = $('.modal-body');
+                const itemOffset = $item.offset().top;
+                const modalOffset = modalContent.offset().top;
+                const scrollTop = modalContent.scrollTop();
+                const scrollTo = itemOffset - modalOffset + scrollTop - 20;
+                
+                modalContent.stop().animate({
+                    scrollTop: scrollTo
+                }, 300);
+            }
+        }
+
+        // Xử lý khi mở modal
+        $(document).on('show.bs.modal', '#changeAddressModal', function() {
+            // Đợi cho modal hiển thị xong
+            const modal = $(this);
+            modal.one('shown.bs.modal', function() {
+                highlightSelectedAddress('{{ $order->address_id }}');
+            });
+        });
+
         // Xử lý khi chọn địa chỉ
-        $('.address-item').on('click', function() {
-            $(this).find('.address-radio').prop('checked', true);
-            $('.address-item').removeClass('border-primary');
-            $(this).addClass('border-primary');
+        $(document).on('click', '.address-item', function(e) {
+            // Ngăn sự kiện nổi bọt để không bị xung đột với các sự kiện khác
+            e.stopPropagation();
+            
+            // Lấy radio button trong item được click
+            const radio = $(this).find('.address-radio');
+            
+            // Đánh dấu radio button được chọn
+            radio.prop('checked', true);
+            
+            // Xóa highlight của tất cả các item
+            $('.address-item').removeClass('border-primary')
+                .find('.card')
+                .css('border-color', '#dee2e6');
+                
+            // Highlight item được chọn
+            $(this).addClass('border-primary')
+                .find('.card')
+                .css('border-color', '#0d6efd');
+        });
+        
+        // Xử lý khi click vào radio button trực tiếp
+        $(document).on('click', '.address-radio', function(e) {
+            e.stopPropagation();
+            const item = $(this).closest('.address-item');
+            
+            // Đánh dấu radio button được chọn
+            $('.address-radio').prop('checked', false);
+            $(this).prop('checked', true);
+            
+            // Xóa highlight của tất cả các item
+            $('.address-item').removeClass('border-primary')
+                .find('.card')
+                .css('border-color', '#dee2e6');
+                
+            // Highlight item được chọn
+            item.addClass('border-primary')
+                .find('.card')
+                .css('border-color', '#0d6efd');
         });
 
         // Xử lý khi submit form
@@ -1290,6 +1370,13 @@
             const form = $(this);
             const submitBtn = form.find('button[type="submit"]');
             const originalBtnText = submitBtn.html();
+            const selectedAddressId = $('input[name="address_id"]:checked').val();
+            
+            // Kiểm tra nếu địa chỉ mới giống với địa chỉ hiện tại
+            if (selectedAddressId === '{{ $order->address_id }}') {
+                $('#changeAddressModal').modal('hide');
+                return;
+            }
             
             // Hiển thị trạng thái đang tải
             submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang cập nhật...');

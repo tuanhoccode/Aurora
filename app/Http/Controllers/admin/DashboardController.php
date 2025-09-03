@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\View\View;
 use App\Models\Order;
 use App\Models\BlogComment;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -24,6 +25,12 @@ class DashboardController extends Controller
 
         // Get recent products
         $recentProducts = Product::with(['brand'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+            
+        // Lấy danh sách đơn hàng mới nhất
+        $recentOrders = Order::with(['currentOrderStatus.status', 'user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -51,6 +58,14 @@ class DashboardController extends Controller
         // Lấy số lượng bình luận chờ duyệt
         $unapprovedCommentsCount = BlogComment::where('is_active', false)->count();
 
+        $totalOrders = Order::count();
+        
+        // Đếm số mã giảm giá đang hoạt động
+        $activeCoupons = Coupon::where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->count();
+
         // Tổng hợp đơn hàng theo trạng thái hiện tại để hiển thị biểu đồ
         $statusCounts = \App\Models\OrderStatusHistory::where('is_current', true)
             ->selectRaw('order_status_id, COUNT(*) as total')
@@ -75,7 +90,10 @@ class DashboardController extends Controller
             'unapprovedCommentsCount',
             'currentYear',
             'orderStatusLabels',
-            'orderStatusCounts'
+            'orderStatusCounts',
+            'totalOrders',
+            'activeCoupons',
+            'recentOrders'
         ));
     }
 }

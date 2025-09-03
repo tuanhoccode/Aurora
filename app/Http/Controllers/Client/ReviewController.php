@@ -32,7 +32,7 @@ class ReviewController extends Controller
         ->whereHas('currentStatus.status', fn($q)
         => $q->where('name', 'Nhận hàng thành công'))
         )->first();
-    
+
     if(!$orderItem){
         return back()->with('error', 'Bạn chưa mua hoặc chưa nhận được sản phẩm này');
     }
@@ -51,7 +51,7 @@ class ReviewController extends Controller
         'review_text'  => $req->review_text,
         'is_active'  => 1,
     ]);
-    //upload ảnh 
+    //upload ảnh
     if ($req->hasFile('images')) {
         foreach ($req->file('images') as $file){
             $path = $file->store('reviews', 'public');

@@ -2160,7 +2160,7 @@
                 });
 
                 // Xử lý xóa địa chỉ
-                $('.delete-address-btn').on('click', function(e) {
+                $('.delete-address').on('click', function(e) {
                     e.preventDefault();
                     const addressId = $(this).data('address-id');
                     if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
