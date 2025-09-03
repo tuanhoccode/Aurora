@@ -81,6 +81,36 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(10);
         $statuses = OrderStatus::all();
+        
+        // Danh sách các trạng thái hợp lệ để chuyển đổi
+        $validTransitions = [
+            1 => [2, 8],       // Chờ xác nhận → Chờ lấy hàng, Đã hủy
+            2 => [9, 8],       // Chờ lấy hàng → Gửi hàng, Đã hủy
+            9 => [3, 8],       // Gửi hàng → Đang giao, Đã hủy
+            3 => [4, 5, 8],    // Đang giao → Giao hàng thành công, Chờ trả hàng, Đã hủy
+            5 => [6, 8],       // Chờ trả hàng → Đã trả hàng, Đã hủy
+            6 => [7],          // Đã trả hàng → Hoàn tiền
+            4 => [7],          // Giao hàng thành công → Hoàn tiền
+            7 => [],           // Hoàn tiền → Dừng
+            8 => []            // Đã hủy → Dừng
+        ];
+        
+        // Tạo mảng chứa valid_statuses cho từng đơn hàng
+        $orderStatuses = [];
+        
+        // Lấy danh sách tất cả trạng thái để tối ưu truy vấn
+        $allStatuses = OrderStatus::all()->keyBy('id');
+        
+        foreach ($orders as $order) {
+            $currentStatus = $order->statusHistory()->where('is_current', true)->first();
+            if ($currentStatus) {
+                $validStatuses = $validTransitions[$currentStatus->order_status_id] ?? [];
+                $validStatuses[] = $currentStatus->order_status_id; // Thêm trạng thái hiện tại
+                $orderStatuses[$order->id] = array_unique($validStatuses);
+            } else {
+                $orderStatuses[$order->id] = [1]; // Mặc định là trạng thái chờ xác nhận
+            }
+        }
 
         // Kiểm tra và thêm trạng thái mặc định nếu cần
         foreach ($orders as $order) {
@@ -102,17 +132,17 @@ class OrderController extends Controller
             }
         }
 
-        return view('admin.orders.index', compact(
-            'orders',
-            'statuses',
-            'pendingPaymentCount',
-            'unfulfilledCount',
-            'completedCount',
-            'refundedCount',
-            'failedCount'
-        ));
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'statuses' => $statuses,
+            'pendingPaymentCount' => $pendingPaymentCount,
+            'unfulfilledCount' => $unfulfilledCount,
+            'completedCount' => $completedCount,
+            'refundedCount' => $refundedCount,
+            'failedCount' => $failedCount,
+            'orderStatuses' => $orderStatuses
+        ]);
     }
-
     public function show($id)
     {
         $user = Auth::user()->load('address');
