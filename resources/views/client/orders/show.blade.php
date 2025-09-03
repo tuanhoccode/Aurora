@@ -1,10 +1,5 @@
 @extends('client.layouts.default')
 
-@push('styles')
-<!-- SweetAlert2 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css">
-@endpush
-
 @section('title', 'Chi tiết đơn hàng')
 
 @section('content')
@@ -600,41 +595,41 @@
         .track-more{font-size:14px;margin-top:6px}
     </style>
 
-    <div class="container mt-4" style="max-width: 1200px;">
-        <div id="order-detail-container">
-            <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
-                <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
-                @php
-                    // Get the latest status from status history
-                    $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
-                    $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
-                    $statusText = '';
-                    
-                    // Map status to display text
-                    if ($currentStatusName === 'Hoàn tiền') {
-                        $statusText = 'HOÀN TIỀN';
-                    } elseif ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
-                        $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
-                    } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
-                        $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
-                    } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
-                        $statusText = 'ĐANG GIAO HÀNG';
-                    } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đã xác nhận thanh toán'])) {
-                        $statusText = 'ĐANG XỬ LÝ';
-                    } else {
-                        $statusText = 'CHỜ XÁC NHẬN';
-                    }
-                @endphp
-                <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
-                @if($order->refund_status === 'refunded')
-                    <div class="status-badge status-refunded">
-                        HOÀN TIỀN
-                    </div>
-                @endif
-                </div>
+<div class="container mt-4" style="max-width: 1200px;">
+    <div id="order-detail-container">
+    <div class="order-header" style="display: flex; align-items: center; gap: 15px;">
+        <a href="{{ route('client.orders') }}" class="btn btn-light btn-sm" style="margin-right: 10px;">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>MÃ ĐƠN HÀNG: {{ $order->code }}</div>
+        @php
+            // Get the latest status from status history
+            $latestStatus = $order->statusHistory->sortByDesc('created_at')->first();
+            $currentStatusName = $latestStatus ? $latestStatus->status->name : 'Chờ xác nhận';
+            $statusText = '';
+            
+            // Map status to display text
+            if ($currentStatusName === 'Hoàn tiền') {
+                $statusText = 'HOÀN TIỀN';
+            } elseif ($currentStatusName === 'Đã giao hàng' || in_array($currentStatusName, ['Nhận hàng thành công', 'Giao hàng thành công'])) {
+                $statusText = 'ĐƠN HÀNG ĐÃ HOÀN THÀNH';
+            } elseif ($currentStatusName === 'Đã hủy' || $order->cancellation_status !== null) {
+                $statusText = 'ĐƠN HÀNG ĐÃ HỦY';
+            } elseif (in_array($currentStatusName, ['Đang vận chuyển', 'Đang giao hàng', 'Đang giao'])) {
+                $statusText = 'ĐANG GIAO HÀNG';
+            } elseif (in_array($currentStatusName, ['Đã xác nhận', 'Chờ lấy hàng', 'Gửi hàng', 'Đã xác nhận thanh toán'])) {
+                $statusText = 'ĐANG XỬ LÝ';
+            } else {
+                $statusText = 'CHỜ XÁC NHẬN';
+            }
+        @endphp
+        <div class="order-status {{ strtolower(str_replace(' ', '-', $statusText)) }}">{{ $statusText }}</div>
+        @if($order->refund_status === 'refunded')
+            <div class="status-badge status-refunded">
+                HOÀN TIỀN
+            </div>
+        @endif
+    </div>
 
 
             <!-- Timeline -->
@@ -883,18 +878,9 @@
                 <div class="ship-addr">
                     <div class="order-info">
                         <h3>Địa Chỉ Nhận Hàng</h3>
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p style="font-weight:600;font-size:15px; margin-bottom: 4px;">{{ $order->fullname }}</p>
-                                <p style="margin-bottom: 4px;">(+84) {{ preg_replace('/^(0|\+84)/','', $order->phone_number) }}</p>
-                                <p style="margin-bottom: 0;">{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</p>
-                            </div>
-                            @if($currentStatusName === 'Chờ xác nhận' && $order->cancellation_status === null)
-                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#changeAddressModal">
-                                <i class="fas fa-edit me-1"></i>
-                            </button>
-                            @endif
-                        </div>
+                        <p style="font-weight:600;font-size:15px">{{ $order->fullname }}</p>
+                        <p>(+84) {{ preg_replace('/^(0|\+84)/','', $order->phone_number) }}</p>
+                        <p>{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</p>
                     </div>
                    <!-- Trạng thái thanh toán -->
                 <div class="order-info">
@@ -1189,10 +1175,9 @@
                     </p>
                 </div>
             @endif
-        </div> <!-- End order-detail-container -->
-    </div> <!-- End container -->
+        </div>
 
-    @if(session('reorder_status'))
+        @if(session('reorder_status'))
             <div class="alert alert-{{ session('reorder_status')['type'] }} mt-3">
                 {{ session('reorder_status')['message'] }}
                 @if(session('reorder_status')['type'] === 'success')
@@ -1200,254 +1185,5 @@
                 @endif
             </div>
         @endif
-
-</div> <!-- End main container -->
-
-<!-- Modal Thay đổi địa chỉ -->
-<div class="modal fade" id="changeAddressModal" tabindex="-1" aria-labelledby="changeAddressModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: #ee4d2d; color: white; border-bottom: none;">
-                <h5 class="modal-title text-white" id="changeAddressModalLabel" style="font-weight: 500;">
-                    <i class="fas fa-map-marker-alt me-2"></i>
-                    Thay đổi địa chỉ nhận hàng
-                </h5>
-                <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="updateAddressForm" action="{{ route('client.orders.update-address', $order->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    @if($addresses->count() > 0)
-                        <div class="row g-3" id="addressList">
-                            @foreach($addresses as $address)
-                                <div class="col-12 address-item">
-                                    <div class="card border-2 h-100" style="cursor: pointer; transition: all 0.3s ease;">
-                                        <div class="card-body p-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input address-radio" type="radio" 
-                                                    name="address_id" 
-                                                    id="order_address_{{ $address->id }}" 
-                                                    value="{{ $address->id }}"
-                                                    {{ $order->address_id == $address->id ? 'checked' : '' }}>
-                                                <label class="form-check-label w-100" for="order_address_{{ $address->id }}">
-                                                    <div class="d-flex justify-content-between">
-                                                        <strong>{{ $address->fullname }}</strong>
-                                                        <span class="text-muted">(+84) {{ preg_replace('/^(0|\+84)/','', $address->phone_number) }}</span>
-                                                    </div>
-                                                    <p class="mb-0">{{ $address->address }}{{ $address->city ? ', '.$address->city : '' }}</p>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="text-center mt-4">
-                            <a href="{{ route('address.create') }}?return_url={{ urlencode(route('client.orders.show', $order->id)) }}" class="btn" style="background-color: #fff; color: #ee4d2d; border: 1px solid #ee4d2d;">
-                                <i class="fas fa-plus me-2"></i>Thêm địa chỉ mới
-                            </a>
-                        </div>
-                    @else
-                        <div class="text-center py-4">
-                            <div class="mb-3">
-                                <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">Bạn chưa có địa chỉ nào được lưu</p>
-                            </div>
-                            <a href="{{ route('address.create') }}?return_url={{ urlencode(route('client.orders.show', $order->id)) }}" class="btn" style="background-color: #ee4d2d; color: white; border: none;">
-                                <i class="fas fa-plus me-2"></i>Thêm địa chỉ mới
-                            </a>
-                        </div>
-                    @endif
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-color: #ee4d2d; color: #ee4d2d;">
-                        <i class="fas fa-times me-1"></i> Hủy
-                    </button>
-                    <button type="submit" class="btn" id="saveAddressBtn" style="background-color: #ee4d2d; color: white; border: none;">
-                        <i class="fas fa-save me-1"></i> Lưu thay đổi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<!-- SweetAlert2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        // Hàm highlight địa chỉ được chọn
-        function highlightSelectedAddress(addressId) {
-            if (!addressId) return;
-            
-            // Tìm địa chỉ hiện tại
-            const $radio = $(`input[name="address_id"][value="${addressId}"]`);
-            if ($radio.length) {
-                // Bỏ chọn tất cả trước
-                $('.address-radio').prop('checked', false);
-                $('.address-item').removeClass('border-primary')
-                    .find('.card')
-                    .css('border', '2px solid #dee2e6');
-                
-                // Chọn địa chỉ hiện tại
-                $radio.prop('checked', true);
-                const $item = $radio.closest('.address-item');
-                $item.addClass('border-primary')
-                    .find('.card')
-                    .css('border', '2px solid #0d6efd');
-                
-                // Cuộn đến địa chỉ
-                const modalContent = $('.modal-body');
-                const itemOffset = $item.offset().top;
-                const modalOffset = modalContent.offset().top;
-                const scrollTop = modalContent.scrollTop();
-                const scrollTo = itemOffset - modalOffset + scrollTop - 20;
-                
-                modalContent.stop().animate({
-                    scrollTop: scrollTo
-                }, 300);
-            }
-        }
-
-        // Xử lý khi mở modal
-        $(document).on('show.bs.modal', '#changeAddressModal', function() {
-            // Đợi cho modal hiển thị xong
-            const modal = $(this);
-            modal.one('shown.bs.modal', function() {
-                highlightSelectedAddress('{{ $order->address_id }}');
-            });
-        });
-
-        // Xử lý khi chọn địa chỉ
-        $(document).on('click', '.address-item', function(e) {
-            // Ngăn sự kiện nổi bọt để không bị xung đột với các sự kiện khác
-            e.stopPropagation();
-            
-            // Lấy radio button trong item được click
-            const radio = $(this).find('.address-radio');
-            
-            // Đánh dấu radio button được chọn
-            radio.prop('checked', true);
-            
-            // Xóa highlight của tất cả các item
-            $('.address-item').removeClass('border-primary')
-                .find('.card')
-                .css('border-color', '#dee2e6');
-                
-            // Highlight item được chọn
-            $(this).addClass('border-primary')
-                .find('.card')
-                .css('border-color', '#0d6efd');
-        });
-        
-        // Xử lý khi click vào radio button trực tiếp
-        $(document).on('click', '.address-radio', function(e) {
-            e.stopPropagation();
-            const item = $(this).closest('.address-item');
-            
-            // Đánh dấu radio button được chọn
-            $('.address-radio').prop('checked', false);
-            $(this).prop('checked', true);
-            
-            // Xóa highlight của tất cả các item
-            $('.address-item').removeClass('border-primary')
-                .find('.card')
-                .css('border-color', '#dee2e6');
-                
-            // Highlight item được chọn
-            item.addClass('border-primary')
-                .find('.card')
-                .css('border-color', '#0d6efd');
-        });
-
-        // Xử lý khi submit form
-        $('#updateAddressForm').on('submit', function(e) {
-            e.preventDefault();
-            
-            const form = $(this);
-            const submitBtn = form.find('button[type="submit"]');
-            const originalBtnText = submitBtn.html();
-            const selectedAddressId = $('input[name="address_id"]:checked').val();
-            
-            // Kiểm tra nếu địa chỉ mới giống với địa chỉ hiện tại
-            if (selectedAddressId === '{{ $order->address_id }}') {
-                $('#changeAddressModal').modal('hide');
-                return;
-            }
-            
-            // Hiển thị trạng thái đang tải
-            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang cập nhật...');
-            
-            // Gửi yêu cầu AJAX
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    _method: 'PUT',
-                    address_id: $('input[name="address_id"]:checked').val()
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Cập nhật thông tin địa chỉ hiển thị
-                        const data = response.data;
-                        $('.shipping-address').html(`
-                            <p class="mb-1"><strong>${data.fullname}</strong> | ${data.phone_number}</p>
-                            <p class="mb-0">${data.address}, ${data.ward}, ${data.district}, ${data.province}</p>
-                        `);
-                        
-                        // Cập nhật lại giá trị trong form ẩn nếu có
-                        $('input[name="shipping_address"]').val(data.address);
-                        $('input[name="shipping_city"]').val(data.province);
-                        $('input[name="shipping_district"]').val(data.district);
-                        $('input[name="shipping_ward"]').val(data.ward);
-                        
-                        // Đóng modal
-                        $('#changeAddressModal').modal('hide');
-                        
-                        // Hiển thị thông báo thành công
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Thành công!',
-                            text: response.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        
-                        // Tự động tải lại trang sau 1 giây để đảm bảo dữ liệu đồng bộ
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi',
-                            text: response.message || 'Có lỗi xảy ra khi cập nhật địa chỉ. Vui lòng thử lại sau.'
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    let errorMessage = 'Có lỗi xảy ra khi cập nhật địa chỉ. Vui lòng thử lại sau.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi',
-                        text: errorMessage
-                    });
-                },
-                complete: function() {
-                    // Ẩn loading
-                    submitBtn.prop('disabled', false).html(originalBtnText);
-                }
-            });
-        });
-    });
-</script>
-@endpush
 
 @endsection

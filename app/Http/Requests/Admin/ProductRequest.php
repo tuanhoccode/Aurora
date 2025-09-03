@@ -31,7 +31,7 @@ class ProductRequest extends FormRequest
             'sale_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
             'sale_starts_at' => ['nullable', 'required_with:sale_price', 'date'],
             'sale_ends_at' => ['nullable', 'required_with:sale_price', 'date', 'after:sale_starts_at'],
-            'stock' => ['required', 'integer', 'min:1', 'max:1000'],
+            'stock' => ['required', 'integer', 'min:0', 'max:1000'],
             'type' => 'required|in:simple,digital,variant',
             'thumbnail' => $this->isMethod('PUT') ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gallery_images' => 'nullable|array',
@@ -62,7 +62,7 @@ class ProductRequest extends FormRequest
             $rules['variants.*.sale_price'] = 'nullable|numeric|min:0';
             $rules['variants.*.sale_starts_at'] = 'nullable|date|required_with:sale_price';
             $rules['variants.*.sale_ends_at'] = 'nullable|date|after:sale_starts_at|required_with:sale_price';
-            $rules['variants.*.stock'] = 'required|integer|min:1|max:1000';
+            $rules['variants.*.stock'] = 'required|numeric|min:0';
             $rules['variants.*.gallery_images.*'] = 'nullable|string';
         }
 
