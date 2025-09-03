@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\View\View;
 use App\Models\Order;
 use App\Models\BlogComment;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -24,6 +25,12 @@ class DashboardController extends Controller
 
         // Get recent products
         $recentProducts = Product::with(['brand'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+            
+        // Lấy danh sách đơn hàng mới nhất
+        $recentOrders = Order::with(['currentOrderStatus.status', 'user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -51,6 +58,28 @@ class DashboardController extends Controller
         // Lấy số lượng bình luận chờ duyệt
         $unapprovedCommentsCount = BlogComment::where('is_active', false)->count();
 
+        $totalOrders = Order::count();
+        
+        // Đếm số mã giảm giá đang hoạt động
+        $activeCoupons = Coupon::where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->count();
+
+        // Tổng hợp đơn hàng theo trạng thái hiện tại để hiển thị biểu đồ
+        $statusCounts = \App\Models\OrderStatusHistory::where('is_current', true)
+            ->selectRaw('order_status_id, COUNT(*) as total')
+            ->groupBy('order_status_id')
+            ->pluck('total', 'order_status_id');
+
+        $allStatuses = \App\Models\OrderStatus::orderBy('id')->get(['id','name']);
+        $orderStatusLabels = [];
+        $orderStatusCounts = [];
+        foreach ($allStatuses as $status) {
+            $orderStatusLabels[] = $status->name;
+            $orderStatusCounts[] = (int) ($statusCounts[$status->id] ?? 0);
+        }
+
         return view('admin.dashboard.index', compact(
             'totalProducts',
             'activeProducts',
@@ -59,7 +88,12 @@ class DashboardController extends Controller
             'activeUsers',
             'revenueData',
             'unapprovedCommentsCount',
-            'currentYear'
+            'currentYear',
+            'orderStatusLabels',
+            'orderStatusCounts',
+            'totalOrders',
+            'activeCoupons',
+            'recentOrders'
         ));
     }
 }

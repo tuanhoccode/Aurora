@@ -13,7 +13,9 @@ use App\Notifications\AdminRepliedNotification;
 use App\Notifications\ReviewRejectedNotification;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CommentController extends Controller
 {
@@ -84,16 +86,36 @@ class CommentController extends Controller
     public function forceDelete($id)
     {
         try {
-            $review = Review::withTrashed()->findOrFail($id);
-            Review::withTrashed()->where('review_id', $id)->orderByDesc('deleted_at')->forceDelete();
-            $review->forceDelete();
-            return redirect()->route('admin.reviews.trashComments')->with('success', 'Đã xõa vĩnh viễn sản phẩm');
+            $review = Review::withTrashed()->with(['images', 'replies.images'])->findOrFail($id);
+            DB::transaction(function () use ($review){
+                foreach ($review->replies()->withTrashed()->get() as $reply) {
+                    foreach($reply->images as $img){
+                        $path = $img->image_path; 
+                        if ($path && Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->delete($path);
+                        }
+                        $img->forceDelete();
+                    }
+                    $reply->forceDelete();
+                }
+                //Xóa ảnh của review chính
+                foreach($review->images as $img){
+                    $path = $img->image_path; 
+                    if ($path && Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                    $img->forceDelete();
+                }
+                //Xóa review cha con
+                $review->forceDelete();
+            });
+           
+            return redirect()->route('admin.reviews.trashComments')->with('success', 'Đã xõa vĩnh viễn đánh giá');
         } catch (\Exception $e) {
             \Log::error("Lỗi xóa bình luận:" . $e->getMessage());
-            return redirect()->back()->with('error', 'Không thể xóa bình luận. Có thể vì bình luận có phản hồi.');
+            return redirect()->back()->with('error', 'Không thể xóa đánh giá. Vì đánh giá gốc có phản hồi.');
         }
     }
-    // Khôi phục hàng loạt
 
     //phản hồi review
     public function reply(ReplyRequest $req, $type, $id)

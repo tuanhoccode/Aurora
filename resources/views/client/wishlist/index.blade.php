@@ -26,8 +26,7 @@
             <div class="wishlist-card border rounded p-3 position-relative h-100 d-flex flex-column shadow-sm">
               <a href="{{ route('client.product.show', ['slug' => $wishlist->product->slug]) }}"
                 class="text-center mb-3 d-block">
-                <img src="{{ asset('storage/' . $wishlist->product->thumbnail) }}"
-                  alt="{{ $wishlist->product->name }}"
+                <img src="{{ asset('storage/' . $wishlist->product->thumbnail) }}" alt="{{ $wishlist->product->name }}"
                   style="max-height: 180px; object-fit: contain; width: 100%;">
               </a>
               <h6 class="text-center flex-grow-1 mb-2">
@@ -40,38 +39,77 @@
               <!-- Giá tiền -->
               @php
                 $product = $wishlist->product;
-                $price = null;
-                $originalPrice = null;
+                $now = now();
+                $displayHtml = '';
 
-                if ($product->variants->count() > 0) {
-                    $validVariants = $product->variants->filter(function ($variant) {
-                        return ($variant->sale_price ?? 0) > 0 || ($variant->price ?? 0) > 0;
-                    });
+                if ($product->type === 'variant' && $product->variants->count() > 0) {
+                  // Lấy khoảng giá gốc
+                  $regularMin = $product->variants->min('regular_price');
+                  $regularMax = $product->variants->max('regular_price');
 
-                    if ($validVariants->isNotEmpty()) {
-                        $minSale = $validVariants->where('sale_price', '>', 0)->min('sale_price');
-                        $minPrice = $validVariants->min('price');
-
-                        $price = $minSale ?? $minPrice;
-                        $originalPrice = $minSale ? $minPrice : null;
+                  // Lấy khoảng giá khuyến mãi hợp lệ
+                  $salePrices = $product->variants->map(function ($variant) use ($now) {
+                    if (
+                      $variant->sale_price
+                      && $variant->sale_price > 0
+                      && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                      && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now)
+                      && $variant->sale_price < $variant->regular_price
+                    ) {
+                      return (float) $variant->sale_price;
                     }
+                    return null;
+                  })->filter();
+
+                  $saleMin = $salePrices->count() ? $salePrices->min() : null;
+                  $saleMax = $salePrices->count() ? $salePrices->max() : null;
+
+                  if ($saleMin && $saleMax) {
+                    // Có giảm giá
+                    $displayHtml = '
+                      <span class="text-muted text-decoration-line-through d-block mb-1">'
+                      . ($regularMin == $regularMax
+                        ? number_format($regularMin, 0, ',', '.') . '₫'
+                        : number_format($regularMin, 0, ',', '.') . '₫ - ' . number_format($regularMax, 0, ',', '.') . '₫')
+                      . '</span>
+                      <span class="text-danger fw-bold fs-5">'
+                      . ($saleMin == $saleMax
+                        ? number_format($saleMin, 0, ',', '.') . '₫'
+                        : number_format($saleMin, 0, ',', '.') . '₫ - ' . number_format($saleMax, 0, ',', '.') . '₫')
+                      . '</span>';
+                  } else {
+                    // Không có giảm giá
+                    $displayHtml = '<span class="fw-bold">'
+                      . ($regularMin == $regularMax
+                        ? number_format($regularMin, 0, ',', '.') . '₫'
+                        : number_format($regularMin, 0, ',', '.') . '₫ - ' . number_format($regularMax, 0, ',', '.') . '₫')
+                      . '</span>';
+                  }
                 } else {
-                    $price = $product->sale_price > 0 ? $product->sale_price : $product->price;
-                    $originalPrice = $product->sale_price > 0 ? $product->price : null;
+                  // ==== Sản phẩm thường ====
+                  $current = $product->sale_price
+                    && (!$product->sale_starts_at || $product->sale_starts_at <= $now)
+                    && (!$product->sale_ends_at || $product->sale_ends_at >= $now)
+                    && $product->sale_price < $product->price
+                    ? $product->sale_price
+                    : $product->price;
+
+                  $original = ($current != $product->price && $product->price > 0) ? $product->price : null;
+
+                  if ($current > 0) {
+                    if ($original) {
+                      $displayHtml = '<span class="text-muted text-decoration-line-through me-2">'
+                        . number_format($original, 0, ',', '.') . '₫</span>';
+                    }
+                    $displayHtml .= '<span class="text-danger fw-bold fs-5">'
+                      . number_format($current, 0, ',', '.') . '₫</span>';
+                  }
                 }
               @endphp
 
+
               <p class="text-center mt-2 fw-semibold fs-5">
-                @if ($price > 0)
-                  @if ($originalPrice)
-                    <span class="text-muted text-decoration-line-through me-2">
-                      {{ number_format($originalPrice, 0, ',', '.') }}₫
-                    </span>
-                  @endif
-                  <span class="text-danger fs-4">{{ number_format($price, 0, ',', '.') }}₫</span>
-                @else
-                  <span class="text-muted">Liên hệ</span>
-                @endif
+                {!! $displayHtml !== '' ? $displayHtml : '<span class="text-muted">Đang cập nhật</span>' !!}
               </p>
 
               <form action="{{ route('wishlist.destroy', $wishlist->id) }}" method="POST" class="mt-auto text-center">
