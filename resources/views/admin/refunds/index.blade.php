@@ -25,9 +25,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-        
 
-        
+
+
         <!-- Thống kê nhanh -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
@@ -156,7 +156,6 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th><i class="fas fa-hashtag me-1"></i> ID</th>
                                 <th><i class="fas fa-shopping-cart me-1"></i> MÃ ĐƠN HÀNG</th>
                                 <th><i class="fas fa-user me-1"></i> KHÁCH HÀNG</th>
                                 <th><i class="fas fa-coins me-1"></i> SỐ TIỀN</th>
@@ -171,13 +170,7 @@
                                 @foreach ($refunds as $refund)
                                     <tr>
                                         <td>
-                                            <strong>#{{ $refund->id }}</strong>
-                                            @if($refund->status == 'pending')
-                                                <span class="badge bg-warning text-dark badge-sm ms-1">Mới</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('admin.orders.show', $refund->order_id) }}" 
+                                            <a href="{{ route('admin.orders.show', $refund->order_id) }}"
                                                class="text-primary fw-bold text-decoration-none">
                                                 {{ $refund->order ? $refund->order->code : 'N/A' }}
                                             </a>
@@ -206,7 +199,7 @@
                                             @php
                                                 $statusClasses = [
                                                     'pending' => 'bg-warning text-dark',
-                                                    'receiving' => 'bg-info text-white', 
+                                                    'receiving' => 'bg-info text-white',
                                                     'completed' => 'bg-success text-white',
                                                     'rejected' => 'bg-danger text-white',
                                                     'failed' => 'bg-danger text-white',
@@ -224,28 +217,25 @@
                                             @endif
                                         </td>
                                         <td>
-                                            {{ $refund->created_at->format('d/m/Y, H:i') }}
-                                            <br>
-                                            <small class="text-muted">{{ $refund->created_at->diffForHumans() }}</small>
+                                            @if($refund->created_at)
+                                                {{ $refund->created_at->format('d/m/Y, H:i') }}
+                                                <br>
+                                                <small class="text-muted">{{ $refund->created_at->diffForHumans() }}</small>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ route('admin.refunds.show', $refund->id) }}" 
+                                                <a href="{{ route('admin.refunds.show', $refund->id) }}"
                                                    class="btn btn-primary btn-sm" title="Xem chi tiết">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                
+
                                                 @if($refund->status == 'pending')
-                                                    <button type="button" class="btn btn-success btn-sm" 
-                                                            onclick="quickApprove({{ $refund->id }})" title="Chấp nhận nhanh">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" 
-                                                            onclick="quickReject({{ $refund->id }})" title="Từ chối nhanh">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
+
                                                 @elseif($refund->status == 'receiving')
-                                                    <button type="button" class="btn btn-success btn-sm" 
+                                                    <button type="button" class="btn btn-success btn-sm"
                                                             onclick="quickComplete({{ $refund->id }})" title="Hoàn thành">
                                                         <i class="fas fa-check-circle"></i>
                                                     </button>
@@ -268,11 +258,11 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Phân trang -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="text-muted">
-                        Hiển thị {{ $refunds->firstItem() ?? 0 }} đến {{ $refunds->lastItem() ?? 0 }} 
+                        Hiển thị {{ $refunds->firstItem() ?? 0 }} đến {{ $refunds->lastItem() ?? 0 }}
                         trong tổng số {{ $refunds->total() }} kết quả
                     </div>
                     <div>
@@ -355,10 +345,10 @@ $('#confirmAction').click(function() {
     const form = $('#quickActionForm');
     const formData = new FormData(form[0]);
     const $button = $(this);
-    
+
     // Disable button to prevent double click
     $button.prop('disabled', true).text('Đang xử lý...');
-    
+
     $.ajax({
         url: form.attr('action'),
         method: 'POST',
@@ -375,14 +365,14 @@ $('#confirmAction').click(function() {
         },
         error: function(xhr) {
             let errorMessage = 'Có lỗi xảy ra!';
-            
+
             if (xhr.responseJSON && xhr.responseJSON.message) {
                 errorMessage = xhr.responseJSON.message;
             } else if (xhr.responseJSON && xhr.responseJSON.errors) {
                 const errors = xhr.responseJSON.errors;
                 errorMessage = Object.values(errors).flat().join(', ');
             }
-            
+
             toastr.error(errorMessage);
         },
         complete: function() {
@@ -400,16 +390,16 @@ $('#quickActionModal').on('hidden.bs.modal', function() {
 // Validation trước khi submit
 $('#quickActionForm').on('submit', function(e) {
     e.preventDefault();
-    
+
     const status = $('#actionStatus').val();
     const adminReason = $('#admin_reason').val().trim();
-    
+
     if (status === 'rejected' && !adminReason) {
         toastr.error('Vui lòng nhập lý do từ chối!');
         $('#admin_reason').focus();
         return false;
     }
-    
+
     // Nếu validation pass, trigger click button
     $('#confirmAction').click();
 });

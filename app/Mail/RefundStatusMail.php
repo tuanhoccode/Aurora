@@ -13,10 +13,12 @@ class RefundStatusMail extends Mailable
     use Queueable, SerializesModels;
 
     public $refund;
+    public $refundInfo;
 
-    public function __construct(Refund $refund)
+    public function __construct(Refund $refund, ?array $refundInfo = null)
     {
         $this->refund = $refund;
+        $this->refundInfo = $refundInfo;
     }
 
     public function build()

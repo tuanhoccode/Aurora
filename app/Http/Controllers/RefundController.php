@@ -233,7 +233,7 @@ class RefundController extends Controller
             // Gửi email thông báo hủy đơn hàng
             try {
                 $refundInfo = null;
-                
+
                 // Nếu là đơn hàng VNPay đã thanh toán, thêm thông tin hoàn tiền
                 if ($order->payment_id == 2 && $order->is_paid) {
                     $refundInfo = [
@@ -242,13 +242,13 @@ class RefundController extends Controller
                         'status' => 'pending'
                     ];
                 }
-                
+
                 Mail::to($order->email)->send(new OrderCancellationMail(
-                    $order, 
-                    $request->reason, 
+                    $order,
+                    $request->reason,
                     $refundInfo
                 ));
-                
+
                 Log::info('Email thông báo hủy đơn hàng (RefundController) đã được gửi', [
                     'order_id' => $order->id,
                     'order_code' => $order->code,
@@ -274,12 +274,12 @@ class RefundController extends Controller
     public function adminIndex(Request $request)
     {
         $query = Refund::with(['user', 'order']);
-        
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         // Tìm kiếm theo mã đơn hàng hoặc tên khách hàng
         if ($request->filled('search')) {
             $search = $request->search;
@@ -292,15 +292,15 @@ class RefundController extends Controller
                 });
             });
         }
-        
+
         $refunds = $query->orderBy('created_at', 'desc')->paginate(10);
-        
+
         // Lấy thống kê tổng quan - đảm bảo có tất cả status
         $stats = Refund::selectRaw('status, COUNT(*) as count')
                        ->groupBy('status')
                        ->pluck('count', 'status')
                        ->toArray();
-        
+
         // Đảm bảo có tất cả status keys
         $allStatuses = ['pending', 'receiving', 'completed', 'rejected', 'failed', 'cancel'];
         foreach ($allStatuses as $status) {
@@ -308,18 +308,23 @@ class RefundController extends Controller
                 $stats[$status] = 0;
             }
         }
-        
 
-        
+
+
         return view('admin.refunds.index', compact('refunds', 'stats'));
     }
 
        public function adminShow($id)
     {
         try {
-            $refund = Refund::with(['items', 'user', 'order' => function ($query) {
-                $query->with('statusHistory');
-            }])->findOrFail($id);
+            $refund = Refund::with([
+                'items.product',
+                'items.productVariant.attributeValues.attribute',
+                'user',
+                'order' => function ($query) {
+                    $query->with('statusHistory');
+                }
+            ])->findOrFail($id);
             return view('admin.refunds.show', compact('refund'));
         } catch (\Exception $e) {
             Log::error('Error loading refund details', [
@@ -429,17 +434,22 @@ class RefundController extends Controller
                 $from = $currentStatus?->order_status_id ?? 1;
                 $to = 7; // Trạng thái "Hoàn tiền"
 
-                // Kiểm tra chuyển đổi trạng thái đơn hàng hợp lệ
+                // Cho phép chuyển nhiều trạng thái sang Hoàn tiền, bao gồm cả đã hủy
                 $orderValidTransitions = [
+                    1 => [7], // Chờ xác nhận → Hoàn tiền
+                    2 => [7], // Chờ lấy hàng → Hoàn tiền
+                    3 => [7], // Đang giao → Hoàn tiền
                     4 => [7], // Giao hàng thành công → Hoàn tiền
+                    8 => [7], // Đã hủy → Hoàn tiền
+                    9 => [7], // Gửi hàng → Hoàn tiền
                     10 => [7], // Hoàn tất → Hoàn tiền
                 ];
 
-                if (!in_array($to, $orderValidTransitions[$from] ?? [])) {
+                if (!in_array($to, $orderValidTransitions[$from] ?? [7])) {
                     $currentName = $this->getOrderStatusText($from);
                     $targetName = $this->getOrderStatusText($to);
                     $validStatuses = implode(', ', array_map(fn($id) => $this->getOrderStatusText($id), $orderValidTransitions[$from] ?? []));
-                    $errorMessage = "Không thể chuyển trạng thái đơn hàng từ '$currentName' sang '$targetName'. Các trạng thái hợp lệ: " . ($validStatuses ?: 'Không có trạng thái nào hợp lệ.');
+                    $errorMessage = "Không thể chuyển trạng thái đơn hàng từ '$currentName' sang '$targetName'. Các trạng thái hợp lệ: " . ($validStatuses ?: '7 - Hoàn tiền');
                     Log::warning('Invalid order status transition attempted', [
                         'order_id' => $order->id,
                         'current_status' => $from,
@@ -451,14 +461,14 @@ class RefundController extends Controller
                 // Xử lý VNPay refund nếu đơn hàng thanh toán bằng VNPay
                 $vnpayRefundSuccess = true;
                 $vnpayTransactionId = null;
-                
+
                 if ($order->payment_id == 2 && $order->is_paid) {
                     try {
                         // Lấy transaction_id từ PaymentLog
                         $paymentLog = \App\Models\PaymentLog::where('order_id', $order->id)
                             ->where('response_code', '00') // VNPay success code
                             ->first();
-                            
+
                         if ($paymentLog && $paymentLog->transaction_no) {
                             $vnpayService = new VNPayService();
                             $vnpayRefundSuccess = $vnpayService->refund(
@@ -468,14 +478,15 @@ class RefundController extends Controller
                                 $order->code
                             );
                             $vnpayTransactionId = $paymentLog->transaction_no;
-                            
+
 
                         } else {
                             Log::warning('VNPay transaction not found for refund', [
                                 'refund_id' => $refund->id,
                                 'order_id' => $order->id
                             ]);
-                            $vnpayRefundSuccess = false;
+                            // Không chặn hoàn thành nếu thiếu transaction_no; giả định xử lý thủ công
+                            $vnpayRefundSuccess = true;
                         }
                     } catch (\Exception $e) {
                         Log::error('VNPay refund failed', [
@@ -503,7 +514,7 @@ class RefundController extends Controller
                 if ($vnpayTransactionId) {
                     $note .= " | VNPay Transaction: {$vnpayTransactionId}";
                 }
-                
+
                 $data = [
                     'order_id' => $order->id,
                     'order_status_id' => $to,
@@ -556,7 +567,7 @@ class RefundController extends Controller
                             'estimated_time' => '3-5 ngày làm việc'
                         ];
                     }
-                    
+
                     Mail::to($refund->user->email)->send(new RefundStatusMail($refund, $refundInfo));
 
                 } catch (\Exception $e) {
