@@ -1,6 +1,6 @@
 <!-- Sidebar -->
 <aside class="sidebar">
-    <div class="d-flex align-items-center justify-content-center mb-4 px-4">
+    <div class="d-flex align-items-center justify-content-center mt-4 px-4">
         <h4 class="text-white m-0">Bảng Quản Trị</h4>
     </div>
     <ul class="nav flex-column mb-auto">

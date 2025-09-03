@@ -769,7 +769,7 @@
                                 </div>
                                 <div class="tp-feature-content-2">
                                     <h3 class="tp-feature-title-2">Giảm giá cho thành viên</h3>
-                                    <p>Một đơn hàng trên 150.000 <span style="color: red;">đ</span></p>
+                                    <p>Một đơn hàng trên 150.000<span>đ</span></p>
                                 </div>
                             </div>
                         </div>

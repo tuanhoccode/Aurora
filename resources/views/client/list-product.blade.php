@@ -381,7 +381,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Variant Attributes Filter -->
                     @if(isset($variantAttributes) && $variantAttributes->count() > 0)
                         @foreach($variantAttributes as $attribute)
@@ -403,14 +403,14 @@
                                                             $colorStyle = "background-image: url('$colorCode')";
                                                         }
                                                     @endphp
-                                                    <div class="color-option {{ $isActive ? 'active' : '' }}" 
-                                                         data-attribute-id="{{ $attribute->id }}" 
+                                                    <div class="color-option {{ $isActive ? 'active' : '' }}"
+                                                         data-attribute-id="{{ $attribute->id }}"
                                                          data-value-id="{{ $value->id }}"
                                                          title="{{ $value->value }}">
                                                         <div class="color-swatch" style="{{ $colorStyle }}">
-                                                            <input type="checkbox" 
-                                                                   name="variant_attributes[{{ $attribute->id }}][]" 
-                                                                   value="{{ $value->id }}" 
+                                                            <input type="checkbox"
+                                                                   name="variant_attributes[{{ $attribute->id }}][]"
+                                                                   value="{{ $value->id }}"
                                                                    id="variant_attr_{{ $attribute->id }}_{{ $value->id }}"
                                                                    {{ $isActive ? 'checked' : '' }}>
                                                             <span class="checkmark">✓</span>
@@ -425,11 +425,11 @@
                                                 @foreach($attribute->attributeValues as $value)
                                                     <li class="d-flex justify-content-between mb-2">
                                                         <div class="form-check">
-                                                            <input 
-                                                                class="form-check-input" 
-                                                                type="checkbox" 
-                                                                name="variant_attributes[{{ $attribute->id }}][]" 
-                                                                value="{{ $value->id }}" 
+                                                            <input
+                                                                class="form-check-input"
+                                                                type="checkbox"
+                                                                name="variant_attributes[{{ $attribute->id }}][]"
+                                                                value="{{ $value->id }}"
                                                                 id="variant_attr_{{ $attribute->id }}_{{ $value->id }}"
                                                                 {{ is_array(request('variant_attributes.'.$attribute->id)) && in_array($value->id, request('variant_attributes.'.$attribute->id, [])) ? 'checked' : '' }}
                                                             >
@@ -476,6 +476,44 @@
                                         <span>Hết hàng</span>
                                     </div>
                                 @endif
+
+                                @php
+                                    // Kiểm tra sản phẩm có đang giảm giá không
+                                    $isOnSale = false;
+                                    $discountPercent = 0;
+
+                                    if ($product->type === 'variant' && $product->variants->count() > 0) {
+                                        // Kiểm tra variant có đang giảm giá không
+                                        $now = now();
+                                        $saleVariants = $product->variants->filter(function($variant) use ($now) {
+                                            return $variant->sale_price
+                                                && $variant->sale_price > 0
+                                                && $variant->sale_price < $variant->regular_price
+                                                && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                                                && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now);
+                                        });
+
+                                        if ($saleVariants->count() > 0) {
+                                            $isOnSale = true;
+                                            // Tính phần trăm giảm giá trung bình
+                                            $discountPercent = round($saleVariants->avg(function($variant) {
+                                                return (($variant->regular_price - $variant->sale_price) / $variant->regular_price) * 100;
+                                            }));
+                                        }
+                                    } else {
+                                        // Sản phẩm thường
+                                        if ($product->is_on_sale) {
+                                            $isOnSale = true;
+                                            $discountPercent = $product->discount_percent;
+                                        }
+                                    }
+                                @endphp
+
+                                @if($isOnSale)
+                                    <div class="product-badge-sale" style="position: absolute; top: 10px; right: 10px; background: #ff4757; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 20;">
+                                        -{{ $discountPercent }}%
+                                    </div>
+                                @endif
                             </div>
                             <div class="tp-product-content-2">
                                 <div class="tp-product-tag-2">
@@ -505,16 +543,13 @@
                                                     @if ($i <= $avg)
                                                         <i class="fa-solid fa-star text-warning"></i>
                                                     @else
-                                                        <i class="fa-solid fa-star text-warning"></i>
+                                                        <i class="fa-regular fa-star text-warning"></i>
                                                     @endif
                                                 @endfor
                                             </div>
                                         </div>
                                     @else
-                                        @php
-                                            $avg = $related->average_rating ?? 0
-                                        @endphp
-                                        @for($i = 1; $i <= 5; $i++)       
+                                        @for($i = 1; $i <= 5; $i++)
                                             <span><i class="fa-regular fa-star text-warning"></i></span>
                                         @endfor
                                     @endif
@@ -522,18 +557,28 @@
                                <div class="tp-product-price-wrapper-2">
                                     @if ($product->type === 'variant' && $product->variants->count() > 0)
                                         @php
-                                            // Lấy giá cuối cùng của từng variant (ưu tiên sale_price, fallback sang price)
-                                            $variantPrices = $product->variants->map(function($v) {
-                                                return $v->sale_price > 0 ? $v->sale_price : $v->price;
+                                            // Tính giá hiện tại của từng variant (ưu tiên sale_price nếu đang trong thời gian khuyến mãi)
+                                            $variantPrices = $product->variants->map(function($variant) {
+                                                $now = now();
+                                                $price = $variant->regular_price;
+
+                                                if ($variant->sale_price
+                                                    && $variant->sale_price > 0
+                                                    && (!$variant->sale_starts_at || $variant->sale_starts_at <= $now)
+                                                    && (!$variant->sale_ends_at || $variant->sale_ends_at >= $now)) {
+                                                    $price = $variant->sale_price;
+                                                }
+
+                                                return $price;
                                             })->filter(function($price) {
                                                 return $price > 0;
                                             });
 
-                                            $minPrice = $variantPrices->min();
-                                            $maxPrice = $variantPrices->max();
+                                            $minPrice = $variantPrices->count() > 0 ? $variantPrices->min() : 0;
+                                            $maxPrice = $variantPrices->count() > 0 ? $variantPrices->max() : 0;
                                         @endphp
 
-                                        @if ($variantPrices->count() > 0)
+                                        @if ($minPrice > 0)
                                             <span class="tp-product-price-2 new-price">
                                                 @if ($minPrice == $maxPrice)
                                                     {{ number_format($minPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
@@ -542,15 +587,36 @@
                                                 @endif
                                             </span>
                                         @else
-                                            <span class="tp-product-price-2 new-price">Liên hệ</span>
+                                            @php
+                                                // Nếu không có variant nào có giá hợp lệ, hiển thị giá gốc của sản phẩm
+                                                $fallbackPrice = $product->price ?? 0;
+                                            @endphp
+                                            @if ($fallbackPrice > 0)
+                                                <span class="tp-product-price-2 new-price">
+                                                    {{ number_format($fallbackPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                                </span>
+                                            @endif
                                         @endif
                                     @else
+                                        @php
+                                            // Tính giá hiện tại cho sản phẩm thường
+                                            $now = now();
+                                            $currentPrice = $product->price;
+                                            $originalPrice = null;
+
+                                            if ($product->sale_price
+                                                && (!$product->sale_starts_at || $product->sale_starts_at <= $now)
+                                                && (!$product->sale_ends_at || $product->sale_ends_at >= $now)) {
+                                                $currentPrice = $product->sale_price;
+                                                $originalPrice = $product->price;
+                                            }
+                                        @endphp
                                         <span class="tp-product-price-2 new-price">
-                                            {{ number_format($product->price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                            {{ number_format($currentPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
                                         </span>
-                                        @if ($product->original_price && $product->original_price > $product->price)
+                                        @if ($originalPrice && $originalPrice > $currentPrice)
                                             <span class="tp-product-price-2 old-price">
-                                                {{ number_format($product->original_price, 0, ',', '.') }} <span style="color: red;">đ</span>
+                                                {{ number_format($originalPrice, 0, ',', '.') }} <span style="color: red;">đ</span>
                                             </span>
                                         @endif
                                     @endif
@@ -585,7 +651,7 @@
                 e.preventDefault();
                 const checkbox = this.querySelector('input[type="checkbox"]');
                 const isActive = this.classList.contains('active');
-                
+
                 // Toggle trạng thái chọn
                 if (isActive) {
                     this.classList.remove('active');
@@ -594,12 +660,12 @@
                     this.classList.add('active');
                     checkbox.checked = true;
                 }
-                
+
                 // Cập nhật tên input để gửi nhiều giá trị
                 updateCheckboxNames();
             });
         });
-        
+
         // Hàm cập nhật tên các checkbox để gửi nhiều giá trị
         function updateCheckboxNames() {
             document.querySelectorAll('.color-option input[type="checkbox"]').forEach(checkbox => {
@@ -610,7 +676,7 @@
                 }
             });
         }
-        
+
         // Khởi tạo trạng thái ban đầu cho các ô màu
         document.querySelectorAll('.color-option').forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
@@ -618,7 +684,7 @@
                 option.classList.add('active');
             }
         });
-        
+
         // Gọi hàm cập nhật tên checkbox khi tải trang
         updateCheckboxNames();
     });

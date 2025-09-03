@@ -1,5 +1,6 @@
 @extends('client.layouts.default')
 
+@section('title', ($post->meta_title ?? $post->title) . ' - ' . config('app.name'))
 @if($post->meta_description)
     @section('meta_description', $post->meta_description)
 @endif
@@ -98,12 +99,7 @@
     }
 
     /* Post content */
-    .post-thumbnail {
-        max-width: 100%;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    }
+    .hero-cover { width: 100%; height: 360px; object-fit: cover; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
     .post-header h1 {
         font-size: 24px;
         font-weight: 700;
@@ -144,6 +140,12 @@
         background: #4e73df;
         border-radius: 3px;
     }
+
+    /* TOC */
+    .toc { border: 1px solid #eee; padding: 14px; margin: 20px 0; background: #fafafa; }
+    .toc h5 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #666; }
+    .toc ul { margin: 0; padding-left: 18px; }
+    .toc li { font-size: 14px; margin: 6px 0; }
 
     /* Comment */
     .comment-section {
@@ -271,68 +273,14 @@
     <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
         <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
         <span class="mx-2">/</span>
-        <a href="{{ route('blog.index') }}" class="text-decoration-none">Tin Tức</a>
+        <a href="{{ route('blog.index') }}" class="text-decoration-none">Bài Viết</a>
         <span class="mx-2">/</span>
         <span class="text-muted">{{ Str::limit($post->title, 30) }}</span>
     </div>
     <div class="blog-container">
         <!-- Sidebar -->
         <aside>
-            <!-- Recent Posts Widget -->
-            <div class="widget">
-                <h3 class="widget-title">Bài viết mới nhất</h3>
-                <ul class="latest-list">
-                    @foreach(\App\Models\BlogPost::published()->latest()->take(5)->get() as $recentPost)
-                        <li class="latest-item">
-                            <a href="{{ route('blog.show', $recentPost->slug) }}">
-                                <img class="latest-thumb" 
-                                     src="{{ $recentPost->thumbnail ? Storage::url($recentPost->thumbnail) : asset('assets2/img/blog/rc-blog-1.jpg') }}" 
-                                     alt="{{ $recentPost->title }}">
-                            </a>
-                            <div>
-                                <h4 class="latest-title">
-                                    <a href="{{ route('blog.show', $recentPost->slug) }}">
-                                        {{ Str::limit($recentPost->title, 50) }}
-                                    </a>
-                                </h4>
-                                <div class="latest-meta">
-                                    {{ $recentPost->author->name ?? 'Quản trị viên' }} · 
-                                    {{ $recentPost->published_at ? $recentPost->published_at->format('d.m.Y') : $recentPost->created_at->format('d.m.Y') }}
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <!-- Categories Widget -->
-            <div class="widget">
-                <h3 class="widget-title">Danh mục Blog</h3>
-                <ul class="cat-list">
-                    @php
-                        $currentCategory = request('category');
-                        $searchQuery = request('search') ? '&search=' . request('search') : '';
-                    @endphp
-                    <li>
-                        <a href="?{{ $searchQuery ? ltrim($searchQuery, '&') : '' }}" class="{{ !$currentCategory ? 'active' : '' }}">
-                            Tất cả bài viết
-                            <span class="float-end">({{ \App\Models\BlogPost::where('is_active', true)->count() }})</span>
-                        </a>
-                    </li>
-                    @foreach(\App\Models\BlogCategory::withCount(['posts' => function($query) {
-                        $query->where('is_active', true);
-                    }])->orderBy('name')->get() as $category)
-                        @if($category->posts_count > 0)
-                            <li>
-                                <a href="?category={{ $category->id }}{{ $searchQuery }}" class="{{ $currentCategory == $category->id ? 'active' : '' }}">
-                                    {{ $category->name }}
-                                    <span class="float-end">({{ $category->posts_count }})</span>
-                                </a>
-                            </li>
-                        @endif
-                    @endforeach
-                </ul>
-            </div>
+            @include('client.blog.partials.sidebar')
         </aside>
 
         <!-- Content -->
@@ -341,18 +289,41 @@
                 <h1>{{ $post->title }}</h1>
                 <div class="post-meta">
                     Người viết: {{ $post->author->name ?? 'Ẩn danh' }} |
-                    {{ $post->created_at->format('d/m/Y') }} |
+                    {{ optional($post->published_at ?? $post->created_at)->format('d/m/Y') }} |
                     <i class="far fa-comment-alt"></i> {{ $post->comments_count }} bình luận
                 </div>
             </div>
 
             @if($post->thumbnail)
-                <img src="{{ Storage::url($post->thumbnail) }}" class="post-thumbnail" alt="{{ $post->title }}">
+                <img src="{{ Storage::url($post->thumbnail) }}" class="hero-cover" alt="{{ $post->title }}">
             @endif
 
-            <div class="post-content">
+            <div class="post-content mt-4">
                 {!! $post->content !!}
             </div>
+
+            <script>
+                (function(){
+                    var content = document.getElementById('post-content');
+                    if(!content) return;
+                    var headings = content.querySelectorAll('h2, h3');
+                    if(!headings.length) return;
+                    var toc = document.getElementById('toc');
+                    if(!toc) return;
+                    var list = document.createElement('ul');
+                    var title = document.createElement('h5');
+                    title.textContent = 'Mục lục';
+                    toc.appendChild(title);
+                    headings.forEach(function(h, idx){
+                        if(!h.id){ h.id = 'h-' + (idx+1); }
+                        var li = document.createElement('li');
+                        if(h.tagName.toLowerCase()==='h3'){ li.style.marginLeft = '12px'; }
+                        var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent; a.style.textDecoration = 'none';
+                        li.appendChild(a); list.appendChild(li);
+                    });
+                    toc.appendChild(list);
+                })();
+            </script>
 
             <!-- Bình luận -->
             <div class="comment-section">

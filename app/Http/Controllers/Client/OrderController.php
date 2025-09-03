@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Mail\OrderCancellationMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -27,7 +29,7 @@ class OrderController extends Controller
             ->with([
                 'items.product',
                 'orderItems',
-                'items.review',
+                'items.review.images',
                 'currentOrderStatus.status',
                 'payment',
                 'statusHistory.status'
@@ -209,7 +211,7 @@ class OrderController extends Controller
             abort(404);
         }
 
-        $order->load(['items.product', 'statusHistory.status', 'payment']);
+        $order->load(['items.product', 'items.review.images' ,  'statusHistory.status', 'payment']);
 
         return view('client.orders.show', compact('order'));
     }
@@ -486,6 +488,39 @@ class OrderController extends Controller
             'cancel_note' => $request->cancel_note,
             'cancelled_at' => now(),
         ]);
+
+        // Gửi email thông báo hủy đơn hàng
+        try {
+            $refundInfo = null;
+            
+            // Nếu là đơn hàng VNPay đã thanh toán, thêm thông tin hoàn tiền
+            if ($order->payment_id == 2 && $order->is_paid) {
+                $refundInfo = [
+                    'transaction_id' => 'Đang xử lý',
+                    'amount' => $order->total_amount,
+                    'status' => 'pending'
+                ];
+            }
+            
+            Mail::to($order->email)->send(new OrderCancellationMail(
+                $order, 
+                $request->cancel_reason, 
+                $refundInfo
+            ));
+            
+            Log::info('Email thông báo hủy đơn hàng đã được gửi', [
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'user_email' => $order->email,
+                'payment_method' => $order->payment_id == 2 ? 'VNPay' : 'COD'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi gửi email thông báo hủy đơn hàng', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
 
         return redirect()->route('client.orders')
             ->with('success', 'Đã hủy đơn hàng thành công!');

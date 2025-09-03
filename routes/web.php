@@ -574,7 +574,7 @@ Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(fun
     Route::post('/orders/{order}/reorder', [\App\Http\Controllers\Client\OrderController::class, 'reorder'])->name('orders.reorder');
     
     //Đánh giá sản phẩm
-    Route::post('/reviews/{product}', [\App\Http\Controllers\Client\ReviewController::class, 'store'])->name('store');
+    Route::post('/reviews', [\App\Http\Controllers\Client\ReviewController::class, 'store'])->name('store');
 });
 
 
