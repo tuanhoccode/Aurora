@@ -1,6 +1,6 @@
 @extends('client.layouts.default')
 
-@section('title', 'Tin Tức - ' . config('app.name'))
+@section('title', 'Bài Viết - ' . config('app.name'))
 
 
 <style>
@@ -174,7 +174,7 @@
     <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
         <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
         <span class="mx-2">/</span>
-        <span class="text-muted">Tin Tức</span>
+        <span class="text-muted">Bài Viết</span>
     </div>
     <div class="layout">
         <!-- SIDEBAR -->
@@ -188,7 +188,7 @@
                 @if(isset($searchTerm) && $searchTerm)
                     Kết quả tìm kiếm cho: "{{ $searchTerm }}"
                 @else
-                    Tin Tức
+                    Bài Viết
                 @endif
             </h1>
 
@@ -231,7 +231,7 @@
                     <h3>Không tìm thấy bài viết nào</h3>
                     <p>Xin lỗi, không có bài viết nào phù hợp với tìm kiếm của bạn.</p>
                     <a href="{{ route('blog.index') }}" class="btn btn-primary">
-                        Quay lại trang tin tức
+                        Quay lại trang bài viết
                     </a>
                 </div>
             @endif
