@@ -890,7 +890,7 @@
                                         </div>
                                     </div> 
                                     @if ($statusId == 10 && !$order->refund()->whereIn('status', ['pending', 'approved'])->exists())
-                                        <div class="d-flex gap-2 mt-2 mb-2">
+                                        <div class="d-flex gap-2 mt-2">
                                             @if ($item->review)
                                                 <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
                                                     data-bs-toggle = "modal"

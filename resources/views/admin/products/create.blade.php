@@ -175,7 +175,7 @@
                 </div>
               </div>
               <label class="form-label">Tồn kho</label>
-              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock') }}" min="1">
+              <input type="number" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock', 0) }}" min="0">
               @error('stock')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror

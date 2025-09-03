@@ -168,8 +168,7 @@ Route::middleware(['auth', 'check.admin-or-employee'])->prefix('admin')->name('a
     /// Orders Routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/cancel/{id}', [OrderController::class, 'cancel'])->name('orders.cancel');
-    Route::get('/orders/{order}/update-status-form', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
+    Route::get('/orders/{order}/update-status', [OrderController::class, 'updateStatusForm'])->name('orders.update-status-form');
     Route::patch('/orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     // Products Routes
     Route::prefix('products')->name('products.')->group(function () {
@@ -555,12 +554,6 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->prefix('client')->name('client.')->group(function () {
-    // Order Routes
-    Route::get('/orders/{order}/create-address', [\App\Http\Controllers\Client\OrderController::class, 'createNewAddress'])->name('orders.create-address');
-    Route::post('/orders/{order}/store-new-address', [\App\Http\Controllers\Client\OrderController::class, 'storeNewAddress'])->name('orders.store-new-address');
-    Route::post('/orders/{order}/store-address', [\App\Http\Controllers\Client\OrderController::class, 'storeAddress'])->name('orders.store-address');
-    Route::put('/orders/{order}/update-address', [\App\Http\Controllers\Client\OrderController::class, 'updateAddress'])->name('orders.update-address');
-    
     // Shopping Cart Routes
     Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('shopping-cart.index')->middleware(['auth', 'verified']);
     Route::post('/shopping-cart/add', [ShoppingCartController::class, 'addToCart'])->name('shopping-cart.add')->middleware(['auth', 'verified']);
