@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Client\AddressFormRequest;
 use App\Http\Requests\Client\SaveAddressRequest;
-use App\Mail\OrderCancellationMail;
 
 class CheckoutController extends Controller
 {
@@ -1100,37 +1099,6 @@ class CheckoutController extends Controller
                         'session_id' => Session::getId()
                     ]);
                 });
-
-                try {
-                    $refundInfo = null;
-                    
-                    if ($order->payment_id == 2 && $order->is_paid) {
-                        $refundInfo = [
-                            'transaction_id' => 'Đang xử lý',
-                            'amount' => $order->total_amount,
-                            'status' => 'pending'
-                        ];
-                    }
-                    
-                    Mail::to($order->email)->send(new OrderCancellationMail(
-                        $order, 
-                        'Đơn hàng hết thời gian thanh toán (30 phút)', 
-                        $refundInfo
-                    ));
-                    
-                    Log::info('Email thông báo hủy đơn hàng (timeout) đã được gửi', [
-                        'order_id' => $order->id,
-                        'order_code' => $order->code,
-                        'user_email' => $order->email,
-                        'payment_method' => $order->payment_id == 2 ? 'VNPay' : 'COD'
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Lỗi gửi email thông báo hủy đơn hàng (timeout)', [
-                        'order_id' => $order->id,
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                }
 
                 return redirect()->route('home')->with('error', 'Đơn hàng đã hết thời gian thanh toán và bị hủy. Vui lòng tạo đơn hàng mới!');
             }

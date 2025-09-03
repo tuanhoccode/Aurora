@@ -37,7 +37,7 @@
                                     <li><a href="#">Về Aurora</a></li>
                                     <li><a href="#">Điều khoản</a></li>
                                     <li><a href="{{ route('contact') }}">Liên hệ</a></li>
-                                    <li><a href="#">Bài Viết</a></li>
+                                    <li><a href="#">Tin tức</a></li>
                                 </ul>
                             </div>
                         </div>
