@@ -4,7 +4,7 @@
 @endphp
 
 <div class="widget">
-    <h3 class="widget-title">Tìm kiếm bài viết</h3>
+    <h3 class="widget-title">Tìm kiếm tin tức</h3>
     <div class="search-form">
         <form action="{{ route('blog.index') }}" method="GET">
             <input type="text"
