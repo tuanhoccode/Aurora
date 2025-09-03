@@ -4,6 +4,8 @@ namespace App\Http\Controllers\client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Refund;
+use App\Models\RefundItem;
 use App\Models\OrderOrderStatus;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusHistory;
@@ -15,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Mail\OrderCancellationMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -22,7 +26,7 @@ class OrderController extends Controller
     {
         $filter = $request->input('filter');
         $search = $request->input('search');
-        
+
         $query = Order::where('user_id', Auth::id())
             ->with([
                 'items.product',
@@ -32,103 +36,103 @@ class OrderController extends Controller
                 'payment',
                 'statusHistory.status'
             ])
-            ->withCount(['statusHistory as current_status' => function($q) {
+            ->withCount(['statusHistory as current_status' => function ($q) {
                 $q->where('is_current', true);
             }])
             ->orderBy('created_at', 'desc');
-            
+
         // Apply status filter
         if ($filter) {
             switch ($filter) {
                 case 'pending_payment':
                     // Chờ thanh toán - đơn chưa thanh toán và có trạng thái chờ xác nhận
                     $query->where('is_paid', false)
-                        ->whereHas('statusHistory', function($q) {
+                        ->whereHas('statusHistory', function ($q) {
                             $q->where('is_current', true)
-                              ->where('order_status_id', 1);
+                                ->where('order_status_id', 1);
                         });
                     break;
-                    
+
                 case 'processing':
                     // Đang xử lý - đơn đã thanh toán và đang chờ xác nhận
                     $query->where('is_paid', true)
-                        ->whereHas('statusHistory', function($q) {
+                        ->whereHas('statusHistory', function ($q) {
                             $q->where('is_current', true)
-                              ->where('order_status_id', 1);
+                                ->where('order_status_id', 1);
                         });
                     break;
-                    
+
                 case 'shipping':
                     // Đang giao hàng - đơn đang trong quá trình vận chuyển
-                    $query->whereHas('statusHistory', function($q) {
+                    $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->whereIn('order_status_id', [2, 3]); // Chờ lấy hàng, Đang giao
+                            ->whereIn('order_status_id', [2, 3]); // Chờ lấy hàng, Đang giao
                     });
                     break;
-                    
+
                 case 'delivered':
                     // Đã giao hàng - đã giao nhưng chưa xác nhận
-                    $query->whereHas('statusHistory', function($q) {
+                    $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 4) // Đã giao
-                          ->whereDoesntHave('order.statusHistory', function($q) {
-                              $q->where('order_status_id', 10); // Chưa hoàn thành
-                          });
+                            ->where('order_status_id', 4) // Đã giao
+                            ->whereDoesntHave('order.statusHistory', function ($q) {
+                                $q->where('order_status_id', 10); // Chưa hoàn thành
+                            });
                     });
                     break;
-                    
+
                 case 'completed':
                     // Đã hoàn thành - đã xác nhận nhận hàng
-                    $query->whereHas('statusHistory', function($q) {
+                    $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 10); // Hoàn thành
+                            ->where('order_status_id', 10); // Hoàn thành
                     });
                     break;
-                    
+
                 case 'cancelled':
                     // Đã hủy
-                    $query->whereHas('statusHistory', function($q) {
+                    $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->where('order_status_id', 8); // Đã hủy
+                            ->where('order_status_id', 8); // Đã hủy
                     });
                     break;
-                    
+
                 case 'return_refund':
                     // Trả hàng/Hoàn tiền
-                    $query->whereHas('statusHistory', function($q) {
+                    $query->whereHas('statusHistory', function ($q) {
                         $q->where('is_current', true)
-                          ->whereIn('order_status_id', [5, 6, 7]); // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
+                            ->whereIn('order_status_id', [5, 6, 7]); // Đang xử lý hoàn tiền, Đã hoàn tiền, Từ chối hoàn tiền
                     });
                     break;
             }
         }
-        
+
         // Apply search
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', '%' . $search . '%')
-                  ->orWhere('id', $search)
-                  ->orWhereHas('items.product', function($q) use ($search) {
-                      $q->where('name', 'like', '%' . $search . '%');
-                  })
-                  ->orWhereHas('items.product', function($q) use ($search) {
-                      $q->where('name', 'like', '%' . $search . '%');
-                  });
+                    ->orWhere('id', $search)
+                    ->orWhereHas('items.product', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('items.product', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
             });
         }
-        
+
         $orders = $query->paginate(10);
-        
+
         // Đếm số lượng đơn hàng theo từng trạng thái
         $user = Auth::user();
-        
+
         // Lấy tất cả đơn hàng của user với trạng thái hiện tại
         $allOrders = $user->orders()
-            ->with(['statusHistory' => function($q) {
+            ->with(['statusHistory' => function ($q) {
                 $q->where('is_current', true);
             }])
             ->get();
-        
+
         // Khởi tạo các biến đếm
         $allCount = $allOrders->count();
         $pendingPaymentCount = 0;
@@ -138,17 +142,17 @@ class OrderController extends Controller
         $completedCount = 0;
         $cancelledCount = 0;
         $returnRefundCount = 0;
-        
+
         // Đếm số lượng đơn hàng theo từng trạng thái
         foreach ($allOrders as $order) {
             $currentStatus = $order->statusHistory->first();
-            
+
             if (!$currentStatus) {
                 continue;
             }
-            
+
             $statusId = $currentStatus->order_status_id;
-            
+
             // Xử lý từng trạng thái đơn hàng
             switch ($statusId) {
                 case 1: // Chờ xác nhận
@@ -158,12 +162,12 @@ class OrderController extends Controller
                         $pendingPaymentCount++;
                     }
                     break;
-                    
+
                 case 2: // Chờ lấy hàng
                 case 3: // Đang giao
                     $shippingCount++;
                     break;
-                    
+
                 case 4: // Đã giao
                     // Kiểm tra xem đã có trạng thái hoàn thành (10) chưa
                     $hasCompleted = $order->statusHistory->contains('order_status_id', 10);
@@ -171,15 +175,15 @@ class OrderController extends Controller
                         $deliveredCount++;
                     }
                     break;
-                    
+
                 case 10: // Hoàn thành
                     $completedCount++;
                     break;
-                    
+
                 case 8: // Đã hủy
                     $cancelledCount++;
                     break;
-                    
+
                 case 5: // Đang xử lý hoàn tiền
                 case 6: // Đã hoàn tiền
                 case 7: // Từ chối hoàn tiền
@@ -199,7 +203,7 @@ class OrderController extends Controller
             'cancelled' => $cancelledCount,
             'return_refund' => $returnRefundCount
         ];
-        
+
         return view('client.orders.index', compact('orders', 'statusCounts', 'search'));
     }
 
@@ -209,7 +213,7 @@ class OrderController extends Controller
             abort(404);
         }
 
-        $order->load(['items.product', 'items.review.images' ,  'statusHistory.status', 'payment']);
+        $order->load(['items.product', 'items.review.images',  'statusHistory.status', 'payment']);
 
         return view('client.orders.show', compact('order'));
     }
@@ -224,87 +228,96 @@ class OrderController extends Controller
             if ($order->user_id !== Auth::id()) {
                 return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này');
             }
-    
+
             // Kiểm tra trạng thái đơn hàng
             $allowedStatuses = ['COMPLETED', 'CANCELLED', 'DELIVERED', '10', '8', '4'];
             $currentStatus = $order->currentStatus->status->code ?? $order->currentStatus->order_status_id ?? '';
-            
+
             if (!in_array($currentStatus, $allowedStatuses)) {
                 return redirect()->back()->with('error', 'Không thể mua lại đơn hàng này. Trạng thái hiện tại: ' . $currentStatus);
             }
-    
+
             DB::beginTransaction();
-    
+
             // Lấy hoặc tạo giỏ hàng
             $cart = Cart::firstOrCreate(
                 ['user_id' => Auth::id(), 'status' => 'pending'],
                 ['total_price' => 0, 'created_at' => now(), 'updated_at' => now()]
             );
-    
+
             $addedItems = 0;
             $unavailableItems = [];
             $outOfStockItems = [];
-    
+
             // Tải trước các mối quan hệ cần thiết
             $order->load(['items.product', 'items.variant']);
-    
+
             // Thêm từng sản phẩm vào giỏ
             foreach ($order->items as $item) {
                 $product = $item->product;
-                
+
                 // Kiểm tra sản phẩm có tồn tại và đang hoạt động
                 if (!$product || !$product->is_active) {
                     $unavailableItems[] = $product ? $product->name : 'Sản phẩm không tồn tại';
                     continue;
                 }
-    
+
                 // Xử lý biến thể
                 $variant = $item->variant;
                 $variantId = $variant->id ?? null;
                 $variantName = $variant ? ' - ' . $variant->name : '';
-    
+
                 // Kiểm tra tồn kho
                 $availableStock = $variant ? $variant->stock : $product->stock;
-                
+
                 if ($availableStock < 1) {
                     $outOfStockItems[] = $product->name . $variantName;
                     continue;
                 }
-    
+
                 // Tính số lượng tối đa có thể thêm
                 $quantity = min($availableStock, $item->quantity);
-                
+
                 // Lấy giá hiện tại
                 $currentPrice = $item->price_variant ?? $item->price ?? $product->price;
-                
+
                 // Xử lý thuộc tính biến thể
                 $attributes = $this->processVariantAttributes($item);
-                
-                // Tìm hoặc tạo cart item
-                $cartItem = $cart->items()->updateOrCreate(
-                    [
-                        'product_id' => $product->id,
-                        'product_variant_id' => $variantId
-                    ],
-                    [
-                        'quantity' => DB::raw("LEAST(quantity + $quantity, $availableStock)"),
+
+                // Tìm cart item hiện có
+                $existingItem = $cart->items()
+                    ->where('product_id', $product->id)
+                    ->where('product_variant_id', $variantId)
+                    ->first();
+
+                if ($existingItem) {
+                    $newQuantity = min($existingItem->quantity + $quantity, $availableStock);
+                    $existingItem->update([
+                        'quantity' => $newQuantity,
                         'price' => $currentPrice,
                         'price_at_time' => $currentPrice,
                         'attributes' => $attributes,
-                        'updated_at' => now()
-                    ]
-                );
-    
-                // Nếu là tạo mới, cập nhật created_at
-                if ($cartItem->wasRecentlyCreated) {
-                    $cartItem->update(['created_at' => now()]);
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    $cartItem = new CartItem([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variantId,
+                        'quantity' => min($quantity, $availableStock),
+                        'price' => $currentPrice,
+                        'price_at_time' => $currentPrice,
+                        'attributes' => $attributes,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $cart->items()->save($cartItem);
                 }
-    
+
                 $addedItems++;
             }
-    
+
             DB::commit();
-    
+
             // Tạo thông báo
             $messages = [];
             if ($addedItems > 0) {
@@ -316,10 +329,9 @@ class OrderController extends Controller
             if (count($outOfStockItems) > 0) {
                 $messages[] = count($outOfStockItems) . " sản phẩm đã hết hàng: " . implode(', ', array_slice($outOfStockItems, 0, 5)) . (count($outOfStockItems) > 5 ? '...' : '');
             }
-    
+
             return redirect()->route('client.shopping-cart.index')
                 ->with('success', implode(' ', $messages));
-    
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Lỗi khi mua lại đơn hàng: ' . $e->getMessage(), [
@@ -327,12 +339,12 @@ class OrderController extends Controller
                 'user_id' => Auth::id(),
                 'exception' => $e->getTraceAsString()
             ]);
-            
+
             return redirect()->back()
                 ->with('error', 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau.');
         }
     }
-    
+
     /**
      * Xử lý thuộc tính biến thể
      */
@@ -341,14 +353,14 @@ class OrderController extends Controller
         if (empty($item->attributes_variant)) {
             return null;
         }
-    
+
         if (is_string($item->attributes_variant)) {
             $attributes = json_decode($item->attributes_variant, true);
             return $attributes ? json_encode($attributes) : null;
         }
-    
-        return is_array($item->attributes_variant) 
-            ? json_encode($item->attributes_variant) 
+
+        return is_array($item->attributes_variant)
+            ? json_encode($item->attributes_variant)
             : null;
     }
 
@@ -378,7 +390,7 @@ class OrderController extends Controller
 
         // Lấy lịch sử trạng thái từ bảng order_order_status (theo thứ tự thời gian, chỉ lấy các trạng thái thuộc timeline)
         $orderStatusSteps = OrderOrderStatus::where('order_id', $order->id)
-            ->whereHas('status', function($q) use ($timelineKeys) {
+            ->whereHas('status', function ($q) use ($timelineKeys) {
                 $q->whereIn('name', $timelineKeys);
             })
             ->with('status')
@@ -487,6 +499,90 @@ class OrderController extends Controller
             'cancelled_at' => now(),
         ]);
 
+        // Nếu đơn thanh toán VNPay và đã thanh toán, tự động tạo yêu cầu hoàn tiền cho Admin xử lý
+        try {
+            if ($order->payment_id == 2 && $order->is_paid) {
+                // Tránh tạo trùng
+                $existingRefund = Refund::where('order_id', $order->id)->first();
+                if (!$existingRefund) {
+                    $refund = Refund::create([
+                        'order_id' => $order->id,
+                        'user_id' => $order->user_id,
+                        'total_amount' => $order->total_amount,
+                        'bank_account' => null,
+                        'user_bank_name' => null,
+                        'bank_name' => 'VNPay',
+                        'reason' => 'other',
+                        'reason_image' => null,
+                        'status' => 'pending',
+                        'is_send_money' => 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    // Tạo các refund items từ order items
+                    $order->loadMissing('items');
+                    $refundItemsPayload = [];
+                    foreach ($order->items as $orderItem) {
+                        $refundItemsPayload[] = [
+                            'refund_id' => $refund->id,
+                            'product_id' => $orderItem->product_id,
+                            'variant_id' => $orderItem->product_variant_id,
+                            'name' => $orderItem->name ?? ($orderItem->product->name ?? 'Sản phẩm'),
+                            'name_variant' => $orderItem->name_variant ?? null,
+                            'quantity' => $orderItem->quantity,
+                            'price' => $orderItem->price,
+                            'price_variant' => $orderItem->price_variant ?? null,
+                            'quantity_variant' => $orderItem->quantity_variant ?? null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                    if (!empty($refundItemsPayload)) {
+                        RefundItem::insert($refundItemsPayload);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Tạo yêu cầu hoàn tiền tự động khi hủy đơn thất bại', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Gửi email thông báo hủy đơn hàng
+        try {
+            $refundInfo = null;
+
+            // Nếu là đơn hàng VNPay đã thanh toán, thêm thông tin hoàn tiền
+            if ($order->payment_id == 2 && $order->is_paid) {
+                $refundInfo = [
+                    'transaction_id' => 'Đang xử lý',
+                    'amount' => $order->total_amount,
+                    'status' => 'pending'
+                ];
+            }
+
+            Mail::to($order->email)->send(new OrderCancellationMail(
+                $order,
+                $request->cancel_reason,
+                $refundInfo
+            ));
+
+            Log::info('Email thông báo hủy đơn hàng đã được gửi', [
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'user_email' => $order->email,
+                'payment_method' => $order->payment_id == 2 ? 'VNPay' : 'COD'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi gửi email thông báo hủy đơn hàng', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+
         return redirect()->route('client.orders')
             ->with('success', 'Đã hủy đơn hàng thành công!');
     }
@@ -516,7 +612,7 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Đã cập nhật trạng thái cho các đơn hàng cũ thành công!');
     }
-    
+
     /**
      * Xác nhận đã nhận hàng
      */
@@ -526,26 +622,26 @@ class OrderController extends Controller
         if ($order->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn hàng này');
         }
-        
+
         $deliveredStatusId = 4; // ID cho trạng thái Giao hàng thành công
         $completedStatusId = 10; // ID cho trạng thái Hoàn thành
-        
+
         // Kiểm tra xem đơn hàng đã ở trạng thái giao hàng thành công chưa
         $currentStatus = $order->statusHistory()
             ->where('is_current', 1)
             ->first();
-            
+
         if (!$currentStatus || $currentStatus->order_status_id !== $deliveredStatusId) {
             return redirect()->back()->with('error', 'Chỉ có thể xác nhận đơn hàng đã được giao thành công');
         }
-        
+
         DB::beginTransaction();
         try {
             // Cập nhật trạng thái cũ
             $order->statusHistory()
                 ->where('is_current', 1)
                 ->update(['is_current' => 0]);
-                
+
             // Tạo trạng thái mới là Hoàn thành (10)
             OrderOrderStatus::create([
                 'order_id' => $order->id,
@@ -556,7 +652,7 @@ class OrderController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
             OrderStatusHistory::create([
                 'order_id' => $order->id,
                 'order_status_id' => $completedStatusId, // Sử dụng ID 10 cho trạng thái Hoàn thành
@@ -566,11 +662,10 @@ class OrderController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
             DB::commit();
-            
+
             return redirect()->route('client.orders')->with('success', 'Đã xác nhận nhận hàng thành công');
-            
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage());

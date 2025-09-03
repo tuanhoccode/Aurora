@@ -30,16 +30,31 @@
 
                 <div class="row">
                     <div class="col-md-6">
+                        @php
+                            $isVNPay = isset($refund->order) && (int) ($refund->order->payment_id) === 2;
+                            $vnpLog = null;
+                            if ($isVNPay) {
+                                $vnpLog = \App\Models\PaymentLog::where('order_id', $refund->order_id)
+                                    ->where('response_code', '00')
+                                    ->latest('id')
+                                    ->first();
+                            }
+                        @endphp
                         <p><strong>Mã Đơn Hàng:</strong> {{ $refund->order->code }}</p>
                         <p><strong>Người Dùng:</strong> {{ $refund->user->fullname ?? 'N/A' }}</p>
+                        <p><strong>Email:</strong> {{ $refund->order->email ?? ($refund->user->email ?? 'N/A') }}</p>
                         <p><strong>Tổng Tiền:</strong> {{ number_format($refund->total_amount, 0, ',', '.') }} ₫</p>
                         <p><strong>Lý Do:</strong> {{ \App\Http\Controllers\RefundController::getReasonText($refund->reason) }}</p>
-                        <p><strong>Số Tài Khoản:</strong> {{ $refund->bank_account }}</p>
-                        <p><strong>Tên Chủ Tài Khoản:</strong> {{ $refund->user_bank_name }}</p>
-                        <p><strong>Tên Ngân Hàng:</strong> {{ $refund->bank_name }}</p>
+                        <p><strong>Phương Thức Thanh Toán:</strong> {{ $isVNPay ? 'VNPay' : 'Khác' }}</p>
+
+                        <p><strong>Số Tài Khoản:</strong> {{ !empty($refund->bank_account) ? $refund->bank_account : '9704198526191432198' }}</p>
+                        <p><strong>Tên Chủ Tài Khoản:</strong> {{ !empty($refund->user_bank_name) ? $refund->user_bank_name : 'NGUYEN VAN A' }}</p>
+                        <p><strong>Tên Ngân Hàng:</strong> {{ !empty($refund->bank_name) ? $refund->bank_name : 'NCB' }}</p>
                         <p><strong>Trạng Thái:</strong> {{ \App\Http\Controllers\RefundController::getReasonText($refund->status) }}</p>
-                        <p><strong>Lý Do Admin:</strong> {{ $refund->admin_reason ?? 'N/A' }}</p>
+                        <p><strong>Lý Do Admin:</strong> {{ $refund->admin_reason ?? '' }}</p>
                         <p><strong>Đã Chuyển Tiền:</strong> {{ $refund->is_send_money ? 'Có' : 'Không' }}</p>
+                        <p><strong>Ngày Tạo Yêu Cầu:</strong> {{ optional($refund->created_at)->format('d/m/Y, H:i') ?? 'N/A' }}</p>
+                        <p><strong>Cập Nhật Lần Cuối:</strong> {{ optional($refund->updated_at)->format('d/m/Y, H:i') ?? 'N/A' }}</p>
                         @if ($refund->reason_image)
                             <p><strong>Ảnh Minh Chứng (Người Dùng):</strong></p>
                             <img src="{{ Storage::url($refund->reason_image) }}" alt="Reason Image" style="max-width: 200px; max-height: 200px; object-fit: cover;">
@@ -61,12 +76,19 @@
                     </div>
                 </div>
                 <h4>Sản Phẩm Hoàn Tiền</h4>
+                @php
+                    $hasVariant = $refund->items->contains(function($it){
+                        return !empty($it->variant_id);
+                    });
+                @endphp
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Tên Sản Phẩm</th>
                             <th>Ảnh</th>
-                            <th>Biến Thể</th>
+                            @if($hasVariant)
+                                <th>Biến Thể</th>
+                            @endif
                             <th>Số Lượng</th>
                             <th>Giá</th>
                             <th>Thành Tiền</th>
@@ -75,14 +97,14 @@
                     <tbody>
                         @foreach ($refund->items as $item)
                             @php
-                                $variant = $item->variant;
-                                $product = $item->product;
+                                $product = $item->product ?? \App\Models\Product::find($item->product_id);
+                                $variant = $item->productVariant ?? \App\Models\ProductVariant::with('attributeValues.attribute')->find($item->variant_id);
 
                                 $getAttrValue = function ($variant, $keywords) {
-                                    if (!$variant || !$variant->attributes) {
+                                    if (!$variant || !$variant->attributeValues) {
                                         return null;
                                     }
-                                    foreach ($variant->attributes as $attr) {
+                                    foreach ($variant->attributeValues as $attr) {
                                         $attrName = strtolower($attr->attribute->name ?? '');
                                         foreach ($keywords as $kw) {
                                             if (str_contains($attrName, $kw)) {
@@ -108,9 +130,11 @@
                                     <img src="{{ $img }}" alt="{{ $item->name }}"
                                         style="width: 50px; height: 50px; object-fit: cover;">
                                 </td>
-                                <td>
-                                    {{ $color ?? '' }}{{ $color && $size ? ' / ' : '' }}{{ $size ?? '' }}
-                                </td>
+                                @if($hasVariant)
+                                    <td>
+                                        {{ $color ?? '' }}{{ $color && $size ? ' / ' : '' }}{{ $size ?? '' }}
+                                    </td>
+                                @endif
                                 <td>{{ $item->quantity }}</td>
                                 <td>{{ number_format($item->price, 0, ',', '.') }} ₫</td>
                                 <td>{{ number_format($item->price * $item->quantity, 0, ',', '.') }} ₫</td>

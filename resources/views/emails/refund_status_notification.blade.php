@@ -69,20 +69,49 @@
                 </div>
             @endif
             <p>Chi tiết sản phẩm hoàn tiền:</p>
+            @php
+                $hasVariant = $refund->items->contains(function($it){
+                    return !empty($it->variant_id);
+                });
+            @endphp
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <thead>
                     <tr style="background-color: #f2f2f2;">
                         <th style="border: 1px solid #ddd; padding: 8px;">Sản Phẩm</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Biến Thể</th>
+                        @if($hasVariant)
+                            <th style="border: 1px solid #ddd; padding: 8px;">Biến Thể</th>
+                        @endif
                         <th style="border: 1px solid #ddd; padding: 8px;">Số Lượng</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Giá</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($refund->items as $item)
+                        @php
+                            $variant = $item->productVariant ?? \App\Models\ProductVariant::with('attributeValues.attribute')->find($item->variant_id);
+                            $getAttrValue = function ($variant, $keywords) {
+                                if (!$variant || !$variant->attributeValues) {
+                                    return null;
+                                }
+                                foreach ($variant->attributeValues as $attr) {
+                                    $attrName = strtolower($attr->attribute->name ?? '');
+                                    foreach ($keywords as $kw) {
+                                        if (str_contains($attrName, $kw)) {
+                                            return $attr->value;
+                                        }
+                                    }
+                                }
+                                return null;
+                            };
+                            $size = $getAttrValue($variant, ['size', 'kích']);
+                            $color = $getAttrValue($variant, ['color', 'màu']);
+                            $variantText = trim(($color ?? '') . (($color && $size) ? ' / ' : '') . ($size ?? ''));
+                        @endphp
                         <tr>
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->name }}</td>
-                            <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->name_variant ?? 'N/A' }}</td>
+                            @if($hasVariant)
+                                <td style="border: 1px solid #ddd; padding: 8px;">{{ $variantText !== '' ? $variantText : ($item->name_variant ?? 'N/A') }}</td>
+                            @endif
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ $item->quantity }}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">{{ number_format($item->price, 2) }} VNĐ</td>
                         </tr>
