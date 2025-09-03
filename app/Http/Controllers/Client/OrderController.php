@@ -12,6 +12,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductVariant;
+use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -207,15 +208,108 @@ class OrderController extends Controller
         return view('client.orders.index', compact('orders', 'statusCounts', 'search'));
     }
 
+    /**
+     * Hiển thị form tạo địa chỉ mới từ trang đơn hàng
+     */
+    public function createNewAddress(Order $order)
+    {
+        try {
+            if ($order->user_id !== Auth::id()) {
+                abort(404);
+            }
+            
+            $user = Auth::user();
+            return view('client.orders.create-address', compact('user', 'order'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error showing create address form: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Đã xảy ra lỗi, vui lòng thử lại!');
+        }
+    }
+    
+    /**
+     * Lưu địa chỉ mới từ trang đơn hàng
+     */
+    public function storeNewAddress(Request $request, Order $order)
+    {
+        try {
+            if ($order->user_id !== Auth::id()) {
+                return redirect()->back()->with('error', 'Bạn không có quyền cập nhật địa chỉ cho đơn hàng này.');
+            }
+
+            // Validate dữ liệu
+            $validator = Validator::make($request->all(), [
+                'fullname' => 'required|string|max:255',
+                'phone_number' => 'required|string|max:20',
+                'email' => 'required|email|max:255',
+                'province' => 'required|string|max:255',
+                'district' => 'required|string|max:255',
+                'ward' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            // Tạo địa chỉ mới
+            $address = UserAddress::create([
+                'user_id' => Auth::id(),
+                'fullname' => $request->fullname,
+                'phone_number' => $request->phone_number,
+                'email' => $request->email,
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'is_default' => 0,
+                'address_type' => 'home',
+            ]);
+
+            // Cập nhật địa chỉ cho đơn hàng
+            $order->update([
+                'fullname' => $address->fullname,
+                'phone_number' => $address->phone_number,
+                'email' => $address->email,
+                'address' => $address->address,
+                'province' => $address->province,
+                'district' => $address->district,
+                'ward' => $address->ward,
+                'address_id' => $address->id,
+            ]);
+
+            // Ghi log lịch sử
+            $this->logStatusChange(
+                $order->id,
+                $order->current_status,
+                'Đã thêm và cập nhật địa chỉ mới: ' . $address->address . ', ' . $address->ward . ', ' . $address->district . ', ' . $address->province,
+                false
+            );
+
+            return redirect()->route('client.orders.show', $order->id)->with('success', 'Đã thêm địa chỉ mới và cập nhật đơn hàng thành công!');
+
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi thêm địa chỉ mới: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm địa chỉ mới: ' . $e->getMessage())->withInput();
+        }
+    }
+
     public function show(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
             abort(404);
         }
+        
+        // Lấy danh sách địa chỉ của người dùng hiện tại
+        $addresses = UserAddress::where('user_id', Auth::id())
+            ->orderBy('is_default', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Load các mối quan hệ cần thiết
+        $order->load(['items.product', 'items.review.images', 'statusHistory.status', 'payment']);
 
-        $order->load(['items.product', 'items.review.images',  'statusHistory.status', 'payment']);
-
-        return view('client.orders.show', compact('order'));
+        return view('client.orders.show', compact('order', 'addresses'));
     }
 
     /**
@@ -612,6 +706,28 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Đã cập nhật trạng thái cho các đơn hàng cũ thành công!');
     }
+    
+    /**
+     * Ghi log thay đổi trạng thái đơn hàng
+     *
+     * @param int $orderId
+     * @param int $statusId
+     * @param string $note
+     * @param bool $isCurrent
+     * @return void
+     */
+    protected function logStatusChange($orderId, $statusId, $note = '', $isCurrent = true)
+    {
+        OrderStatusHistory::create([
+            'order_id' => $orderId,
+            'order_status_id' => $statusId,
+            'modifier_id' => Auth::id(),
+            'note' => $note,
+            'is_current' => $isCurrent,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
 
     /**
      * Xác nhận đã nhận hàng
@@ -670,6 +786,200 @@ class OrderController extends Controller
             DB::rollBack();
             \Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi xác nhận nhận hàng: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Cập nhật địa chỉ nhận hàng cho đơn hàng
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    /**
+     * Lưu địa chỉ mới và cập nhật cho đơn hàng
+     */
+    public function storeAddress(Request $request, Order $order)
+    {
+        try {
+            if ($order->user_id !== Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không có quyền cập nhật địa chỉ cho đơn hàng này.'
+                ], 403);
+            }
+
+            // Validate dữ liệu
+            $validator = Validator::make($request->all(), [
+                'fullname' => 'required|string|max:255',
+                'phone_number' => 'required|string|max:20',
+                'email' => 'required|email|max:255',
+                'province' => 'required|string|max:255',
+                'district' => 'required|string|max:255',
+                'ward' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dữ liệu không hợp lệ',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Tạo địa chỉ mới
+            $address = UserAddress::create([
+                'user_id' => Auth::id(),
+                'fullname' => $request->fullname,
+                'phone_number' => $request->phone_number,
+                'email' => $request->email,
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'is_default' => 0,
+                'address_type' => 'home',
+            ]);
+
+            // Cập nhật địa chỉ cho đơn hàng
+            $order->update([
+                'fullname' => $address->fullname,
+                'phone_number' => $address->phone_number,
+                'email' => $address->email,
+                'address' => $address->address,
+                'province' => $address->province,
+                'district' => $address->district,
+                'ward' => $address->ward,
+                'address_id' => $address->id,
+            ]);
+
+            // Ghi log lịch sử
+            $this->logStatusChange(
+                $order->id,
+                $order->current_status,
+                'Đã thêm và cập nhật địa chỉ mới: ' . $address->address . ', ' . $address->ward . ', ' . $address->district . ', ' . $address->province,
+                false
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Thêm địa chỉ mới và cập nhật đơn hàng thành công!',
+                'data' => [
+                    'id' => $address->id,
+                    'fullname' => $address->fullname,
+                    'phone_number' => $address->phone_number,
+                    'email' => $address->email,
+                    'address' => $address->address,
+                    'province' => $address->province,
+                    'district' => $address->district,
+                    'ward' => $address->ward,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi thêm địa chỉ mới: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thêm địa chỉ mới: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cập nhật địa chỉ nhận hàng cho đơn hàng
+     */
+    public function updateAddress(Request $request, Order $order)
+    {
+        try {
+            // Kiểm tra quyền truy cập
+            if ($order->user_id !== Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không có quyền cập nhật địa chỉ cho đơn hàng này.'
+                ], 403);
+            }
+
+            // Kiểm tra trạng thái đơn hàng
+            if ($order->currentOrderStatus->status->name !== 'Chờ xác nhận') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chỉ có thể thay đổi địa chỉ khi đơn hàng đang ở trạng thái chờ xác nhận.'
+                ], 400);
+            }
+
+            // Lấy địa chỉ mới
+            $address = UserAddress::where('id', $request->address_id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if (!$address) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Địa chỉ không hợp lệ hoặc không tồn tại.'
+                ], 404);
+            }
+
+            // Cập nhật địa chỉ đơn hàng
+            $order->update([
+                'fullname' => $address->fullname,
+                'phone_number' => $address->phone_number,
+                'email' => $address->email,
+                'address' => $address->address,
+                'province' => $address->province,
+                'district' => $address->district,
+                'ward' => $address->ward,
+                'address_id' => $address->id,
+            ]);
+
+            // Ghi log lịch sử
+            $this->logStatusChange(
+                $order->id,
+                $order->current_status ?? 1, // Sử dụng giá trị mặc định là 1 nếu current_status null
+                'Đã cập nhật địa chỉ nhận hàng: ' . $address->address . (str_contains($address->address, $address->ward) ? '' : ', ' . $address->ward) . 
+                (str_contains($address->address, $address->district) ? '' : ', ' . $address->district) . 
+                (str_contains($address->address, $address->province) ? '' : ', ' . $address->province),
+                false
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật địa chỉ nhận hàng thành công!',
+                'data' => [
+                    'fullname' => $order->fresh()->fullname,
+                    'phone_number' => $order->fresh()->phone_number,
+                    'email' => $order->fresh()->email,
+                    'address' => $order->fresh()->address,
+                    'province' => $order->fresh()->province,
+                    'district' => $order->fresh()->district,
+                    'ward' => $order->fresh()->ward,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi cập nhật địa chỉ đơn hàng: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            $errorMessage = 'Có lỗi xảy ra: ' . $e->getMessage();
+            
+            // Nếu là lỗi SQL, thêm thông tin chi tiết
+            if ($e instanceof \Illuminate\Database\QueryException) {
+                $errorMessage .= ' (SQL: ' . $e->getSql() . ')';
+                if ($e->errorInfo) {
+                    $errorMessage .= ' - Error Info: ' . json_encode($e->errorInfo);
+                }
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+                'error_details' => config('app.debug') ? [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ] : null
+            ], 500);
         }
     }
 }

@@ -324,7 +324,13 @@
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $status->orderStatus->name ?? 'Không rõ' }}</td>
-                                                <td>{{ $status->note ?? 'Không có ghi chú' }}</td>
+                                                <td>
+                                                    @if(str_contains($status->note ?? '', 'Đã cập nhật địa chỉ nhận hàng'))
+                                                        Đã cập nhật địa chỉ nhận hàng
+                                                    @else
+                                                        {{ $status->note ?? 'Không có ghi chú' }}
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     {{ $status->modifier?->fullname ?? 'Hệ thống' }}
                                                     @if ($status->modifier)
