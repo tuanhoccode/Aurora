@@ -273,7 +273,7 @@
     <div class="breadcrumb mb-4" style="background: none; padding: 0; margin: 0; font-size: 14px;">
         <a href="{{ route('home') }}" class="text-decoration-none">Trang chủ</a>
         <span class="mx-2">/</span>
-        <a href="{{ route('blog.index') }}" class="text-decoration-none">Tin Tức</a>
+        <a href="{{ route('blog.index') }}" class="text-decoration-none">Bài Viết</a>
         <span class="mx-2">/</span>
         <span class="text-muted">{{ Str::limit($post->title, 30) }}</span>
     </div>

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use App\Mail\OrderCancellationMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -222,6 +224,42 @@ class OrderController extends Controller
             ]);
 
             DB::commit();
+
+            // Gửi email thông báo nếu đơn hàng bị hủy (status_id = 8)
+            if ($to == 8) {
+                try {
+                    $refundInfo = null;
+                    
+                    // Nếu là đơn hàng VNPay đã thanh toán, thêm thông tin hoàn tiền
+                    if ($order->payment_id == 2 && $order->is_paid) {
+                        $refundInfo = [
+                            'transaction_id' => 'Đang xử lý',
+                            'amount' => $order->total_amount,
+                            'status' => 'pending'
+                        ];
+                    }
+                    
+                    Mail::to($order->email)->send(new OrderCancellationMail(
+                        $order, 
+                        $note, 
+                        $refundInfo
+                    ));
+                    
+                    Log::info('Email thông báo hủy đơn hàng (Admin) đã được gửi', [
+                        'order_id' => $order->id,
+                        'order_code' => $order->code,
+                        'user_email' => $order->email,
+                        'admin_id' => Auth::id(),
+                        'payment_method' => $order->payment_id == 2 ? 'VNPay' : 'COD'
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Lỗi gửi email thông báo hủy đơn hàng (Admin)', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
 
             return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
         } catch (\Exception $e) {
