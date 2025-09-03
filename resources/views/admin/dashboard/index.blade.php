@@ -185,8 +185,8 @@
         </div>
     </div>
 
-        <!-- Bảng đơn hàng mới nhất -->
-        <div class="table-card bg-white mt-4">
+    <!-- Bảng đơn hàng mới nhất -->
+    <div class="table-card bg-white mt-4">
         <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-4 pb-2">
             <h5 class="card-title mb-0 fw-bold">Đơn Hàng Mới Nhất</h5>
             <a href="{{ route('admin.orders.index') }}" class="btn btn-primary btn-sm fw-semibold rounded-pill px-3">
@@ -215,7 +215,22 @@
                             <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                             <td class="fw-bold">{{ number_format($order->total_amount, 0, ',', '.') }}đ</td>
                             <td>{{ $order->payment->name ?? 'Chưa xác định' }}</td>
-                            <td>{!! $order->fulfilment_status_badge !!}</td>
+                            <td>
+                                @php
+                                    $status = $order->current_status;
+                                    $statusName = $status->name ?? 'Chưa xác định';
+                                    $badgeClass = match($statusName) {
+                                        'Chờ xác nhận' => 'bg-warning text-dark',
+                                        'Chờ lấy hàng' => 'bg-info text-dark',
+                                        'Đang giao' => 'bg-primary',
+                                        'Giao hàng thành công' => 'bg-success',
+                                        'Đã hủy' => 'bg-danger',
+                                        'Chờ trả hàng', 'Đã trả hàng' => 'bg-secondary',
+                                        default => 'bg-secondary'
+                                    };
+                                @endphp
+                                <span class="badge {{ $badgeClass }}" title="ID: {{ $status->id ?? 'N/A' }}">{{ $statusName }}</span>
+                            </td>
                             <td>
                                 <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-light btn-sm rounded-pill px-3">
                                     <i class="fas fa-eye"></i>
